@@ -248,6 +248,7 @@ def new_season(career, seed=None):
         "champion": tables.get("pl", t)[0]["club"],
         "my_position": position_of(career, career["my_club"]),
         "division": divisions.my_div(career),
+        "year_end": career.get("year", FIRST_SEASON + career["season"] - 1) + 1,
         "tables": {d: [r["club"] for r in tt] for d, tt in tables.items()},
         "up": up, "down": down,
     })

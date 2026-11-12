@@ -679,7 +679,7 @@ class App:
         else:
             _badge(self.win, self.colour(cid), (x0 + 18, 48), 18, self._club_of(cid))
             self.text(c["name"], "h1", TEXT, (x0 + 48, 24))
-            if cid >= 0 and clubinfo.profile(c):            # (their history, honours and ground)
+            if 0 <= cid < len(self.career["clubs"]):          # (their history, honours and ground)
                 self.buttons.append(Button((W - 30 - 170, 72, 170, 32), "About the club",
                                            lambda: self.open_club_page(cid), font="btn_s"))
             pos = spain.position_of(self.career, cid) if es else league.position_of(self.career, cid)
@@ -3792,7 +3792,10 @@ class App:
         pr = clubinfo.profile(me)
         x0 = 250
         tab = getattr(self, "club_tab", "history")
-        self._club_tabs(tab, 104, board=mine)
+        if pr:
+            self._club_tabs(tab, 104, board=mine)
+        else:
+            tab = "honours"                             # (no profile yet: just the roll of honour)
         if not mine:
             self.buttons.append(Button((x0, 104, 140, 36), "Back", lambda: self.view_squad(cid), font="btn_s"))
         crest = clubinfo.image(me, "crest", (92, 92))
@@ -3802,8 +3805,11 @@ class App:
             tx = x0 + crest.get_width() + 16
         self.text(me["name"], "h1", TEXT, (tx, 14))
         if not pr:
-            self.text("This club's story hasn't been written yet.", "body", MUTED, (tx, 70))
-            return
+            from career import divisions, stadium
+            cap = stadium.full_capacity(self.career, me) or me.get("finance", {}).get("capacity", 0)
+            self.text(f"{divisions.name(divisions.div_of(me))}  ·  ground holds {cap:,}  ·  "
+                      f"their full story hasn't been written yet", "body", MUTED, (tx, 66))
+            return self._club_honours(me, {}, x0, 152)
         loc = pr["location"]
         g = pr["ground"]
         nick = ", ".join('"' + n + '"' for n in pr["nicknames"])
@@ -3860,18 +3866,30 @@ class App:
         r = pygame.Rect(x0, top, 520, H - top - 20)
         self.panel(r, "Honours")
         y = r.y + 52
-        hon = clubinfo.honours(club["name"])
-        ru = clubinfo.runners_up(club["name"])
-        extra = [(k, v) for k, v in pr.get("honours", {}).items() if k == "Second Division champions"]
-        rows = hon[:1] + ([("League runners-up", ru)] if ru else []) + extra + hon[1:]
+        hon = clubinfo.honours(club["name"], self.career)
+        ru = clubinfo.runners_up(club["name"], "league", self.career)
+        rows = hon[:1] if hon and hon[0][0] == "The League" else []
+        rows += [("League runners-up", ru)] if ru else []
+        rows += [h for h in hon if h[0] != "The League"]
+        seasons = ("The League", "League runners-up", "Second Division / Division 1", "Division 1 play-offs")
+        if not rows:
+            self.text("Nothing in the trophy cabinet yet.", "body", MUTED, (r.x + 16, y))
         for comp, years in rows:
-            self.text(f"{comp}  ({len(years)})", "h3", TEXT, (r.x + 16, y)); y += 28
-            y = self._wrap(", ".join(clubinfo.season(yy) if comp in ("The League", "League runners-up",
-                                                                       "Second Division champions") else str(yy)
-                                     for yy in years), "small", MUTED, r.x + 16, y, r.w - 32) + 12
+            label = "Second Division / Division 1 champions" if comp == "Second Division / Division 1" else \
+                "Division 1 play-off winners" if comp == "Division 1 play-offs" else comp
+            self.text(f"{label}  ({len(years)})", "h3", TEXT, (r.x + 16, y)); y += 28
+            y = self._wrap(", ".join(clubinfo.season(yy) if comp in seasons else str(yy) for yy in years),
+                           "small", MUTED, r.x + 16, y, r.w - 32) + 12
+            if y > r.bottom - 40:
+                break
         r2 = pygame.Rect(r.right + 16, top, W - r.right - 46, H - top - 20)
         self.panel(r2, "Records and legends")
         y = r2.y + 52
+        if not pr:
+            self._wrap("Their records and legends haven't been written yet. The roll of honour on the left "
+                       "goes back to the 1870s - and every season you play adds to it.", "body", MUTED,
+                       r2.x + 16, y, r2.w - 32)
+            return
         labels = {"attendance": "Record crowd", "win": "Record win", "defeat": "Record defeat",
                   "top_scorer": "Top scorer", "appearances": "Most games", "season_goals": "Most in a season"}
         for k, v in pr.get("records", {}).items():

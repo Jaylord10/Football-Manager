@@ -23,7 +23,8 @@ import pygame
 
 DIR = os.path.join("data", "world", "clubs")
 ROLL_FILE = os.path.join("data", "world", "honours.json")
-ORDER = ["league", "association_cup", "league_cup", "champions_cup", "shield", "world_club"]
+ORDER = ["league", "second_tier", "second_tier_playoffs", "association_cup", "league_cup", "champions_cup", "shield",
+         "world_club"]
 _PROFILES = {}
 _ROLL = None
 _IMG = {}
@@ -54,19 +55,45 @@ def roll():
     return _ROLL
 
 
-def honours(name):
-    """[(competition name, [years won])] for a club, from the roll of honour (biggest first)."""
+def _played(career):
+    """{key: {year: [winner, runner-up]}} - the seasons played in this career (career["history"])."""
+    out = {"league": {}, "second_tier": {}, "second_tier_playoffs": {}}
+    if not career:
+        return out
+    from career import league
+    clubs = career.get("clubs", [])
+    nm = lambda i: clubs[i]["name"] if 0 <= i < len(clubs) else None
+    for h in career.get("history", []):
+        y = h.get("year_end") or league.FIRST_SEASON + h.get("season", 1)
+        t = h.get("tables") or {}
+        if t.get("pl"):
+            out["league"][y] = [nm(t["pl"][0]), nm(t["pl"][1])]
+        elif h.get("champion") is not None:
+            out["league"][y] = [nm(h["champion"]), None]
+        if t.get("d1"):
+            out["second_tier"][y] = [nm(t["d1"][0]), nm(t["d1"][1])]
+        if len(h.get("up") or []) >= 3:
+            out["second_tier_playoffs"][y] = [nm(h["up"][2]), None]
+    return out
+
+
+def honours(name, career=None):
+    """[(competition name, [years won])] for a club, from the roll of honour (biggest first) - and,
+    with the career, the seasons played since."""
     r = roll()
+    played = _played(career)
     out = []
     for key in ORDER:
         years = sorted(int(y) for y, v in r["roll"].get(key, {}).items() if v[0] == name)
+        years += sorted(y for y, v in played.get(key, {}).items() if v[0] == name)
         if years:
             out.append((r["competitions"].get(key, key), years))
     return out
 
 
-def runners_up(name, key="league"):
-    return sorted(int(y) for y, v in roll()["roll"].get(key, {}).items() if v[1] == name)
+def runners_up(name, key="league", career=None):
+    years = sorted(int(y) for y, v in roll()["roll"].get(key, {}).items() if v[1] == name)
+    return years + sorted(y for y, v in _played(career).get(key, {}).items() if v[1] == name)
 
 
 def image(club, which, size=None, career=None):
