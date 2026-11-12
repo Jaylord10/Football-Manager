@@ -275,6 +275,7 @@ def after_matchday(career, md, results):
     _unhappy(career)
     _rumour(career)
     _spain(career)
+    _other_division(career)
     m["mood_hist"] = (m["mood_hist"] + [round(m["mood"], 1)])[-12:]
 
 
@@ -670,6 +671,16 @@ def _table_story(career, md):
         _add_article(career, local_paper(career), "table", rng.choice(["Top of the league!", "Look at the table!"]),
                      f"{_name(career, me)} sit top of the league after matchday {md}. Enjoy it.", club=me)
     m["me_top"] = md if pos == 1 else m.get("me_top")
+    from career import divisions
+    if md % 6 == 0 and divisions.exists(career) and divisions.my_div(career) == "d1":
+        # Division 1: the promotion race and the play-off places (nobody goes down from here)
+        _add_article(career, BROADSHEET, "table", rng.choice(["Division 1: the promotion race", "Who's going up?"]),
+                     f"{_name(career, t[0]['club'])} ({t[0]['pts']} pts) and {_name(career, t[1]['club'])} "
+                     f"({t[1]['pts']}) hold the automatic places after matchday {md}; "
+                     f"{', '.join(_name(career, x['club']) for x in t[2:6])} fill the play-off places, "
+                     f"with {_name(career, t[6]['club'])} {t[5]['pts'] - t[6]['pts']} point"
+                     f"{'s' if t[5]['pts'] - t[6]['pts'] != 1 else ''} off them.")
+        return
     if md % 6 == 0:
         bottom = t[-3:]
         _add_article(career, BROADSHEET, "table", "Relegation battle heats up",
@@ -740,6 +751,85 @@ def _rumour(career):
     _journo_post(career, rng.choice([f"Hearing {buyer['name']} keen on {p['Name']}. Early stages.",
                                      f"{p['Name']} on {buyer['name']}'s list. One to watch.",
                                      f"No truth in the {p['Name']} to {buyer['name']} talk, I'm told."]))
+
+
+def _other_division(career):
+    """Every few weeks: how the other English division's going (career/divisions.py)."""
+    from career import divisions
+    if not divisions.exists(career):
+        return
+    o = career["other"]
+    md = o.get("matchday", 1) - 1
+    m = _m(career)
+    if md < 3 or m.get("other_md") == md or md % 4:
+        return
+    m["other_md"] = md
+    t = league.table(career, o["div"])
+    nm = divisions.name(o["div"])
+    lead, second = t[0], t[1]
+    if o["div"] == "d1":
+        _add_article(career, BROADSHEET, "division", f"{nm}: {_name(career, lead['club'])} lead the way",
+                     f"After {md} games {_name(career, lead['club'])} top {nm} on {lead['pts']} points, "
+                     f"{lead['pts'] - second['pts']} ahead of {_name(career, second['club'])}. "
+                     f"The play-off places: {', '.join(_name(career, x['club'], True) for x in t[2:6])}.")
+    else:
+        _add_article(career, BROADSHEET, "division", f"{nm}: {_name(career, lead['club'])} set the pace",
+                     f"Up in the {nm}, {_name(career, lead['club'])} lead after {md} games with {lead['pts']} points. "
+                     f"At the bottom: {', '.join(_name(career, x['club'], True) for x in t[-3:])}.")
+
+
+def season_moves(career, up, down):
+    """The summer's stories: who's gone up, who's gone down (career/divisions.py promote)."""
+    rng = _rng(career, "moves")
+    nm = lambda i: _name(career, i)
+    _add_article(career, BROADSHEET, "division", f"Up go {_name(career, up[0], True)}, {_name(career, up[1], True)} "
+                 f"and {_name(career, up[2], True)}",
+                 f"{nm(up[0])} and {nm(up[1])} are promoted to the Premier Division, joined by play-off winners "
+                 f"{nm(up[2])}. Going the other way: {', '.join(nm(i) for i in down)}.")
+    _add_article(career, TABLOID, "division", rng.choice(["THE DROP!", "TRAPDOOR SWALLOWS THREE", "DOWN AND OUT"]),
+                 f"Tears at {nm(down[0])}, {nm(down[1])} and {nm(down[2])} - Division 1 beckons. "
+                 + rng.choice(["The parachute money will soften the blow.", "Expect a fire sale.",
+                               "Some big names will want out."]))
+    me = career["my_club"]
+    if me in up:
+        _add_article(career, local_paper(career), "division", rng.choice(["BACK IN THE BIG TIME!", "WE'RE GOING UP!",
+                                                                         "PROMOTED!"]),
+                     f"{nm(me)} are a Premier Division club. The town will be partying all summer - "
+                     f"and the manager has a squad to strengthen.", club=me)
+        _journo_post(career, f"Huge summer ahead for {nm(me)} after promotion. Expect plenty of incomings.")
+    elif me in down:
+        _add_article(career, local_paper(career), "division", rng.choice(["Relegated", "The drop confirmed",
+                                                                         "A sad day for the club"]),
+                     f"{nm(me)} will play in Division 1 next season. The manager says the aim is to come "
+                     f"straight back up - the fans will hold him to that.", club=me)
+        _journo_post(career, f"Relegation clauses kick in at {nm(me)}. Some players will be looking for a way out.")
+
+
+def playoff_story(career, m, st):
+    """The papers on a play-off result (career/playoffs.py)."""
+    rng = _rng(career, "po" + m["id"])
+    r = m["result"]
+    nm = lambda i: _name(career, i)
+    me = career["my_club"]
+    if m["round"] == "semi" and m["leg"] == 2:
+        tie = st["ties"][m["tie"]]
+        w = tie["winner"]
+        l = tie["a"] if w == tie["b"] else tie["b"]
+        how = {"pens": " on penalties", "et": " after extra time"}.get(tie["how"], "")
+        a = r["agg"] if m["home"] == w else r["agg"][::-1]
+        _add_article(career, BROADSHEET, "playoffs", f"{_name(career, w, True)} reach the play-off final",
+                     f"{nm(w)} beat {nm(l)} {a[0]}-{a[1]} on aggregate{how} and will play at the national stadium.",
+                     club=me if me in (w, l) else None)
+    elif m["round"] == "final":
+        w = st["winner"]
+        l = m["away"] if w == m["home"] else m["home"]
+        how = (f" on penalties ({max(r['pens'])}-{min(r['pens'])})" if r.get("pens") else
+               " after extra time" if r.get("et") else "")
+        _add_article(career, TABLOID, "playoffs", rng.choice(["THE RICHEST GAME IN FOOTBALL", "PROMOTION PARTY",
+                                                             f"{_name(career, w, True).upper()} ARE GOING UP"]),
+                     f"{nm(w)} won the play-off final{how} against {nm(l)} - worth well over £100m to them. "
+                     + rng.choice([f"Heartbreak for {nm(l)}.", f"{nm(l)} will have to do it all again.",
+                                   "Scenes at the final whistle."]), club=me if me in (w, l) else None)
 
 
 def _spain(career):

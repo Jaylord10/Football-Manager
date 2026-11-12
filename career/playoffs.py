@@ -265,6 +265,9 @@ def record(career, m, r, rng=None):
         pass
     _after(career, m, r, rng)
     _news(career, m)
+    if m["round"] == "final" or m["leg"] == 2:
+        from career import media
+        media.playoff_story(career, m, st)
     return res
 
 

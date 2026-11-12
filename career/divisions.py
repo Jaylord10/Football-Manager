@@ -339,6 +339,8 @@ def promote(career, up, down):
     trf._message(career, "news", f"Promoted to the Premier Division: {', '.join(nm(c) for c in up[:2])} "
                                  f"and play-off winners {nm(up[2])}.  Relegated to Division 1: "
                                  f"{', '.join(nm(c) for c in down)}.")
+    from career import media
+    media.season_moves(career, up, down)                 # (the papers)
     me = career["my_club"]
     if me in up:
         trf._message(career, "board", "Promotion! The board are delighted - welcome to the Premier Division. "
