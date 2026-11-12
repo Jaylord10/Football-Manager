@@ -1,0 +1,21 @@
+id,name,short,r,g,b,strength,defence,build_up,roles
+0,Northwick FC,Northwick,40,40,40,77,press,play_out,blue
+1,Millbrook United,Millbrook,230,180,40,75,press,play_out,blue
+2,Ashvale Rovers,Ashvale,200,60,60,73,high_press,play_out,red
+3,Kingsmere City,Kingsmere,70,130,210,71,high_press,play_out,red
+4,Bramhall Borough,Bramhall,160,40,40,69,press,mixed,red
+5,Eastvale Wanderers,Eastvale,150,80,180,67,press,mixed,red
+6,Castleford Rangers,Castleford,20,60,140,66,mid_block,play_out,red
+7,Westmoor County,Westmoor,120,190,220,65,mid_block,play_out,blue
+8,Whitcombe City,Whitcombe,90,200,200,64,mid_block,mixed,blue
+9,Stonecross Albion,Stonecross,230,120,40,63,mid_block,mixed,blue
+10,Riverton Dynamo,Riverton,180,30,90,62,mid_block,mixed,red
+11,Oakhurst United,Oakhurst,200,200,200,61,mid_block,mixed,blue
+12,Brackenfield Town,Brackenfield,110,110,60,60,mid_block,clear,red
+13,Sandmere Athletic,Sandmere,240,150,170,59,mid_block,clear,blue
+14,Lydmouth Town,Lydmouth,240,220,60,58,low_block,mixed,red
+15,Darnford Albion,Darnford,180,110,50,57,low_block,mixed,blue
+16,Penrith Forge,Penrith,100,100,100,56,low_block,clear,red
+17,Holloway Vale,Holloway,90,60,140,55,low_block,clear,blue
+18,Fernley Park,Fernley,30,120,70,54,low_block,clear,blue
+19,Harrowby Athletic,Harrowby,60,160,90,52,low_block,clear,red

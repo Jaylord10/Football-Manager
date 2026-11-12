@@ -1,0 +1,21 @@
+id,name,short,r,g,b,strength,defence,build_up,roles
+20,Grimsdale Rovers,Grimsdale,40,40,80,58,press,play_out,blue
+21,Wrexford City,Wrexford,200,30,40,56,press,play_out,red
+22,Morwick United,Morwick,220,60,30,55,high_press,play_out,blue
+23,Kestwick Harriers,Kestwick,70,170,120,54,high_press,play_out,red
+24,Lanfield United,Lanfield,245,245,245,53,press,mixed,blue
+25,Ironmoor Athletic,Ironmoor,160,60,40,52,press,mixed,red
+26,Dunholme Wanderers,Dunholme,230,120,20,51,mid_block,play_out,red
+27,Coldharbour Town,Coldharbour,60,60,140,50,mid_block,play_out,blue
+28,Quarrington Albion,Quarrington,100,160,60,50,mid_block,mixed,blue
+29,Pitchford Forest,Pitchford,20,100,40,49,mid_block,mixed,red
+30,Ellesmoor County,Ellesmoor,170,200,230,48,mid_block,mixed,blue
+31,Ottercliffe Town,Ottercliffe,0,140,160,47,mid_block,mixed,blue
+32,Saltmarsh Athletic,Saltmarsh,235,235,235,47,mid_block,clear,blue
+33,Burnleigh Athletic,Burnleigh,230,200,20,46,mid_block,clear,red
+34,Kelbridge Albion,Kelbridge,0,110,70,45,low_block,mixed,red
+35,Stockbury City,Stockbury,140,30,100,45,low_block,mixed,red
+36,Ravensworth United,Ravensworth,120,20,30,44,low_block,clear,blue
+37,Hexley Town,Hexley,30,90,170,43,low_block,clear,blue
+38,Bexford City,Bexford,25,50,120,42,low_block,clear,blue
+39,Daleford Town,Daleford,200,160,60,41,low_block,clear,red

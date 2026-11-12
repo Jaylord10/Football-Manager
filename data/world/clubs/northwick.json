@@ -1,0 +1,377 @@
+{
+  "id": 0,
+  "name": "Northwick FC",
+  "short": "Northwick",
+  "nicknames": [
+    "the Colliers",
+    "the Blacks"
+  ],
+  "founded": 1867,
+  "location": {
+    "town": "Northwick",
+    "county": "Yorkshire",
+    "region": "West Riding, North of England",
+    "about": "A big West Riding city of about 560,000 on the River Wick, built on coal, steel and wool. The pits are gone now - the last, Wick Main, closed in 1993 - but the city still calls itself a mining city, and the club still plays in black. Northwick is Yorkshire's biggest club and the biggest in the country."
+  },
+  "colours": {
+    "rgb": [
+      40,
+      40,
+      40
+    ],
+    "story": "The club's founders worked at Wick Main Colliery, and they picked black shirts in 1869 because coal dust never showed on them. Gold - the colour of a miner's lamp - was added to the trim in 1921, the year of the great lockout, and has been on every shirt since.",
+    "home": {
+      "shirt": "black with a thin gold pinstripe, a gold V-neck collar and gold cuffs",
+      "shorts": "black",
+      "socks": "black with gold tops",
+      "rgb": {
+        "shirt": [
+          30,
+          30,
+          32
+        ],
+        "trim": [
+          212,
+          170,
+          60
+        ],
+        "shorts": [
+          30,
+          30,
+          32
+        ],
+        "socks": [
+          30,
+          30,
+          32
+        ]
+      }
+    },
+    "away": {
+      "shirt": "lamp gold with a black collar and black cuffs",
+      "shorts": "black",
+      "socks": "gold",
+      "rgb": {
+        "shirt": [
+          212,
+          170,
+          60
+        ],
+        "trim": [
+          30,
+          30,
+          32
+        ],
+        "shorts": [
+          30,
+          30,
+          32
+        ],
+        "socks": [
+          212,
+          170,
+          60
+        ]
+      }
+    },
+    "third": {
+      "shirt": "white with a black and gold diagonal sash",
+      "shorts": "white",
+      "socks": "white",
+      "rgb": {
+        "shirt": [
+          245,
+          245,
+          245
+        ],
+        "trim": [
+          30,
+          30,
+          32
+        ],
+        "shorts": [
+          245,
+          245,
+          245
+        ],
+        "socks": [
+          245,
+          245,
+          245
+        ]
+      }
+    }
+  },
+  "rivals": [
+    {
+      "club": "Ashvale Rovers",
+      "derby": "the Pennine Derby",
+      "why": "the great Lancashire club across the moors - title rivals since Jack Brearley and Tommy Haworth fought it out in the 1970s"
+    },
+    {
+      "club": "Castleford Rangers",
+      "derby": "the West Riding Derby",
+      "why": "the neighbouring Yorkshire club eleven miles down the Wick - the local derby, older than the League itself"
+    }
+  ],
+  "history": [
+    {
+      "years": "1867-1888",
+      "title": "Pitmen and old boys",
+      "text": "Founded in 1867 at the Northwick Mechanics' Institute by miners from Wick Main Colliery - one of the oldest clubs in the world. They picked black shirts because coal dust never showed. Association Cup winners in 1876 and 1882, when the cup was still won by amateurs."
+    },
+    {
+      "years": "1888-1915",
+      "title": "Founder members",
+      "text": "Founder members of the League in 1888. Runners-up in 1894, then champions in 1903-04 and 1908-09 - that second title won by a point from Ashvale Rovers, the start of a rivalry that has never stopped. Moved to Pithead Road, beside the colliery, in 1898."
+    },
+    {
+      "years": "1919-1939",
+      "title": "So near",
+      "text": "Runners-up three times in the twenties, champions again in 1934-35. A record 84,569 squeezed into Pithead Road for the Association Cup in 1938. The 1921 lockout and the 1926 strike hit the city hard; the club let miners in for a penny."
+    },
+    {
+      "years": "1946-1958",
+      "title": "Grey years, a cup",
+      "text": "Twice runners-up in the early fifties and Association Cup winners in 1956, but no title for a quarter of a century. Then the board gave the job to a 38-year-old from the pit villages: Jack Brearley."
+    },
+    {
+      "years": "1958-1978",
+      "title": "Brearley's Colliers",
+      "text": "Jack Brearley built the club that the modern Northwick stands on. Champions in 1959-60 and 1963-64, the League Cup in 1965, and on 2 June 1971 Northwick beat FC Rheinfeld to win the Continental Champions' Cup - Ray Mitchell lifting it - and then the World Club Trophy that winter. Three more titles in the seventies, fought out every year with Tommy Haworth's Ashvale."
+    },
+    {
+      "years": "1978-1993",
+      "title": "The pits close",
+      "text": "Titles in 1980 (Ashvale second), 1981 and 1986, and the Association Cup in 1978 and 1991. But the city was losing its pits one by one, and when Wick Main closed in 1993 the club wore black armbands for a month. In 1990 they beat Ashvale 8-0 at Pithead Road - still talked about on both sides of the Pennines."
+    },
+    {
+      "years": "1993-2011",
+      "title": "The Eriksen era",
+      "text": "Champions again in 1994; then, under the Danish coach Lars Eriksen (1997-2011) Northwick became the biggest club in the country: champions in 1999, 2000, 2003, 2005 and 2008, Continental Shield winners in 2006 and 2007. In 2003 they left Pithead Road for the new Wick Main Stadium, built on the site of the old colliery. Only one thing went wrong - three Continental Champions' Cup finals, in 2000, 2005 and 2010, all lost - the first two to Stonecross Albion, of all clubs."
+    },
+    {
+      "years": "2011-now",
+      "title": "The machine",
+      "text": "Titles in 2012, 2014 (Ashvale second), 2016 and 2022, four League Cups in five years from 2011, the Association Cup in 2013 and 2018, and the Continental Shield again in 2024. Rich, ruthless and expected to win everything - and the only club that still worries Ashvale more than Bramhall do."
+    }
+  ],
+  "honours": {
+    "League champions": [
+      1904,
+      1909,
+      1935,
+      1960,
+      1964,
+      1972,
+      1974,
+      1975,
+      1980,
+      1981,
+      1986,
+      1994,
+      1999,
+      2000,
+      2003,
+      2005,
+      2008,
+      2012,
+      2014,
+      2016,
+      2022
+    ],
+    "League runners-up": [
+      1894,
+      1920,
+      1926,
+      1929,
+      1950,
+      1952,
+      1968,
+      1979
+    ],
+    "Association Cup": [
+      1876,
+      1882,
+      1956,
+      1978,
+      1991,
+      2007,
+      2013,
+      2018
+    ],
+    "League Cup": [
+      1965,
+      1977,
+      1987,
+      1991,
+      2002,
+      2011,
+      2012,
+      2013,
+      2015
+    ],
+    "Continental Champions' Cup": [
+      1971
+    ],
+    "Continental Champions' Cup runners-up": [
+      2000,
+      2005,
+      2010
+    ],
+    "Continental Shield": [
+      2006,
+      2007,
+      2024
+    ],
+    "World Club Trophy": [
+      1971
+    ]
+  },
+  "honours_note": "League seasons are given by the year they ended (1904 = 1903-04).",
+  "legends": [
+    {
+      "name": "Jack Brearley",
+      "role": "Manager 1958-1978",
+      "note": "Five titles, the Continental Champions' Cup and the World Club Trophy. The Brearley Stand is named after him."
+    },
+    {
+      "name": "Ray Mitchell",
+      "role": "Captain, wing-half 1962-1977",
+      "note": "Lifted the Continental Champions' Cup in 1971."
+    },
+    {
+      "name": "Harry Lockwood",
+      "role": "Centre-forward 1951-1965",
+      "note": "312 goals - the club record. A miner's son from Wick Main."
+    },
+    {
+      "name": "Stan Hirst",
+      "role": "Goalkeeper 1961-1980",
+      "note": "741 appearances - the club record."
+    },
+    {
+      "name": "Lars Eriksen",
+      "role": "Manager 1997-2011",
+      "note": "Five titles and two Continental Shields - but three lost Champions' Cup finals."
+    },
+    {
+      "name": "Kwame Asante",
+      "role": "Striker 2009-2019",
+      "note": "The modern hero: 187 goals and three titles."
+    }
+  ],
+  "records": {
+    "attendance": "84,569 v Kingsmere City, Association Cup quarter-final, 1938 (Pithead Road); 74,988 v Ashvale Rovers, League, 2014 (Wick Main)",
+    "win": "11-1 v Holloway Vale, League, 1931",
+    "defeat": "0-6 v Eastvale Wanderers, League, 1913",
+    "top_scorer": "Harry Lockwood, 312 goals (1951-1965)",
+    "appearances": "Stan Hirst, 741 (1961-1980)",
+    "season_goals": "Harry Lockwood, 47 (1959-60)"
+  },
+  "badge": {
+    "about": "The pit wheel for Wick Main, where the club began; the crossed picks for the miners who founded it; the white rose for Yorkshire; 1867 for the year. Motto 'Ex Profundis' - from the depths.",
+    "design": "A black shield with a thin gold border. In the centre, a gold colliery winding wheel (pit wheel) with spokes. Two crossed miner's picks in white behind the wheel. A small white Yorkshire rose at the top of the shield. '1867' in gold beneath the wheel. A gold ribbon scroll below the shield reading 'EX PROFUNDIS' in black. 'NORTHWICK FC' arched above the shield in gold capitals."
+  },
+  "ground": {
+    "name": "Wick Main Stadium",
+    "known_as": "Wick Main",
+    "opened": 2003,
+    "capacity": 75000,
+    "former": "Pithead Road (1898-2003), beside the colliery - now housing, with the old centre circle kept as a memorial garden",
+    "pitch": {
+      "length_m": 105,
+      "width_m": 68,
+      "surface": "hybrid grass, perfect",
+      "runoff": "wide - a modern bowl, the crowd a little further back"
+    },
+    "stands": [
+      {
+        "name": "Brearley Stand",
+        "side": "west",
+        "built": 2003,
+        "tiers": 3,
+        "capacity": 22000,
+        "roof": "part of the continuous bowl roof",
+        "features": "the main stand: dressing rooms, tunnel and dugouts on the halfway line, glass-fronted boxes between the second and third tiers; Jack Brearley's statue in the plaza outside"
+      },
+      {
+        "name": "East Stand",
+        "side": "east",
+        "built": 2003,
+        "tiers": 2,
+        "capacity": 21000,
+        "roof": "part of the continuous bowl roof",
+        "features": "two big tiers opposite the Brearley Stand, built with foundations for a third; the TV gantry under the roof; 'NORTHWICK' picked out in gold seats across the upper tier"
+      },
+      {
+        "name": "The Pit End",
+        "side": "south",
+        "built": 2003,
+        "tiers": 1,
+        "capacity": 18000,
+        "roof": "part of the continuous bowl roof",
+        "features": "the home end - one vast single tier, the biggest in the country, built to keep the spirit of the old Pithead Road terrace; a huge 'EX PROFUNDIS' banner and the miners' lamp tifo on big days"
+      },
+      {
+        "name": "North Stand",
+        "side": "north",
+        "built": 2003,
+        "tiers": 2,
+        "capacity": 14000,
+        "roof": "part of the continuous bowl roof",
+        "features": "away fans in the upper tier; the big screen hangs from the roof above it"
+      }
+    ],
+    "corners": "closed - a continuous bowl, the stands joined all the way round",
+    "roof": "a continuous roof on a black steel ring, translucent at the front edge to let light onto the pitch; at night the outside skin glows gold",
+    "surroundings": "built on the site of the old Wick Main Colliery beside the River Wick; the colliery's preserved steel winding headframe, pit wheel and stone engine house stand in the plaza outside the Brearley Stand; across the river, old stone wool mills, a mill chimney, a railway viaduct and the cathedral and town hall towers of the city centre; behind, the old coalfield's grassed-over spoil heaps and the moors",
+    "atmosphere": "huge and loud when it's going - the Pit End sets the tone - but a modern bowl, a bit further from the pitch than the old grounds; away teams feel the size of it",
+    "for_the_engine": {
+      "home_end": "south",
+      "away_fans": "north upper tier",
+      "dugouts": "west side, halfway line",
+      "pitch_m": [
+        105,
+        68
+      ],
+      "notes": "big modern bowl - a wide pitch with room to play"
+    },
+    "images": {
+      "crest": "data/world/clubs/northwick/crest.png",
+      "inside": "data/world/clubs/northwick/inside.jpg",
+      "aerial": "data/world/clubs/northwick/aerial.jpg"
+    },
+    "development": [
+      {
+        "id": "east",
+        "stand": "East Stand",
+        "name": "Add a third tier to the East Stand",
+        "adds": 8500,
+        "cost": 110000000,
+        "months": 24,
+        "closed_during": 3000,
+        "about": "The East Stand was built with foundations for a third tier. It goes on top, with a new raised roof and a glass hospitality deck between the tiers - 29,500 seats, and Wick Main past 83,000.",
+        "after": {
+          "capacity": 29500,
+          "tiers": 3,
+          "roof": "a new raised section of the bowl roof",
+          "features": "three tiers now, the new top tier climbing high under a raised roof; 'NORTHWICK' moved up into the new top tier in gold seats; a glass hospitality deck between the tiers; the TV gantry hung from the new roof"
+        },
+        "opened_line": "Ray Mitchell, the 1971 captain, unveiled the new tier.",
+        "images": {
+          "inside": "data/world/clubs/northwick/inside_2.jpg",
+          "aerial": "data/world/clubs/northwick/aerial_2.jpg"
+        }
+      }
+    ]
+  },
+  "image_prompts": {
+    "badge": "A football club crest for 'Northwick FC', founded 1867, a historic Yorkshire mining-city club. A black heraldic shield with a thin gold border. Centre: a gold colliery winding wheel (pit wheel) with spokes, with two crossed white miner's pickaxes behind it. A small white rose at the top of the shield. '1867' in gold beneath the wheel. A gold ribbon scroll beneath the shield reading 'EX PROFUNDIS' in black capitals. 'NORTHWICK FC' arched above the shield in gold serif capitals. Flat vector emblem, clean bold lines, limited colours (black, gold, white), centred, on a plain transparent background, square format, no other text.",
+    "ground_outside": "Exterior of a huge modern 75,000-seat football stadium in a Yorkshire mining city at dusk on a matchday. A continuous bowl with a black steel roof ring; the outer skin glowing warm gold. In the plaza in front, a preserved black steel colliery winding headframe with a large pit wheel on top, lit from below, and a bronze statue of a manager in an overcoat. Crowds of fans in black and gold scarves streaming across the plaza. A river, old stone wool mills and new glass towers on the skyline, low grey Yorkshire cloud. Photorealistic, 35mm, natural light.",
+    "ground_inside": "Inside a huge modern 75,000-seat football bowl stadium on a matchday night, view from the upper tier of the main stand at the halfway line. Steep three-tier stands joined all the way round with black seats; the word 'NORTHWICK' picked out in gold seats across the far upper tier. To the right, one enormous single-tier home end packed with fans in black and gold, a giant banner reading 'EX PROFUNDIS' and a tifo of a miner's lamp. A continuous black steel roof with a translucent inner edge, floodlights along the roof. Perfect green pitch, players in black kits with gold trim lining up. Photorealistic, wide angle, atmospheric.",
+    "ground_aerial": "Aerial drone photograph of a large modern oval bowl football stadium with a continuous black roof ring, beside a river in a Yorkshire city. In the plaza outside, a preserved colliery winding headframe with a pit wheel. Around it: reclaimed industrial land, car parks, a canalised river, old stone mill buildings and a city centre with towers; green grassed-over spoil heaps and moorland hills in the distance. Overcast sky, late afternoon light. Photorealistic.",
+    "kits": "Three football kits for Northwick FC laid out flat side by side on a plain light background, product-photo style. Home: black shirt with thin gold pinstripes, gold V-neck collar and gold cuffs, black shorts, black socks with gold tops. Away: gold (lamp gold) shirt with black collar and cuffs, black shorts, gold socks. Third: white shirt with a black and gold diagonal sash, white shorts, white socks. A small club crest on the left chest of each shirt. No sponsor logos, no other text."
+  },
+  "support": 86000
+}

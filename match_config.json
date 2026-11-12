@@ -1,0 +1,19 @@
+{
+    "match_name": "My Custom Match",
+    "home_team": {
+        "id": 0,
+        "name": "Team Blue",
+        "file": "data/teams/team_blue.csv",
+        "primary_color": [60, 120, 200],
+        "roles": "blue",
+        "tactics": {"defence": "mid_block"}
+    },
+    "away_team": {
+        "id": 1,
+        "name": "Team Red",
+        "file": "data/teams/team_red.csv",
+        "primary_color": [200, 70, 70],
+        "roles": "red",
+        "tactics": {"defence": "mid_block"}
+    }
+}

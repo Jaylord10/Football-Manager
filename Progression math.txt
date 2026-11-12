@@ -1,0 +1,60 @@
+Passing
+
+dist_score (nearest defender distance)
+
+pass under 10m
+nearest defender distance
+<2m = -5
+2m-5m =-1
+
+pass between 10-20m
+nearest defender distance
+<2m = -10
+2m-5m = -5
+5-10m = -2
+
+pass between 20-30m
+nearest defender distance
+<2m = - 20
+2-5m = -15
+5-10 = -10
+10-15m = -5
+
+Defenders in lane
+-10 per defender in passing cone
+
+facing_score 
+forward  = 0
+backward = -1
+
+facing toward attacking direction → higher
+
+support_score (do I have an outlet?)
+
+nearest teammate within 10m → higher
+
+TPS components (0–100)
+
+(A) Space ahead (0–40)
+How many metres of free run toward goal?
+
+(B) No blocker (0–25)
+Any defender between receiver and goal in a corridor?
+
+(C) Player profile (0–25)
+pace + accel + dribble + decisions (scaled)
+
+(D) Lane quality (0–10)
+can they attack inside / central? reinforces “not just wide”
+
+Example: LM wide with 20m grass, no blocker, fast player:
+
+Space: 20m → 32/40
+
+No blocker: +25
+
+Profile: +18
+
+Lane quality (wide): +5
+
+✅ TPS ≈ 80

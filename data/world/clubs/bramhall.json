@@ -1,0 +1,324 @@
+{
+ "id": 4,
+ "name": "Bramhall Borough",
+ "short": "Bramhall",
+ "nicknames": [
+  "Borough",
+  "the Spinners"
+ ],
+ "founded": 1874,
+ "location": {
+  "town": "Bramhall",
+  "county": "Lancashire",
+  "region": "North West England",
+  "about": "A spinning town of about 120,000 six miles down the Ash valley from Ashvale, where the Bram Brook meets the River Ash. Ashvale wove the cloth; Bramhall spun the yarn and built the machines that spun it - Hargreaves & Sons' spinning frames went all over the world. A great stone railway viaduct strides across the middle of town, and the old ring mills still line the brook."
+ },
+ "colours": {
+  "rgb": [
+   160,
+   40,
+   40
+  ],
+  "story": "Red for Lancashire, and the black band across the chest for the soot of the spinning mills - first worn in 1890, the year the town became a borough and the club changed its name. On derby days Ashvale fans call it 'the chimney stripe'; Bramhall wear it as a badge of honour.",
+  "home": {
+   "shirt": "red with a broad black hoop across the chest, a black crew-neck collar",
+   "shorts": "black",
+   "socks": "red with black tops",
+   "rgb": {
+    "shirt": [
+     178,
+     30,
+     36
+    ],
+    "trim": [
+     24,
+     24,
+     26
+    ],
+    "shorts": [
+     24,
+     24,
+     26
+    ],
+    "socks": [
+     178,
+     30,
+     36
+    ]
+   }
+  },
+  "away": {
+   "shirt": "white with a thin red-black-red band across the chest",
+   "shorts": "black",
+   "socks": "white",
+   "rgb": {
+    "shirt": [
+     245,
+     245,
+     245
+    ],
+    "trim": [
+     178,
+     30,
+     36
+    ],
+    "shorts": [
+     24,
+     24,
+     26
+    ],
+    "socks": [
+     245,
+     245,
+     245
+    ]
+   }
+  },
+  "third": {
+   "shirt": "navy with red cuffs and a red collar",
+   "shorts": "navy",
+   "socks": "navy",
+   "rgb": {
+    "shirt": [
+     28,
+     36,
+     70
+    ],
+    "trim": [
+     178,
+     30,
+     36
+    ],
+    "shorts": [
+     28,
+     36,
+     70
+    ],
+    "socks": [
+     28,
+     36,
+     70
+    ]
+   }
+  }
+ },
+ "rivals": [
+  {
+   "club": "Ashvale Rovers",
+   "derby": "the Cotton Derby",
+   "why": "the weaving town six miles up the valley - the oldest and bitterest rivalry in Lancashire, first played in 1880; level on seven league titles each since 2024"
+  },
+  {
+   "club": "Millbrook United",
+   "derby": null,
+   "why": "a needle since the last day of 1990-91, when Bramhall won the title at Millbrook's ground"
+  }
+ ],
+ "history": [
+  {
+   "years": "1874-1890",
+   "title": "Cup kings",
+   "text": "Founded in 1874 as Bramhall Mechanics by spinners and fitters from the Hargreaves works. Before the League even existed they were the best cup side in the north: Association Cup winners in 1879, 1884, 1886 and 1889. The first Cotton Derby, in 1880, ended in a riot on the towpath."
+  },
+  {
+   "years": "1890-1915",
+   "title": "The Borough",
+   "text": "Renamed Bramhall Borough in 1890, when the town got its charter, and the black chest band arrived the same year. League runners-up in 1896 and 1897, cup winners again in 1900, 1901, 1908 and 1910. Moved to Brookfold, beside the brook and under the viaduct, in 1899."
+  },
+  {
+   "years": "1919-1939",
+   "title": "The first title",
+   "text": "The Double in 1924 - League and Association Cup - with the great half-back line of Ainsworth, Clegg and Duckworth. Pipped by Ashvale in 1927, which still stings. Cup winners again in 1936."
+  },
+  {
+   "years": "1946-1970",
+   "title": "Brookfold's best crowds",
+   "text": "Champions in 1954, when 61,000 packed the old Brookfold terraces for the run-in. Cup winners in 1958 and 1966, Fred Royle's goals at the heart of both."
+  },
+  {
+   "years": "1971-1987",
+   "title": "Nearly men",
+   "text": "Second in 1973, 1975 and 1985 - always close, never quite there, while Ashvale had Tommy Haworth and the European Cup. The mills were closing; Brookfold was crumbling."
+  },
+  {
+   "years": "1987-2009",
+   "title": "The Hargreaves years",
+   "text": "Walter Hargreaves, great-grandson of the spinning-frame family and a self-made textiles millionaire, bought the club in 1987. Champions in 1991 - won on the last day at Millbrook, the same season Ashvale were relegated - then, in 1992, the Continental Champions' Cup and the World Club Trophy. His money rebuilt Brookfold, stand by stand, between 1992 and 1995, and two more titles followed in 1995 and 1997. The League Cup in 2004."
+  },
+  {
+   "years": "2009-now",
+   "title": "Seven each",
+   "text": "Hargreaves died in 2009 and left the club to a trust of local businesses. Champions again in 2015 and, against the odds, in 2024 - taking them level with Ashvale on seven titles. The League Cup in 2017. Smaller than Northwick, poorer than Millbrook, and proud of it."
+  }
+ ],
+ "honours": {
+  "League champions": [
+   1924,
+   1954,
+   1991,
+   1995,
+   1997,
+   2015,
+   2024
+  ],
+  "League runners-up": [
+   1896,
+   1897,
+   1927,
+   1973,
+   1975,
+   1985
+  ],
+  "Association Cup": [
+   1879,
+   1884,
+   1886,
+   1889,
+   1900,
+   1901,
+   1908,
+   1910,
+   1924,
+   1936,
+   1958,
+   1966
+  ],
+  "League Cup": [
+   2004,
+   2017
+  ],
+  "Continental Champions' Cup": [
+   1992
+  ],
+  "World Club Trophy": [
+   1992
+  ]
+ },
+ "honours_note": "League seasons are given by the year they ended (1924 = 1923-24).",
+ "legends": [
+  {
+   "name": "Walter Hargreaves",
+   "role": "Chairman 1987-2009",
+   "note": "Bought the club, rebuilt Brookfold and paid for three titles and the European Cup. The main stand carries his name."
+  },
+  {
+   "name": "Gordon McAllister",
+   "role": "Manager 1988-1998",
+   "note": "Four trophies in seven seasons: the titles in 1991, 1995 and 1997 and the Continental Champions' Cup in 1992."
+  },
+  {
+   "name": "Fred Royle",
+   "role": "Centre-forward 1952-1967",
+   "note": "268 goals - the club record."
+  },
+  {
+   "name": "Alf Clegg",
+   "role": "Half-back 1919-1934",
+   "note": "Captain of the 1924 Double side. 655 appearances - the club record."
+  },
+  {
+   "name": "Steve Ingham",
+   "role": "Captain, centre-half 1986-1999",
+   "note": "Lifted the Continental Champions' Cup in 1992. Bramhall born, a Viaduct End season-ticket holder ever since."
+  },
+  {
+   "name": "Tomas Varga",
+   "role": "Playmaker 2018-2025",
+   "note": "The heartbeat of the 2024 title side."
+  }
+ ],
+ "records": {
+  "attendance": "63,118 v Ashvale Rovers, League, 1954 (old Brookfold); 38,962 v Northwick FC, League, 2024",
+  "win": "12-1 v Lydmouth Town, Association Cup, 1886",
+  "defeat": "0-7 v Northwick FC, League, 1978",
+  "top_scorer": "Fred Royle, 268 goals (1952-1967)",
+  "appearances": "Alf Clegg, 655 (1919-1934)",
+  "season_goals": "Fred Royle, 41 (1953-54)"
+ },
+ "badge": {
+  "about": "The spinning bobbin for the mills and the machines the town made; the viaduct for Brookfold, which sits beneath it; the red rose for Lancashire; 1874 for the year. Motto 'Per Ardua Surgo' - through hardship I rise.",
+  "design": "A red shield with a broad black band across the middle (the chest hoop). On the band, a gold spinning bobbin wound with white thread, lying sideways. Above it, a red Lancashire rose outlined in gold. Below the band, three white arches of a railway viaduct. '1874' in gold either side of the rose. A black ribbon scroll beneath the shield reading 'PER ARDUA SURGO' in gold. 'BRAMHALL BOROUGH' arched above the shield in black capitals."
+ },
+ "ground": {
+  "name": "Brookfold",
+  "known_as": "Brookfold",
+  "opened": 1899,
+  "capacity": 39000,
+  "former": null,
+  "pitch": {
+   "length_m": 104,
+   "width_m": 67,
+   "surface": "hybrid grass, slow and heavy in winter",
+   "runoff": "short - stands close to the touchlines, rebuilt on the old ground's footprint"
+  },
+  "stands": [
+   {
+    "name": "Hargreaves Stand",
+    "side": "west",
+    "built": 1994,
+    "tiers": 2,
+    "capacity": 11000,
+    "roof": "cantilever roof with red steel trusses on top",
+    "features": "the main stand: dressing rooms, tunnel and dugouts on the halfway line, a row of executive boxes between the tiers; Walter Hargreaves' name in big white letters along the roof fascia; the club's original 1899 brick turnstile block and wrought-iron gates kept at its north end",
+    "expandable": false
+   },
+   {
+    "name": "Spinners' Stand",
+    "side": "east",
+    "built": 1992,
+    "tiers": 2,
+    "capacity": 12000,
+    "roof": "cantilever roof",
+    "features": "the first stand of the rebuild, paid for by the European Cup run; 'BOROUGH' picked out in black seats across the red upper tier; the TV gantry hangs under its roof",
+    "expandable": false
+   },
+   {
+    "name": "Viaduct End",
+    "side": "south",
+    "built": 1993,
+    "tiers": 2,
+    "capacity": 9500,
+    "roof": "cantilever roof, low enough for the viaduct",
+    "features": "the home end - two steep tiers right under the Brookfold Viaduct, a great stone railway viaduct that runs across the back of the stand, higher than its roof; trains slow down on match days and drivers sound their horns; a giant 'PER ARDUA SURGO' flag",
+    "expandable": false
+   },
+   {
+    "name": "Mill End",
+    "side": "north",
+    "built": 1995,
+    "tiers": 1,
+    "capacity": 6500,
+    "roof": "low cantilever roof",
+    "features": "away fans; a single low tier because the listed Brookfold Mill - five storeys of red brick with a square water tower lettered 'BROOKFOLD MILL' - stands right behind it",
+    "expandable": false
+   }
+  ],
+  "corners": "open corners; a big screen in the corner between the Spinners' Stand and the Viaduct End",
+  "roof": "four separate cantilever roofs, red steel; floodlights along the roof edges",
+  "surroundings": "the Brookfold Viaduct - a curving stone railway viaduct of twenty arches - behind the Viaduct End; Brookfold Mill and its water tower behind the Mill End; the Bram Brook along the east side; red-brick terraces, a chapel, more mill chimneys and the Pennine moors beyond, with Ashvale six miles up the valley",
+  "atmosphere": "tight, steep and loud - a 1990s rebuild on an old English ground's footprint; the Viaduct End starts it, and a passing train mid-song gets the biggest cheer of the day",
+  "for_the_engine": {
+   "home_end": "south",
+   "away_fans": "north",
+   "dugouts": "west side, halfway line",
+   "pitch_m": [
+    104,
+    67
+   ],
+   "notes": "a slightly tight pitch; close, noisy stands"
+  },
+  "images": {
+   "crest": "data/world/clubs/bramhall/crest.png",
+   "inside": "data/world/clubs/bramhall/inside.jpg",
+   "aerial": "data/world/clubs/bramhall/aerial.jpg"
+  }
+ },
+ "image_prompts": {
+  "badge": "A football club crest for 'Bramhall Borough', founded 1874, a historic Lancashire cotton-spinning town club. A red heraldic shield with a broad black horizontal band across the middle. On the black band, a gold spinning bobbin wound with white thread, lying sideways. Above the band, a red Lancashire rose outlined in gold, with '18' and '74' in gold either side of it. Below the band, three white stone arches of a railway viaduct. A black ribbon scroll beneath the shield reading 'PER ARDUA SURGO' in gold capitals. 'BRAMHALL BOROUGH' arched above the shield in black serif capitals. Flat vector emblem, clean bold lines, limited colours (red, black, gold, white), centred, on a plain transparent background, square format, no other text.",
+  "ground_inside": "Photorealistic wide-angle photo inside a 39,000-seat English football stadium, 45 minutes before kick-off on a grey, drizzly Lancashire afternoon. Camera: high up in the main stand, on the halfway line, looking straight across the pitch. OPPOSITE (straight ahead): a long two-tier stand with red seats under a red steel cantilever roof. Its upper tier is still nearly EMPTY, so the word 'BOROUGH' spelled out in black seats among the red seats is clearly readable across it. A few early fans in the lower tier. LEFT END: a steep two-tier home stand, already PACKED with fans in red and black, with a giant banner reading 'PER ARDUA SURGO'. Directly behind this stand, and taller than its roof, runs a huge curving stone railway viaduct with many arches, with a train crossing it. RIGHT END: a low single-tier stand, half full. Right behind it rises a five-storey red-brick Victorian cotton mill with a square water tower lettered 'BROOKFOLD MILL'. The four stands are separate, with open gaps at the corners. ON THE PITCH: players warming up in small groups, in red shirts with a broad black hoop across the chest and black shorts. No match being played. Skyline: mill chimneys and green moors. Wet green pitch, floodlights on.",
+  "ground_aerial": "Aerial drone photograph of a compact 39,000-seat English football ground in a Lancashire mill town: four separate rectangular two-tier stands with red roofs and open corners, tight to the pitch. A long curving stone railway viaduct of many arches runs right behind one end stand; a large five-storey red-brick cotton mill with a square water tower stands right behind the other end; a small brook runs along one side. Around it, rows of red-brick terraced houses, mill chimneys, a chapel, and green Pennine moors in the distance. Overcast sky, soft light. Photorealistic.",
+  "ground_outside": "Outside a 1990s English football ground on a matchday: a red-brick Victorian turnstile block with wrought-iron gates and 'BRAMHALL BOROUGH 1874' in stone, the modern red-roofed main stand behind it with 'HARGREAVES STAND' along the fascia, fans in red and black scarves, a stone railway viaduct with many arches across the street beyond. Grey Lancashire sky. Photorealistic, 35mm.",
+  "kits": "Three football kits for Bramhall Borough laid out flat side by side on a plain light background, product-photo style. Home: red shirt with a broad black hoop across the chest and a black crew-neck collar, black shorts, red socks with black tops. Away: white shirt with a thin red-black-red band across the chest, black shorts, white socks. Third: navy shirt with red collar and red cuffs, navy shorts, navy socks. A small club crest on the left chest of each shirt. No sponsor logos, no other text."
+ },
+ "support": 52000
+}

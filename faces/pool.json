@@ -1,0 +1,3202 @@
+[
+ {
+  "face": "pool_0001",
+  "age": 19,
+  "band": "young",
+  "seed_id": 300,
+  "seed_name": "Marco Silva",
+  "desc": "age 19; very fair skin; brown eyes; very dark brown hair, buzz cut; short full beard"
+ },
+ {
+  "face": "pool_0002",
+  "age": 23,
+  "band": "young",
+  "seed_id": 307,
+  "seed_name": "Ben Carter",
+  "desc": "age 23; olive / tan skin; dark brown eyes; very dark brown hair, buzz cut; clean-shaven"
+ },
+ {
+  "face": "pool_0003",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 314,
+  "seed_name": "Yusuf Diallo",
+  "desc": "age 27; dark brown skin; dark brown eyes; black hair, short back and sides; clean-shaven"
+ },
+ {
+  "face": "pool_0004",
+  "age": 31,
+  "band": "senior",
+  "seed_id": 321,
+  "seed_name": "Liam Byrne",
+  "desc": "age 31; very fair skin; blue eyes; black hair, short curly hair / small afro; stubble"
+ },
+ {
+  "face": "pool_0005",
+  "age": 35,
+  "band": "senior",
+  "seed_id": 328,
+  "seed_name": "Oscar Lund",
+  "desc": "age 35; very fair skin; dark brown eyes; light brown hair with a little grey, buzz cut; clean-shaven"
+ },
+ {
+  "face": "pool_0006",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 342,
+  "seed_name": "Kofi Mensah",
+  "desc": "age 29; fair skin; brown eyes; ginger hair, buzz cut; stubble"
+ },
+ {
+  "face": "pool_0007",
+  "age": 33,
+  "band": "senior",
+  "seed_id": 349,
+  "seed_name": "Rory Hughes",
+  "desc": "age 33; dark brown skin; dark brown eyes; very dark brown hair with a little grey, side parting; stubble"
+ },
+ {
+  "face": "pool_0008",
+  "age": 37,
+  "band": "senior",
+  "seed_id": 370,
+  "seed_name": "Tom Hale",
+  "desc": "age 37; brown skin; dark brown eyes; black hair with a little grey, short back and sides; clean-shaven"
+ },
+ {
+  "face": "pool_0009",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500106,
+  "seed_name": "Pool Man 106",
+  "desc": "age 22; fair skin; brown eyes; dark brown hair, short crop brushed forward; clean-shaven"
+ },
+ {
+  "face": "pool_0010",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500226,
+  "seed_name": "Pool Man 226",
+  "desc": "age 29; light brown skin; dark brown eyes; dark brown hair, short curly hair / small afro; short full beard"
+ },
+ {
+  "face": "pool_0011",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500319,
+  "seed_name": "Pool Man 319",
+  "desc": "age 28; fair skin; blue eyes; very dark brown hair, slicked back; clean-shaven"
+ },
+ {
+  "face": "pool_0012",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500023,
+  "seed_name": "Pool Man 23",
+  "desc": "age 20; very dark brown skin; brown eyes; dark brown hair, short back and sides; stubble"
+ },
+ {
+  "face": "pool_0013",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500168,
+  "seed_name": "Pool Man 168",
+  "desc": "age 30; light olive skin; brown eyes; black hair, short back and sides; clean-shaven"
+ },
+ {
+  "face": "pool_0014",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500231,
+  "seed_name": "Pool Man 231",
+  "desc": "age 28; olive / tan skin; dark brown eyes; brown hair, short crop brushed forward; short full beard"
+ },
+ {
+  "face": "pool_0015",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500086,
+  "seed_name": "Pool Man 86",
+  "desc": "age 21; very fair skin; dark brown eyes; dark brown hair, buzz cut; stubble"
+ },
+ {
+  "face": "pool_0016",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500205,
+  "seed_name": "Pool Man 205",
+  "desc": "age 25; brown skin; dark brown eyes; black hair, slicked back; clean-shaven"
+ },
+ {
+  "face": "pool_0017",
+  "age": 31,
+  "band": "senior",
+  "seed_id": 500363,
+  "seed_name": "Pool Man 363",
+  "desc": "age 31; fair skin; dark brown eyes; very dark brown hair, short curly hair / small afro; clean-shaven"
+ },
+ {
+  "face": "pool_0018",
+  "age": 32,
+  "band": "senior",
+  "seed_id": 500352,
+  "seed_name": "Pool Man 352",
+  "desc": "age 32; very fair skin; brown eyes; very dark brown hair, short curly hair / small afro; stubble"
+ },
+ {
+  "face": "pool_0019",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500157,
+  "seed_name": "Pool Man 157",
+  "desc": "age 30; olive / tan skin; dark brown eyes; dark brown hair, side parting; stubble"
+ },
+ {
+  "face": "pool_0020",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500050,
+  "seed_name": "Pool Man 50",
+  "desc": "age 22; brown skin; dark brown eyes; dark brown hair, short crop brushed forward; clean-shaven"
+ },
+ {
+  "face": "pool_0021",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500047,
+  "seed_name": "Pool Man 47",
+  "desc": "age 21; very fair skin; dark brown eyes; black hair, short crop brushed forward; stubble"
+ },
+ {
+  "face": "pool_0022",
+  "age": 34,
+  "band": "senior",
+  "seed_id": 500331,
+  "seed_name": "Pool Man 331",
+  "desc": "age 34; light olive skin; grey eyes; dark brown hair, side parting; stubble"
+ },
+ {
+  "face": "pool_0023",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500180,
+  "seed_name": "Pool Man 180",
+  "desc": "age 29; olive / tan skin; grey eyes; black hair, short back and sides; stubble"
+ },
+ {
+  "face": "pool_0024",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500316,
+  "seed_name": "Pool Man 316",
+  "desc": "age 28; dark brown skin; dark brown eyes; black hair, buzz cut; clean-shaven"
+ },
+ {
+  "face": "pool_0025",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500065,
+  "seed_name": "Pool Man 65",
+  "desc": "age 23; very fair skin; dark brown eyes; very dark brown hair, short curly hair / small afro; clean-shaven"
+ },
+ {
+  "face": "pool_0026",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500225,
+  "seed_name": "Pool Man 225",
+  "desc": "age 29; fair skin; brown eyes; brown hair, side parting; clean-shaven"
+ },
+ {
+  "face": "pool_0027",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500153,
+  "seed_name": "Pool Man 153",
+  "desc": "age 27; fair skin; grey eyes; very dark brown hair, short crop brushed forward; stubble"
+ },
+ {
+  "face": "pool_0028",
+  "age": 19,
+  "band": "young",
+  "seed_id": 500038,
+  "seed_name": "Pool Man 38",
+  "desc": "age 19; light olive skin; blue eyes; black hair, short back and sides; clean-shaven"
+ },
+ {
+  "face": "pool_0029",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500292,
+  "seed_name": "Pool Man 292",
+  "desc": "age 29; ordinary-looking; light olive skin; blue eyes; dirty blond hair, side parting; short full beard; a high forehead, a cleft chin, a small scar through one eyebrow"
+ },
+ {
+  "face": "pool_0030",
+  "age": 33,
+  "band": "senior",
+  "seed_id": 500340,
+  "seed_name": "Pool Man 340",
+  "desc": "age 33; ordinary-looking; fair skin; dark brown eyes; light brown hair, skin-fade with a short top; clean-shaven; a slightly lopsided face, a weak chin"
+ },
+ {
+  "face": "pool_0031",
+  "age": 19,
+  "band": "young",
+  "seed_id": 500068,
+  "seed_name": "Pool Man 68",
+  "desc": "age 19; ordinary-looking; dark brown skin; brown eyes; very dark brown hair, skin-fade with a short top; heavy stubble; thin, pale eyebrows"
+ },
+ {
+  "face": "pool_0032",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500188,
+  "seed_name": "Pool Man 188",
+  "desc": "age 25; rough-looking; light olive skin; dark brown eyes; dark brown hair, short back and sides; moustache; a ruddy complexion"
+ },
+ {
+  "face": "pool_0033",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500220,
+  "seed_name": "Pool Man 220",
+  "desc": "age 28; a bit odd-looking; light brown skin; brown eyes; black hair, small afro, tidy; clean-shaven; a small mouth, a wide flat nose"
+ },
+ {
+  "face": "pool_0034",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500147,
+  "seed_name": "Pool Man 147",
+  "desc": "age 28; ordinary-looking; brown skin; dark brown eyes; black hair, dreadlocks tied back; clean-shaven; a small mouth, freckles, bags under his eyes"
+ },
+ {
+  "face": "pool_0035",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500118,
+  "seed_name": "Pool Man 118",
+  "desc": "age 22; ordinary-looking; fair skin; blue eyes; light brown hair, quiff; stubble; very thick eyebrows, a weak chin, a thick neck"
+ },
+ {
+  "face": "pool_0036",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500020,
+  "seed_name": "Pool Man 20",
+  "desc": "age 23; a bit odd-looking; fair skin; dark brown eyes; shaved head; goatee; small eyes"
+ },
+ {
+  "face": "pool_0037",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500159,
+  "seed_name": "Pool Man 159",
+  "desc": "age 30; ordinary-looking; very dark brown skin; dark brown eyes; black hair, short afro; goatee; old acne scars on his cheeks, a thick neck"
+ },
+ {
+  "face": "pool_0038",
+  "age": 18,
+  "band": "young",
+  "seed_id": 500024,
+  "seed_name": "Pool Man 24",
+  "desc": "age 18; ordinary-looking; light olive skin; blue eyes; ginger hair, short back and sides; clean-shaven; a big nose, bags under his eyes"
+ },
+ {
+  "face": "pool_0039",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500234,
+  "seed_name": "Pool Man 234",
+  "desc": "age 29; ordinary-looking; fair skin; dark brown eyes; ginger hair, curtains / middle parting; big bushy beard; a slightly lopsided face"
+ },
+ {
+  "face": "pool_0040",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500046,
+  "seed_name": "Pool Man 46",
+  "desc": "age 22; ordinary-looking; olive / tan skin; dark brown eyes; dirty blond hair, long hair to the shoulders; clean-shaven; a pointy chin, a long narrow face"
+ },
+ {
+  "face": "pool_0041",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500195,
+  "seed_name": "Pool Man 195",
+  "desc": "age 24; a bit odd-looking; olive / tan skin; brown eyes; blond hair, short back and sides; clean-shaven; a small mouth, a big Adam's apple, old acne scars on his cheeks"
+ },
+ {
+  "face": "pool_0042",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500190,
+  "seed_name": "Pool Man 190",
+  "desc": "age 30; plain-looking; light brown skin; brown eyes; black hair, skin-fade with a short top; stubble; a fleshy face"
+ },
+ {
+  "face": "pool_0043",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500134,
+  "seed_name": "Pool Man 134",
+  "desc": "age 20; ordinary-looking; dark brown skin; brown eyes; black hair, buzz cut; heavy stubble; a high forehead, a wide mouth"
+ },
+ {
+  "face": "pool_0044",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500197,
+  "seed_name": "Pool Man 197",
+  "desc": "age 27; average-looking; fair skin; brown eyes; black hair, skin-fade with a short top; patchy beard; a wide flat nose, bags under his eyes, ears that stick out"
+ },
+ {
+  "face": "pool_0045",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500281,
+  "seed_name": "Pool Man 281",
+  "desc": "age 25; ordinary-looking; light brown skin; brown eyes; black hair, small afro, tidy; stubble; a small scar through one eyebrow, deep-set eyes"
+ },
+ {
+  "face": "pool_0046",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500290,
+  "seed_name": "Pool Man 290",
+  "desc": "age 25; a bit odd-looking; fair skin; grey eyes; dark brown hair, long hair to the shoulders; stubble; chubby cheeks"
+ },
+ {
+  "face": "pool_0047",
+  "age": 19,
+  "band": "young",
+  "seed_id": 500087,
+  "seed_name": "Pool Man 87",
+  "desc": "age 19; ordinary-looking; very fair skin; brown eyes; blond hair, messy, slightly grown out; clean-shaven; a low hairline, a thick neck"
+ },
+ {
+  "face": "pool_0048",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500308,
+  "seed_name": "Pool Man 308",
+  "desc": "age 29; a bit odd-looking; light olive skin; brown eyes; dirty blond hair, receding, cut very short; big bushy beard; old acne scars on his cheeks, a weak chin"
+ },
+ {
+  "face": "pool_0049",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500272,
+  "seed_name": "Pool Man 272",
+  "desc": "age 27; average-looking; light brown skin; dark brown eyes; black hair, bleached short hair; stubble; wide-set eyes, a wide mouth"
+ },
+ {
+  "face": "pool_0050",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500156,
+  "seed_name": "Pool Man 156",
+  "desc": "age 30; plain-looking; dark brown skin; dark brown eyes; black hair, skin-fade with a short top; patchy beard; a few moles, bags under his eyes"
+ },
+ {
+  "face": "pool_0051",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500125,
+  "seed_name": "Pool Man 125",
+  "desc": "age 22; plain-looking; light brown skin; dark brown eyes; black hair, short afro; short full beard; a long neck, small eyes, a wide mouth"
+ },
+ {
+  "face": "pool_0052",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500255,
+  "seed_name": "Pool Man 255",
+  "desc": "age 24; ordinary-looking; very fair skin; grey eyes; light brown hair, short crop brushed forward; clean-shaven; chubby cheeks, ears that stick out"
+ },
+ {
+  "face": "pool_0053",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500003,
+  "seed_name": "Pool Man 3",
+  "desc": "age 21; plain-looking; light olive skin; dark brown eyes; ginger hair, skin-fade with a short top; short full beard; freckles, a small scar through one eyebrow"
+ },
+ {
+  "face": "pool_0054",
+  "age": 35,
+  "band": "senior",
+  "seed_id": 500349,
+  "seed_name": "Pool Man 349",
+  "desc": "age 35; plain-looking; fair skin; dark brown eyes; light brown hair with a little grey, curtains / middle parting; heavy stubble; a monobrow, deep-set eyes"
+ },
+ {
+  "face": "pool_0055",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500109,
+  "seed_name": "Pool Man 109",
+  "desc": "age 20; ordinary-looking; light brown skin; dark brown eyes; black hair, short afro; clean-shaven; a fleshy face, a high forehead, a small mouth"
+ },
+ {
+  "face": "pool_0056",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500123,
+  "seed_name": "Pool Man 123",
+  "desc": "age 21; plain-looking; dark brown skin; brown eyes; very dark brown hair, small afro, tidy; moustache; a weak chin, a big Adam's apple"
+ },
+ {
+  "face": "pool_0057",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500170,
+  "seed_name": "Pool Man 170",
+  "desc": "age 27; plain-looking; light brown skin; dark brown eyes; black hair, short afro; stubble; very thick eyebrows, bags under his eyes"
+ },
+ {
+  "face": "pool_0058",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500013,
+  "seed_name": "Pool Man 13",
+  "desc": "age 21; plain-looking; fair skin; dark brown eyes; shaved head; clean-shaven; a scar on his chin, a small mouth"
+ },
+ {
+  "face": "pool_0059",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500297,
+  "seed_name": "Pool Man 297",
+  "desc": "age 25; a bit odd-looking; dark brown skin; dark brown eyes; black hair, high-top fade; clean-shaven; very thick eyebrows, a ruddy complexion, chubby cheeks"
+ },
+ {
+  "face": "pool_0060",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500282,
+  "seed_name": "Pool Man 282",
+  "desc": "age 28; ordinary-looking; fair skin; brown eyes; dark brown hair, skin-fade with a short top; stubble; a narrow pinched face"
+ },
+ {
+  "face": "pool_0061",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500294,
+  "seed_name": "Pool Man 294",
+  "desc": "age 28; good-looking; light olive skin; brown eyes; black hair, curtains / middle parting; clean-shaven; a small mouth"
+ },
+ {
+  "face": "pool_0062",
+  "age": 33,
+  "band": "senior",
+  "seed_id": 500343,
+  "seed_name": "Pool Man 343",
+  "desc": "age 33; rough-looking; fair skin; brown eyes; shaved head; stubble; hollow cheeks, a weak chin, a narrow pinched face"
+ },
+ {
+  "face": "pool_0063",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500053,
+  "seed_name": "Pool Man 53",
+  "desc": "age 21; good-looking; very fair skin; brown eyes; ginger hair, short back and sides; clean-shaven; a wide square face, hollow cheeks, bags under his eyes"
+ },
+ {
+  "face": "pool_0064",
+  "age": 36,
+  "band": "senior",
+  "seed_id": 500374,
+  "seed_name": "Pool Man 374",
+  "desc": "age 36; good-looking; fair skin; dark brown eyes; very dark brown hair going grey, mullet; clean-shaven; thin, pale eyebrows, ears that stick out"
+ },
+ {
+  "face": "pool_0065",
+  "age": 35,
+  "band": "senior",
+  "seed_id": 500382,
+  "seed_name": "Pool Man 382",
+  "desc": "age 35; good-looking; very fair skin; brown eyes; dark brown hair with a little grey, slicked back; clean-shaven; a big nose, big ears"
+ },
+ {
+  "face": "pool_0066",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500313,
+  "seed_name": "Pool Man 313",
+  "desc": "age 24; plain-looking; very fair skin; brown eyes; blond hair, side parting; stubble; chubby cheeks"
+ },
+ {
+  "face": "pool_0067",
+  "age": 17,
+  "band": "young",
+  "seed_id": 500031,
+  "seed_name": "Pool Man 31",
+  "desc": "age 17; plain-looking; very dark brown skin; dark brown eyes; black hair, short afro; clean-shaven; thin, pale eyebrows, a wide flat nose, a scar on his chin"
+ },
+ {
+  "face": "pool_0068",
+  "age": 33,
+  "band": "senior",
+  "seed_id": 500364,
+  "seed_name": "Pool Man 364",
+  "desc": "age 33; ordinary-looking; fair skin; blue eyes; brown hair, buzz cut; heavy stubble; a high forehead, a few moles"
+ },
+ {
+  "face": "pool_0069",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500167,
+  "seed_name": "Pool Man 167",
+  "desc": "age 27; average-looking; brown skin; dark brown eyes; very dark brown hair, skin-fade with a short top; heavy stubble; big ears, a long narrow face"
+ },
+ {
+  "face": "pool_0070",
+  "age": 17,
+  "band": "young",
+  "seed_id": 500006,
+  "seed_name": "Pool Man 6",
+  "desc": "age 17; ordinary-looking; very fair skin; brown eyes; light brown hair, slicked back; goatee; thin, pale eyebrows, a long neck"
+ },
+ {
+  "face": "pool_0071",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500115,
+  "seed_name": "Pool Man 115",
+  "desc": "age 22; good-looking; light olive skin; brown eyes; black hair, slicked back; clean-shaven; chubby cheeks"
+ },
+ {
+  "face": "pool_0072",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500173,
+  "seed_name": "Pool Man 173",
+  "desc": "age 30; rough-looking; fair skin; dark brown eyes; strawberry blond hair, buzz cut; patchy beard; ears that stick out, freckles"
+ },
+ {
+  "face": "pool_0073",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500183,
+  "seed_name": "Pool Man 183",
+  "desc": "age 29; ordinary-looking; very fair skin; blue eyes; very dark brown hair, long hair to the shoulders; patchy beard; a cleft chin, a high forehead"
+ },
+ {
+  "face": "pool_0074",
+  "age": 26,
+  "band": "prime",
+  "seed_id": 500271,
+  "seed_name": "Pool Man 271",
+  "desc": "age 26; ordinary-looking; olive / tan skin; grey eyes; very dark brown hair, quiff; heavy stubble; big ears, a weak chin"
+ },
+ {
+  "face": "pool_0075",
+  "age": 34,
+  "band": "senior",
+  "seed_id": 500339,
+  "seed_name": "Pool Man 339",
+  "desc": "age 34; plain-looking; brown skin; dark brown eyes; very dark brown hair with a little grey, small afro, tidy; clean-shaven; a low hairline, a scar on his chin"
+ },
+ {
+  "face": "pool_0076",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500238,
+  "seed_name": "Pool Man 238",
+  "desc": "age 27; rough-looking; very fair skin; dark brown eyes; shaved head; stubble; a wide square face, a monobrow, freckles"
+ },
+ {
+  "face": "pool_0077",
+  "age": 18,
+  "band": "young",
+  "seed_id": 500058,
+  "seed_name": "Pool Man 58",
+  "desc": "age 18; plain-looking; dark brown skin; brown eyes; black hair, small afro, tidy; short full beard; a long thin nose, thin, pale eyebrows, a wide mouth"
+ },
+ {
+  "face": "pool_0078",
+  "age": 34,
+  "band": "senior",
+  "seed_id": 500338,
+  "seed_name": "Pool Man 338",
+  "desc": "age 34; good-looking; olive / tan skin; blue eyes; light brown hair, buzz cut; heavy stubble; bags under his eyes"
+ },
+ {
+  "face": "pool_0079",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500222,
+  "seed_name": "Pool Man 222",
+  "desc": "age 30; plain-looking; very fair skin; brown eyes; black hair, buzz cut; stubble; deep-set eyes, a pointy chin, a thick neck"
+ },
+ {
+  "face": "pool_0080",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500145,
+  "seed_name": "Pool Man 145",
+  "desc": "age 27; plain-looking; olive / tan skin; blue eyes; dark brown hair, short back and sides; patchy beard; a weak chin, a long neck"
+ },
+ {
+  "face": "pool_0081",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500111,
+  "seed_name": "Pool Man 111",
+  "desc": "age 20; ordinary-looking; olive / tan skin; dark brown eyes; blond hair, short crop brushed forward; clean-shaven; a small upturned nose"
+ },
+ {
+  "face": "pool_0082",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500232,
+  "seed_name": "Pool Man 232",
+  "desc": "age 25; plain-looking; dark brown skin; dark brown eyes; black hair, high-top fade; clean-shaven; a high forehead, a monobrow, a small upturned nose"
+ },
+ {
+  "face": "pool_0083",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500150,
+  "seed_name": "Pool Man 150",
+  "desc": "age 25; rough-looking; fair skin; brown eyes; black hair, mullet; patchy beard; a long neck"
+ },
+ {
+  "face": "pool_0084",
+  "age": 36,
+  "band": "senior",
+  "seed_id": 500361,
+  "seed_name": "Pool Man 361",
+  "desc": "age 36; plain-looking; fair skin; hazel/green eyes; brown hair with a little grey, messy, slightly grown out; patchy beard; full lips, a narrow pinched face"
+ },
+ {
+  "face": "pool_0085",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500081,
+  "seed_name": "Pool Man 81",
+  "desc": "age 23; average-looking; olive / tan skin; brown eyes; very dark brown hair, short crop brushed forward; goatee; thin lips"
+ },
+ {
+  "face": "pool_0086",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500069,
+  "seed_name": "Pool Man 69",
+  "desc": "age 20; a bit odd-looking; fair skin; hazel/green eyes; dark brown hair, side parting; clean-shaven; a high forehead, wide-set eyes, freckles"
+ },
+ {
+  "face": "pool_0087",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500142,
+  "seed_name": "Pool Man 142",
+  "desc": "age 25; good-looking; olive / tan skin; brown eyes; blond hair, short back and sides; clean-shaven; a pointy chin, a small scar through one eyebrow"
+ },
+ {
+  "face": "pool_0088",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500258,
+  "seed_name": "Pool Man 258",
+  "desc": "age 24; ordinary-looking; light olive skin; dark brown eyes; brown hair, slicked back; stubble; hollow cheeks, a long thin nose, a round face"
+ },
+ {
+  "face": "pool_0089",
+  "age": 32,
+  "band": "senior",
+  "seed_id": 500353,
+  "seed_name": "Pool Man 353",
+  "desc": "age 32; rough-looking; light olive skin; hazel/green eyes; ginger hair, buzz cut; clean-shaven; a long thin nose, a long neck"
+ },
+ {
+  "face": "pool_0090",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500192,
+  "seed_name": "Pool Man 192",
+  "desc": "age 25; a bit odd-looking; dark brown skin; dark brown eyes; very dark brown hair, skin-fade with a short top; moustache; big ears"
+ },
+ {
+  "face": "pool_0091",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500235,
+  "seed_name": "Pool Man 235",
+  "desc": "age 28; rough-looking; dark brown skin; brown eyes; shaved head; stubble; a big Adam's apple"
+ },
+ {
+  "face": "pool_0092",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500015,
+  "seed_name": "Pool Man 15",
+  "desc": "age 23; average-looking; olive / tan skin; dark brown eyes; ginger hair, buzz cut; clean-shaven; old acne scars on his cheeks"
+ },
+ {
+  "face": "pool_0093",
+  "age": 35,
+  "band": "senior",
+  "seed_id": 500344,
+  "seed_name": "Pool Man 344",
+  "desc": "age 35; rough-looking; brown skin; brown eyes; black hair with a little grey, short afro; heavy stubble; a big strong jaw, a big Adam's apple"
+ },
+ {
+  "face": "pool_0094",
+  "age": 32,
+  "band": "senior",
+  "seed_id": 500386,
+  "seed_name": "Pool Man 386",
+  "desc": "age 32; good-looking; brown skin; dark brown eyes; black hair, skin-fade with a short top; clean-shaven; old acne scars on his cheeks, a high forehead"
+ },
+ {
+  "face": "pool_0095",
+  "age": 26,
+  "band": "prime",
+  "seed_id": 500273,
+  "seed_name": "Pool Man 273",
+  "desc": "age 26; plain-looking; fair skin; dark brown eyes; dark brown hair, bleached tips; stubble; a monobrow"
+ },
+ {
+  "face": "pool_0096",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500307,
+  "seed_name": "Pool Man 307",
+  "desc": "age 30; ordinary-looking; light brown skin; dark brown eyes; shaved head; short full beard; a fleshy face"
+ },
+ {
+  "face": "pool_0097",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500107,
+  "seed_name": "Pool Man 107",
+  "desc": "age 21; rough-looking; fair skin; grey eyes; dark brown hair, skin-fade with a short top; clean-shaven; hollow cheeks"
+ },
+ {
+  "face": "pool_0098",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500072,
+  "seed_name": "Pool Man 72",
+  "desc": "age 20; plain-looking; light brown skin; dark brown eyes; black hair, buzz cut; heavy stubble; a crooked, once-broken nose, a long neck"
+ },
+ {
+  "face": "pool_0099",
+  "age": 19,
+  "band": "young",
+  "seed_id": 500056,
+  "seed_name": "Pool Man 56",
+  "desc": "age 19; a bit odd-looking; very dark brown skin; dark brown eyes; very dark brown hair, skin-fade with a short top; clean-shaven; chubby cheeks"
+ },
+ {
+  "face": "pool_0100",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500274,
+  "seed_name": "Pool Man 274",
+  "desc": "age 24; good-looking; brown skin; brown eyes; very dark brown hair, short afro; stubble; a long thin nose, a few moles"
+ },
+ {
+  "face": "pool_0101",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500143,
+  "seed_name": "Pool Man 143",
+  "desc": "age 29; good-looking; fair skin; dark brown eyes; black hair, short back and sides; heavy stubble; a long thin nose, a scar on his chin"
+ },
+ {
+  "face": "pool_0102",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500176,
+  "seed_name": "Pool Man 176",
+  "desc": "age 27; ordinary-looking; very fair skin; dark brown eyes; light brown hair, receding, cut very short; short full beard; thin lips, a round face, a wide flat nose"
+ },
+ {
+  "face": "pool_0103",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500216,
+  "seed_name": "Pool Man 216",
+  "desc": "age 25; plain-looking; light olive skin; blue eyes; brown hair, buzz cut; clean-shaven; a small scar through one eyebrow, a high forehead"
+ },
+ {
+  "face": "pool_0104",
+  "age": 17,
+  "band": "young",
+  "seed_id": 500052,
+  "seed_name": "Pool Man 52",
+  "desc": "age 17; good-looking; olive / tan skin; blue eyes; dark brown hair, mullet; stubble; a big strong jaw, a low hairline"
+ },
+ {
+  "face": "pool_0105",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500098,
+  "seed_name": "Pool Man 98",
+  "desc": "age 23; plain-looking; olive / tan skin; blue eyes; strawberry blond hair, curtains / middle parting; clean-shaven; a scar on his chin, chubby cheeks, freckles"
+ },
+ {
+  "face": "pool_0106",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500257,
+  "seed_name": "Pool Man 257",
+  "desc": "age 27; rough-looking; light brown skin; brown eyes; black hair, short afro; stubble; wide-set eyes, a few moles"
+ },
+ {
+  "face": "pool_0107",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500224,
+  "seed_name": "Pool Man 224",
+  "desc": "age 27; ordinary-looking; brown skin; dark brown eyes; shaved head; stubble; ears that stick out, freckles, a small scar through one eyebrow"
+ },
+ {
+  "face": "pool_0108",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500129,
+  "seed_name": "Pool Man 129",
+  "desc": "age 22; good-looking; light olive skin; dark brown eyes; dark brown hair, buzz cut; short full beard; a long neck"
+ },
+ {
+  "face": "pool_0109",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500198,
+  "seed_name": "Pool Man 198",
+  "desc": "age 28; good-looking; light olive skin; blue eyes; very dark brown hair, quiff; stubble; a ruddy complexion, a long narrow face, chubby cheeks"
+ },
+ {
+  "face": "pool_0110",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500059,
+  "seed_name": "Pool Man 59",
+  "desc": "age 22; ordinary-looking; very fair skin; blue eyes; brown hair, short back and sides; clean-shaven; very thick eyebrows"
+ },
+ {
+  "face": "pool_0111",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500214,
+  "seed_name": "Pool Man 214",
+  "desc": "age 29; good-looking; light brown skin; brown eyes; very dark brown hair, short afro; clean-shaven; a small mouth, a narrow pinched face"
+ },
+ {
+  "face": "pool_0112",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500022,
+  "seed_name": "Pool Man 22",
+  "desc": "age 21; rough-looking; dark brown skin; brown eyes; shaved head; stubble; a wide square face, deep-set eyes"
+ },
+ {
+  "face": "pool_0113",
+  "age": 33,
+  "band": "senior",
+  "seed_id": 500336,
+  "seed_name": "Pool Man 336",
+  "desc": "age 33; average-looking; fair skin; blue eyes; ginger hair with a little grey, short back and sides; big bushy beard; very thick eyebrows, big ears, freckles"
+ },
+ {
+  "face": "pool_0114",
+  "age": 19,
+  "band": "young",
+  "seed_id": 500051,
+  "seed_name": "Pool Man 51",
+  "desc": "age 19; a bit odd-looking; olive / tan skin; dark brown eyes; blond hair, short back and sides; goatee; ears that stick out, a big Adam's apple"
+ },
+ {
+  "face": "pool_0115",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500171,
+  "seed_name": "Pool Man 171",
+  "desc": "age 29; ordinary-looking; olive / tan skin; blue eyes; black hair, quiff; clean-shaven; ears that stick out, a small scar through one eyebrow"
+ },
+ {
+  "face": "pool_0116",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500250,
+  "seed_name": "Pool Man 250",
+  "desc": "age 25; plain-looking; very fair skin; brown eyes; very dark brown hair, long hair tied in a man bun; short full beard; a big nose, bags under his eyes, a pointy chin"
+ },
+ {
+  "face": "pool_0117",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500092,
+  "seed_name": "Pool Man 92",
+  "desc": "age 21; rough-looking; fair skin; blue eyes; black hair, buzz cut; short full beard; a narrow pinched face, thin lips"
+ },
+ {
+  "face": "pool_0118",
+  "age": 17,
+  "band": "young",
+  "seed_id": 500114,
+  "seed_name": "Pool Man 114",
+  "desc": "age 17; average-looking; dark brown skin; dark brown eyes; black hair, skin-fade with a short top; goatee; a cleft chin, thin lips"
+ },
+ {
+  "face": "pool_0119",
+  "age": 19,
+  "band": "young",
+  "seed_id": 500042,
+  "seed_name": "Pool Man 42",
+  "desc": "age 19; good-looking; very fair skin; dark brown eyes; brown hair, long hair tied in a man bun; stubble; a monobrow"
+ },
+ {
+  "face": "pool_0120",
+  "age": 17,
+  "band": "young",
+  "seed_id": 500071,
+  "seed_name": "Pool Man 71",
+  "desc": "age 17; ordinary-looking; very fair skin; dark brown eyes; brown hair, bleached tips; goatee; a fleshy face, a big nose"
+ },
+ {
+  "face": "pool_0121",
+  "age": 34,
+  "band": "senior",
+  "seed_id": 500356,
+  "seed_name": "Pool Man 356",
+  "desc": "age 34; ordinary-looking; fair skin; grey eyes; light brown hair, mullet; goatee; a weak chin, very thick eyebrows, hooded eyes"
+ },
+ {
+  "face": "pool_0122",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500194,
+  "seed_name": "Pool Man 194",
+  "desc": "age 24; plain-looking; brown skin; brown eyes; black hair, dreadlocks tied back; stubble; a fleshy face, a pointy chin"
+ },
+ {
+  "face": "pool_0123",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500239,
+  "seed_name": "Pool Man 239",
+  "desc": "age 29; average-looking; very fair skin; dark brown eyes; strawberry blond hair, side parting; goatee; a wide flat nose, ears that stick out"
+ },
+ {
+  "face": "pool_0124",
+  "age": 34,
+  "band": "senior",
+  "seed_id": 500337,
+  "seed_name": "Pool Man 337",
+  "desc": "age 34; rough-looking; light olive skin; brown eyes; ginger hair with a little grey, skin-fade with a short top; clean-shaven; a low hairline, hollow cheeks, freckles"
+ },
+ {
+  "face": "pool_0125",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500268,
+  "seed_name": "Pool Man 268",
+  "desc": "age 27; a bit odd-looking; brown skin; brown eyes; black hair, small afro, tidy; stubble; eyes set close together, a thick neck, a narrow pinched face"
+ },
+ {
+  "face": "pool_0126",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500084,
+  "seed_name": "Pool Man 84",
+  "desc": "age 20; good-looking; very fair skin; dark brown eyes; brown hair, short back and sides; patchy beard; chubby cheeks, a low hairline"
+ },
+ {
+  "face": "pool_0127",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500096,
+  "seed_name": "Pool Man 96",
+  "desc": "age 21; good-looking; light olive skin; hazel/green eyes; blond hair, short back and sides; clean-shaven; a scar on his chin"
+ },
+ {
+  "face": "pool_0128",
+  "age": 17,
+  "band": "young",
+  "seed_id": 500033,
+  "seed_name": "Pool Man 33",
+  "desc": "age 17; plain-looking; brown skin; dark brown eyes; very dark brown hair, short twists; short full beard; a round face"
+ },
+ {
+  "face": "pool_0129",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500209,
+  "seed_name": "Pool Man 209",
+  "desc": "age 30; ordinary-looking; very dark brown skin; dark brown eyes; very dark brown hair, short afro; stubble; full lips"
+ },
+ {
+  "face": "pool_0130",
+  "age": 19,
+  "band": "young",
+  "seed_id": 500126,
+  "seed_name": "Pool Man 126",
+  "desc": "age 19; a bit odd-looking; light brown skin; brown eyes; black hair, skin-fade with a short top; clean-shaven; big ears, deep-set eyes"
+ },
+ {
+  "face": "pool_0131",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500230,
+  "seed_name": "Pool Man 230",
+  "desc": "age 27; plain-looking; very fair skin; dark brown eyes; ginger hair, mullet; stubble; a long narrow face, old acne scars on his cheeks"
+ },
+ {
+  "face": "pool_0132",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500103,
+  "seed_name": "Pool Man 103",
+  "desc": "age 21; average-looking; light olive skin; dark brown eyes; brown hair, side parting; stubble; hooded eyes, thin lips, a crooked, once-broken nose"
+ },
+ {
+  "face": "pool_0133",
+  "age": 31,
+  "band": "senior",
+  "seed_id": 500347,
+  "seed_name": "Pool Man 347",
+  "desc": "age 31; average-looking; fair skin; hazel/green eyes; very dark brown hair, long hair tied in a man bun; moustache; a wide mouth, a weak chin, a low hairline"
+ },
+ {
+  "face": "pool_0134",
+  "age": 36,
+  "band": "senior",
+  "seed_id": 500384,
+  "seed_name": "Pool Man 384",
+  "desc": "age 36; ordinary-looking; very fair skin; blue eyes; brown hair with a little grey, messy, slightly grown out; clean-shaven; a long neck"
+ },
+ {
+  "face": "pool_0135",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500177,
+  "seed_name": "Pool Man 177",
+  "desc": "age 25; good-looking; dark brown skin; brown eyes; very dark brown hair, dreadlocks tied back; stubble; a big strong jaw, hollow cheeks"
+ },
+ {
+  "face": "pool_0136",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500017,
+  "seed_name": "Pool Man 17",
+  "desc": "age 23; average-looking; dark brown skin; dark brown eyes; very dark brown hair, short afro; patchy beard; chubby cheeks, big ears"
+ },
+ {
+  "face": "pool_0137",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500300,
+  "seed_name": "Pool Man 300",
+  "desc": "age 24; a bit odd-looking; olive / tan skin; hazel/green eyes; black hair, curtains / middle parting; clean-shaven; a high forehead"
+ },
+ {
+  "face": "pool_0138",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500088,
+  "seed_name": "Pool Man 88",
+  "desc": "age 23; ordinary-looking; fair skin; dark brown eyes; ginger hair, short back and sides; heavy stubble; a crooked, once-broken nose, old acne scars on his cheeks"
+ },
+ {
+  "face": "pool_0139",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500286,
+  "seed_name": "Pool Man 286",
+  "desc": "age 28; ordinary-looking; dark brown skin; dark brown eyes; very dark brown hair, small afro, tidy; clean-shaven; a fleshy face, full lips"
+ },
+ {
+  "face": "pool_0140",
+  "age": 26,
+  "band": "prime",
+  "seed_id": 500186,
+  "seed_name": "Pool Man 186",
+  "desc": "age 26; average-looking; very dark brown skin; brown eyes; very dark brown hair, short twists; clean-shaven; a wide square face, a high forehead"
+ },
+ {
+  "face": "pool_0141",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500243,
+  "seed_name": "Pool Man 243",
+  "desc": "age 30; ordinary-looking; fair skin; dark brown eyes; brown hair, short back and sides; patchy beard; a wide mouth"
+ },
+ {
+  "face": "pool_0142",
+  "age": 26,
+  "band": "prime",
+  "seed_id": 500166,
+  "seed_name": "Pool Man 166",
+  "desc": "age 26; ordinary-looking; light olive skin; brown eyes; blond hair, long hair to the shoulders; short full beard; wide-set eyes"
+ },
+ {
+  "face": "pool_0143",
+  "age": 26,
+  "band": "prime",
+  "seed_id": 500269,
+  "seed_name": "Pool Man 269",
+  "desc": "age 26; average-looking; dark brown skin; dark brown eyes; black hair, buzz cut; goatee; ears that stick out"
+ },
+ {
+  "face": "pool_0144",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500127,
+  "seed_name": "Pool Man 127",
+  "desc": "age 21; plain-looking; olive / tan skin; dark brown eyes; brown hair, buzz cut; clean-shaven; ears that stick out, a few moles, hollow cheeks"
+ },
+ {
+  "face": "pool_0145",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500247,
+  "seed_name": "Pool Man 247",
+  "desc": "age 27; rough-looking; very fair skin; grey eyes; brown hair, skin-fade with a short top; short full beard; a big Adam's apple"
+ },
+ {
+  "face": "pool_0146",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500089,
+  "seed_name": "Pool Man 89",
+  "desc": "age 20; good-looking; very fair skin; hazel/green eyes; black hair, side parting; clean-shaven; a ruddy complexion, a cleft chin"
+ },
+ {
+  "face": "pool_0147",
+  "age": 31,
+  "band": "senior",
+  "seed_id": 500389,
+  "seed_name": "Pool Man 389",
+  "desc": "age 31; ordinary-looking; dark brown skin; dark brown eyes; very dark brown hair, small afro, tidy; heavy stubble; thin, pale eyebrows, a slightly lopsided face, hooded eyes"
+ },
+ {
+  "face": "pool_0148",
+  "age": 33,
+  "band": "senior",
+  "seed_id": 500326,
+  "seed_name": "Pool Man 326",
+  "desc": "age 33; ordinary-looking; dark brown skin; brown eyes; black hair, bleached short hair; goatee; a wide flat nose, a small scar through one eyebrow"
+ },
+ {
+  "face": "pool_0149",
+  "age": 34,
+  "band": "senior",
+  "seed_id": 500341,
+  "seed_name": "Pool Man 341",
+  "desc": "age 34; ordinary-looking; fair skin; blue eyes; dark brown hair, skin-fade with a short top; clean-shaven; ears that stick out"
+ },
+ {
+  "face": "pool_0150",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500262,
+  "seed_name": "Pool Man 262",
+  "desc": "age 29; ordinary-looking; olive / tan skin; dark brown eyes; dark brown hair, skin-fade with a short top; stubble; a long neck, a big nose"
+ },
+ {
+  "face": "pool_0151",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500018,
+  "seed_name": "Pool Man 18",
+  "desc": "age 23; plain-looking; fair skin; dark brown eyes; dark brown hair, short back and sides; stubble; hooded eyes"
+ },
+ {
+  "face": "pool_0152",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500248,
+  "seed_name": "Pool Man 248",
+  "desc": "age 27; rough-looking; brown skin; dark brown eyes; black hair, buzz cut; big bushy beard; a wide flat nose, a thick neck"
+ },
+ {
+  "face": "pool_0153",
+  "age": 32,
+  "band": "senior",
+  "seed_id": 500342,
+  "seed_name": "Pool Man 342",
+  "desc": "age 32; plain-looking; very fair skin; dark brown eyes; black hair, messy, slightly grown out; clean-shaven; a monobrow, a high forehead"
+ },
+ {
+  "face": "pool_0154",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500315,
+  "seed_name": "Pool Man 315",
+  "desc": "age 29; rough-looking; very dark brown skin; dark brown eyes; very dark brown hair, buzz cut; stubble; big ears, a fleshy face"
+ },
+ {
+  "face": "pool_0155",
+  "age": 17,
+  "band": "young",
+  "seed_id": 500027,
+  "seed_name": "Pool Man 27",
+  "desc": "age 17; plain-looking; light olive skin; brown eyes; ginger hair, slicked back; clean-shaven; a wide mouth, a few moles, a monobrow"
+ },
+ {
+  "face": "pool_0156",
+  "age": 32,
+  "band": "senior",
+  "seed_id": 500371,
+  "seed_name": "Pool Man 371",
+  "desc": "age 32; a bit odd-looking; dark brown skin; dark brown eyes; black hair, buzz cut; short full beard; freckles, a big strong jaw"
+ },
+ {
+  "face": "pool_0157",
+  "age": 19,
+  "band": "young",
+  "seed_id": 500063,
+  "seed_name": "Pool Man 63",
+  "desc": "age 19; good-looking; dark brown skin; brown eyes; black hair, short afro; goatee; a big nose"
+ },
+ {
+  "face": "pool_0158",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500237,
+  "seed_name": "Pool Man 237",
+  "desc": "age 24; rough-looking; light olive skin; brown eyes; ginger hair, short back and sides; clean-shaven; full lips"
+ },
+ {
+  "face": "pool_0159",
+  "age": 36,
+  "band": "senior",
+  "seed_id": 500378,
+  "seed_name": "Pool Man 378",
+  "desc": "age 36; average-looking; dark brown skin; brown eyes; black hair going grey, high-top fade; heavy stubble; a few moles, a long thin nose, eyes set close together"
+ },
+ {
+  "face": "pool_0160",
+  "age": 26,
+  "band": "prime",
+  "seed_id": 500211,
+  "seed_name": "Pool Man 211",
+  "desc": "age 26; rough-looking; fair skin; blue eyes; shaved head; stubble; a wide mouth, a thick neck, a monobrow"
+ },
+ {
+  "face": "pool_0161",
+  "age": 26,
+  "band": "prime",
+  "seed_id": 500261,
+  "seed_name": "Pool Man 261",
+  "desc": "age 26; rough-looking; olive / tan skin; dark brown eyes; dark brown hair, quiff; short full beard; chubby cheeks, a small scar through one eyebrow"
+ },
+ {
+  "face": "pool_0162",
+  "age": 35,
+  "band": "senior",
+  "seed_id": 500385,
+  "seed_name": "Pool Man 385",
+  "desc": "age 35; plain-looking; very dark brown skin; dark brown eyes; black hair with a little grey, short twists; moustache; a high forehead, old acne scars on his cheeks, big ears"
+ },
+ {
+  "face": "pool_0163",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500016,
+  "seed_name": "Pool Man 16",
+  "desc": "age 22; good-looking; light olive skin; dark brown eyes; blond hair, mullet; short full beard; bags under his eyes, a monobrow"
+ },
+ {
+  "face": "pool_0164",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500221,
+  "seed_name": "Pool Man 221",
+  "desc": "age 28; ordinary-looking; very dark brown skin; brown eyes; shaved head; stubble; small eyes"
+ },
+ {
+  "face": "pool_0165",
+  "age": 17,
+  "band": "young",
+  "seed_id": 500000,
+  "seed_name": "Pool Man 0",
+  "desc": "age 17; ordinary-looking; light olive skin; blue eyes; ginger hair, slicked back; short full beard; a monobrow, big ears, freckles"
+ },
+ {
+  "face": "pool_0166",
+  "age": 36,
+  "band": "senior",
+  "seed_id": 500368,
+  "seed_name": "Pool Man 368",
+  "desc": "age 36; ordinary-looking; fair skin; brown eyes; dark brown hair going grey, short crop brushed forward; stubble; ears that stick out, a scar on his chin, a low hairline"
+ },
+ {
+  "face": "pool_0167",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500264,
+  "seed_name": "Pool Man 264",
+  "desc": "age 30; a bit odd-looking; fair skin; dark brown eyes; shaved head; goatee; a scar on his chin"
+ },
+ {
+  "face": "pool_0168",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500244,
+  "seed_name": "Pool Man 244",
+  "desc": "age 28; plain-looking; fair skin; grey eyes; ginger hair, slicked back; patchy beard; hollow cheeks"
+ },
+ {
+  "face": "pool_0169",
+  "age": 33,
+  "band": "senior",
+  "seed_id": 500381,
+  "seed_name": "Pool Man 381",
+  "desc": "age 33; plain-looking; dark brown skin; brown eyes; black hair, short afro; stubble; a small upturned nose, a big strong jaw"
+ },
+ {
+  "face": "pool_0170",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500037,
+  "seed_name": "Pool Man 37",
+  "desc": "age 22; good-looking; olive / tan skin; hazel/green eyes; dark brown hair, buzz cut; clean-shaven; a monobrow, a crooked, once-broken nose"
+ },
+ {
+  "face": "pool_0171",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500309,
+  "seed_name": "Pool Man 309",
+  "desc": "age 25; plain-looking; fair skin; brown eyes; light brown hair, messy, slightly grown out; short full beard; a monobrow, chubby cheeks"
+ },
+ {
+  "face": "pool_0172",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500080,
+  "seed_name": "Pool Man 80",
+  "desc": "age 23; rough-looking; brown skin; dark brown eyes; very dark brown hair, short twists; stubble; a small scar through one eyebrow, old acne scars on his cheeks, a high forehead"
+ },
+ {
+  "face": "pool_0173",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500276,
+  "seed_name": "Pool Man 276",
+  "desc": "age 27; ordinary-looking; very dark brown skin; dark brown eyes; very dark brown hair, cornrows; stubble; a long thin nose, big ears, weathered, outdoor skin"
+ },
+ {
+  "face": "pool_0174",
+  "age": 33,
+  "band": "senior",
+  "seed_id": 500366,
+  "seed_name": "Pool Man 366",
+  "desc": "age 33; good-looking; light olive skin; dark brown eyes; dark brown hair, buzz cut; patchy beard; a thick neck, a wide mouth, a long narrow face"
+ },
+ {
+  "face": "pool_0175",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500202,
+  "seed_name": "Pool Man 202",
+  "desc": "age 28; rough-looking; very fair skin; hazel/green eyes; brown hair, slicked back; clean-shaven; a weak chin"
+ },
+ {
+  "face": "pool_0176",
+  "age": 19,
+  "band": "young",
+  "seed_id": 500043,
+  "seed_name": "Pool Man 43",
+  "desc": "age 19; plain-looking; light olive skin; dark brown eyes; brown hair, curly on top, short sides; heavy stubble; big ears, very thick eyebrows"
+ },
+ {
+  "face": "pool_0177",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500227,
+  "seed_name": "Pool Man 227",
+  "desc": "age 25; rough-looking; olive / tan skin; brown eyes; black hair, side parting; stubble; a wide mouth"
+ },
+ {
+  "face": "pool_0178",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500246,
+  "seed_name": "Pool Man 246",
+  "desc": "age 28; plain-looking; light olive skin; grey eyes; dirty blond hair, short crop brushed forward; stubble; old acne scars on his cheeks, thin, pale eyebrows, a narrow pinched face"
+ },
+ {
+  "face": "pool_0179",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500108,
+  "seed_name": "Pool Man 108",
+  "desc": "age 20; plain-looking; light olive skin; blue eyes; brown hair, long hair to the shoulders; short full beard; a ruddy complexion"
+ },
+ {
+  "face": "pool_0180",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500298,
+  "seed_name": "Pool Man 298",
+  "desc": "age 29; a bit odd-looking; light brown skin; dark brown eyes; black hair, small afro, tidy; stubble; a few moles, bags under his eyes"
+ },
+ {
+  "face": "pool_0181",
+  "age": 26,
+  "band": "prime",
+  "seed_id": 500165,
+  "seed_name": "Pool Man 165",
+  "desc": "age 26; ordinary-looking; olive / tan skin; blue eyes; very dark brown hair, side parting; big bushy beard; a crooked, once-broken nose, very thick eyebrows, a high forehead"
+ },
+ {
+  "face": "pool_0182",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500155,
+  "seed_name": "Pool Man 155",
+  "desc": "age 28; a bit odd-looking; brown skin; brown eyes; black hair, skin-fade with a short top; clean-shaven; big ears, a big nose, wide-set eyes"
+ },
+ {
+  "face": "pool_0183",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500002,
+  "seed_name": "Pool Man 2",
+  "desc": "age 21; rough-looking; light olive skin; grey eyes; black hair, slicked back; stubble; a weak chin"
+ },
+ {
+  "face": "pool_0184",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500278,
+  "seed_name": "Pool Man 278",
+  "desc": "age 28; rough-looking; fair skin; hazel/green eyes; blond hair, short back and sides; clean-shaven; a few moles"
+ },
+ {
+  "face": "pool_0185",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500185,
+  "seed_name": "Pool Man 185",
+  "desc": "age 27; plain-looking; brown skin; dark brown eyes; black hair, buzz cut; clean-shaven; big ears, a monobrow"
+ },
+ {
+  "face": "pool_0186",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500323,
+  "seed_name": "Pool Man 323",
+  "desc": "age 30; ordinary-looking; light olive skin; hazel/green eyes; light brown hair, short back and sides; stubble; a pointy chin, a wide square face"
+ },
+ {
+  "face": "pool_0187",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500034,
+  "seed_name": "Pool Man 34",
+  "desc": "age 23; ordinary-looking; fair skin; dark brown eyes; dirty blond hair, side parting; clean-shaven; a high forehead, a long narrow face, a big Adam's apple"
+ },
+ {
+  "face": "pool_0188",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500253,
+  "seed_name": "Pool Man 253",
+  "desc": "age 25; good-looking; very dark brown skin; dark brown eyes; very dark brown hair, buzz cut; clean-shaven; a fleshy face, a small mouth"
+ },
+ {
+  "face": "pool_0189",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500073,
+  "seed_name": "Pool Man 73",
+  "desc": "age 21; ordinary-looking; fair skin; grey eyes; black hair, skin-fade with a short top; moustache; a few moles, a slightly lopsided face"
+ },
+ {
+  "face": "pool_0190",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500138,
+  "seed_name": "Pool Man 138",
+  "desc": "age 30; a bit odd-looking; dark brown skin; dark brown eyes; black hair, short afro; clean-shaven; weathered, outdoor skin, a fleshy face"
+ },
+ {
+  "face": "pool_0191",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500318,
+  "seed_name": "Pool Man 318",
+  "desc": "age 30; a bit odd-looking; light olive skin; blue eyes; brown hair, skin-fade with a short top; clean-shaven; a cleft chin, deep-set eyes"
+ },
+ {
+  "face": "pool_0192",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500074,
+  "seed_name": "Pool Man 74",
+  "desc": "age 21; ordinary-looking; fair skin; dark brown eyes; brown hair, buzz cut; big bushy beard; freckles, a big strong jaw"
+ },
+ {
+  "face": "pool_0193",
+  "age": 19,
+  "band": "young",
+  "seed_id": 500041,
+  "seed_name": "Pool Man 41",
+  "desc": "age 19; good-looking; dark brown skin; dark brown eyes; very dark brown hair, high-top fade; heavy stubble; chubby cheeks"
+ },
+ {
+  "face": "pool_0194",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500241,
+  "seed_name": "Pool Man 241",
+  "desc": "age 25; rough-looking; brown skin; brown eyes; black hair, short afro; clean-shaven; thin lips, old acne scars on his cheeks"
+ },
+ {
+  "face": "pool_0195",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500200,
+  "seed_name": "Pool Man 200",
+  "desc": "age 30; a bit odd-looking; very fair skin; brown eyes; very dark brown hair, short crop brushed forward; big bushy beard; a long neck, big ears"
+ },
+ {
+  "face": "pool_0196",
+  "age": 26,
+  "band": "prime",
+  "seed_id": 500151,
+  "seed_name": "Pool Man 151",
+  "desc": "age 26; average-looking; light brown skin; brown eyes; very dark brown hair, skin-fade with a short top; clean-shaven; bags under his eyes"
+ },
+ {
+  "face": "pool_0197",
+  "age": 33,
+  "band": "senior",
+  "seed_id": 500383,
+  "seed_name": "Pool Man 383",
+  "desc": "age 33; ordinary-looking; fair skin; dark brown eyes; light brown hair with a little grey, short crop brushed forward; short full beard; small eyes"
+ },
+ {
+  "face": "pool_0198",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500242,
+  "seed_name": "Pool Man 242",
+  "desc": "age 30; average-looking; olive / tan skin; brown eyes; brown hair, short back and sides; moustache; bags under his eyes"
+ },
+ {
+  "face": "pool_0199",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500066,
+  "seed_name": "Pool Man 66",
+  "desc": "age 22; ordinary-looking; fair skin; dark brown eyes; brown hair, long hair to the shoulders; clean-shaven; thin, pale eyebrows, a wide mouth"
+ },
+ {
+  "face": "pool_0200",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500249,
+  "seed_name": "Pool Man 249",
+  "desc": "age 30; good-looking; fair skin; hazel/green eyes; brown hair, slicked back; clean-shaven; deep-set eyes, very thick eyebrows"
+ },
+ {
+  "face": "pool_0201",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500085,
+  "seed_name": "Pool Man 85",
+  "desc": "age 20; average-looking; very fair skin; dark brown eyes; shaved head; clean-shaven; a scar on his chin, hollow cheeks, freckles"
+ },
+ {
+  "face": "pool_0202",
+  "age": 18,
+  "band": "young",
+  "seed_id": 500099,
+  "seed_name": "Pool Man 99",
+  "desc": "age 18; plain-looking; brown skin; brown eyes; black hair, short afro; stubble; a fleshy face, a round face"
+ },
+ {
+  "face": "pool_0203",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500219,
+  "seed_name": "Pool Man 219",
+  "desc": "age 29; rough-looking; light brown skin; dark brown eyes; very dark brown hair, buzz cut; big bushy beard; a long narrow face, a scar on his chin"
+ },
+ {
+  "face": "pool_0204",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500036,
+  "seed_name": "Pool Man 36",
+  "desc": "age 20; plain-looking; very dark brown skin; dark brown eyes; black hair, buzz cut; clean-shaven; a long neck, very thick eyebrows, chubby cheeks"
+ },
+ {
+  "face": "pool_0205",
+  "age": 33,
+  "band": "senior",
+  "seed_id": 500332,
+  "seed_name": "Pool Man 332",
+  "desc": "age 33; average-looking; light olive skin; blue eyes; dark brown hair, bleached tips; moustache; a pointy chin, bags under his eyes"
+ },
+ {
+  "face": "pool_0206",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500026,
+  "seed_name": "Pool Man 26",
+  "desc": "age 21; ordinary-looking; light olive skin; hazel/green eyes; brown hair, skin-fade with a short top; short full beard; a wide square face, freckles"
+ },
+ {
+  "face": "pool_0207",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500288,
+  "seed_name": "Pool Man 288",
+  "desc": "age 27; good-looking; brown skin; dark brown eyes; black hair, small afro, tidy; short full beard; a wide mouth"
+ },
+ {
+  "face": "pool_0208",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500265,
+  "seed_name": "Pool Man 265",
+  "desc": "age 24; plain-looking; fair skin; dark brown eyes; light brown hair, messy, slightly grown out; clean-shaven; wide-set eyes, a big Adam's apple"
+ },
+ {
+  "face": "pool_0209",
+  "age": 34,
+  "band": "senior",
+  "seed_id": 500329,
+  "seed_name": "Pool Man 329",
+  "desc": "age 34; plain-looking; very fair skin; brown eyes; blond hair with a little grey, messy, slightly grown out; big bushy beard; chubby cheeks, a small upturned nose"
+ },
+ {
+  "face": "pool_0210",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500164,
+  "seed_name": "Pool Man 164",
+  "desc": "age 30; plain-looking; fair skin; dark brown eyes; dark brown hair, short crop brushed forward; moustache; a few moles, a scar on his chin, hooded eyes"
+ },
+ {
+  "face": "pool_0211",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500132,
+  "seed_name": "Pool Man 132",
+  "desc": "age 20; plain-looking; brown skin; dark brown eyes; black hair, skin-fade with a short top; clean-shaven; thin lips, a long neck, a small upturned nose"
+ },
+ {
+  "face": "pool_0212",
+  "age": 19,
+  "band": "young",
+  "seed_id": 500137,
+  "seed_name": "Pool Man 137",
+  "desc": "age 19; average-looking; light olive skin; dark brown eyes; dirty blond hair, skin-fade with a short top; clean-shaven; very thick eyebrows, chubby cheeks"
+ },
+ {
+  "face": "pool_0213",
+  "age": 18,
+  "band": "young",
+  "seed_id": 500097,
+  "seed_name": "Pool Man 97",
+  "desc": "age 18; ordinary-looking; brown skin; brown eyes; black hair, dreadlocks tied back; stubble; a wide mouth, eyes set close together, old acne scars on his cheeks"
+ },
+ {
+  "face": "pool_0214",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500100,
+  "seed_name": "Pool Man 100",
+  "desc": "age 23; rough-looking; light olive skin; blue eyes; brown hair, short back and sides; short full beard; a small scar through one eyebrow, a long neck"
+ },
+ {
+  "face": "pool_0215",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500285,
+  "seed_name": "Pool Man 285",
+  "desc": "age 27; good-looking; light brown skin; brown eyes; black hair, skin-fade with a short top; short full beard; deep-set eyes, a big Adam's apple"
+ },
+ {
+  "face": "pool_0216",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500146,
+  "seed_name": "Pool Man 146",
+  "desc": "age 30; average-looking; light olive skin; blue eyes; ginger hair, long hair tied in a man bun; clean-shaven; a narrow pinched face"
+ },
+ {
+  "face": "pool_0217",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500078,
+  "seed_name": "Pool Man 78",
+  "desc": "age 20; ordinary-looking; olive / tan skin; hazel/green eyes; brown hair, short back and sides; stubble; chubby cheeks, a wide square face, a big strong jaw"
+ },
+ {
+  "face": "pool_0218",
+  "age": 34,
+  "band": "senior",
+  "seed_id": 500390,
+  "seed_name": "Pool Man 390",
+  "desc": "age 34; ordinary-looking; brown skin; dark brown eyes; very dark brown hair, skin-fade with a short top; heavy stubble; a few moles, bags under his eyes, wide-set eyes"
+ },
+ {
+  "face": "pool_0219",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500178,
+  "seed_name": "Pool Man 178",
+  "desc": "age 27; plain-looking; brown skin; brown eyes; shaved head; patchy beard; a big Adam's apple, a few moles"
+ },
+ {
+  "face": "pool_0220",
+  "age": 19,
+  "band": "young",
+  "seed_id": 500055,
+  "seed_name": "Pool Man 55",
+  "desc": "age 19; ordinary-looking; fair skin; grey eyes; light brown hair, side parting; patchy beard; a ruddy complexion, chubby cheeks, hooded eyes"
+ },
+ {
+  "face": "pool_0221",
+  "age": 18,
+  "band": "young",
+  "seed_id": 500136,
+  "seed_name": "Pool Man 136",
+  "desc": "age 18; a bit odd-looking; light brown skin; dark brown eyes; black hair, small afro, tidy; clean-shaven; a wide square face, a thick neck, a weak chin"
+ },
+ {
+  "face": "pool_0222",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500004,
+  "seed_name": "Pool Man 4",
+  "desc": "age 22; rough-looking; dark brown skin; dark brown eyes; black hair, buzz cut; patchy beard; a big Adam's apple, a wide flat nose"
+ },
+ {
+  "face": "pool_0223",
+  "age": 17,
+  "band": "young",
+  "seed_id": 500025,
+  "seed_name": "Pool Man 25",
+  "desc": "age 17; plain-looking; very fair skin; brown eyes; black hair, side parting; short full beard; full lips"
+ },
+ {
+  "face": "pool_0224",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500189,
+  "seed_name": "Pool Man 189",
+  "desc": "age 29; rough-looking; light brown skin; dark brown eyes; black hair, buzz cut; clean-shaven; a wide mouth, a low hairline"
+ },
+ {
+  "face": "pool_0225",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500302,
+  "seed_name": "Pool Man 302",
+  "desc": "age 28; a bit odd-looking; fair skin; dark brown eyes; light brown hair, skin-fade with a short top; clean-shaven; deep-set eyes"
+ },
+ {
+  "face": "pool_0226",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500035,
+  "seed_name": "Pool Man 35",
+  "desc": "age 22; plain-looking; fair skin; brown eyes; ginger hair, curly on top, short sides; stubble; a wide flat nose, a cleft chin"
+ },
+ {
+  "face": "pool_0227",
+  "age": 19,
+  "band": "young",
+  "seed_id": 500067,
+  "seed_name": "Pool Man 67",
+  "desc": "age 19; plain-looking; light olive skin; dark brown eyes; blond hair, long hair to the shoulders; moustache; a monobrow, a ruddy complexion, big ears"
+ },
+ {
+  "face": "pool_0228",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500187,
+  "seed_name": "Pool Man 187",
+  "desc": "age 24; plain-looking; brown skin; dark brown eyes; black hair, short afro; short full beard; a low hairline, a slightly lopsided face, a big strong jaw"
+ },
+ {
+  "face": "pool_0229",
+  "age": 26,
+  "band": "prime",
+  "seed_id": 500139,
+  "seed_name": "Pool Man 139",
+  "desc": "age 26; ordinary-looking; dark brown skin; dark brown eyes; black hair, skin-fade with a short top; clean-shaven; chubby cheeks, a heavy brow, a small upturned nose"
+ },
+ {
+  "face": "pool_0230",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500254,
+  "seed_name": "Pool Man 254",
+  "desc": "age 27; a bit odd-looking; light olive skin; hazel/green eyes; brown hair, short back and sides; goatee; a wide mouth, a big Adam's apple, a long thin nose"
+ },
+ {
+  "face": "pool_0231",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500076,
+  "seed_name": "Pool Man 76",
+  "desc": "age 23; ordinary-looking; light brown skin; dark brown eyes; black hair, short afro; big bushy beard; bags under his eyes, a fleshy face, a heavy brow"
+ },
+ {
+  "face": "pool_0232",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500021,
+  "seed_name": "Pool Man 21",
+  "desc": "age 23; ordinary-looking; light olive skin; dark brown eyes; light brown hair, skin-fade with a short top; stubble; a wide mouth, big ears"
+ },
+ {
+  "face": "pool_0233",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500044,
+  "seed_name": "Pool Man 44",
+  "desc": "age 23; plain-looking; fair skin; dark brown eyes; dirty blond hair, mullet; stubble; a monobrow, a wide mouth, a cleft chin"
+ },
+ {
+  "face": "pool_0234",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500251,
+  "seed_name": "Pool Man 251",
+  "desc": "age 28; plain-looking; fair skin; dark brown eyes; blond hair, side parting; moustache; chubby cheeks, a narrow pinched face"
+ },
+ {
+  "face": "pool_0235",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500009,
+  "seed_name": "Pool Man 9",
+  "desc": "age 21; ordinary-looking; light olive skin; dark brown eyes; light brown hair, mullet; clean-shaven; big ears, a low hairline, a few moles"
+ },
+ {
+  "face": "pool_0236",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500289,
+  "seed_name": "Pool Man 289",
+  "desc": "age 28; a bit odd-looking; olive / tan skin; hazel/green eyes; dirty blond hair, buzz cut; clean-shaven; a monobrow, chubby cheeks"
+ },
+ {
+  "face": "pool_0237",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500104,
+  "seed_name": "Pool Man 104",
+  "desc": "age 22; plain-looking; olive / tan skin; brown eyes; very dark brown hair, short back and sides; stubble; a monobrow, ears that stick out"
+ },
+ {
+  "face": "pool_0238",
+  "age": 31,
+  "band": "senior",
+  "seed_id": 500355,
+  "seed_name": "Pool Man 355",
+  "desc": "age 31; average-looking; light brown skin; dark brown eyes; black hair, short twists; stubble; big ears, small eyes, a round face"
+ },
+ {
+  "face": "pool_0239",
+  "age": 35,
+  "band": "senior",
+  "seed_id": 500373,
+  "seed_name": "Pool Man 373",
+  "desc": "age 35; ordinary-looking; dark brown skin; dark brown eyes; black hair with a little grey, buzz cut; clean-shaven; big ears, thin, pale eyebrows, weathered, outdoor skin"
+ },
+ {
+  "face": "pool_0240",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500280,
+  "seed_name": "Pool Man 280",
+  "desc": "age 25; a bit odd-looking; brown skin; brown eyes; very dark brown hair, skin-fade with a short top; stubble; a long narrow face, a small upturned nose"
+ },
+ {
+  "face": "pool_0241",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500208,
+  "seed_name": "Pool Man 208",
+  "desc": "age 24; a bit odd-looking; fair skin; blue eyes; light brown hair, curtains / middle parting; stubble; a wide mouth, a wide flat nose, a big Adam's apple"
+ },
+ {
+  "face": "pool_0242",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500090,
+  "seed_name": "Pool Man 90",
+  "desc": "age 21; a bit odd-looking; light olive skin; blue eyes; dark brown hair, short crop brushed forward; heavy stubble; chubby cheeks"
+ },
+ {
+  "face": "pool_0243",
+  "age": 19,
+  "band": "young",
+  "seed_id": 500001,
+  "seed_name": "Pool Man 1",
+  "desc": "age 19; average-looking; brown skin; dark brown eyes; very dark brown hair, cornrows; big bushy beard; a pointy chin, big ears"
+ },
+ {
+  "face": "pool_0244",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500228,
+  "seed_name": "Pool Man 228",
+  "desc": "age 28; a bit odd-looking; light olive skin; dark brown eyes; brown hair, short back and sides; short full beard; a long neck"
+ },
+ {
+  "face": "pool_0245",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500270,
+  "seed_name": "Pool Man 270",
+  "desc": "age 29; ordinary-looking; light olive skin; brown eyes; light brown hair, short back and sides; clean-shaven; a long thin nose, a wide square face"
+ },
+ {
+  "face": "pool_0246",
+  "age": 18,
+  "band": "young",
+  "seed_id": 500039,
+  "seed_name": "Pool Man 39",
+  "desc": "age 18; plain-looking; olive / tan skin; dark brown eyes; blond hair, curly on top, short sides; clean-shaven; a high forehead"
+ },
+ {
+  "face": "pool_0247",
+  "age": 17,
+  "band": "young",
+  "seed_id": 500105,
+  "seed_name": "Pool Man 105",
+  "desc": "age 17; good-looking; light olive skin; blue eyes; light brown hair, curtains / middle parting; clean-shaven; ears that stick out"
+ },
+ {
+  "face": "pool_0248",
+  "age": 35,
+  "band": "senior",
+  "seed_id": 500380,
+  "seed_name": "Pool Man 380",
+  "desc": "age 35; average-looking; olive / tan skin; dark brown eyes; dirty blond hair with a little grey, messy, slightly grown out; stubble; big ears, bags under his eyes"
+ },
+ {
+  "face": "pool_0249",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500040,
+  "seed_name": "Pool Man 40",
+  "desc": "age 20; average-looking; light brown skin; dark brown eyes; very dark brown hair, buzz cut; stubble; thin lips, very thick eyebrows"
+ },
+ {
+  "face": "pool_0250",
+  "age": 34,
+  "band": "senior",
+  "seed_id": 500359,
+  "seed_name": "Pool Man 359",
+  "desc": "age 34; a bit odd-looking; olive / tan skin; dark brown eyes; blond hair, curly on top, short sides; short full beard; a wide mouth, very thick eyebrows"
+ },
+ {
+  "face": "pool_0251",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500079,
+  "seed_name": "Pool Man 79",
+  "desc": "age 21; average-looking; fair skin; blue eyes; ginger hair, buzz cut; short full beard; a long neck, wide-set eyes, a round face, freckles"
+ },
+ {
+  "face": "pool_0252",
+  "age": 35,
+  "band": "senior",
+  "seed_id": 500328,
+  "seed_name": "Pool Man 328",
+  "desc": "age 35; ordinary-looking; dark brown skin; brown eyes; black hair with a little grey, skin-fade with a short top; stubble; a long neck, big ears, a fleshy face"
+ },
+ {
+  "face": "pool_0253",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500172,
+  "seed_name": "Pool Man 172",
+  "desc": "age 29; plain-looking; olive / tan skin; brown eyes; brown hair, skin-fade with a short top; clean-shaven; hollow cheeks"
+ },
+ {
+  "face": "pool_0254",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500201,
+  "seed_name": "Pool Man 201",
+  "desc": "age 24; average-looking; light olive skin; dark brown eyes; blond hair, side parting; stubble; hooded eyes"
+ },
+ {
+  "face": "pool_0255",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500229,
+  "seed_name": "Pool Man 229",
+  "desc": "age 25; rough-looking; dark brown skin; dark brown eyes; black hair, short afro; short full beard; a wide flat nose, a long neck, big ears"
+ },
+ {
+  "face": "pool_0256",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500121,
+  "seed_name": "Pool Man 121",
+  "desc": "age 21; average-looking; dark brown skin; dark brown eyes; very dark brown hair, short afro; patchy beard; a round face"
+ },
+ {
+  "face": "pool_0257",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500207,
+  "seed_name": "Pool Man 207",
+  "desc": "age 28; rough-looking; dark brown skin; dark brown eyes; black hair, buzz cut; heavy stubble; a scar on his chin, a long narrow face, wide-set eyes"
+ },
+ {
+  "face": "pool_0258",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500140,
+  "seed_name": "Pool Man 140",
+  "desc": "age 24; ordinary-looking; light brown skin; brown eyes; black hair, buzz cut; stubble; a slightly lopsided face"
+ },
+ {
+  "face": "pool_0259",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500252,
+  "seed_name": "Pool Man 252",
+  "desc": "age 30; good-looking; light brown skin; brown eyes; black hair, buzz cut; clean-shaven; a long narrow face"
+ },
+ {
+  "face": "pool_0260",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500324,
+  "seed_name": "Pool Man 324",
+  "desc": "age 25; ordinary-looking; light brown skin; brown eyes; black hair, short afro; heavy stubble; a crooked, once-broken nose, ears that stick out"
+ },
+ {
+  "face": "pool_0261",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500117,
+  "seed_name": "Pool Man 117",
+  "desc": "age 20; average-looking; dark brown skin; brown eyes; black hair, buzz cut; stubble; a round face"
+ },
+ {
+  "face": "pool_0262",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500275,
+  "seed_name": "Pool Man 275",
+  "desc": "age 27; a bit odd-looking; fair skin; brown eyes; brown hair, receding, cut very short; big bushy beard; full lips"
+ },
+ {
+  "face": "pool_0263",
+  "age": 17,
+  "band": "young",
+  "seed_id": 500095,
+  "seed_name": "Pool Man 95",
+  "desc": "age 17; plain-looking; fair skin; blue eyes; black hair, short back and sides; short full beard; a low hairline, a cleft chin, a small scar through one eyebrow"
+ },
+ {
+  "face": "pool_0264",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500102,
+  "seed_name": "Pool Man 102",
+  "desc": "age 22; average-looking; fair skin; brown eyes; dark brown hair, buzz cut; short full beard; hollow cheeks, a low hairline, full lips"
+ },
+ {
+  "face": "pool_0265",
+  "age": 33,
+  "band": "senior",
+  "seed_id": 500358,
+  "seed_name": "Pool Man 358",
+  "desc": "age 33; plain-looking; light olive skin; dark brown eyes; ginger hair with a little grey, skin-fade with a short top; stubble; a big nose, a monobrow, big ears, freckles"
+ },
+ {
+  "face": "pool_0266",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500283,
+  "seed_name": "Pool Man 283",
+  "desc": "age 28; good-looking; olive / tan skin; brown eyes; very dark brown hair, long hair to the shoulders; heavy stubble; a high forehead"
+ },
+ {
+  "face": "pool_0267",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500119,
+  "seed_name": "Pool Man 119",
+  "desc": "age 20; a bit odd-looking; dark brown skin; dark brown eyes; black hair, buzz cut; short full beard; a small mouth, a narrow pinched face"
+ },
+ {
+  "face": "pool_0268",
+  "age": 26,
+  "band": "prime",
+  "seed_id": 500184,
+  "seed_name": "Pool Man 184",
+  "desc": "age 26; ordinary-looking; brown skin; dark brown eyes; black hair, small afro, tidy; stubble; a slightly lopsided face, a monobrow"
+ },
+ {
+  "face": "pool_0269",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500204,
+  "seed_name": "Pool Man 204",
+  "desc": "age 25; rough-looking; light brown skin; brown eyes; black hair, short afro; short full beard; a big nose, a round face, a small scar through one eyebrow"
+ },
+ {
+  "face": "pool_0270",
+  "age": 17,
+  "band": "young",
+  "seed_id": 500077,
+  "seed_name": "Pool Man 77",
+  "desc": "age 17; plain-looking; fair skin; hazel/green eyes; brown hair, messy, slightly grown out; clean-shaven; a small upturned nose, eyes set close together"
+ },
+ {
+  "face": "pool_0271",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500260,
+  "seed_name": "Pool Man 260",
+  "desc": "age 30; plain-looking; very fair skin; blue eyes; dark brown hair, short back and sides; short full beard; weathered, outdoor skin"
+ },
+ {
+  "face": "pool_0272",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500113,
+  "seed_name": "Pool Man 113",
+  "desc": "age 23; plain-looking; light olive skin; blue eyes; blond hair, curly on top, short sides; short full beard; a low hairline, chubby cheeks"
+ },
+ {
+  "face": "pool_0273",
+  "age": 32,
+  "band": "senior",
+  "seed_id": 500333,
+  "seed_name": "Pool Man 333",
+  "desc": "age 32; plain-looking; dark brown skin; brown eyes; black hair, buzz cut; stubble; wide-set eyes"
+ },
+ {
+  "face": "pool_0274",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500240,
+  "seed_name": "Pool Man 240",
+  "desc": "age 25; plain-looking; fair skin; dark brown eyes; black hair, skin-fade with a short top; stubble; a small upturned nose"
+ },
+ {
+  "face": "pool_0275",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500124,
+  "seed_name": "Pool Man 124",
+  "desc": "age 20; ordinary-looking; brown skin; dark brown eyes; black hair, short afro; stubble; thin lips, ears that stick out"
+ },
+ {
+  "face": "pool_0276",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500005,
+  "seed_name": "Pool Man 5",
+  "desc": "age 23; plain-looking; light olive skin; hazel/green eyes; blond hair, curly on top, short sides; stubble; big ears, wide-set eyes, a fleshy face"
+ },
+ {
+  "face": "pool_0277",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500317,
+  "seed_name": "Pool Man 317",
+  "desc": "age 25; plain-looking; light brown skin; dark brown eyes; black hair, buzz cut; heavy stubble; ears that stick out, weathered, outdoor skin"
+ },
+ {
+  "face": "pool_0278",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500162,
+  "seed_name": "Pool Man 162",
+  "desc": "age 29; ordinary-looking; brown skin; brown eyes; black hair, small afro, tidy; stubble; a small upturned nose, a monobrow"
+ },
+ {
+  "face": "pool_0279",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500266,
+  "seed_name": "Pool Man 266",
+  "desc": "age 24; good-looking; dark brown skin; dark brown eyes; shaved head; clean-shaven; a cleft chin"
+ },
+ {
+  "face": "pool_0280",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500174,
+  "seed_name": "Pool Man 174",
+  "desc": "age 28; average-looking; olive / tan skin; dark brown eyes; shaved head; stubble; deep-set eyes, hollow cheeks"
+ },
+ {
+  "face": "pool_0281",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500279,
+  "seed_name": "Pool Man 279",
+  "desc": "age 30; plain-looking; olive / tan skin; dark brown eyes; black hair, slicked back; clean-shaven; a high forehead, a long neck, a monobrow"
+ },
+ {
+  "face": "pool_0282",
+  "age": 26,
+  "band": "prime",
+  "seed_id": 500263,
+  "seed_name": "Pool Man 263",
+  "desc": "age 26; plain-looking; dark brown skin; brown eyes; shaved head; heavy stubble; a big strong jaw, a small scar through one eyebrow"
+ },
+ {
+  "face": "pool_0283",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500312,
+  "seed_name": "Pool Man 312",
+  "desc": "age 29; ordinary-looking; very fair skin; blue eyes; brown hair, long hair to the shoulders; short full beard; old acne scars on his cheeks, small eyes"
+ },
+ {
+  "face": "pool_0284",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500091,
+  "seed_name": "Pool Man 91",
+  "desc": "age 20; ordinary-looking; light olive skin; blue eyes; very dark brown hair, curtains / middle parting; heavy stubble; freckles"
+ },
+ {
+  "face": "pool_0285",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500045,
+  "seed_name": "Pool Man 45",
+  "desc": "age 20; ordinary-looking; fair skin; hazel/green eyes; light brown hair, curly on top, short sides; patchy beard; wide-set eyes, thin, pale eyebrows"
+ },
+ {
+  "face": "pool_0286",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500070,
+  "seed_name": "Pool Man 70",
+  "desc": "age 20; ordinary-looking; dark brown skin; dark brown eyes; black hair, skin-fade with a short top; clean-shaven; a high forehead, bags under his eyes"
+ },
+ {
+  "face": "pool_0287",
+  "age": 34,
+  "band": "senior",
+  "seed_id": 500346,
+  "seed_name": "Pool Man 346",
+  "desc": "age 34; average-looking; dark brown skin; brown eyes; very dark brown hair, dreadlocks tied back; stubble; hooded eyes"
+ },
+ {
+  "face": "pool_0288",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500135,
+  "seed_name": "Pool Man 135",
+  "desc": "age 20; ordinary-looking; light brown skin; dark brown eyes; black hair, dreadlocks tied back; stubble; a big strong jaw, a scar on his chin, a wide square face"
+ },
+ {
+  "face": "pool_0289",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500325,
+  "seed_name": "Pool Man 325",
+  "desc": "age 27; good-looking; fair skin; dark brown eyes; ginger hair, messy, slightly grown out; clean-shaven; a crooked, once-broken nose, a round face, big ears, freckles"
+ },
+ {
+  "face": "pool_0290",
+  "age": 26,
+  "band": "prime",
+  "seed_id": 500245,
+  "seed_name": "Pool Man 245",
+  "desc": "age 26; ordinary-looking; fair skin; brown eyes; light brown hair, messy, slightly grown out; moustache; a small upturned nose, thin, pale eyebrows"
+ },
+ {
+  "face": "pool_0291",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500291,
+  "seed_name": "Pool Man 291",
+  "desc": "age 29; good-looking; olive / tan skin; dark brown eyes; light brown hair, mullet; clean-shaven; a weak chin"
+ },
+ {
+  "face": "pool_0292",
+  "age": 32,
+  "band": "senior",
+  "seed_id": 500379,
+  "seed_name": "Pool Man 379",
+  "desc": "age 32; rough-looking; very dark brown skin; dark brown eyes; shaved head; clean-shaven; a high forehead, a long narrow face, a few moles"
+ },
+ {
+  "face": "pool_0293",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500008,
+  "seed_name": "Pool Man 8",
+  "desc": "age 21; plain-looking; very fair skin; hazel/green eyes; very dark brown hair, short back and sides; stubble; a scar on his chin, a low hairline, a small mouth"
+ },
+ {
+  "face": "pool_0294",
+  "age": 32,
+  "band": "senior",
+  "seed_id": 500362,
+  "seed_name": "Pool Man 362",
+  "desc": "age 32; good-looking; very fair skin; blue eyes; light brown hair, side parting; clean-shaven; very thick eyebrows, a fleshy face, eyes set close together"
+ },
+ {
+  "face": "pool_0295",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500116,
+  "seed_name": "Pool Man 116",
+  "desc": "age 22; rough-looking; very fair skin; brown eyes; dark brown hair, side parting; goatee; big ears, weathered, outdoor skin, eyes set close together"
+ },
+ {
+  "face": "pool_0296",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500075,
+  "seed_name": "Pool Man 75",
+  "desc": "age 20; rough-looking; olive / tan skin; grey eyes; blond hair, buzz cut; short full beard; a slightly lopsided face, ears that stick out, a high forehead"
+ },
+ {
+  "face": "pool_0297",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500130,
+  "seed_name": "Pool Man 130",
+  "desc": "age 21; average-looking; light brown skin; dark brown eyes; black hair, buzz cut; clean-shaven; a round face, a high forehead"
+ },
+ {
+  "face": "pool_0298",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500203,
+  "seed_name": "Pool Man 203",
+  "desc": "age 30; ordinary-looking; light olive skin; dark brown eyes; dirty blond hair, short crop brushed forward; heavy stubble; a long thin nose, full lips"
+ },
+ {
+  "face": "pool_0299",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500284,
+  "seed_name": "Pool Man 284",
+  "desc": "age 25; rough-looking; very fair skin; grey eyes; dark brown hair, curly on top, short sides; heavy stubble; a narrow pinched face, a long thin nose"
+ },
+ {
+  "face": "pool_0300",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500293,
+  "seed_name": "Pool Man 293",
+  "desc": "age 24; plain-looking; brown skin; dark brown eyes; black hair, skin-fade with a short top; clean-shaven; a long neck, a big strong jaw"
+ },
+ {
+  "face": "pool_0301",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500306,
+  "seed_name": "Pool Man 306",
+  "desc": "age 30; a bit odd-looking; light brown skin; dark brown eyes; shaved head; clean-shaven; weathered, outdoor skin, full lips, a heavy brow"
+ },
+ {
+  "face": "pool_0302",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500321,
+  "seed_name": "Pool Man 321",
+  "desc": "age 25; ordinary-looking; dark brown skin; dark brown eyes; black hair, skin-fade with a short top; stubble; a weak chin, a low hairline"
+ },
+ {
+  "face": "pool_0303",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500093,
+  "seed_name": "Pool Man 93",
+  "desc": "age 21; ordinary-looking; dark brown skin; dark brown eyes; very dark brown hair, short twists; stubble; thin lips, freckles, thin, pale eyebrows"
+ },
+ {
+  "face": "pool_0304",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500303,
+  "seed_name": "Pool Man 303",
+  "desc": "age 30; plain-looking; olive / tan skin; hazel/green eyes; brown hair, curtains / middle parting; short full beard; a fleshy face, a wide square face"
+ },
+ {
+  "face": "pool_0305",
+  "age": 18,
+  "band": "young",
+  "seed_id": 500112,
+  "seed_name": "Pool Man 112",
+  "desc": "age 18; good-looking; brown skin; dark brown eyes; very dark brown hair, buzz cut; short full beard; very thick eyebrows"
+ },
+ {
+  "face": "pool_0306",
+  "age": 26,
+  "band": "prime",
+  "seed_id": 500215,
+  "seed_name": "Pool Man 215",
+  "desc": "age 26; plain-looking; light olive skin; brown eyes; ginger hair, buzz cut; clean-shaven; full lips, freckles"
+ },
+ {
+  "face": "pool_0307",
+  "age": 19,
+  "band": "young",
+  "seed_id": 500122,
+  "seed_name": "Pool Man 122",
+  "desc": "age 19; ordinary-looking; very fair skin; dark brown eyes; ginger hair, messy, slightly grown out; clean-shaven; a monobrow, a fleshy face, a long thin nose"
+ },
+ {
+  "face": "pool_0308",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500193,
+  "seed_name": "Pool Man 193",
+  "desc": "age 27; ordinary-looking; dark brown skin; dark brown eyes; black hair, small afro, tidy; clean-shaven; old acne scars on his cheeks, chubby cheeks, a big strong jaw"
+ },
+ {
+  "face": "pool_0309",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500196,
+  "seed_name": "Pool Man 196",
+  "desc": "age 24; rough-looking; very fair skin; brown eyes; dark brown hair, short back and sides; clean-shaven; a small scar through one eyebrow, a high forehead"
+ },
+ {
+  "face": "pool_0310",
+  "age": 35,
+  "band": "senior",
+  "seed_id": 500367,
+  "seed_name": "Pool Man 367",
+  "desc": "age 35; good-looking; light olive skin; brown eyes; ginger hair with a little grey, receding, cut very short; short full beard; a low hairline, a fleshy face, hooded eyes"
+ },
+ {
+  "face": "pool_0311",
+  "age": 33,
+  "band": "senior",
+  "seed_id": 500334,
+  "seed_name": "Pool Man 334",
+  "desc": "age 33; good-looking; olive / tan skin; grey eyes; dark brown hair, short back and sides; stubble; ears that stick out, a big Adam's apple"
+ },
+ {
+  "face": "pool_0312",
+  "age": 34,
+  "band": "senior",
+  "seed_id": 500345,
+  "seed_name": "Pool Man 345",
+  "desc": "age 34; ordinary-looking; brown skin; dark brown eyes; black hair with a little grey, dreadlocks tied back; stubble; a ruddy complexion, hollow cheeks"
+ },
+ {
+  "face": "pool_0313",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500296,
+  "seed_name": "Pool Man 296",
+  "desc": "age 24; a bit odd-looking; light olive skin; dark brown eyes; dark brown hair, curtains / middle parting; stubble; full lips"
+ },
+ {
+  "face": "pool_0314",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500217,
+  "seed_name": "Pool Man 217",
+  "desc": "age 24; ordinary-looking; very dark brown skin; dark brown eyes; very dark brown hair, skin-fade with a short top; heavy stubble; a crooked, once-broken nose"
+ },
+ {
+  "face": "pool_0315",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500014,
+  "seed_name": "Pool Man 14",
+  "desc": "age 21; ordinary-looking; light olive skin; brown eyes; dark brown hair, short crop brushed forward; heavy stubble; a ruddy complexion"
+ },
+ {
+  "face": "pool_0316",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500154,
+  "seed_name": "Pool Man 154",
+  "desc": "age 27; ordinary-looking; dark brown skin; brown eyes; black hair, short twists; stubble; a heavy brow, thin lips, ears that stick out"
+ },
+ {
+  "face": "pool_0317",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500305,
+  "seed_name": "Pool Man 305",
+  "desc": "age 27; plain-looking; light olive skin; dark brown eyes; dark brown hair, side parting; clean-shaven; ears that stick out, a crooked, once-broken nose"
+ },
+ {
+  "face": "pool_0318",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500181,
+  "seed_name": "Pool Man 181",
+  "desc": "age 27; plain-looking; fair skin; dark brown eyes; dark brown hair, short back and sides; clean-shaven; a fleshy face"
+ },
+ {
+  "face": "pool_0319",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500267,
+  "seed_name": "Pool Man 267",
+  "desc": "age 28; ordinary-looking; fair skin; brown eyes; shaved head; clean-shaven; a monobrow, a heavy brow, a small scar through one eyebrow"
+ },
+ {
+  "face": "pool_0320",
+  "age": 17,
+  "band": "young",
+  "seed_id": 500064,
+  "seed_name": "Pool Man 64",
+  "desc": "age 17; plain-looking; fair skin; grey eyes; blond hair, short back and sides; stubble; weathered, outdoor skin, full lips"
+ },
+ {
+  "face": "pool_0321",
+  "age": 35,
+  "band": "senior",
+  "seed_id": 500348,
+  "seed_name": "Pool Man 348",
+  "desc": "age 35; good-looking; fair skin; brown eyes; very dark brown hair with a little grey, short back and sides; heavy stubble; a round face"
+ },
+ {
+  "face": "pool_0322",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500060,
+  "seed_name": "Pool Man 60",
+  "desc": "age 22; average-looking; dark brown skin; brown eyes; very dark brown hair, buzz cut; clean-shaven; a monobrow"
+ },
+ {
+  "face": "pool_0323",
+  "age": 34,
+  "band": "senior",
+  "seed_id": 500327,
+  "seed_name": "Pool Man 327",
+  "desc": "age 34; ordinary-looking; fair skin; brown eyes; dark brown hair, buzz cut; goatee; wide-set eyes"
+ },
+ {
+  "face": "pool_0324",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500083,
+  "seed_name": "Pool Man 83",
+  "desc": "age 21; rough-looking; fair skin; dark brown eyes; dark brown hair, short back and sides; moustache; a long thin nose, chubby cheeks, a big Adam's apple"
+ },
+ {
+  "face": "pool_0325",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500057,
+  "seed_name": "Pool Man 57",
+  "desc": "age 20; good-looking; fair skin; brown eyes; dark brown hair, short crop brushed forward; short full beard; a pointy chin, a wide flat nose"
+ },
+ {
+  "face": "pool_0326",
+  "age": 17,
+  "band": "young",
+  "seed_id": 500028,
+  "seed_name": "Pool Man 28",
+  "desc": "age 17; rough-looking; very dark brown skin; dark brown eyes; black hair, small afro, tidy; heavy stubble; a big Adam's apple, big ears, a small scar through one eyebrow"
+ },
+ {
+  "face": "pool_0327",
+  "age": 36,
+  "band": "senior",
+  "seed_id": 500357,
+  "seed_name": "Pool Man 357",
+  "desc": "age 36; plain-looking; fair skin; dark brown eyes; dark brown hair going grey, messy, slightly grown out; goatee; old acne scars on his cheeks, full lips"
+ },
+ {
+  "face": "pool_0328",
+  "age": 17,
+  "band": "young",
+  "seed_id": 500101,
+  "seed_name": "Pool Man 101",
+  "desc": "age 17; plain-looking; light olive skin; brown eyes; very dark brown hair, messy, slightly grown out; clean-shaven; a small scar through one eyebrow, a crooked, once-broken nose, old acne scars on his cheeks"
+ },
+ {
+  "face": "pool_0329",
+  "age": 26,
+  "band": "prime",
+  "seed_id": 500175,
+  "seed_name": "Pool Man 175",
+  "desc": "age 26; plain-looking; light olive skin; dark brown eyes; black hair, side parting; heavy stubble; a wide square face, a small mouth, a wide flat nose"
+ },
+ {
+  "face": "pool_0330",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500277,
+  "seed_name": "Pool Man 277",
+  "desc": "age 28; ordinary-looking; dark brown skin; brown eyes; black hair, skin-fade with a short top; stubble; a weak chin"
+ },
+ {
+  "face": "pool_0331",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500010,
+  "seed_name": "Pool Man 10",
+  "desc": "age 21; ordinary-looking; very fair skin; dark brown eyes; blond hair, short back and sides; heavy stubble; a big strong jaw, a long thin nose"
+ },
+ {
+  "face": "pool_0332",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500299,
+  "seed_name": "Pool Man 299",
+  "desc": "age 25; plain-looking; olive / tan skin; grey eyes; very dark brown hair, messy, slightly grown out; clean-shaven; old acne scars on his cheeks, a fleshy face, full lips"
+ },
+ {
+  "face": "pool_0333",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500163,
+  "seed_name": "Pool Man 163",
+  "desc": "age 24; rough-looking; light olive skin; brown eyes; brown hair, messy, slightly grown out; short full beard; a long narrow face, hollow cheeks"
+ },
+ {
+  "face": "pool_0334",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500213,
+  "seed_name": "Pool Man 213",
+  "desc": "age 30; plain-looking; light olive skin; brown eyes; ginger hair, quiff; goatee; a fleshy face"
+ },
+ {
+  "face": "pool_0335",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500152,
+  "seed_name": "Pool Man 152",
+  "desc": "age 29; rough-looking; light brown skin; brown eyes; black hair, small afro, tidy; stubble; a high forehead, very thick eyebrows, a pointy chin"
+ },
+ {
+  "face": "pool_0336",
+  "age": 35,
+  "band": "senior",
+  "seed_id": 500360,
+  "seed_name": "Pool Man 360",
+  "desc": "age 35; plain-looking; fair skin; hazel/green eyes; dirty blond hair with a little grey, curly on top, short sides; clean-shaven; a small scar through one eyebrow, weathered, outdoor skin, a high forehead"
+ },
+ {
+  "face": "pool_0337",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500148,
+  "seed_name": "Pool Man 148",
+  "desc": "age 27; ordinary-looking; brown skin; dark brown eyes; black hair, dreadlocks tied back; stubble; a small scar through one eyebrow, a slightly lopsided face"
+ },
+ {
+  "face": "pool_0338",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500169,
+  "seed_name": "Pool Man 169",
+  "desc": "age 24; ordinary-looking; brown skin; dark brown eyes; black hair, cornrows; clean-shaven; very thick eyebrows, bags under his eyes"
+ },
+ {
+  "face": "pool_0339",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500144,
+  "seed_name": "Pool Man 144",
+  "desc": "age 28; average-looking; fair skin; dark brown eyes; dirty blond hair, slicked back; clean-shaven; a big Adam's apple, a wide flat nose, full lips"
+ },
+ {
+  "face": "pool_0340",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500012,
+  "seed_name": "Pool Man 12",
+  "desc": "age 23; good-looking; very fair skin; dark brown eyes; ginger hair, short back and sides; stubble; hollow cheeks, a long neck"
+ },
+ {
+  "face": "pool_0341",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500223,
+  "seed_name": "Pool Man 223",
+  "desc": "age 30; rough-looking; light olive skin; brown eyes; ginger hair, buzz cut; heavy stubble; a monobrow, hooded eyes, hollow cheeks, freckles"
+ },
+ {
+  "face": "pool_0342",
+  "age": 32,
+  "band": "senior",
+  "seed_id": 500365,
+  "seed_name": "Pool Man 365",
+  "desc": "age 32; ordinary-looking; very dark brown skin; dark brown eyes; black hair, high-top fade; heavy stubble; a low hairline, a weak chin"
+ },
+ {
+  "face": "pool_0343",
+  "age": 31,
+  "band": "senior",
+  "seed_id": 500387,
+  "seed_name": "Pool Man 387",
+  "desc": "age 31; ordinary-looking; fair skin; dark brown eyes; dark brown hair, short back and sides; stubble; a long thin nose, a heavy brow"
+ },
+ {
+  "face": "pool_0344",
+  "age": 35,
+  "band": "senior",
+  "seed_id": 500376,
+  "seed_name": "Pool Man 376",
+  "desc": "age 35; ordinary-looking; fair skin; brown eyes; shaved head; clean-shaven; a crooked, once-broken nose, ears that stick out, a high forehead"
+ },
+ {
+  "face": "pool_0345",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500199,
+  "seed_name": "Pool Man 199",
+  "desc": "age 28; plain-looking; very fair skin; brown eyes; very dark brown hair, long hair to the shoulders; clean-shaven; ears that stick out, thin lips"
+ },
+ {
+  "face": "pool_0346",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500128,
+  "seed_name": "Pool Man 128",
+  "desc": "age 23; ordinary-looking; olive / tan skin; blue eyes; brown hair, short crop brushed forward; big bushy beard; a low hairline, a narrow pinched face, a small upturned nose"
+ },
+ {
+  "face": "pool_0347",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500256,
+  "seed_name": "Pool Man 256",
+  "desc": "age 24; good-looking; dark brown skin; dark brown eyes; very dark brown hair, small afro, tidy; short full beard; a ruddy complexion, deep-set eyes"
+ },
+ {
+  "face": "pool_0348",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500191,
+  "seed_name": "Pool Man 191",
+  "desc": "age 27; ordinary-looking; very fair skin; hazel/green eyes; ginger hair, side parting; clean-shaven; a high forehead, a wide square face, a thick neck, freckles"
+ },
+ {
+  "face": "pool_0349",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500061,
+  "seed_name": "Pool Man 61",
+  "desc": "age 22; plain-looking; fair skin; dark brown eyes; shaved head; moustache; a long neck, hollow cheeks, a small mouth"
+ },
+ {
+  "face": "pool_0350",
+  "age": 26,
+  "band": "prime",
+  "seed_id": 500218,
+  "seed_name": "Pool Man 218",
+  "desc": "age 26; a bit odd-looking; olive / tan skin; brown eyes; dirty blond hair, short back and sides; stubble; a long thin nose, a thick neck, wide-set eyes"
+ },
+ {
+  "face": "pool_0351",
+  "age": 26,
+  "band": "prime",
+  "seed_id": 500236,
+  "seed_name": "Pool Man 236",
+  "desc": "age 26; ordinary-looking; light brown skin; brown eyes; black hair, small afro, tidy; clean-shaven; old acne scars on his cheeks, a big nose"
+ },
+ {
+  "face": "pool_0352",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500304,
+  "seed_name": "Pool Man 304",
+  "desc": "age 24; plain-looking; very fair skin; dark brown eyes; light brown hair, side parting; big bushy beard; a ruddy complexion, a monobrow"
+ },
+ {
+  "face": "pool_0353",
+  "age": 18,
+  "band": "young",
+  "seed_id": 500110,
+  "seed_name": "Pool Man 110",
+  "desc": "age 18; plain-looking; brown skin; dark brown eyes; black hair, small afro, tidy; heavy stubble; a small mouth, a narrow pinched face"
+ },
+ {
+  "face": "pool_0354",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500311,
+  "seed_name": "Pool Man 311",
+  "desc": "age 29; average-looking; light brown skin; dark brown eyes; very dark brown hair, skin-fade with a short top; clean-shaven; a long thin nose, wide-set eyes"
+ },
+ {
+  "face": "pool_0355",
+  "age": 31,
+  "band": "senior",
+  "seed_id": 500354,
+  "seed_name": "Pool Man 354",
+  "desc": "age 31; ordinary-looking; very fair skin; grey eyes; brown hair, quiff; stubble; big ears, a big strong jaw"
+ },
+ {
+  "face": "pool_0356",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500206,
+  "seed_name": "Pool Man 206",
+  "desc": "age 24; ordinary-looking; light olive skin; hazel/green eyes; very dark brown hair, slicked back; goatee; a heavy brow, ears that stick out"
+ },
+ {
+  "face": "pool_0357",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500019,
+  "seed_name": "Pool Man 19",
+  "desc": "age 20; a bit odd-looking; brown skin; dark brown eyes; black hair, skin-fade with a short top; stubble; a big nose, a scar on his chin, a long narrow face"
+ },
+ {
+  "face": "pool_0358",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500314,
+  "seed_name": "Pool Man 314",
+  "desc": "age 25; ordinary-looking; light brown skin; dark brown eyes; black hair, dreadlocks tied back; patchy beard; thin, pale eyebrows, a long neck, full lips"
+ },
+ {
+  "face": "pool_0359",
+  "age": 32,
+  "band": "senior",
+  "seed_id": 500335,
+  "seed_name": "Pool Man 335",
+  "desc": "age 32; average-looking; very dark brown skin; brown eyes; black hair, cornrows; short full beard; a crooked, once-broken nose, hollow cheeks"
+ },
+ {
+  "face": "pool_0360",
+  "age": 25,
+  "band": "prime",
+  "seed_id": 500320,
+  "seed_name": "Pool Man 320",
+  "desc": "age 25; ordinary-looking; light brown skin; dark brown eyes; very dark brown hair, short twists; heavy stubble; thin, pale eyebrows, a high forehead"
+ },
+ {
+  "face": "pool_0361",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500310,
+  "seed_name": "Pool Man 310",
+  "desc": "age 27; a bit odd-looking; olive / tan skin; dark brown eyes; strawberry blond hair, slicked back; goatee; chubby cheeks, a big nose, freckles"
+ },
+ {
+  "face": "pool_0362",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500233,
+  "seed_name": "Pool Man 233",
+  "desc": "age 28; ordinary-looking; brown skin; dark brown eyes; shaved head; short full beard; a fleshy face, very thick eyebrows"
+ },
+ {
+  "face": "pool_0363",
+  "age": 33,
+  "band": "senior",
+  "seed_id": 500375,
+  "seed_name": "Pool Man 375",
+  "desc": "age 33; ordinary-looking; very fair skin; hazel/green eyes; black hair, short crop brushed forward; big bushy beard; a low hairline, full lips"
+ },
+ {
+  "face": "pool_0364",
+  "age": 30,
+  "band": "prime",
+  "seed_id": 500179,
+  "seed_name": "Pool Man 179",
+  "desc": "age 30; good-looking; light olive skin; brown eyes; brown hair, buzz cut; stubble; ears that stick out, a small mouth, a small scar through one eyebrow"
+ },
+ {
+  "face": "pool_0365",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500295,
+  "seed_name": "Pool Man 295",
+  "desc": "age 27; average-looking; dark brown skin; brown eyes; very dark brown hair, short afro; big bushy beard; chubby cheeks, a pointy chin"
+ },
+ {
+  "face": "pool_0366",
+  "age": 26,
+  "band": "prime",
+  "seed_id": 500287,
+  "seed_name": "Pool Man 287",
+  "desc": "age 26; average-looking; very fair skin; brown eyes; dark brown hair, short crop brushed forward; clean-shaven; a weak chin, hollow cheeks"
+ },
+ {
+  "face": "pool_0367",
+  "age": 31,
+  "band": "senior",
+  "seed_id": 500351,
+  "seed_name": "Pool Man 351",
+  "desc": "age 31; average-looking; very dark brown skin; brown eyes; black hair, high-top fade; clean-shaven; a thick neck"
+ },
+ {
+  "face": "pool_0368",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500048,
+  "seed_name": "Pool Man 48",
+  "desc": "age 22; a bit odd-looking; dark brown skin; dark brown eyes; black hair, skin-fade with a short top; heavy stubble; big ears, deep-set eyes"
+ },
+ {
+  "face": "pool_0369",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500062,
+  "seed_name": "Pool Man 62",
+  "desc": "age 21; ordinary-looking; very fair skin; brown eyes; ginger hair, short back and sides; stubble; ears that stick out, a small mouth, a low hairline"
+ },
+ {
+  "face": "pool_0370",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500158,
+  "seed_name": "Pool Man 158",
+  "desc": "age 27; plain-looking; light olive skin; dark brown eyes; ginger hair, slicked back; heavy stubble; a scar on his chin, a long thin nose, a round face, freckles"
+ },
+ {
+  "face": "pool_0371",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500011,
+  "seed_name": "Pool Man 11",
+  "desc": "age 20; ordinary-looking; brown skin; brown eyes; black hair, buzz cut; clean-shaven; a slightly lopsided face, a small scar through one eyebrow"
+ },
+ {
+  "face": "pool_0372",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500120,
+  "seed_name": "Pool Man 120",
+  "desc": "age 22; good-looking; very dark brown skin; brown eyes; shaved head; stubble; ears that stick out, a big strong jaw"
+ },
+ {
+  "face": "pool_0373",
+  "age": 17,
+  "band": "young",
+  "seed_id": 500049,
+  "seed_name": "Pool Man 49",
+  "desc": "age 17; plain-looking; dark brown skin; dark brown eyes; very dark brown hair, dreadlocks tied back; clean-shaven; deep-set eyes, a narrow pinched face"
+ },
+ {
+  "face": "pool_0374",
+  "age": 19,
+  "band": "young",
+  "seed_id": 500029,
+  "seed_name": "Pool Man 29",
+  "desc": "age 19; good-looking; fair skin; grey eyes; dark brown hair, side parting; stubble; a scar on his chin, hollow cheeks"
+ },
+ {
+  "face": "pool_0375",
+  "age": 35,
+  "band": "senior",
+  "seed_id": 500370,
+  "seed_name": "Pool Man 370",
+  "desc": "age 35; ordinary-looking; brown skin; dark brown eyes; black hair with a little grey, cornrows; clean-shaven; a wide mouth, a small scar through one eyebrow, a long neck"
+ },
+ {
+  "face": "pool_0376",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500212,
+  "seed_name": "Pool Man 212",
+  "desc": "age 29; ordinary-looking; light brown skin; dark brown eyes; black hair, skin-fade with a short top; big bushy beard; a narrow pinched face"
+ },
+ {
+  "face": "pool_0377",
+  "age": 31,
+  "band": "senior",
+  "seed_id": 500372,
+  "seed_name": "Pool Man 372",
+  "desc": "age 31; ordinary-looking; fair skin; dark brown eyes; light brown hair, long hair to the shoulders; goatee; a small scar through one eyebrow, freckles, chubby cheeks"
+ },
+ {
+  "face": "pool_0378",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500210,
+  "seed_name": "Pool Man 210",
+  "desc": "age 28; plain-looking; light brown skin; dark brown eyes; black hair, small afro, tidy; stubble; a weak chin, a low hairline, eyes set close together"
+ },
+ {
+  "face": "pool_0379",
+  "age": 18,
+  "band": "young",
+  "seed_id": 500007,
+  "seed_name": "Pool Man 7",
+  "desc": "age 18; a bit odd-looking; light olive skin; brown eyes; strawberry blond hair, messy, slightly grown out; big bushy beard; a high forehead, a wide mouth, a pointy chin, freckles"
+ },
+ {
+  "face": "pool_0380",
+  "age": 35,
+  "band": "senior",
+  "seed_id": 500377,
+  "seed_name": "Pool Man 377",
+  "desc": "age 35; plain-looking; fair skin; dark brown eyes; light brown hair with a little grey, short crop brushed forward; stubble; big ears"
+ },
+ {
+  "face": "pool_0381",
+  "age": 22,
+  "band": "young",
+  "seed_id": 500131,
+  "seed_name": "Pool Man 131",
+  "desc": "age 22; a bit odd-looking; light olive skin; dark brown eyes; black hair, buzz cut; clean-shaven; old acne scars on his cheeks, ears that stick out"
+ },
+ {
+  "face": "pool_0382",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500133,
+  "seed_name": "Pool Man 133",
+  "desc": "age 23; ordinary-looking; brown skin; dark brown eyes; black hair, bleached short hair; clean-shaven; a round face"
+ },
+ {
+  "face": "pool_0383",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500082,
+  "seed_name": "Pool Man 82",
+  "desc": "age 23; ordinary-looking; very fair skin; dark brown eyes; dirty blond hair, curly on top, short sides; stubble; deep-set eyes"
+ },
+ {
+  "face": "pool_0384",
+  "age": 28,
+  "band": "prime",
+  "seed_id": 500161,
+  "seed_name": "Pool Man 161",
+  "desc": "age 28; ordinary-looking; fair skin; brown eyes; shaved head; heavy stubble; thin lips, a big Adam's apple, a small scar through one eyebrow"
+ },
+ {
+  "face": "pool_0385",
+  "age": 26,
+  "band": "prime",
+  "seed_id": 500149,
+  "seed_name": "Pool Man 149",
+  "desc": "age 26; plain-looking; very fair skin; brown eyes; blond hair, messy, slightly grown out; stubble; full lips, chubby cheeks, a monobrow"
+ },
+ {
+  "face": "pool_0386",
+  "age": 20,
+  "band": "young",
+  "seed_id": 500032,
+  "seed_name": "Pool Man 32",
+  "desc": "age 20; ordinary-looking; light olive skin; dark brown eyes; shaved head; clean-shaven; chubby cheeks, a heavy brow"
+ },
+ {
+  "face": "pool_0387",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500301,
+  "seed_name": "Pool Man 301",
+  "desc": "age 29; plain-looking; light olive skin; dark brown eyes; very dark brown hair, curtains / middle parting; clean-shaven; a crooked, once-broken nose, a big strong jaw, a thick neck"
+ },
+ {
+  "face": "pool_0388",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500141,
+  "seed_name": "Pool Man 141",
+  "desc": "age 24; plain-looking; fair skin; hazel/green eyes; strawberry blond hair, mullet; short full beard; a long neck, a long narrow face, freckles"
+ },
+ {
+  "face": "pool_0389",
+  "age": 27,
+  "band": "prime",
+  "seed_id": 500160,
+  "seed_name": "Pool Man 160",
+  "desc": "age 27; plain-looking; very fair skin; blue eyes; dark brown hair, curly on top, short sides; stubble; a cleft chin, a long narrow face"
+ },
+ {
+  "face": "pool_0390",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500259,
+  "seed_name": "Pool Man 259",
+  "desc": "age 24; rough-looking; dark brown skin; dark brown eyes; black hair, skin-fade with a short top; heavy stubble; thin, pale eyebrows, a high forehead"
+ },
+ {
+  "face": "pool_0391",
+  "age": 32,
+  "band": "senior",
+  "seed_id": 500391,
+  "seed_name": "Pool Man 391",
+  "desc": "age 32; ordinary-looking; very fair skin; brown eyes; dark brown hair, curtains / middle parting; stubble; a big strong jaw"
+ },
+ {
+  "face": "pool_0392",
+  "age": 29,
+  "band": "prime",
+  "seed_id": 500322,
+  "seed_name": "Pool Man 322",
+  "desc": "age 29; plain-looking; fair skin; dark brown eyes; ginger hair, short back and sides; patchy beard; a heavy brow"
+ },
+ {
+  "face": "pool_0393",
+  "age": 31,
+  "band": "senior",
+  "seed_id": 500330,
+  "seed_name": "Pool Man 330",
+  "desc": "age 31; average-looking; very fair skin; dark brown eyes; very dark brown hair, buzz cut; moustache; a heavy brow"
+ },
+ {
+  "face": "pool_0394",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500094,
+  "seed_name": "Pool Man 94",
+  "desc": "age 23; a bit odd-looking; light olive skin; dark brown eyes; dark brown hair, slicked back; clean-shaven; a wide flat nose, a fleshy face"
+ },
+ {
+  "face": "pool_0395",
+  "age": 35,
+  "band": "senior",
+  "seed_id": 500369,
+  "seed_name": "Pool Man 369",
+  "desc": "age 35; good-looking; very fair skin; dark brown eyes; very dark brown hair with a little grey, short crop brushed forward; patchy beard; a long thin nose, chubby cheeks, a small mouth"
+ },
+ {
+  "face": "pool_0396",
+  "age": 24,
+  "band": "prime",
+  "seed_id": 500182,
+  "seed_name": "Pool Man 182",
+  "desc": "age 24; plain-looking; very fair skin; grey eyes; very dark brown hair, messy, slightly grown out; big bushy beard; a scar on his chin, a low hairline"
+ },
+ {
+  "face": "pool_0397",
+  "age": 33,
+  "band": "senior",
+  "seed_id": 500388,
+  "seed_name": "Pool Man 388",
+  "desc": "age 33; plain-looking; light olive skin; blue eyes; blond hair with a little grey, slicked back; heavy stubble; a low hairline, a wide flat nose"
+ },
+ {
+  "face": "pool_0398",
+  "age": 23,
+  "band": "young",
+  "seed_id": 500030,
+  "seed_name": "Pool Man 30",
+  "desc": "age 23; a bit odd-looking; very fair skin; brown eyes; shaved head; clean-shaven; small eyes, a pointy chin, chubby cheeks"
+ },
+ {
+  "face": "pool_0399",
+  "age": 33,
+  "band": "senior",
+  "seed_id": 500350,
+  "seed_name": "Pool Man 350",
+  "desc": "age 33; average-looking; fair skin; dark brown eyes; dark brown hair with a little grey, long hair to the shoulders; clean-shaven; a narrow pinched face, a heavy brow, thin, pale eyebrows"
+ },
+ {
+  "face": "pool_0400",
+  "age": 21,
+  "band": "young",
+  "seed_id": 500054,
+  "seed_name": "Pool Man 54",
+  "desc": "age 21; rough-looking; light olive skin; blue eyes; light brown hair, short crop brushed forward; clean-shaven; a small scar through one eyebrow, a slightly lopsided face"
+ }
+]

@@ -1,0 +1,2141 @@
+{
+"about": "Every season's winners and runners-up (year = the season's end; 1893 = 1892-93). World Club Trophy: the Continental Champions' Cup winners v South America's champions.",
+"competitions": {
+"league": "The League",
+"association_cup": "The Association Cup",
+"league_cup": "The League Cup",
+"champions_cup": "The Continental Champions' Cup",
+"shield": "The Continental Shield",
+"world_club": "The World Club Trophy"
+},
+"roll": {
+"league": {
+"1889": [
+"Kingsmere City",
+"Eastvale Wanderers"
+],
+"1890": [
+"Penrith Forge",
+"Ashvale Rovers"
+],
+"1891": [
+"Oakhurst United",
+"Eastvale Wanderers"
+],
+"1892": [
+"Millbrook United",
+"Castleford Rangers"
+],
+"1893": [
+"Ashvale Rovers",
+"Penrith Forge"
+],
+"1894": [
+"Stonecross Albion",
+"Northwick FC"
+],
+"1895": [
+"Holloway Vale",
+"Ashvale Rovers"
+],
+"1896": [
+"Penrith Forge",
+"Bramhall Borough"
+],
+"1897": [
+"Westmoor County",
+"Bramhall Borough"
+],
+"1898": [
+"Ashvale Rovers",
+"Castleford Rangers"
+],
+"1899": [
+"Whitcombe City",
+"Castleford Rangers"
+],
+"1900": [
+"Holloway Vale",
+"Westmoor County"
+],
+"1901": [
+"Oakhurst United",
+"Westmoor County"
+],
+"1902": [
+"Kingsmere City",
+"Westmoor County"
+],
+"1903": [
+"Whitcombe City",
+"Castleford Rangers"
+],
+"1904": [
+"Northwick FC",
+"Fernley Park"
+],
+"1905": [
+"Sandmere Athletic",
+"Stonecross Albion"
+],
+"1906": [
+"Eastvale Wanderers",
+"Whitcombe City"
+],
+"1907": [
+"Eastvale Wanderers",
+"Riverton Dynamo"
+],
+"1908": [
+"Millbrook United",
+"Whitcombe City"
+],
+"1909": [
+"Northwick FC",
+"Ashvale Rovers"
+],
+"1910": [
+"Kingsmere City",
+"Millbrook United"
+],
+"1911": [
+"Whitcombe City",
+"Darnford Albion"
+],
+"1912": [
+"Riverton Dynamo",
+"Darnford Albion"
+],
+"1913": [
+"Sandmere Athletic",
+"Fernley Park"
+],
+"1914": [
+"Riverton Dynamo",
+"Oakhurst United"
+],
+"1915": [
+"Darnford Albion",
+"Stonecross Albion"
+],
+"1920": [
+"Millbrook United",
+"Northwick FC"
+],
+"1921": [
+"Castleford Rangers",
+"Westmoor County"
+],
+"1922": [
+"Riverton Dynamo",
+"Castleford Rangers"
+],
+"1923": [
+"Fernley Park",
+"Millbrook United"
+],
+"1924": [
+"Bramhall Borough",
+"Millbrook United"
+],
+"1925": [
+"Riverton Dynamo",
+"Castleford Rangers"
+],
+"1926": [
+"Brackenfield Town",
+"Northwick FC"
+],
+"1927": [
+"Ashvale Rovers",
+"Bramhall Borough"
+],
+"1928": [
+"Fernley Park",
+"Millbrook United"
+],
+"1929": [
+"Penrith Forge",
+"Northwick FC"
+],
+"1930": [
+"Westmoor County",
+"Castleford Rangers"
+],
+"1931": [
+"Castleford Rangers",
+"Oakhurst United"
+],
+"1932": [
+"Penrith Forge",
+"Harrowby Athletic"
+],
+"1933": [
+"Whitcombe City",
+"Penrith Forge"
+],
+"1934": [
+"Brackenfield Town",
+"Riverton Dynamo"
+],
+"1935": [
+"Northwick FC",
+"Stonecross Albion"
+],
+"1936": [
+"Kingsmere City",
+"Lydmouth Town"
+],
+"1937": [
+"Oakhurst United",
+"Castleford Rangers"
+],
+"1938": [
+"Millbrook United",
+"Darnford Albion"
+],
+"1939": [
+"Whitcombe City",
+"Fernley Park"
+],
+"1947": [
+"Harrowby Athletic",
+"Eastvale Wanderers"
+],
+"1948": [
+"Eastvale Wanderers",
+"Oakhurst United"
+],
+"1949": [
+"Millbrook United",
+"Oakhurst United"
+],
+"1950": [
+"Lydmouth Town",
+"Northwick FC"
+],
+"1951": [
+"Eastvale Wanderers",
+"Kingsmere City"
+],
+"1952": [
+"Sandmere Athletic",
+"Northwick FC"
+],
+"1953": [
+"Eastvale Wanderers",
+"Harrowby Athletic"
+],
+"1954": [
+"Bramhall Borough",
+"Whitcombe City"
+],
+"1955": [
+"Ashvale Rovers",
+"Kingsmere City"
+],
+"1956": [
+"Harrowby Athletic",
+"Ashvale Rovers"
+],
+"1957": [
+"Eastvale Wanderers",
+"Whitcombe City"
+],
+"1958": [
+"Oakhurst United",
+"Eastvale Wanderers"
+],
+"1959": [
+"Darnford Albion",
+"Riverton Dynamo"
+],
+"1960": [
+"Northwick FC",
+"Brackenfield Town"
+],
+"1961": [
+"Brackenfield Town",
+"Whitcombe City"
+],
+"1962": [
+"Eastvale Wanderers",
+"Westmoor County"
+],
+"1963": [
+"Westmoor County",
+"Castleford Rangers"
+],
+"1964": [
+"Northwick FC",
+"Stonecross Albion"
+],
+"1965": [
+"Harrowby Athletic",
+"Riverton Dynamo"
+],
+"1966": [
+"Castleford Rangers",
+"Kingsmere City"
+],
+"1967": [
+"Harrowby Athletic",
+"Kingsmere City"
+],
+"1968": [
+"Eastvale Wanderers",
+"Northwick FC"
+],
+"1969": [
+"Kingsmere City",
+"Oakhurst United"
+],
+"1970": [
+"Sandmere Athletic",
+"Riverton Dynamo"
+],
+"1971": [
+"Holloway Vale",
+"Harrowby Athletic"
+],
+"1972": [
+"Northwick FC",
+"Holloway Vale"
+],
+"1973": [
+"Holloway Vale",
+"Bramhall Borough"
+],
+"1974": [
+"Northwick FC",
+"Eastvale Wanderers"
+],
+"1975": [
+"Northwick FC",
+"Bramhall Borough"
+],
+"1976": [
+"Ashvale Rovers",
+"Stonecross Albion"
+],
+"1977": [
+"Brackenfield Town",
+"Ashvale Rovers"
+],
+"1978": [
+"Sandmere Athletic",
+"Millbrook United"
+],
+"1979": [
+"Castleford Rangers",
+"Northwick FC"
+],
+"1980": [
+"Northwick FC",
+"Ashvale Rovers"
+],
+"1981": [
+"Northwick FC",
+"Eastvale Wanderers"
+],
+"1982": [
+"Ashvale Rovers",
+"Sandmere Athletic"
+],
+"1983": [
+"Castleford Rangers",
+"Ashvale Rovers"
+],
+"1984": [
+"Stonecross Albion",
+"Harrowby Athletic"
+],
+"1985": [
+"Millbrook United",
+"Bramhall Borough"
+],
+"1986": [
+"Northwick FC",
+"Sandmere Athletic"
+],
+"1987": [
+"Eastvale Wanderers",
+"Lydmouth Town"
+],
+"1988": [
+"Oakhurst United",
+"Whitcombe City"
+],
+"1989": [
+"Millbrook United",
+"Eastvale Wanderers"
+],
+"1990": [
+"Harrowby Athletic",
+"Stonecross Albion"
+],
+"1991": [
+"Bramhall Borough",
+"Millbrook United"
+],
+"1992": [
+"Sandmere Athletic",
+"Eastvale Wanderers"
+],
+"1993": [
+"Stonecross Albion",
+"Harrowby Athletic"
+],
+"1994": [
+"Northwick FC",
+"Westmoor County"
+],
+"1995": [
+"Bramhall Borough",
+"Kingsmere City"
+],
+"1996": [
+"Oakhurst United",
+"Whitcombe City"
+],
+"1997": [
+"Bramhall Borough",
+"Riverton Dynamo"
+],
+"1998": [
+"Whitcombe City",
+"Millbrook United"
+],
+"1999": [
+"Northwick FC",
+"Kingsmere City"
+],
+"2000": [
+"Northwick FC",
+"Castleford Rangers"
+],
+"2001": [
+"Castleford Rangers",
+"Kingsmere City"
+],
+"2002": [
+"Riverton Dynamo",
+"Kingsmere City"
+],
+"2003": [
+"Northwick FC",
+"Brackenfield Town"
+],
+"2004": [
+"Eastvale Wanderers",
+"Castleford Rangers"
+],
+"2005": [
+"Northwick FC",
+"Castleford Rangers"
+],
+"2006": [
+"Westmoor County",
+"Castleford Rangers"
+],
+"2007": [
+"Stonecross Albion",
+"Eastvale Wanderers"
+],
+"2008": [
+"Northwick FC",
+"Whitcombe City"
+],
+"2009": [
+"Westmoor County",
+"Eastvale Wanderers"
+],
+"2010": [
+"Riverton Dynamo",
+"Westmoor County"
+],
+"2011": [
+"Castleford Rangers",
+"Eastvale Wanderers"
+],
+"2012": [
+"Northwick FC",
+"Oakhurst United"
+],
+"2013": [
+"Ashvale Rovers",
+"Oakhurst United"
+],
+"2014": [
+"Northwick FC",
+"Ashvale Rovers"
+],
+"2015": [
+"Bramhall Borough",
+"Brackenfield Town"
+],
+"2016": [
+"Northwick FC",
+"Westmoor County"
+],
+"2017": [
+"Castleford Rangers",
+"Millbrook United"
+],
+"2018": [
+"Oakhurst United",
+"Eastvale Wanderers"
+],
+"2019": [
+"Stonecross Albion",
+"Ashvale Rovers"
+],
+"2020": [
+"Kingsmere City",
+"Eastvale Wanderers"
+],
+"2021": [
+"Whitcombe City",
+"Eastvale Wanderers"
+],
+"2022": [
+"Northwick FC",
+"Stonecross Albion"
+],
+"2023": [
+"Eastvale Wanderers",
+"Whitcombe City"
+],
+"2024": [
+"Bramhall Borough",
+"Sandmere Athletic"
+],
+"2025": [
+"Whitcombe City",
+"Eastvale Wanderers"
+],
+"2026": [
+"Whitcombe City",
+"Lydmouth Town"
+]
+},
+"association_cup": {
+"1872": [
+"Fernley Park",
+"Eastvale Wanderers"
+],
+"1873": [
+"Millbrook United",
+"Westmoor County"
+],
+"1874": [
+"Holloway Vale",
+"Brackenfield Town"
+],
+"1875": [
+"Stonecross Albion",
+"Westmoor County"
+],
+"1876": [
+"Northwick FC",
+"Fernley Park"
+],
+"1877": [
+"Stonecross Albion",
+"Whitcombe City"
+],
+"1878": [
+"Westmoor County",
+"Harrowby Athletic"
+],
+"1879": [
+"Bramhall Borough",
+"Oakhurst United"
+],
+"1880": [
+"Kingsmere City",
+"Lydmouth Town"
+],
+"1881": [
+"Whitcombe City",
+"Oakhurst United"
+],
+"1882": [
+"Northwick FC",
+"Riverton Dynamo"
+],
+"1883": [
+"Oakhurst United",
+"Northwick FC"
+],
+"1884": [
+"Bramhall Borough",
+"Millbrook United"
+],
+"1885": [
+"Brackenfield Town",
+"Oakhurst United"
+],
+"1886": [
+"Bramhall Borough",
+"Riverton Dynamo"
+],
+"1887": [
+"Oakhurst United",
+"Penrith Forge"
+],
+"1888": [
+"Harrowby Athletic",
+"Stonecross Albion"
+],
+"1889": [
+"Bramhall Borough",
+"Lydmouth Town"
+],
+"1890": [
+"Oakhurst United",
+"Castleford Rangers"
+],
+"1891": [
+"Ashvale Rovers",
+"Eastvale Wanderers"
+],
+"1892": [
+"Westmoor County",
+"Riverton Dynamo"
+],
+"1893": [
+"Fernley Park",
+"Oakhurst United"
+],
+"1894": [
+"Riverton Dynamo",
+"Northwick FC"
+],
+"1895": [
+"Riverton Dynamo",
+"Westmoor County"
+],
+"1896": [
+"Oakhurst United",
+"Kingsmere City"
+],
+"1897": [
+"Westmoor County",
+"Darnford Albion"
+],
+"1898": [
+"Kingsmere City",
+"Whitcombe City"
+],
+"1899": [
+"Millbrook United",
+"Penrith Forge"
+],
+"1900": [
+"Bramhall Borough",
+"Fernley Park"
+],
+"1901": [
+"Bramhall Borough",
+"Darnford Albion"
+],
+"1902": [
+"Whitcombe City",
+"Holloway Vale"
+],
+"1903": [
+"Oakhurst United",
+"Northwick FC"
+],
+"1904": [
+"Castleford Rangers",
+"Eastvale Wanderers"
+],
+"1905": [
+"Riverton Dynamo",
+"Holloway Vale"
+],
+"1906": [
+"Ashvale Rovers",
+"Eastvale Wanderers"
+],
+"1907": [
+"Holloway Vale",
+"Fernley Park"
+],
+"1908": [
+"Bramhall Borough",
+"Kingsmere City"
+],
+"1909": [
+"Fernley Park",
+"Kingsmere City"
+],
+"1910": [
+"Bramhall Borough",
+"Penrith Forge"
+],
+"1911": [
+"Sandmere Athletic",
+"Darnford Albion"
+],
+"1912": [
+"Whitcombe City",
+"Harrowby Athletic"
+],
+"1913": [
+"Stonecross Albion",
+"Northwick FC"
+],
+"1914": [
+"Lydmouth Town",
+"Whitcombe City"
+],
+"1915": [
+"Millbrook United",
+"Westmoor County"
+],
+"1920": [
+"Harrowby Athletic",
+"Brackenfield Town"
+],
+"1921": [
+"Sandmere Athletic",
+"Harrowby Athletic"
+],
+"1922": [
+"Holloway Vale",
+"Bramhall Borough"
+],
+"1923": [
+"Darnford Albion",
+"Kingsmere City"
+],
+"1924": [
+"Bramhall Borough",
+"Stonecross Albion"
+],
+"1925": [
+"Oakhurst United",
+"Darnford Albion"
+],
+"1926": [
+"Westmoor County",
+"Castleford Rangers"
+],
+"1927": [
+"Whitcombe City",
+"Eastvale Wanderers"
+],
+"1928": [
+"Stonecross Albion",
+"Brackenfield Town"
+],
+"1929": [
+"Kingsmere City",
+"Castleford Rangers"
+],
+"1930": [
+"Darnford Albion",
+"Northwick FC"
+],
+"1931": [
+"Millbrook United",
+"Castleford Rangers"
+],
+"1932": [
+"Riverton Dynamo",
+"Northwick FC"
+],
+"1933": [
+"Millbrook United",
+"Stonecross Albion"
+],
+"1934": [
+"Ashvale Rovers",
+"Darnford Albion"
+],
+"1935": [
+"Lydmouth Town",
+"Stonecross Albion"
+],
+"1936": [
+"Bramhall Borough",
+"Lydmouth Town"
+],
+"1937": [
+"Castleford Rangers",
+"Oakhurst United"
+],
+"1938": [
+"Whitcombe City",
+"Millbrook United"
+],
+"1939": [
+"Millbrook United",
+"Riverton Dynamo"
+],
+"1947": [
+"Millbrook United",
+"Fernley Park"
+],
+"1948": [
+"Holloway Vale",
+"Millbrook United"
+],
+"1949": [
+"Whitcombe City",
+"Riverton Dynamo"
+],
+"1950": [
+"Kingsmere City",
+"Northwick FC"
+],
+"1951": [
+"Eastvale Wanderers",
+"Whitcombe City"
+],
+"1952": [
+"Darnford Albion",
+"Eastvale Wanderers"
+],
+"1953": [
+"Oakhurst United",
+"Riverton Dynamo"
+],
+"1954": [
+"Millbrook United",
+"Penrith Forge"
+],
+"1955": [
+"Brackenfield Town",
+"Penrith Forge"
+],
+"1956": [
+"Northwick FC",
+"Eastvale Wanderers"
+],
+"1957": [
+"Riverton Dynamo",
+"Lydmouth Town"
+],
+"1958": [
+"Bramhall Borough",
+"Kingsmere City"
+],
+"1959": [
+"Sandmere Athletic",
+"Kingsmere City"
+],
+"1960": [
+"Holloway Vale",
+"Castleford Rangers"
+],
+"1961": [
+"Whitcombe City",
+"Kingsmere City"
+],
+"1962": [
+"Ashvale Rovers",
+"Westmoor County"
+],
+"1963": [
+"Millbrook United",
+"Castleford Rangers"
+],
+"1964": [
+"Kingsmere City",
+"Eastvale Wanderers"
+],
+"1965": [
+"Darnford Albion",
+"Bramhall Borough"
+],
+"1966": [
+"Bramhall Borough",
+"Kingsmere City"
+],
+"1967": [
+"Westmoor County",
+"Castleford Rangers"
+],
+"1968": [
+"Westmoor County",
+"Castleford Rangers"
+],
+"1969": [
+"Lydmouth Town",
+"Oakhurst United"
+],
+"1970": [
+"Kingsmere City",
+"Sandmere Athletic"
+],
+"1971": [
+"Westmoor County",
+"Oakhurst United"
+],
+"1972": [
+"Westmoor County",
+"Holloway Vale"
+],
+"1973": [
+"Westmoor County",
+"Lydmouth Town"
+],
+"1974": [
+"Westmoor County",
+"Bramhall Borough"
+],
+"1975": [
+"Penrith Forge",
+"Stonecross Albion"
+],
+"1976": [
+"Stonecross Albion",
+"Whitcombe City"
+],
+"1977": [
+"Ashvale Rovers",
+"Whitcombe City"
+],
+"1978": [
+"Northwick FC",
+"Lydmouth Town"
+],
+"1979": [
+"Fernley Park",
+"Eastvale Wanderers"
+],
+"1980": [
+"Fernley Park",
+"Whitcombe City"
+],
+"1981": [
+"Penrith Forge",
+"Bramhall Borough"
+],
+"1982": [
+"Brackenfield Town",
+"Millbrook United"
+],
+"1983": [
+"Whitcombe City",
+"Stonecross Albion"
+],
+"1984": [
+"Castleford Rangers",
+"Kingsmere City"
+],
+"1985": [
+"Millbrook United",
+"Castleford Rangers"
+],
+"1986": [
+"Castleford Rangers",
+"Bramhall Borough"
+],
+"1987": [
+"Millbrook United",
+"Holloway Vale"
+],
+"1988": [
+"Eastvale Wanderers",
+"Westmoor County"
+],
+"1989": [
+"Millbrook United",
+"Northwick FC"
+],
+"1990": [
+"Westmoor County",
+"Kingsmere City"
+],
+"1991": [
+"Northwick FC",
+"Oakhurst United"
+],
+"1992": [
+"Eastvale Wanderers",
+"Penrith Forge"
+],
+"1993": [
+"Harrowby Athletic",
+"Fernley Park"
+],
+"1994": [
+"Millbrook United",
+"Oakhurst United"
+],
+"1995": [
+"Millbrook United",
+"Bramhall Borough"
+],
+"1996": [
+"Riverton Dynamo",
+"Kingsmere City"
+],
+"1997": [
+"Brackenfield Town",
+"Millbrook United"
+],
+"1998": [
+"Brackenfield Town",
+"Whitcombe City"
+],
+"1999": [
+"Riverton Dynamo",
+"Northwick FC"
+],
+"2000": [
+"Riverton Dynamo",
+"Whitcombe City"
+],
+"2001": [
+"Kingsmere City",
+"Castleford Rangers"
+],
+"2002": [
+"Holloway Vale",
+"Kingsmere City"
+],
+"2003": [
+"Castleford Rangers",
+"Harrowby Athletic"
+],
+"2004": [
+"Ashvale Rovers",
+"Westmoor County"
+],
+"2005": [
+"Eastvale Wanderers",
+"Harrowby Athletic"
+],
+"2006": [
+"Castleford Rangers",
+"Oakhurst United"
+],
+"2007": [
+"Northwick FC",
+"Castleford Rangers"
+],
+"2008": [
+"Oakhurst United",
+"Castleford Rangers"
+],
+"2009": [
+"Westmoor County",
+"Riverton Dynamo"
+],
+"2010": [
+"Riverton Dynamo",
+"Northwick FC"
+],
+"2011": [
+"Stonecross Albion",
+"Westmoor County"
+],
+"2012": [
+"Westmoor County",
+"Castleford Rangers"
+],
+"2013": [
+"Northwick FC",
+"Stonecross Albion"
+],
+"2014": [
+"Holloway Vale",
+"Eastvale Wanderers"
+],
+"2015": [
+"Eastvale Wanderers",
+"Northwick FC"
+],
+"2016": [
+"Oakhurst United",
+"Northwick FC"
+],
+"2017": [
+"Penrith Forge",
+"Northwick FC"
+],
+"2018": [
+"Northwick FC",
+"Westmoor County"
+],
+"2019": [
+"Westmoor County",
+"Castleford Rangers"
+],
+"2020": [
+"Castleford Rangers",
+"Lydmouth Town"
+],
+"2021": [
+"Fernley Park",
+"Kingsmere City"
+],
+"2022": [
+"Fernley Park",
+"Westmoor County"
+],
+"2023": [
+"Darnford Albion",
+"Kingsmere City"
+],
+"2024": [
+"Millbrook United",
+"Kingsmere City"
+],
+"2025": [
+"Eastvale Wanderers",
+"Riverton Dynamo"
+],
+"2026": [
+"Kingsmere City",
+"Castleford Rangers"
+]
+},
+"league_cup": {
+"1961": [
+"Kingsmere City",
+"Fernley Park"
+],
+"1962": [
+"Oakhurst United",
+"Stonecross Albion"
+],
+"1963": [
+"Eastvale Wanderers",
+"Northwick FC"
+],
+"1964": [
+"Eastvale Wanderers",
+"Millbrook United"
+],
+"1965": [
+"Northwick FC",
+"Eastvale Wanderers"
+],
+"1966": [
+"Harrowby Athletic",
+"Northwick FC"
+],
+"1967": [
+"Whitcombe City",
+"Brackenfield Town"
+],
+"1968": [
+"Brackenfield Town",
+"Kingsmere City"
+],
+"1969": [
+"Westmoor County",
+"Holloway Vale"
+],
+"1970": [
+"Sandmere Athletic",
+"Westmoor County"
+],
+"1971": [
+"Harrowby Athletic",
+"Darnford Albion"
+],
+"1972": [
+"Brackenfield Town",
+"Lydmouth Town"
+],
+"1973": [
+"Whitcombe City",
+"Stonecross Albion"
+],
+"1974": [
+"Millbrook United",
+"Kingsmere City"
+],
+"1975": [
+"Lydmouth Town",
+"Brackenfield Town"
+],
+"1976": [
+"Kingsmere City",
+"Eastvale Wanderers"
+],
+"1977": [
+"Northwick FC",
+"Bramhall Borough"
+],
+"1978": [
+"Ashvale Rovers",
+"Harrowby Athletic"
+],
+"1979": [
+"Penrith Forge",
+"Stonecross Albion"
+],
+"1980": [
+"Oakhurst United",
+"Stonecross Albion"
+],
+"1981": [
+"Sandmere Athletic",
+"Whitcombe City"
+],
+"1982": [
+"Sandmere Athletic",
+"Darnford Albion"
+],
+"1983": [
+"Riverton Dynamo",
+"Northwick FC"
+],
+"1984": [
+"Whitcombe City",
+"Bramhall Borough"
+],
+"1985": [
+"Ashvale Rovers",
+"Oakhurst United"
+],
+"1986": [
+"Fernley Park",
+"Kingsmere City"
+],
+"1987": [
+"Northwick FC",
+"Millbrook United"
+],
+"1988": [
+"Oakhurst United",
+"Brackenfield Town"
+],
+"1989": [
+"Castleford Rangers",
+"Millbrook United"
+],
+"1990": [
+"Penrith Forge",
+"Bramhall Borough"
+],
+"1991": [
+"Northwick FC",
+"Millbrook United"
+],
+"1992": [
+"Kingsmere City",
+"Harrowby Athletic"
+],
+"1993": [
+"Millbrook United",
+"Darnford Albion"
+],
+"1994": [
+"Oakhurst United",
+"Bramhall Borough"
+],
+"1995": [
+"Sandmere Athletic",
+"Northwick FC"
+],
+"1996": [
+"Millbrook United",
+"Kingsmere City"
+],
+"1997": [
+"Riverton Dynamo",
+"Millbrook United"
+],
+"1998": [
+"Eastvale Wanderers",
+"Lydmouth Town"
+],
+"1999": [
+"Millbrook United",
+"Kingsmere City"
+],
+"2000": [
+"Eastvale Wanderers",
+"Westmoor County"
+],
+"2001": [
+"Eastvale Wanderers",
+"Fernley Park"
+],
+"2002": [
+"Northwick FC",
+"Oakhurst United"
+],
+"2003": [
+"Castleford Rangers",
+"Whitcombe City"
+],
+"2004": [
+"Bramhall Borough",
+"Darnford Albion"
+],
+"2005": [
+"Millbrook United",
+"Lydmouth Town"
+],
+"2006": [
+"Castleford Rangers",
+"Northwick FC"
+],
+"2007": [
+"Castleford Rangers",
+"Millbrook United"
+],
+"2008": [
+"Darnford Albion",
+"Eastvale Wanderers"
+],
+"2009": [
+"Kingsmere City",
+"Holloway Vale"
+],
+"2010": [
+"Riverton Dynamo",
+"Penrith Forge"
+],
+"2011": [
+"Northwick FC",
+"Eastvale Wanderers"
+],
+"2012": [
+"Northwick FC",
+"Castleford Rangers"
+],
+"2013": [
+"Northwick FC",
+"Bramhall Borough"
+],
+"2014": [
+"Westmoor County",
+"Northwick FC"
+],
+"2015": [
+"Northwick FC",
+"Brackenfield Town"
+],
+"2016": [
+"Ashvale Rovers",
+"Stonecross Albion"
+],
+"2017": [
+"Bramhall Borough",
+"Northwick FC"
+],
+"2018": [
+"Oakhurst United",
+"Eastvale Wanderers"
+],
+"2019": [
+"Kingsmere City",
+"Whitcombe City"
+],
+"2020": [
+"Eastvale Wanderers",
+"Northwick FC"
+],
+"2021": [
+"Castleford Rangers",
+"Northwick FC"
+],
+"2022": [
+"Darnford Albion",
+"Westmoor County"
+],
+"2023": [
+"Eastvale Wanderers",
+"Castleford Rangers"
+],
+"2024": [
+"Millbrook United",
+"Whitcombe City"
+],
+"2025": [
+"Millbrook United",
+"Stonecross Albion"
+],
+"2026": [
+"Eastvale Wanderers",
+"Whitcombe City"
+]
+},
+"champions_cup": {
+"1956": [
+"Dinamo Kravetz",
+"Racing Calahonda"
+],
+"1957": [
+"Kingsmere City",
+"Bramhall Borough"
+],
+"1958": [
+"Eastvale Wanderers",
+"Real Castellar"
+],
+"1959": [
+"Sporting Esteira",
+"Union Saint-Lys"
+],
+"1960": [
+"Celtic Harbour",
+"FC Lindholm"
+],
+"1961": [
+"AC Montevera",
+"Inter Valmora"
+],
+"1962": [
+"Ajaxia Noord",
+"Galatur SK"
+],
+"1963": [
+"Castleford Rangers",
+"AC Montevera"
+],
+"1964": [
+"Inter Valmora",
+"Eastvale Wanderers"
+],
+"1965": [
+"AC Montevera",
+"Steaua Ravna"
+],
+"1966": [
+"Stonecross Albion",
+"Dinamo Kravetz"
+],
+"1967": [
+"CE Vallbona",
+"Valdeluz CF"
+],
+"1968": [
+"FC Rheinfeld",
+"Real Castellar"
+],
+"1969": [
+"Olympique Varennes",
+"Castleford Rangers"
+],
+"1970": [
+"Real Castellar",
+"Inter Valmora"
+],
+"1971": [
+"Northwick FC",
+"FC Rheinfeld"
+],
+"1972": [
+"FC Lindholm",
+"CD Aldeavieja"
+],
+"1973": [
+"Hellas Korinna",
+"Dinamo Kravetz"
+],
+"1974": [
+"FC Lindholm",
+"Inter Valmora"
+],
+"1975": [
+"Dinamo Kravetz",
+"CD Lizarra"
+],
+"1976": [
+"Real Cabo Fresno",
+"Deportivo Penaclara"
+],
+"1977": [
+"Atletico Almenara",
+"Real Castellar"
+],
+"1978": [
+"Sporting Esteira",
+"Inter Valmora"
+],
+"1979": [
+"Ashvale Rovers",
+"FC Rheinfeld"
+],
+"1980": [
+"Union Saint-Lys",
+"Dinamo Kravetz"
+],
+"1981": [
+"Inter Valmora",
+"Brackenfield Town"
+],
+"1982": [
+"Maritimo Puerto Lindo",
+"FC Lindholm"
+],
+"1983": [
+"Oakhurst United",
+"Bramhall Borough"
+],
+"1984": [
+"Union Monteverde",
+"Real Castellar"
+],
+"1985": [
+"Galatur SK",
+"Atletico Almenara"
+],
+"1986": [
+"Real Cabo Fresno",
+"Hellas Korinna"
+],
+"1987": [
+"Real Castellar",
+"Celtic Harbour"
+],
+"1988": [
+"Real Castellar",
+"Galatur SK"
+],
+"1989": [
+"Galatur SK",
+"Villarrubia CF"
+],
+"1990": [
+"Dinamo Kravetz",
+"Galatur SK"
+],
+"1991": [
+"Steaua Ravna",
+"Valdeluz CF"
+],
+"1992": [
+"Bramhall Borough",
+"Sporting Esteira"
+],
+"1993": [
+"Union Saint-Lys",
+"AC Montevera"
+],
+"1994": [
+"AC Montevera",
+"SD Altamira"
+],
+"1995": [
+"Sporting Esteira",
+"Inter Valmora"
+],
+"1996": [
+"AC Montevera",
+"Real Castellar"
+],
+"1997": [
+"CD Lizarra",
+"FC Lindholm"
+],
+"1998": [
+"CD Lizarra",
+"UD Valdesierra"
+],
+"1999": [
+"UD Valdesierra",
+"Hellas Korinna"
+],
+"2000": [
+"Stonecross Albion",
+"Northwick FC"
+],
+"2001": [
+"CF Rio Seco",
+"Galatur SK"
+],
+"2002": [
+"Celtic Harbour",
+"Hellas Korinna"
+],
+"2003": [
+"Inter Valmora",
+"Olympique Varennes"
+],
+"2004": [
+"Riverton Dynamo",
+"Ajaxia Noord"
+],
+"2005": [
+"Stonecross Albion",
+"Northwick FC"
+],
+"2006": [
+"Westmoor County",
+"Steaua Ravna"
+],
+"2007": [
+"FC Lindholm",
+"FC Rheinfeld"
+],
+"2008": [
+"Ajaxia Noord",
+"FC Rheinfeld"
+],
+"2009": [
+"Celtic Harbour",
+"Real Castellar"
+],
+"2010": [
+"Hellas Korinna",
+"Northwick FC"
+],
+"2011": [
+"Oakhurst United",
+"Hellas Korinna"
+],
+"2012": [
+"CD Aldeavieja",
+"AC Montevera"
+],
+"2013": [
+"Hellas Korinna",
+"Atletico Almenara"
+],
+"2014": [
+"Sporting Esteira",
+"Valdeluz CF"
+],
+"2015": [
+"Millbrook United",
+"Inter Valmora"
+],
+"2016": [
+"CE Vallbona",
+"Hellas Korinna"
+],
+"2017": [
+"Steaua Ravna",
+"Real Castellar"
+],
+"2018": [
+"CE Vallbona",
+"Union Saint-Lys"
+],
+"2019": [
+"FC Rheinfeld",
+"Galatur SK"
+],
+"2020": [
+"Real Castellar",
+"Bramhall Borough"
+],
+"2021": [
+"Celtic Harbour",
+"Eastvale Wanderers"
+],
+"2022": [
+"SD Altamira",
+"Real Torrevega"
+],
+"2023": [
+"FC Rheinfeld",
+"CE Vallbona"
+],
+"2024": [
+"FC Rheinfeld",
+"Union Saint-Lys"
+],
+"2025": [
+"Inter Valmora",
+"Union Saint-Lys"
+],
+"2026": [
+"Sporting Esteira",
+"FC Lindholm"
+]
+},
+"shield": {
+"1972": [
+"Real Torrevega",
+"Union Saint-Lys"
+],
+"1973": [
+"FC Rheinfeld",
+"Atletico Almenara"
+],
+"1974": [
+"CF Rio Seco",
+"Union Saint-Lys"
+],
+"1975": [
+"FC Rheinfeld",
+"CD Aldeavieja"
+],
+"1976": [
+"Union Saint-Lys",
+"Villarrubia CF"
+],
+"1977": [
+"Celtic Harbour",
+"Olympique Varennes"
+],
+"1978": [
+"Whitcombe City",
+"Inter Valmora"
+],
+"1979": [
+"Olympique Varennes",
+"Union Saint-Lys"
+],
+"1980": [
+"Villarrubia CF",
+"Sporting Esteira"
+],
+"1981": [
+"Ajaxia Noord",
+"Bramhall Borough"
+],
+"1982": [
+"Inter Valmora",
+"CF Montoro"
+],
+"1983": [
+"Galatur SK",
+"Ajaxia Noord"
+],
+"1984": [
+"Celtic Harbour",
+"Villarrubia CF"
+],
+"1985": [
+"Sporting Esteira",
+"Galatur SK"
+],
+"1986": [
+"Whitcombe City",
+"Deportivo Penaclara"
+],
+"1987": [
+"CD Lizarra",
+"Northwick FC"
+],
+"1988": [
+"Kingsmere City",
+"Union Saint-Lys"
+],
+"1989": [
+"Sporting Esteira",
+"Hellas Korinna"
+],
+"1990": [
+"AC Montevera",
+"FC Rheinfeld"
+],
+"1991": [
+"Steaua Ravna",
+"Union Saint-Lys"
+],
+"1992": [
+"Steaua Ravna",
+"Sandmere Athletic"
+],
+"1993": [
+"Castleford Rangers",
+"Union Monteverde"
+],
+"1994": [
+"Galatur SK",
+"Ajaxia Noord"
+],
+"1995": [
+"Sporting Esteira",
+"Olympique Varennes"
+],
+"1996": [
+"Eastvale Wanderers",
+"CE Vallbona"
+],
+"1997": [
+"Hellas Korinna",
+"Steaua Ravna"
+],
+"1998": [
+"Eastvale Wanderers",
+"Ajaxia Noord"
+],
+"1999": [
+"Ashvale Rovers",
+"Galatur SK"
+],
+"2000": [
+"Dinamo Kravetz",
+"Union Saint-Lys"
+],
+"2001": [
+"AC Montevera",
+"Celtic Harbour"
+],
+"2002": [
+"Union Saint-Lys",
+"Sporting Esteira"
+],
+"2003": [
+"Sandmere Athletic",
+"AC Montevera"
+],
+"2004": [
+"Villarrubia CF",
+"Hellas Korinna"
+],
+"2005": [
+"Real Castellar",
+"Castleford Rangers"
+],
+"2006": [
+"Northwick FC",
+"Eastvale Wanderers"
+],
+"2007": [
+"Northwick FC",
+"CE Vallbona"
+],
+"2008": [
+"Hellas Korinna",
+"Real Castellar"
+],
+"2009": [
+"Villarrubia CF",
+"Celtic Harbour"
+],
+"2010": [
+"FC Lindholm",
+"Olympique Varennes"
+],
+"2011": [
+"Ajaxia Noord",
+"UD Valdesierra"
+],
+"2012": [
+"Olympique Varennes",
+"Inter Valmora"
+],
+"2013": [
+"Sporting Esteira",
+"Hellas Korinna"
+],
+"2014": [
+"Sporting Esteira",
+"FC Rheinfeld"
+],
+"2015": [
+"Inter Valmora",
+"CE Vallbona"
+],
+"2016": [
+"Eastvale Wanderers",
+"Olympique Varennes"
+],
+"2017": [
+"CE Vallbona",
+"UD Valdesierra"
+],
+"2018": [
+"Olympique Varennes",
+"FC Rheinfeld"
+],
+"2019": [
+"AC Montevera",
+"Celtic Harbour"
+],
+"2020": [
+"FC Rheinfeld",
+"Hellas Korinna"
+],
+"2021": [
+"Dinamo Kravetz",
+"CE Vallbona"
+],
+"2022": [
+"Union Monteverde",
+"Hellas Korinna"
+],
+"2023": [
+"Celtic Harbour",
+"Maritimo Puerto Lindo"
+],
+"2024": [
+"Northwick FC",
+"Atletico Almenara"
+],
+"2025": [
+"Deportivo Penaclara",
+"Galatur SK"
+],
+"2026": [
+"Steaua Ravna",
+"Olympique Varennes"
+]
+},
+"world_club": {
+"1960": [
+"Celtic Harbour",
+"Estrela da Serra"
+],
+"1961": [
+"Deportivo Cumbre",
+"AC Montevera"
+],
+"1962": [
+"Ajaxia Noord",
+"Gremio Litoral"
+],
+"1963": [
+"Castleford Rangers",
+"Santa Fe del Rio"
+],
+"1964": [
+"Inter Valmora",
+"Santa Fe del Rio"
+],
+"1965": [
+"AC Montevera",
+"Nacional de Sierra Alta"
+],
+"1966": [
+"Stonecross Albion",
+"Club Atletico Montevista"
+],
+"1967": [
+"Nacional de Sierra Alta",
+"CE Vallbona"
+],
+"1968": [
+"FC Rheinfeld",
+"Santa Fe del Rio"
+],
+"1969": [
+"Olympique Varennes",
+"Universitario del Sur"
+],
+"1970": [
+"Real Castellar",
+"Gremio Litoral"
+],
+"1971": [
+"Northwick FC",
+"Gremio Litoral"
+],
+"1972": [
+"Nacional de Sierra Alta",
+"FC Lindholm"
+],
+"1973": [
+"Hellas Korinna",
+"Club Atletico Montevista"
+],
+"1974": [
+"FC Lindholm",
+"Universitario del Sur"
+],
+"1975": [
+"Deportivo Cumbre",
+"Dinamo Kravetz"
+],
+"1976": [
+"Real Cabo Fresno",
+"Nacional de Sierra Alta"
+],
+"1977": [
+"Deportivo Cumbre",
+"Atletico Almenara"
+],
+"1978": [
+"Gremio Litoral",
+"Sporting Esteira"
+],
+"1979": [
+"Ashvale Rovers",
+"Boca del Plata"
+],
+"1980": [
+"Deportivo Cumbre",
+"Union Saint-Lys"
+],
+"1981": [
+"Inter Valmora",
+"Deportivo Cumbre"
+],
+"1982": [
+"Maritimo Puerto Lindo",
+"Boca del Plata"
+],
+"1983": [
+"Oakhurst United",
+"Universitario del Sur"
+],
+"1984": [
+"Estrela da Serra",
+"Union Monteverde"
+],
+"1985": [
+"Club Atletico Montevista",
+"Galatur SK"
+],
+"1986": [
+"Estrela da Serra",
+"Real Cabo Fresno"
+],
+"1987": [
+"Real Castellar",
+"Universitario del Sur"
+],
+"1988": [
+"Universitario del Sur",
+"Real Castellar"
+],
+"1989": [
+"Galatur SK",
+"Nacional de Sierra Alta"
+],
+"1990": [
+"Dinamo Kravetz",
+"Gremio Litoral"
+],
+"1991": [
+"Santa Fe del Rio",
+"Steaua Ravna"
+],
+"1992": [
+"Bramhall Borough",
+"Universitario del Sur"
+],
+"1993": [
+"Gremio Litoral",
+"Union Saint-Lys"
+],
+"1994": [
+"AC Montevera",
+"Nacional de Sierra Alta"
+],
+"1995": [
+"Universitario del Sur",
+"Sporting Esteira"
+],
+"1996": [
+"AC Montevera",
+"Boca del Plata"
+],
+"1997": [
+"CD Lizarra",
+"Santa Fe del Rio"
+],
+"1998": [
+"Universitario del Sur",
+"CD Lizarra"
+],
+"1999": [
+"UD Valdesierra",
+"Santa Fe del Rio"
+],
+"2000": [
+"Stonecross Albion",
+"Santa Fe del Rio"
+],
+"2001": [
+"CF Rio Seco",
+"Gremio Litoral"
+],
+"2002": [
+"Deportivo Cumbre",
+"Celtic Harbour"
+],
+"2003": [
+"Boca del Plata",
+"Inter Valmora"
+],
+"2004": [
+"Riverton Dynamo",
+"Boca del Plata"
+],
+"2005": [
+"Stonecross Albion",
+"Estrela da Serra"
+],
+"2006": [
+"Westmoor County",
+"Universitario del Sur"
+],
+"2007": [
+"FC Lindholm",
+"Deportivo Cumbre"
+],
+"2008": [
+"Ajaxia Noord",
+"Santa Fe del Rio"
+],
+"2009": [
+"Gremio Litoral",
+"Celtic Harbour"
+],
+"2010": [
+"Hellas Korinna",
+"Santa Fe del Rio"
+],
+"2011": [
+"Oakhurst United",
+"Santa Fe del Rio"
+],
+"2012": [
+"Boca del Plata",
+"CD Aldeavieja"
+],
+"2013": [
+"Hellas Korinna",
+"Club Atletico Montevista"
+],
+"2014": [
+"Nacional de Sierra Alta",
+"Sporting Esteira"
+],
+"2015": [
+"Millbrook United",
+"Estrela da Serra"
+],
+"2016": [
+"CE Vallbona",
+"Estrela da Serra"
+],
+"2017": [
+"Boca del Plata",
+"Steaua Ravna"
+],
+"2018": [
+"Deportivo Cumbre",
+"CE Vallbona"
+],
+"2019": [
+"Nacional de Sierra Alta",
+"FC Rheinfeld"
+],
+"2020": [
+"Real Castellar",
+"Nacional de Sierra Alta"
+],
+"2021": [
+"Santa Fe del Rio",
+"Celtic Harbour"
+],
+"2022": [
+"SD Altamira",
+"Deportivo Cumbre"
+],
+"2023": [
+"FC Rheinfeld",
+"Santa Fe del Rio"
+],
+"2024": [
+"FC Rheinfeld",
+"Boca del Plata"
+],
+"2025": [
+"Inter Valmora",
+"Universitario del Sur"
+]
+}
+}
+}

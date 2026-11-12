@@ -1,0 +1,34 @@
+{
+    "match_name": "Role lab: average sides, neutral (blue) roles vs red roles",
+    "home_team": {
+        "id": 0,
+        "name": "Average Athletic",
+        "file": "data/teams/team_avg_a.csv",
+        "primary_color": [
+            60,
+            120,
+            200
+        ],
+        "roles": "blue",
+        "tactics": {
+            "defence": "mid_block"
+        }
+    },
+    "away_team": {
+        "id": 1,
+        "name": "Average Rovers",
+        "file": "data/teams/team_avg_b.csv",
+        "primary_color": [
+            200,
+            70,
+            70
+        ],
+        "roles": {
+            "base": "red",
+            "RM": "RM_red_old"
+        },
+        "tactics": {
+            "defence": "mid_block"
+        }
+    }
+}

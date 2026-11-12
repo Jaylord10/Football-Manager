@@ -1,0 +1,202 @@
+# Threat System Integration - Complete Summary
+
+## What We Built 🎯
+
+A new **threat-based decision system** for the progression layer that replaces complex penalty scoring with simple, intuitive threat multipliers.
+
+---
+
+## The Two Files
+
+### 1. `ai/threat.py` (NEW!)
+
+Contains two main functions:
+
+#### `calculate_receiver_threat(receiver, opponents, passer_pos)`
+**Purpose:** How dangerous would a teammate be if they received the ball?
+
+**Weights:**
+- 30% defenders between receiver and goal
+- 25% space around receiver (can they turn?)
+- 20% distance to goal
+- 17% facing direction (toward goal or away?)
+- 5% angle to goal (central vs wide)
+- 3% behind defensive line (bonus)
+
+**Returns:** 0.0 to 1.0 threat score
+
+---
+
+#### `calculate_carrier_threat(carrier, opponents)`
+**Purpose:** How dangerous am I with the ball when dribbling forward?
+
+**Weights:**
+- 30% defenders in dribble path (narrow corridor ahead)
+- 25% space ahead (room to run)
+- 20% distance to goal
+- 17% facing direction
+- 5% angle to goal
+- 3% behind defensive line
+
+**Returns:** 0.0 to 1.0 threat score
+
+---
+
+### 2. `ai/progression.py` (UPDATED!)
+
+Simplified to use threat multipliers instead of complex penalty system.
+
+**Old System:**
+```python
+score = 11 (base)
+score -= 8 (if defender close)
+score -= 3 (if risky)
+score += 1 (if forward)
+if score >= 6: accept
+```
+
+**New System:**
+```python
+pass_score = 10 * receiver_threat
+dribble_score = 9 * carrier_threat
+
+if score >= 5.0: accept
+```
+
+---
+
+## Key Numbers
+
+### Passing
+- **Base score:** 10
+- **Multiplier:** receiver_threat (0.0 to 1.0)
+- **Range:** 0.0 to 10.0
+- **Threshold:** 5.0
+
+### Dribbling
+- **Base score:** 9
+- **Multiplier:** carrier_threat (0.0 to 1.0)
+- **Range:** 0.0 to 9.0
+- **Threshold:** 5.0
+
+### Defender Scoring
+
+**For Passing (more lenient):**
+- 0-1 defenders = 1.0
+- 2 defenders = 0.6
+- 3 defenders = 0.3
+- 4+ defenders = 0.1
+
+**For Dribbling (harsher):**
+- 0 defenders = 1.0
+- 1 defender = 0.4
+- 2+ defenders = 0.0
+
+### Facing Direction
+- 0-45° toward goal = 1.0 (facing forward)
+- 45-90° = 0.5 (side-on)
+- 90-180° = 0.0 (back to goal)
+
+---
+
+## Hard Rules (Still Apply)
+
+These bypass threat scoring entirely:
+
+1. ❌ **Backward passes** - Rejected immediately (forward < -1m)
+2. ❌ **Will be intercepted** - Rejected immediately
+3. ❌ **Can't see teammate** - Rejected (vision check)
+4. ❌ **Out of bounds** - Rejected (sanity check)
+
+---
+
+## Example Scenarios
+
+### Scenario 1: Striker in Box
+- Position: 12m from goal, central
+- Facing: Toward goal
+- Defenders: 1 between him and goal
+- Space: 2m around him
+
+**Receiver Threat Calculation:**
+- Defenders (30%): 1 defender = 1.0 → 0.30
+- Space (25%): 2m = 0.3 → 0.075
+- Distance (20%): 12m = 0.75 → 0.15
+- Facing (17%): Forward = 1.0 → 0.17
+- Angle (5%): Central = 1.0 → 0.05
+- Behind (3%): No = 0.0
+
+**Total Threat:** 0.625
+**Pass Score:** 10 × 0.625 = **6.25** ✅ (above threshold)
+
+---
+
+### Scenario 2: Midfielder with Space
+- Position: 35m from goal
+- Facing: Forward
+- Path: Clear (0 defenders ahead)
+- Space: 10m ahead
+
+**Carrier Threat Calculation:**
+- Defenders in path (30%): 0 = 1.0 → 0.30
+- Space ahead (25%): 10m = 1.0 → 0.25
+- Distance (20%): 35m = 0.25 → 0.05
+- Facing (17%): Forward = 1.0 → 0.17
+- Angle (5%): Central = 1.0 → 0.05
+- Behind (3%): No = 0.0
+
+**Total Threat:** 0.82
+**Dribble Score:** 9 × 0.82 = **7.38** ✅ (should dribble!)
+
+---
+
+## How It Works in Game
+
+```
+1. Player gets ball
+2. Progression layer evaluates:
+   
+   For each teammate:
+     - Check hard rules (backward? intercepted? can see?)
+     - Calculate receiver_threat
+     - Score = 10 × threat
+   
+   For carrier:
+     - Calculate carrier_threat
+     - Score = 9 × threat
+   
+3. Pick highest score >= 5.0
+4. If both fail, go to recycle layer
+```
+
+---
+
+## What's Next?
+
+### Completed ✅
+- threat.py built with correct weights
+- progression.py updated to use threat
+- Facing direction integrated (17% weight)
+- Separate scoring for passing vs dribbling
+
+### Future Improvements 🚀
+- Add TPI integration (pressure affects thresholds)
+- Create retention.py (sidestep, shield, turn)
+- Add threat to decisive layer
+- Visual debug (show threat scores on screen)
+
+---
+
+## Testing Tips
+
+To test if threat is working:
+
+1. **Watch for smart passing** - Should prefer strikers near goal over safe backward passes
+2. **Watch dribbling** - Players with space should dribble, crowded players shouldn't
+3. **Watch facing** - Players facing wrong way should get fewer passes
+4. **Check console** - Added print statements show threat scores
+
+If you see dumb decisions (passing to covered players instead of open ones), check:
+- Are threat weights correct?
+- Is threshold too low? (try 5.5 or 6.0)
+- Are hard rules working? (backward passes blocked?)

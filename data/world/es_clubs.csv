@@ -1,0 +1,21 @@
+id,name,short,r,g,b,strength,defence,build_up,roles
+100,Real Castellar,Castellar,235,235,235,78,press,play_out,red
+101,CE Vallbona,Vallbona,150,30,70,76,press,play_out,blue
+102,Atletico Almenara,Almenara,200,40,50,71,high_press,play_out,blue
+103,Real Torrevega,Torrevega,40,150,80,68,high_press,play_out,blue
+104,Valdeluz CF,Valdeluz,240,140,30,66,press,mixed,red
+105,Deportivo Penaclara,Penaclara,60,110,200,65,press,mixed,red
+106,CD Lizarra,Lizarra,170,20,30,64,mid_block,play_out,red
+107,Villarrubia CF,Villarrubia,245,215,40,63,mid_block,play_out,red
+108,Union Monteverde,Monteverde,30,120,60,62,mid_block,mixed,blue
+109,Racing Calahonda,Calahonda,120,190,230,61,mid_block,mixed,red
+110,SD Altamira,Altamira,120,60,160,60,mid_block,mixed,red
+111,UD Valdesierra,Valdesierra,30,40,110,59,mid_block,mixed,blue
+112,CF Rio Seco,Rio Seco,170,120,40,58,mid_block,clear,red
+113,Real Cabo Fresno,Cabo Fresno,40,80,170,58,mid_block,clear,blue
+114,CD Aldeavieja,Aldeavieja,60,60,60,57,low_block,mixed,red
+115,Atletico Benarraba,Benarraba,150,25,25,56,low_block,mixed,red
+116,UD Ribera,Ribera,30,150,150,55,low_block,clear,red
+117,CF Montoro,Montoro,110,30,50,54,low_block,clear,red
+118,SD Villanegra,Villanegra,25,25,25,53,low_block,clear,blue
+119,Maritimo Puerto Lindo,Puerto Lindo,90,170,220,52,low_block,clear,red

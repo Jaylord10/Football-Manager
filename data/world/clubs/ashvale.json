@@ -1,0 +1,378 @@
+{
+  "id": 2,
+  "name": "Ashvale Rovers",
+  "short": "Ashvale",
+  "nicknames": [
+    "Rovers",
+    "the Weavers"
+  ],
+  "founded": 1878,
+  "location": {
+    "town": "Ashvale",
+    "county": "Lancashire",
+    "region": "North West England",
+    "about": "A cotton town of about 140,000 people in the Ash valley, between the Pennine moors and the Leeds and Liverpool Canal. Mill chimneys, red-brick terraces, stone chapels; most of the mills closed in the 1960s and 70s, and the football club became the thing the town is known for."
+  },
+  "colours": {
+    "rgb": [
+      200,
+      60,
+      60
+    ],
+    "story": "Rovers played in blue and white hoops until 1894, when a mill owner's daughter, Edith Pilling, gave the club a set of red shirts dyed at her father's works. They won the league in them in 1898 and never went back.",
+    "home": {
+      "shirt": "Ashvale red with a white grandad-style collar and white cuffs; a thin gold trim on the collar (from the crest)",
+      "shorts": "white",
+      "socks": "red with white tops",
+      "rgb": {
+        "shirt": [
+          200,
+          60,
+          60
+        ],
+        "trim": [
+          255,
+          255,
+          255
+        ],
+        "shorts": [
+          245,
+          245,
+          245
+        ],
+        "socks": [
+          200,
+          60,
+          60
+        ]
+      }
+    },
+    "away": {
+      "shirt": "ash grey (charcoal) with red collar and cuffs and a red band across the chest",
+      "shorts": "charcoal",
+      "socks": "charcoal with red tops",
+      "rgb": {
+        "shirt": [
+          70,
+          72,
+          78
+        ],
+        "trim": [
+          200,
+          60,
+          60
+        ],
+        "shorts": [
+          60,
+          62,
+          68
+        ],
+        "socks": [
+          60,
+          62,
+          68
+        ]
+      }
+    },
+    "third": {
+      "shirt": "heritage blue and white hoops - the colours they wore from 1878 to 1894",
+      "shorts": "navy",
+      "socks": "white",
+      "rgb": {
+        "shirt": [
+          40,
+          80,
+          150
+        ],
+        "trim": [
+          255,
+          255,
+          255
+        ],
+        "shorts": [
+          25,
+          35,
+          70
+        ],
+        "socks": [
+          245,
+          245,
+          245
+        ]
+      }
+    }
+  },
+  "rivals": [
+    {
+      "club": "Bramhall Borough",
+      "derby": "the Cotton Derby",
+      "why": "the neighbouring Lancashire mill town six miles down the valley - the oldest and bitterest rivalry, first played in 1880"
+    },
+    {
+      "club": "Northwick FC",
+      "derby": "the Pennine Derby",
+      "why": "Yorkshire's biggest club, across the moors - title rivals since the 1970s"
+    }
+  ],
+  "history": [
+    {
+      "years": "1878-1888",
+      "title": "The rovers",
+      "text": "Founded in 1878 by weavers and members of St Bartholomew's chapel cricket club, who wanted something to do in winter. With no ground of their own they played wherever a farmer would let them - hence 'Rovers'. Turned professional in 1885, one of the first clubs in the north to do so."
+    },
+    {
+      "years": "1888-1914",
+      "title": "Founder members",
+      "text": "One of the twelve founder members of the League in 1888. First champions from Lancashire's cotton towns in 1892-93, again in 1897-98, and winners of the Association Cup in 1891 and 1906. Moved to Kiln Lane in 1897, on the site of an old brick kiln by the canal."
+    },
+    {
+      "years": "1919-1939",
+      "title": "Between the wars",
+      "text": "A third title in 1926-27, built on the goals of Billy Heap, still the club's record scorer. Association Cup winners in 1934 in front of a crowd of 92,000."
+    },
+    {
+      "years": "1946-1970",
+      "title": "The post-war boom",
+      "text": "Huge crowds - a record 71,904 packed Kiln Lane for the Association Cup sixth round against Northwick in 1957. League champions in 1954-55, Association Cup winners in 1962. The mills were closing; the club was what the town still had."
+    },
+    {
+      "years": "1971-1987",
+      "title": "The Haworth years",
+      "text": "Tommy Haworth, a local lad and former Rovers wing-half, took over in 1971 and built the greatest side in the club's history. Champions in 1975-76 and 1981-82, Association Cup in 1977, League Cup in 1978 and 1985. On 30 May 1979 Danny Kershaw lifted the Continental Champions' Cup after a 2-1 win over FC Rheinfeld; that December they beat Boca del Plata 1-0 to win the World Club Trophy. Haworth retired in 1987, and the East Stand - built in his first full season - was renamed the Haworth Stand."
+    },
+    {
+      "years": "1987-1994",
+      "title": "The fall",
+      "text": "Debts, an ageing side and three managers in four years. Relegated in 1991 for the first time since 1938 - the Weavers' End sang through the last game anyway. Promoted back at the third attempt in 1994."
+    },
+    {
+      "years": "1994-2010",
+      "title": "Back among the best",
+      "text": "The ground rebuilt for the all-seater era, the club steadied, and a young side won the Continental Shield in 1999 and the Association Cup in 2004."
+    },
+    {
+      "years": "2010-now",
+      "title": "Modern Rovers",
+      "text": "Under the Italian coach Marco Ferretti, a seventh league title in 2012-13 - the first in 31 years - and the League Cup in 2016. Now one of the league's big clubs again, expected to challenge every year."
+    }
+  ],
+  "honours": {
+    "League champions": [
+      1893,
+      1898,
+      1927,
+      1955,
+      1976,
+      1982,
+      2013
+    ],
+    "League runners-up": [
+      1890,
+      1895,
+      1909,
+      1956,
+      1977,
+      1980,
+      1983,
+      2014,
+      2019
+    ],
+    "Second Division champions": [
+      1939,
+      1994
+    ],
+    "Association Cup": [
+      1891,
+      1906,
+      1934,
+      1962,
+      1977,
+      2004
+    ],
+    "League Cup": [
+      1978,
+      1985,
+      2016
+    ],
+    "Continental Champions' Cup": [
+      1979
+    ],
+    "Continental Shield": [
+      1999
+    ],
+    "World Club Trophy": [
+      1979
+    ]
+  },
+  "honours_note": "League seasons are given by the year they ended (1893 = 1892-93).",
+  "legends": [
+    {
+      "name": "Tommy Haworth",
+      "role": "Manager 1971-1987",
+      "note": "Two titles, a Continental Champions' Cup and a World Club Trophy. A statue of him stands outside the Haworth Stand."
+    },
+    {
+      "name": "Danny Kershaw",
+      "role": "Captain, centre-half 1972-1986",
+      "note": "Lifted the Continental Champions' Cup in 1979. 588 appearances."
+    },
+    {
+      "name": "Billy Heap",
+      "role": "Centre-forward 1921-1935",
+      "note": "291 goals - the club record."
+    },
+    {
+      "name": "Jack Ormerod",
+      "role": "Full-back 1923-1939",
+      "note": "702 appearances - the club record."
+    },
+    {
+      "name": "Edith Pilling",
+      "role": "Benefactor",
+      "note": "Gave the club its red shirts in 1894."
+    },
+    {
+      "name": "Marco Ferretti",
+      "role": "Manager 2009-2017",
+      "note": "Ended a 31-year wait for the title in 2013."
+    }
+  ],
+  "records": {
+    "attendance": "71,904 v Northwick FC, Association Cup sixth round, 9 March 1957",
+    "win": "10-0 v Darnford Albion, League, 1892",
+    "defeat": "0-8 v Northwick FC, League, 1990",
+    "top_scorer": "Billy Heap, 291 goals (1921-1935)",
+    "appearances": "Jack Ormerod, 702 (1923-1939)",
+    "season_goals": "Billy Heap, 44 (1926-27)"
+  },
+  "badge": {
+    "about": "The ash tree for the town's name and the club's roots; the weaver's shuttle for the cotton workers who founded it; the red rose for Lancashire; 1878 for the year it began. Motto 'Labore et Fide' - by work and faith - the chapel cricket club's old motto.",
+    "design": "A classic heraldic shield in Ashvale red with a thin white border and a gold outer edge. In the centre, a white ash tree with a broad crown and its roots showing. Across the base of the tree, a gold weaver's shuttle laid horizontally. In the top-left corner, a small red Lancashire rose on a white roundel. '18' and '78' either side of the tree trunk. A white ribbon scroll below the shield with 'LABORE ET FIDE' in red. 'ASHVALE ROVERS' arched over the top of the shield in white serif capitals."
+  },
+  "ground": {
+    "name": "Kiln Lane",
+    "opened": 1897,
+    "capacity": 45000,
+    "pitch": {
+      "length_m": 105,
+      "width_m": 68,
+      "surface": "hybrid grass, quick when wet",
+      "runoff": "short - the stands are close to the touchlines"
+    },
+    "stands": [
+      {
+        "name": "Main Stand",
+        "side": "west",
+        "built": 1897,
+        "tiers": 1,
+        "capacity": 12500,
+        "roof": "long pitched roof",
+        "features": "the ornate 1897 red-brick facade runs the full length of Kiln Lane - arched windows, the original turnstile entrances, the club crest in stone - with the seating rebuilt behind it in 2009; tunnel and dugouts on the halfway line; listed, so it can never be made bigger",
+        "expandable": false
+      },
+      {
+        "name": "Haworth Stand",
+        "side": "east",
+        "built": 1972,
+        "tiers": 2,
+        "capacity": 11500,
+        "roof": "flat steel roof on columns",
+        "features": "named after Tommy Haworth; built in his first full season, two tiers under a plain flat roof, starting to show its age; his bronze statue outside; family section in the lower tier; the old Kiln Lane Mill and its listed chimney just behind it",
+        "expandable": true
+      },
+      {
+        "name": "Weavers' End",
+        "side": "north",
+        "built": 1994,
+        "tiers": 1,
+        "capacity": 13500,
+        "roof": "cantilever roof with an exposed white steel truss along the front",
+        "features": "the home end, built in 1994 on the old standing kop - one steep single tier; banners and a giant red 'LABORE ET FIDE' flag; the noisiest end of the ground; the old floodlight pylon in the corner beside it",
+        "expandable": true
+      },
+      {
+        "name": "Canal End",
+        "side": "south",
+        "built": 1958,
+        "tiers": 1,
+        "capacity": 7500,
+        "roof": "pitched roof",
+        "features": "small and old-fashioned, squeezed against the Leeds and Liverpool Canal - the towpath, narrowboats and a stone footbridge right behind it, so it can never grow; away fans in the corner nearest the main stand",
+        "expandable": false
+      }
+    ],
+    "corners": "open corners in the old English style; the original 1950s lattice floodlight pylon still stands in the corner between the Weavers' End and the Haworth Stand",
+    "surroundings": "red-brick and stone terraced streets on two sides, the old mill and its chimney behind the Haworth Stand, the canal behind the Canal End, a church spire in the town beyond, and the Pennine moors on the skyline",
+    "atmosphere": "close to the pitch, loud, Lancashire wet - low grey cloud and drizzle on many matchdays; the Weavers' End starts the singing and the Haworth Stand joins in",
+    "for_the_engine": {
+      "home_end": "north",
+      "away_fans": "south-east corner",
+      "dugouts": "west side, halfway line",
+      "pitch_m": [
+        105,
+        68
+      ],
+      "notes": "tight old ground - a crowd that feels on top of the players"
+    },
+    "images": {
+      "crest": "data/world/clubs/ashvale/crest.png",
+      "inside": "data/world/clubs/ashvale/inside.jpg",
+      "aerial": "data/world/clubs/ashvale/aerial.jpg"
+    },
+    "development": [
+      {
+        "id": "haworth",
+        "stand": "Haworth Stand",
+        "name": "Rebuild the Haworth Stand",
+        "adds": 10500,
+        "cost": 125000000,
+        "months": 22,
+        "closed_during": 6000,
+        "about": "The 1972 stand comes down in sections and a modern three-tier stand goes up in its place, with a hospitality level and a cantilever roof to match the Weavers' End - 22,000 seats.",
+        "after": {
+          "capacity": 22000,
+          "tiers": 3,
+          "built": "rebuilt",
+          "roof": "modern cantilever roof with a white steel truss, matching the Weavers' End",
+          "features": "three tiers, 22,000 seats, a glass-fronted hospitality level between the second and third tiers and 'ASHVALE' picked out in white seats in the top tier; Tommy Haworth's statue moved to the new plaza in front; the mill chimney still rises just behind it"
+        },
+        "opened_line": "Tommy Haworth's family cut the ribbon.",
+        "images": {
+          "inside": "data/world/clubs/ashvale/inside_2.jpg",
+          "aerial": "data/world/clubs/ashvale/aerial_2.jpg"
+        }
+      },
+      {
+        "id": "weavers",
+        "stand": "Weavers' End",
+        "name": "Rebuild the Weavers' End",
+        "requires": "haworth",
+        "adds": 11000,
+        "cost": 135000000,
+        "months": 24,
+        "closed_during": 7000,
+        "about": "The home end is rebuilt as a huge steep two-tier end that curls round the corner and joins the new Haworth Stand - 24,500 seats, the biggest home end in Lancashire. The old floodlight pylon has to come down.",
+        "after": {
+          "capacity": 24500,
+          "tiers": 2,
+          "built": "rebuilt",
+          "roof": "one continuous cantilever roof joining the Haworth Stand round the corner",
+          "features": "a vast, steep two-tier home end that wraps round the north-east corner and joins the Haworth Stand in one sweep under one white-trussed roof; the giant 'LABORE ET FIDE' banner across the upper tier; the old 1950s floodlight pylon finally came down to make room - a section of it stands outside the club museum"
+        },
+        "opened_line": "The Weavers' End was full an hour before kick-off.",
+        "images": {
+          "inside": "data/world/clubs/ashvale/inside_3.jpg",
+          "aerial": "data/world/clubs/ashvale/aerial_3.jpg"
+        }
+      }
+    ]
+  },
+  "image_prompts": {
+    "badge": "A football club crest for 'Ashvale Rovers', founded 1878, a historic Lancashire cotton-town club. Classic heraldic shield in deep red (#C83C3C) with a thin white border and a gold outer edge. Centre: a white ash tree with a broad rounded crown and visible roots. Across the base of the tree, a gold weaver's shuttle laid horizontally. Top-left corner: a small red rose on a white circle. The numbers '18' and '78' either side of the trunk. A white ribbon scroll beneath the shield reading 'LABORE ET FIDE' in red capitals. 'ASHVALE ROVERS' arched above the shield in white serif capitals. Flat vector emblem, clean bold lines, limited colours (red, white, gold), centred, on a plain transparent background, square format, no other text.",
+    "ground_outside": "Exterior of an English football stadium called Kiln Lane in a Lancashire mill town, early evening on a wet matchday. A red-brick Victorian turnstile arch reading 'KILN LANE 1897' set into the modern facade of a large two-tier main stand with a curved steel roof. Fans in red scarves crowding the narrow street of red-brick terraced houses. A tall old red-brick mill chimney rising behind the far stand, the grey Pennine moors on the horizon, low cloud, drizzle, street lamps reflecting on wet cobbles. Photorealistic, 35mm, natural light.",
+    "ground_inside": "Inside a 67,000-seat English football stadium on a rainy Lancashire matchday, view from the halfway line in the upper tier of the west stand. Steep single-tier home end on the left packed with fans in red, waving flags, a giant red banner reading 'LABORE ET FIDE'. Two-tier stands on both long sides with red seats; open corners in the old English style; an old lattice floodlight pylon in one corner. Behind the far end stand, a tall red-brick mill chimney and the edge of a canal; grey moors on the skyline. Bright green pitch under floodlights, players in red and white kits lining up. Photorealistic, wide angle, atmospheric.",
+    "ground_aerial": "Aerial drone photograph of an English football stadium in a Lancashire cotton town: a rectangular ground with four separate stands and open corners, red seats, tight to the pitch. To the south, a canal with narrowboats and an old red-brick mill chimney; red-brick terraced streets packed around the other three sides; green Pennine moorland hills in the distance. Overcast sky, late afternoon light. Photorealistic.",
+    "kits": "Three football kits for Ashvale Rovers laid out flat side by side on a plain light background, product-photo style. Home: deep red shirt (#C83C3C) with a white grandad collar with thin gold trim and white cuffs, white shorts, red socks with white tops. Away: charcoal ash-grey shirt with red collar, red cuffs and a red band across the chest, charcoal shorts, charcoal socks with red tops. Third: blue and white horizontal hoops, navy shorts, white socks. A small red club crest on the left chest of each shirt. No sponsor logos, no other text."
+  },
+  "support": 63000
+}

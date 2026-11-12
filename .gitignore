@@ -1,0 +1,15 @@
+# Jay's own things - stay on his PC
+saves/
+_backup_*/
+_claude_overnight/
+_face_pool/
+_faces_for_chatgpt/
+_to_delete/
+_wip_*/
+FMNEWGANv2*/
+Realistic player faces/
+Clubs/
+faces/photos/
+# Python
+__pycache__/
+*.pyc
