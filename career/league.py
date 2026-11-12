@@ -101,6 +101,35 @@ def table(career, div=None):
     return out
 
 
+def top_scorers(career, div=None, n=20):
+    """[(goals, apps, player, club)] in a division this season, from the match records."""
+    clubs, results = _div_data(career, div)
+    ids = {c["id"] for c in clubs}
+    goals, apps = {}, {}
+    for md in results.values():
+        for r in md:
+            for g in r.get("goals", []):
+                if g.get("own_goal") or g.get("pid") is None:
+                    continue
+                cid = r["home"] if g.get("team", 0) == 0 else r["away"]
+                goals[(cid, g["pid"])] = goals.get((cid, g["pid"]), 0) + 1
+            for a in r.get("players", []):
+                if a.get("minutes", 0) > 0:
+                    cid = r["home"] if a["team"] == 0 else r["away"]
+                    apps[(cid, a["id"])] = apps.get((cid, a["id"]), 0) + 1
+    from career import clubs as clubs_mod
+    out = []
+    for (cid, pid), n_ in goals.items():
+        if cid not in ids:
+            continue
+        club = career["clubs"][cid]
+        p = clubs_mod.player_by_id(club, pid)
+        if p is not None:
+            out.append((n_, apps.get((cid, pid), 0), p, club))
+    out.sort(key=lambda t: (-t[0], t[1], t[2]["Name"]))
+    return out[:n]
+
+
 def results_of(career, club_id):
     """The results dict ("matchday" -> [...]) of the division this club plays in."""
     from career import divisions

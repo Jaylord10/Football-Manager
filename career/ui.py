@@ -313,6 +313,7 @@ class App:
             self.squad_club = self.career["my_club"]
         if screen == "table":
             self.table_div = None                       # (your own division first)
+            self.table_scorers = False
         if screen == "club":
             self.club_view = None                       # (your own club)
             self.stadium_reply = None
@@ -658,6 +659,7 @@ class App:
         self.screen = screen
         if screen == "fixtures" and self.career:
             self.fixtures_md = min(self.career["matchday"], len(self.career["fixtures"]))
+            self.fixtures_div = None
         if screen == "calendar" and self.career and self.career.get("date"):
             d = cal.parse(self.career["date"])
             self.cal_ym = (d.year, d.month)
@@ -3150,9 +3152,31 @@ class App:
                 o = self.career["other"]
                 self.text(f"Played {o['matchday'] - 1} of {len(o['fixtures'])}  ·  quick results, in the background",
                           "small", MUTED, (600, 65))
+        scorers = getattr(self, "table_scorers", False)
+        self.buttons.append(Button((W - 30 - 170, 60, 170, 26), "Table" if scorers else "Top scorers",
+                                   lambda: setattr(self, "table_scorers", not scorers), font="btn_s"))
         r = pygame.Rect(250, 94, W - 280, H - 124)
         self.panel(r)
-        self._table_rows(league.table(self.career, div), r.x + 20, r.y + 18, r.w - 40)
+        if not scorers:
+            self._table_rows(league.table(self.career, div), r.x + 20, r.y + 18, r.w - 40)
+            return
+        y = r.y + 14
+        for label, cx in (("", 0), ("Player", 40), ("Club", 380), ("Apps", r.w - 170), ("Goals", r.w - 90)):
+            self.text(label, "small", MUTED, (r.x + 20 + cx, y))
+        y += 28
+        rows = league.top_scorers(self.career, div, 22)
+        if not rows:
+            self.text("No goals yet - the season hasn't started.", "body", MUTED, (r.x + 20, y))
+        for i, (n, apps, p, club) in enumerate(rows, start=1):
+            self.text(str(i), "body", MUTED, (r.x + 20, y))
+            self.text(f"{p['Name']} ({p['Pos']}, {p['Age']})", "body", TEXT, (r.x + 60, y))
+            _badge(self.win, tuple(club["colour"]), (r.x + 408, y + 11), 7, club)
+            self.text(club["name"], "body", TEXT, (r.x + 422, y))
+            self.text(str(apps), "body", TEXT, (r.x + r.w - 150, y))
+            self.text(str(n), "body", TEXT, (r.x + r.w - 70, y))
+            self.buttons.append(_Invisible(pygame.Rect(r.x + 10, y - 3, r.w - 20, 27),
+                                           lambda cid=club["id"], pid=p["id"]: self.view_player(cid, pid)))
+            y += 29
 
     # -- training -----------------------------------------------------------
     def _set_training(self, key, value):
@@ -3269,6 +3293,8 @@ class App:
         days = {d: i + 1 for i, d in enumerate(c.get("calendar", []))}
         breaks = set(c.get("breaks", []))
         fr_on = {f["date"]: f for f in friendlies.all_(c)}
+        st_po = playoffs.state(c)
+        po_on = {m_["date"]: m_ for m_ in (st_po or {}).get("matches", []) if playoffs.involved(c, m_)}
         self.text("Click a free day to arrange a friendly", "small", MUTED, (x0 + 470, 72), "midtop")
         today = c.get("date")
         r = pygame.Rect(x0, 90, W - x0 - 30, H - 110)
@@ -3307,6 +3333,19 @@ class App:
                         else:
                             self.text(f"{cal.kick_off(iso)}  ·  MD {md}", "small", MUTED, (cell.x + 6, cell.y + 50))
                     self.buttons.append(_Invisible(cell, lambda md=md: self._cal_open(md)))
+                elif inside and po_on.get(iso):
+                    pm = po_on[iso]
+                    opp = pm["away"] if pm["home"] == mc else pm["home"]
+                    self.text("Play-off final" if pm["round"] == "final" else f"Play-off, leg {pm['leg']}", "small",
+                              ACCENT_HI, (cell.x + 6, cell.y + 24))
+                    self.text(self._fit_text(f"{self.name(opp, True)} " + ("(N)" if pm["neutral"] else
+                                             "(H)" if pm["home"] == mc else "(A)"), "small", cell.w - 10), "small",
+                              TEXT, (cell.x + 6, cell.y + 42))
+                    if pm.get("result"):
+                        rr = pm["result"]
+                        gf, ga = (rr["hg"], rr["ag"]) if pm["home"] == mc else (rr["ag"], rr["hg"])
+                        self.text(f"{gf}-{ga}", "small", MUTED, (cell.x + 6, cell.y + 60))
+                    self.buttons.append(_Invisible(cell, lambda: self.go("playoff")))
                 elif inside and fr_on.get(iso):
                     f = fr_on[iso]
                     self.text("Friendly", "small", ACCENT_HI, (cell.x + 6, cell.y + 24))
@@ -3495,19 +3534,42 @@ class App:
         self.sidebar("fixtures")
         self._paper_tabs("fixtures")
         c = self.career
-        md = self.fixtures_md
+        from career import divisions
+        mine = divisions.my_div(c)
+        div = getattr(self, "fixtures_div", None) or mine
+        if not divisions.exists(c):
+            div = mine
+        fixtures, res_all = (c["fixtures"], c["results"]) if div == mine else (c["other"]["fixtures"],
+                                                                                c["other"]["results"])
+        po = div == playoffs.DIV and playoffs.state(c) is not None        # (a page for the play-offs)
+        last = len(fixtures) + (1 if po else 0)
+        md = min(self.fixtures_md, last)
         self.text("Fixtures & results", "h1", TEXT, (250, 24))
+        if divisions.exists(c):
+            for i, d_ in enumerate(divisions.ORDER):
+                self.buttons.append(Button((W - 330 + i * 150, 82, 142, 34), divisions.name(d_),
+                                           lambda d_=d_: setattr(self, "fixtures_div", d_),
+                                           primary=d_ == div, font="btn_s"))
         self.buttons.append(Button((250, 80, 46, 40), "<", lambda: setattr(self, "fixtures_md", max(1, md - 1))))
-        self.text(f"Matchday {md} of {len(c['fixtures'])}", "h2", TEXT, (250 + 230, 84), "midtop")
-        d = league.match_date(c, md)
-        if d:
-            self.text(f"{cal.fmt(d)}, {cal.kick_off(d)}", "body", MUTED, (250 + 490, 92))
         self.buttons.append(Button((250 + 414, 80, 46, 40), ">",
-                                   lambda: setattr(self, "fixtures_md", min(len(c["fixtures"]), md + 1))))
+                                   lambda: setattr(self, "fixtures_md", min(last, md + 1))))
         r = pygame.Rect(250, 140, W - 280, H - 170)
         self.panel(r)
-        results = {(x["home"], x["away"]): x for x in c["results"].get(str(md), [])}
-        day = c["fixtures"][md - 1]
+        if md > len(fixtures):
+            self.text("Play-offs", "h2", TEXT, (250 + 230, 84), "midtop")
+            y = r.y + 24
+            for label, txt in playoffs.lines(c):
+                self.text(label, "small", MUTED, (r.x + 20, y + 2))
+                self.text(self._fit_text(txt, "body", r.w - 250), "body", TEXT, (r.x + 220, y))
+                y += 40
+            return
+        self.text(f"Matchday {md} of {len(fixtures)}", "h2", TEXT, (250 + 230, 84), "midtop")
+        d = league.match_date(c, md)
+        if d:
+            self.text(f"{cal.fmt(d)}, {cal.kick_off(d)}" + ("" if div == mine else "  ·  quick results"),
+                      "small", MUTED, (250 + 230, 118), "midtop")
+        results = {(x["home"], x["away"]): x for x in res_all.get(str(md), [])}
+        day = fixtures[md - 1]
         step = min(98, (r.h - 20) // max(1, len(day)))
         y = r.y + 16
         for home, away in day:

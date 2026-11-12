@@ -47,5 +47,7 @@ for k in range(1, 5):
     app._playoff_play(False); app.screen = "home"; shot(f"po_{k}")
     print(k, app.screen, playoffs.lines(c)[-1])
 app.screen = "playoff"; shot("po_end")
+app.go("fixtures"); app.fixtures_div = "d1"; app.fixtures_md = 39; shot("po_fixtures")
+app.go("calendar"); app.cal_ym = (2027, 6); shot("po_calendar")
 app._playoff_continue(); shot("po_season_end")
 print([m["text"][:120] for m in c["inbox"][-4:]])
