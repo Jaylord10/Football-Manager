@@ -48,10 +48,16 @@ SELLOUTS_NEEDED = 0.75         # ...or this share of last season's (or this seas
 
 def _c(career, club):
     cr = career.setdefault("crowds", {}).setdefault(str(club["id"]), {})
+    if "support" in cr and not cr.get("profiled") and "last" not in cr:
+        pr = clubinfo.profile(club)
+        if pr and pr.get("support"):                # (a profile written since: its fan base, once)
+            cr["support"] = cr["base"] = pr["support"]
+            cr["profiled"] = True
     if "support" not in cr:
         pr = clubinfo.profile(club)
         if pr and pr.get("support"):
             cr["support"] = pr["support"]
+            cr["profiled"] = True
         else:
             from career import finance as fin
             n = fin.league_size(career, club)

@@ -115,7 +115,7 @@ roll["second_tier"], roll["second_tier_playoffs"] = {}, {}
 for y in range(1893, 2027):
     if y in WAR:
         continue
-    top = set(roll["league"].get(y, [])) | set(roll["league"].get(y - 1, []))
+    top = set(roll["league"].get(y, [])) | set(roll["league"].get(y - 1, [])) | set(roll["league"].get(y + 1, []))
     up_last = set(roll["second_tier"].get(y - 1, [])) | set(roll["second_tier_playoffs"].get(y - 1, [])[:1])
     if y == 2025:
         up_last |= {"Holloway Vale", "Harrowby Athletic", "Fernley Park", "Saltmarsh Athletic"}   # (2026's, below)
@@ -133,6 +133,29 @@ for y in range(1893, 2027):
     roll["second_tier"][y] = [ch, ru]
     if po:
         roll["second_tier_playoffs"][y] = [po, draw({ch, ru, po}) if y != 2026 else "Saltmarsh Athletic"]
+# The Continental Champions' Cup: an English club in it must have got there - league champions the
+# season before, or the holders (and, from 1998 when the competition opened up, the runners-up too).
+# Entries that can't have qualified go to the club that did (never one of the three with profiles);
+# the World Club Trophy follows its winner.  (Ashvale's, Northwick's and Bramhall's entries are fixed.)
+english = set(names) | set(d1)
+CUP_FIXED = {2000, 2005}          # (Northwick's profile: those finals were lost to Stonecross Albion)
+for y in sorted(roll["champions_cup"]):
+    if y in CUP_FIXED:
+        continue
+    pair = list(roll["champions_cup"][y])
+    for i, club in enumerate(pair):
+        if club not in english or club in PROTECTED:
+            continue
+        prev = roll["league"].get(y - 1, [None, None])
+        ok = {prev[0]} | ({prev[1]} if y >= 1998 else set()) | {roll["champions_cup"].get(y - 1, [None])[0]}
+        if club in ok:
+            continue
+        cands = [n for n in ([prev[0]] + ([prev[1]] if y >= 1998 else [])) if n and n not in PROTECTED and n not in pair]
+        new_club = cands[0] if cands else rng2.choice([n for n in abroad_eu if n not in pair])
+        pair[i] = new_club
+        if i == 0 and y in roll["world_club"]:
+            roll["world_club"][y] = [new_club if n == club else n for n in roll["world_club"][y]]
+    roll["champions_cup"][y] = pair
 out = {"about": "Every season's winners and runners-up (year = the season's end; 1893 = 1892-93). World Club Trophy: "
                 "the Continental Champions' Cup winners v South America's champions.",
        "competitions": {"league": "The League", "association_cup": "The Association Cup", "league_cup": "The League Cup",

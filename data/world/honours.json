@@ -1371,7 +1371,7 @@
 "Racing Calahonda"
 ],
 "1957": [
-"Kingsmere City",
+"Harrowby Athletic",
 "Bramhall Borough"
 ],
 "1958": [
@@ -1395,7 +1395,7 @@
 "Galatur SK"
 ],
 "1963": [
-"Castleford Rangers",
+"Eastvale Wanderers",
 "AC Montevera"
 ],
 "1964": [
@@ -1407,7 +1407,7 @@
 "Steaua Ravna"
 ],
 "1966": [
-"Stonecross Albion",
+"Harrowby Athletic",
 "Dinamo Kravetz"
 ],
 "1967": [
@@ -1420,7 +1420,7 @@
 ],
 "1969": [
 "Olympique Varennes",
-"Castleford Rangers"
+"Eastvale Wanderers"
 ],
 "1970": [
 "Real Castellar",
@@ -1468,14 +1468,14 @@
 ],
 "1981": [
 "Inter Valmora",
-"Brackenfield Town"
+"Union Saint-Lys"
 ],
 "1982": [
 "Maritimo Puerto Lindo",
 "FC Lindholm"
 ],
 "1983": [
-"Oakhurst United",
+"Inter Valmora",
 "Bramhall Borough"
 ],
 "1984": [
@@ -1559,7 +1559,7 @@
 "Olympique Varennes"
 ],
 "2004": [
-"Riverton Dynamo",
+"Brackenfield Town",
 "Ajaxia Noord"
 ],
 "2005": [
@@ -1567,7 +1567,7 @@
 "Northwick FC"
 ],
 "2006": [
-"Westmoor County",
+"Castleford Rangers",
 "Steaua Ravna"
 ],
 "2007": [
@@ -1587,7 +1587,7 @@
 "Northwick FC"
 ],
 "2011": [
-"Oakhurst United",
+"Riverton Dynamo",
 "Hellas Korinna"
 ],
 "2012": [
@@ -1603,7 +1603,7 @@
 "Valdeluz CF"
 ],
 "2015": [
-"Millbrook United",
+"Ajaxia Noord",
 "Inter Valmora"
 ],
 "2016": [
@@ -1887,7 +1887,7 @@
 "Gremio Litoral"
 ],
 "1963": [
-"Castleford Rangers",
+"Eastvale Wanderers",
 "Santa Fe del Rio"
 ],
 "1964": [
@@ -1899,7 +1899,7 @@
 "Nacional de Sierra Alta"
 ],
 "1966": [
-"Stonecross Albion",
+"Harrowby Athletic",
 "Club Atletico Montevista"
 ],
 "1967": [
@@ -1967,7 +1967,7 @@
 "Boca del Plata"
 ],
 "1983": [
-"Oakhurst United",
+"Inter Valmora",
 "Universitario del Sur"
 ],
 "1984": [
@@ -2051,7 +2051,7 @@
 "Inter Valmora"
 ],
 "2004": [
-"Riverton Dynamo",
+"Brackenfield Town",
 "Boca del Plata"
 ],
 "2005": [
@@ -2059,7 +2059,7 @@
 "Estrela da Serra"
 ],
 "2006": [
-"Westmoor County",
+"Castleford Rangers",
 "Universitario del Sur"
 ],
 "2007": [
@@ -2079,7 +2079,7 @@
 "Santa Fe del Rio"
 ],
 "2011": [
-"Oakhurst United",
+"Riverton Dynamo",
 "Santa Fe del Rio"
 ],
 "2012": [
@@ -2095,7 +2095,7 @@
 "Sporting Esteira"
 ],
 "2015": [
-"Millbrook United",
+"Ajaxia Noord",
 "Estrela da Serra"
 ],
 "2016": [
@@ -2145,12 +2145,12 @@
 "Dunholme Wanderers"
 ],
 "1894": [
-"Lydmouth Town",
-"Holloway Vale"
+"Sandmere Athletic",
+"Lydmouth Town"
 ],
 "1895": [
 "Ironmoor Athletic",
-"Stockbury City"
+"Kelbridge Albion"
 ],
 "1896": [
 "Dunholme Wanderers",
@@ -2161,8 +2161,8 @@
 "Ellesmoor County"
 ],
 "1898": [
-"Bexford City",
-"Kelbridge Albion"
+"Ravensworth United",
+"Burnleigh Athletic"
 ],
 "1899": [
 "Brackenfield Town",
@@ -2173,7 +2173,7 @@
 "Dunholme Wanderers"
 ],
 "1901": [
-"Stonecross Albion",
+"Riverton Dynamo",
 "Sandmere Athletic"
 ],
 "1902": [
@@ -2181,24 +2181,24 @@
 "Holloway Vale"
 ],
 "1903": [
-"Daleford Town",
-"Stonecross Albion"
+"Stockbury City",
+"Eastvale Wanderers"
 ],
 "1904": [
 "Brackenfield Town",
-"Ravensworth United"
+"Bexford City"
 ],
 "1905": [
 "Grimsdale Rovers",
 "Dunholme Wanderers"
 ],
 "1906": [
-"Coldharbour Town",
+"Lanfield United",
 "Kestwick Harriers"
 ],
 "1907": [
 "Holloway Vale",
-"Ellesmoor County"
+"Burnleigh Athletic"
 ],
 "1908": [
 "Brackenfield Town",
@@ -2206,7 +2206,7 @@
 ],
 "1909": [
 "Bexford City",
-"Dunholme Wanderers"
+"Ironmoor Athletic"
 ],
 "1910": [
 "Wrexford City",
@@ -2225,19 +2225,19 @@
 "Pitchford Forest"
 ],
 "1914": [
-"Hexley Town",
-"Burnleigh Athletic"
+"Bexford City",
+"Kelbridge Albion"
 ],
 "1915": [
 "Stockbury City",
 "Lanfield United"
 ],
 "1920": [
-"Penrith Forge",
-"Kelbridge Albion"
+"Holloway Vale",
+"Stockbury City"
 ],
 "1921": [
-"Lanfield United",
+"Ironmoor Athletic",
 "Morwick United"
 ],
 "1922": [
@@ -2250,7 +2250,7 @@
 ],
 "1924": [
 "Holloway Vale",
-"Stockbury City"
+"Hexley Town"
 ],
 "1925": [
 "Penrith Forge",
@@ -2261,11 +2261,11 @@
 "Sandmere Athletic"
 ],
 "1927": [
-"Riverton Dynamo",
+"Stonecross Albion",
 "Ironmoor Athletic"
 ],
 "1928": [
-"Oakhurst United",
+"Riverton Dynamo",
 "Wrexford City"
 ],
 "1929": [
@@ -2273,20 +2273,20 @@
 "Coldharbour Town"
 ],
 "1930": [
-"Stonecross Albion",
+"Whitcombe City",
 "Wrexford City"
 ],
 "1931": [
-"Brackenfield Town",
-"Whitcombe City"
+"Stonecross Albion",
+"Daleford Town"
 ],
 "1932": [
-"Ellesmoor County",
+"Ottercliffe Town",
 "Burnleigh Athletic"
 ],
 "1933": [
-"Kelbridge Albion",
-"Stockbury City"
+"Saltmarsh Athletic",
+"Ellesmoor County"
 ],
 "1934": [
 "Dunholme Wanderers",
@@ -2297,8 +2297,8 @@
 "Morwick United"
 ],
 "1936": [
-"Ravensworth United",
-"Saltmarsh Athletic"
+"Kelbridge Albion",
+"Ottercliffe Town"
 ],
 "1937": [
 "Harrowby Athletic",
@@ -2314,30 +2314,30 @@
 ],
 "1947": [
 "Holloway Vale",
-"Morwick United"
+"Kestwick Harriers"
 ],
 "1948": [
 "Stockbury City",
-"Kestwick Harriers"
+"Morwick United"
 ],
 "1949": [
 "Darnford Albion",
 "Lanfield United"
 ],
 "1950": [
-"Kingsmere City",
-"Ottercliffe Town"
+"Hexley Town",
+"Pitchford Forest"
 ],
 "1951": [
-"Brackenfield Town",
-"Castleford Rangers"
+"Stonecross Albion",
+"Stockbury City"
 ],
 "1952": [
-"Westmoor County",
-"Harrowby Athletic"
+"Castleford Rangers",
+"Fernley Park"
 ],
 "1953": [
-"Bexford City",
+"Ravensworth United",
 "Kestwick Harriers"
 ],
 "1954": [
@@ -2345,7 +2345,7 @@
 "Burnleigh Athletic"
 ],
 "1955": [
-"Darnford Albion",
+"Lydmouth Town",
 "Kestwick Harriers"
 ],
 "1956": [
@@ -2353,15 +2353,15 @@
 "Quarrington Albion"
 ],
 "1957": [
-"Ironmoor Athletic",
-"Coldharbour Town"
+"Dunholme Wanderers",
+"Saltmarsh Athletic"
 ],
 "1958": [
 "Grimsdale Rovers",
-"Stockbury City"
+"Daleford Town"
 ],
 "1959": [
-"Stonecross Albion",
+"Whitcombe City",
 "Morwick United"
 ],
 "1960": [
@@ -2369,12 +2369,12 @@
 "Pitchford Forest"
 ],
 "1961": [
-"Ironmoor Athletic",
-"Kestwick Harriers"
+"Dunholme Wanderers",
+"Lanfield United"
 ],
 "1962": [
-"Kingsmere City",
-"Pitchford Forest"
+"Hexley Town",
+"Quarrington Albion"
 ],
 "1963": [
 "Lanfield United",
@@ -2386,7 +2386,7 @@
 ],
 "1965": [
 "Kelbridge Albion",
-"Stockbury City"
+"Burnleigh Athletic"
 ],
 "1966": [
 "Lanfield United",
@@ -2398,19 +2398,19 @@
 ],
 "1968": [
 "Penrith Forge",
-"Castleford Rangers"
+"Millbrook United"
 ],
 "1969": [
 "Lydmouth Town",
 "Quarrington Albion"
 ],
 "1970": [
-"Stockbury City",
-"Harrowby Athletic"
+"Kelbridge Albion",
+"Fernley Park"
 ],
 "1971": [
 "Ravensworth United",
-"Stonecross Albion"
+"Whitcombe City"
 ],
 "1972": [
 "Quarrington Albion",
@@ -2433,7 +2433,7 @@
 "Kelbridge Albion"
 ],
 "1977": [
-"Castleford Rangers",
+"Westmoor County",
 "Harrowby Athletic"
 ],
 "1978": [
@@ -2453,32 +2453,32 @@
 "Fernley Park"
 ],
 "1982": [
-"Millbrook United",
+"Daleford Town",
 "Harrowby Athletic"
 ],
 "1983": [
-"Ravensworth United",
-"Kelbridge Albion"
+"Stockbury City",
+"Burnleigh Athletic"
 ],
 "1984": [
-"Burnleigh Athletic",
+"Kelbridge Albion",
 "Brackenfield Town"
 ],
 "1985": [
-"Ellesmoor County",
-"Pitchford Forest"
+"Pitchford Forest",
+"Ellesmoor County"
 ],
 "1986": [
-"Oakhurst United",
+"Riverton Dynamo",
 "Ottercliffe Town"
 ],
 "1987": [
-"Ellesmoor County",
-"Riverton Dynamo"
+"Pitchford Forest",
+"Stonecross Albion"
 ],
 "1988": [
 "Sandmere Athletic",
-"Stockbury City"
+"Ravensworth United"
 ],
 "1989": [
 "Morwick United",
@@ -2494,7 +2494,7 @@
 ],
 "1992": [
 "Riverton Dynamo",
-"Kelbridge Albion"
+"Burnleigh Athletic"
 ],
 "1993": [
 "Lanfield United",
@@ -2505,7 +2505,7 @@
 "Brackenfield Town"
 ],
 "1995": [
-"Ironmoor Athletic",
+"Lanfield United",
 "Ellesmoor County"
 ],
 "1996": [
@@ -2513,7 +2513,7 @@
 "Dunholme Wanderers"
 ],
 "1997": [
-"Burnleigh Athletic",
+"Kelbridge Albion",
 "Sandmere Athletic"
 ],
 "1998": [
@@ -2541,7 +2541,7 @@
 "Pitchford Forest"
 ],
 "2004": [
-"Saltmarsh Athletic",
+"Kelbridge Albion",
 "Grimsdale Rovers"
 ],
 "2005": [
@@ -2549,8 +2549,8 @@
 "Lydmouth Town"
 ],
 "2006": [
-"Eastvale Wanderers",
-"Sandmere Athletic"
+"Stockbury City",
+"Darnford Albion"
 ],
 "2007": [
 "Saltmarsh Athletic",
@@ -2562,26 +2562,26 @@
 ],
 "2009": [
 "Wrexford City",
-"Stockbury City"
+"Burnleigh Athletic"
 ],
 "2010": [
 "Sandmere Athletic",
-"Castleford Rangers"
+"Kingsmere City"
 ],
 "2011": [
-"Oakhurst United",
+"Stonecross Albion",
 "Kestwick Harriers"
 ],
 "2012": [
-"Westmoor County",
+"Hexley Town",
 "Riverton Dynamo"
 ],
 "2013": [
 "Wrexford City",
-"Saltmarsh Athletic"
+"Ottercliffe Town"
 ],
 "2014": [
-"Stockbury City",
+"Kelbridge Albion",
 "Grimsdale Rovers"
 ],
 "2015": [
@@ -2589,15 +2589,15 @@
 "Darnford Albion"
 ],
 "2016": [
-"Pitchford Forest",
+"Quarrington Albion",
 "Whitcombe City"
 ],
 "2017": [
 "Grimsdale Rovers",
-"Stockbury City"
+"Saltmarsh Athletic"
 ],
 "2018": [
-"Riverton Dynamo",
+"Brackenfield Town",
 "Sandmere Athletic"
 ],
 "2019": [
@@ -2617,12 +2617,12 @@
 "Stockbury City"
 ],
 "2023": [
-"Daleford Town",
-"Ottercliffe Town"
+"Bexford City",
+"Ellesmoor County"
 ],
 "2024": [
-"Ellesmoor County",
-"Kelbridge Albion"
+"Ottercliffe Town",
+"Burnleigh Athletic"
 ],
 "2025": [
 "Grimsdale Rovers",
@@ -2636,11 +2636,11 @@
 "second_tier_playoffs": {
 "1987": [
 "Quarrington Albion",
-"Coldharbour Town"
+"Dunholme Wanderers"
 ],
 "1988": [
 "Grimsdale Rovers",
-"Dunholme Wanderers"
+"Ellesmoor County"
 ],
 "1989": [
 "Wrexford City",
@@ -2651,31 +2651,31 @@
 "Darnford Albion"
 ],
 "1991": [
-"Ottercliffe Town",
+"Ellesmoor County",
 "Brackenfield Town"
 ],
 "1992": [
 "Pitchford Forest",
-"Dunholme Wanderers"
+"Ironmoor Athletic"
 ],
 "1993": [
-"Quarrington Albion",
-"Burnleigh Athletic"
+"Coldharbour Town",
+"Saltmarsh Athletic"
 ],
 "1994": [
 "Kestwick Harriers",
 "Riverton Dynamo"
 ],
 "1995": [
-"Stockbury City",
+"Kelbridge Albion",
 "Wrexford City"
 ],
 "1996": [
-"Kelbridge Albion",
-"Burnleigh Athletic"
+"Burnleigh Athletic",
+"Stockbury City"
 ],
 "1997": [
-"Castleford Rangers",
+"Westmoor County",
 "Morwick United"
 ],
 "1998": [
@@ -2699,24 +2699,24 @@
 "Coldharbour Town"
 ],
 "2003": [
-"Stockbury City",
-"Castleford Rangers"
+"Burnleigh Athletic",
+"Hexley Town"
 ],
 "2004": [
 "Morwick United",
-"Kestwick Harriers"
+"Lanfield United"
 ],
 "2005": [
-"Brackenfield Town",
-"Hexley Town"
+"Oakhurst United",
+"Stockbury City"
 ],
 "2006": [
 "Grimsdale Rovers",
 "Wrexford City"
 ],
 "2007": [
-"Ironmoor Athletic",
-"Fernley Park"
+"Lanfield United",
+"Harrowby Athletic"
 ],
 "2008": [
 "Brackenfield Town",
@@ -2735,11 +2735,11 @@
 "Penrith Forge"
 ],
 "2012": [
-"Quarrington Albion",
+"Coldharbour Town",
 "Grimsdale Rovers"
 ],
 "2013": [
-"Ottercliffe Town",
+"Saltmarsh Athletic",
 "Grimsdale Rovers"
 ],
 "2014": [
@@ -2748,23 +2748,23 @@
 ],
 "2015": [
 "Harrowby Athletic",
-"Bexford City"
+"Hexley Town"
 ],
 "2016": [
 "Ironmoor Athletic",
 "Saltmarsh Athletic"
 ],
 "2017": [
-"Daleford Town",
-"Quarrington Albion"
+"Ravensworth United",
+"Coldharbour Town"
 ],
 "2018": [
-"Westmoor County",
+"Kingsmere City",
 "Wrexford City"
 ],
 "2019": [
-"Darnford Albion",
-"Stockbury City"
+"Lydmouth Town",
+"Ravensworth United"
 ],
 "2020": [
 "Penrith Forge",
@@ -2772,23 +2772,23 @@
 ],
 "2021": [
 "Ellesmoor County",
-"Westmoor County"
+"Millbrook United"
 ],
 "2022": [
 "Darnford Albion",
 "Brackenfield Town"
 ],
 "2023": [
-"Penrith Forge",
+"Holloway Vale",
 "Morwick United"
 ],
 "2024": [
-"Darnford Albion",
+"Lydmouth Town",
 "Stockbury City"
 ],
 "2025": [
 "Wrexford City",
-"Lydmouth Town"
+"Darnford Albion"
 ],
 "2026": [
 "Fernley Park",
