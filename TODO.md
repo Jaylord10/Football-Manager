@@ -8,10 +8,19 @@ Items under "Talk to Jay first" are never started unattended.
 
 ## Ready to go (agreed - work through in order)
 
-- [ ] **Papers and media for promotion, relegation and the play-offs** - previews, reports, "back in the big time".
-- [ ] **Club profiles for the other 37 clubs** - history, location, ground, honours that match the roll,
-      image prompts (Jay makes the pictures). One club per report, starting with Castleford Rangers
-      (Northwick's derby rivals), then Millbrook United and Kingsmere City.
+Jay, 12 Nov: "do the cup competitions including European and world club cup; German and Italian leagues if time
+allows; leave the 3D view; club photos are mine. Make the game as in depth as possible."
+
+- [ ] **The Association Cup** (FA Cup): 40 clubs + lower-league sides from the third round (early January), one-off
+      ties, extra time and penalties, semi-finals and final at the national stadium; prize money (FA's real figures).
+- [ ] **The League Cup**: midweek rounds from August, two-legged semi-finals, a final at the national stadium.
+- [ ] **The Continental Champions' Cup and Continental Shield**: groups, two-legged knockouts, a final; places from
+      the league (and the cups); UEFA-style prize money.
+- [ ] **The World Club Trophy**: Europe's champions v South America's champions.
+- [ ] **German and Italian leagues** in the background (like Spain).
+
+- [ ] **Club profiles for the other clubs** - history, location, ground, honours that match the roll,
+      image prompts (Jay makes the pictures). Castleford Rangers done; next Millbrook United and Kingsmere City.
 
 ## Talk to Jay first (bigger decisions)
 
@@ -22,9 +31,6 @@ Items under "Talk to Jay first" are never started unattended.
 - [ ] **Clubs in debt** - a few Division 1 clubs run up debts of £30-50m and nothing happens to them.
       Real life: owners' money, or administration (a points deduction). Do we want that?
 
-- [ ] **Cup competitions** - the Association Cup and League Cup are in the history but not in the game yet
-      (knockout rounds, replays or not, extra time and penalties in the match engine).
-- [ ] **European competitions** - the Continental Champions' Cup and Shield.
 - [ ] **Extra time and penalty shoot-outs in the match engine** (needed for cups; the play-offs use quick ones now).
 - [ ] **The broadcast 3D view** (Panda3D side project): proper player models, football animations
       (Mixamo), the engine telling the view about kicks / tackles / headers, ball at feet, real lighting.
@@ -49,3 +55,5 @@ Items under "Talk to Jay first" are never started unattended.
   promoted clubs mostly finish 15th-20th and often go straight back down (realistic); both divisions keep
   their strength; nothing breaks.
 - Play-off dates on the calendar; Division 1 results, play-off page and top scorers on the screens.
+- The papers on promotion, relegation and the play-offs; a round-up of the other division.
+- Castleford Rangers' club profile (picture prompts in the morning summary); the roll of honour tidied.
