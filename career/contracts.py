@@ -162,7 +162,7 @@ def demands(career, club, p, renewal):
         signing = _round_money(wage * rng.uniform(8, 20) if concern == "signing" else wage * rng.uniform(2, 6))
     return {"wage": wage, "years": years, "status": status, "patience": ROUNDS, "renewal": renewal,
             "concern": concern, "agent_fee": _round_money(wage * weeks), "signing_fee": signing,
-            "settle": rng.uniform(*SETTLE)}
+            "settle": rng.uniform(*SETTLE), "releg_risk": round(releg_risk(career, club), 3)}
 
 
 def _pick(rng, items):
@@ -187,9 +187,22 @@ def asking(want):
             "appearance": 0, "goal_bonus": 0, "rise": 0, "release_clause": 0}
 
 
+def releg_risk(career, club):
+    """How likely he thinks the club is to go down (a Premier Division club, by its size): a relegation
+    clause costs him its cut x this.  (Division 1: no relegation, no clause.)"""
+    if club.get("id", -1) < 0 or fin.league_of(club) != "pl":
+        return 0.0
+    n, r = fin.league_size(career, club), fin.size_rank(career, club)
+    return 0.02 + 0.40 * (r / max(1, n - 1)) ** 3
+
+
 def _need(p, want, offer):
-    """The package he needs, given what's in this offer that isn't money (status, length)."""
+    """The package he needs, given what's in this offer that isn't money (status, length, a relegation
+    clause - a wage cut if the club goes down: worth its cut x the chance of going down to him)."""
     need = package(p, asking(want), want.get("concern")) * want.get("give", 1.0)
+    cut = offer.get("relegation_cut", 0) or 0
+    if cut:
+        need *= 1.0 + cut / 100.0 * want.get("releg_risk", 0.0) * (1.5 if want.get("concern") == "money" else 1.0)
     si = STATUSES.index(offer["status"])
     wi = STATUSES.index(want["status"])
     gap = STATUS_GAP * (2.0 if want.get("concern") == "time" else 1.0)
@@ -312,6 +325,11 @@ def sign(career, club, p, offer):
         p["release_clause"] = offer["release_clause"]
     else:
         p.pop("release_clause", None)
+    if "relegation_cut" in offer:                   # (your contracts: set in the talks)
+        p["releg_cut"] = offer["relegation_cut"]
+    else:
+        p.pop("releg_cut", None)                    # (the club's standard clause - career/finance.py)
+    p.pop("cut_from", None)                         # (a new contract: a new wage)
     terms = {k: offer[k] for k in ("appearance", "goal_bonus", "rise") if offer.get(k)}
     if terms:
         p["terms"] = terms                          # (bonuses and pay rises: pay_bonuses / yearly_rises)

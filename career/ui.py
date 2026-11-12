@@ -958,10 +958,15 @@ class App:
         o = tk["offer"]
         for k_ in ("signing_fee", "agent_fee", "appearance", "goal_bonus", "rise", "release_clause"):
             o.setdefault(k_, 0)
+        up_top = fin.league_of(me) == "pl"
+        if up_top:
+            o.setdefault("relegation_cut", fin.club_clause(me))      # (the club's standard clause to start with)
+        else:
+            o.pop("relegation_cut", None)
         r = pygame.Rect(x0, 106, 600, 600)
         self.panel(r, "Your offer")
         y = r.y + 50
-        RH = 46
+        RH = 42
         def row(label, value, key=None):
             nonlocal y
             self.text(label, "body", MUTED, (r.x + 16, y + 8))
@@ -982,7 +987,7 @@ class App:
             by = y + (i // 3) * 40
             self.buttons.append(Button((bx, by, 106, 34), st, lambda st=st: o.__setitem__("status", st),
                                        primary=o["status"] == st, font="btn_s"))
-        y += 84
+        y += 80
         row("Signing-on fee", fin.money(o["signing_fee"]) if o["signing_fee"] else "none", "signing_fee")
         row("Agent's fee", fin.money(o["agent_fee"]) if o["agent_fee"] else "none", "agent_fee")
         row("Appearance fee", f"{fin.money(o['appearance'])} a game" if o["appearance"] else "none", "appearance")
@@ -997,6 +1002,15 @@ class App:
                                        font="btn_s"))
         y += RH
         row("Release clause", fin.money(o["release_clause"]) if o["release_clause"] else "none", "release_clause")
+        if up_top:
+            self.text("If we go down", "body", MUTED, (r.x + 16, y + 8))
+            for i, pct in enumerate((0, 25, 40, 50)):
+                self.buttons.append(Button((r.x + 200 + i * 86, y, 80, 36), "no cut" if pct == 0 else f"-{pct}%",
+                                           lambda pct=pct: o.__setitem__("relegation_cut", pct),
+                                           primary=o.get("relegation_cut") == pct, font="btn_s"))
+            self.text("His wage is cut by this if we're relegated - the likelier that looks, the more he'll want for it.",
+                      "tiny", MUTED, (r.x + 16, y + 42))
+            y += RH
         if not tk["done"]:
             self.buttons.append(Button((r.x + 16, r.bottom - 58, 200, 46), "Make offer", self._talk_propose,
                                        primary=True))
@@ -2292,6 +2306,15 @@ class App:
             today = self.career.get("date")
             self.text(f"Value: {fin.money(fin.value(p, today))}", "body", ACCENT, (sr.x + 16, sr.y + 196))
             self.text(f"Wage: {fin.weekly(p['wage'])}", "body", TEXT, (sr.x + 16, sr.y + 224))
+            note = None
+            if p.get("cut_from"):
+                note = f"Cut from {fin.weekly(p['cut_from'])} by his relegation clause"
+            elif 0 <= cid < len(self.career["clubs"]) and cid == self.career["my_club"] \
+                    and fin.league_of(self.career["clubs"][cid]) == "pl":
+                cut = p.get("releg_cut", fin.club_clause(self.career["clubs"][cid]))
+                note = f"Relegation clause: wage cut {cut}% if we go down" if cut else "No relegation wage cut"
+            if note:
+                self.text(note, "small", MUTED, (sr.x + 16, sr.y + 282))
             if p.get("contract_end"):
                 self.text(f"Contract until {cal.fmt(p['contract_end'])[4:]}", "body", TEXT, (sr.x + 16, sr.y + 252))
 
