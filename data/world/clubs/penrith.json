@@ -1,0 +1,269 @@
+{
+ "id": 16,
+ "name": "Penrith Forge",
+ "short": "Penrith",
+ "nicknames": [
+  "the Forge",
+  "the Ironmen"
+ ],
+ "founded": 1879,
+ "location": {
+  "town": "Penrith",
+  "county": "Cumbria",
+  "region": "the North West",
+  "about": "An iron town of about 90,000 at the foot of the fells: the forges and rolling mills that made rails for half the world, and the railway that took them away. Champions of England four times before 1933 - the first great northern club."
+ },
+ "colours": {
+  "rgb": [
+   100,
+   100,
+   100
+  ],
+  "story": "Iron grey and red - the colour of the forge's iron and of its fire. The workers who started the club in 1879 wore their grey work shirts with a red sash.",
+  "home": {
+   "shirt": "iron grey with a red sash",
+   "shorts": "black",
+   "socks": "red",
+   "rgb": {
+    "shirt": [
+     100,
+     100,
+     105
+    ],
+    "trim": [
+     180,
+     35,
+     40
+    ],
+    "shorts": [
+     25,
+     25,
+     25
+    ],
+    "socks": [
+     180,
+     35,
+     40
+    ]
+   }
+  },
+  "away": {
+   "shirt": "red with grey trim",
+   "shorts": "red",
+   "socks": "grey",
+   "rgb": {
+    "shirt": [
+     180,
+     35,
+     40
+    ],
+    "trim": [
+     100,
+     100,
+     105
+    ],
+    "shorts": [
+     180,
+     35,
+     40
+    ],
+    "socks": [
+     100,
+     100,
+     105
+    ]
+   }
+  },
+  "third": {
+   "shirt": "white with a thin red and grey sash",
+   "shorts": "white",
+   "socks": "white",
+   "rgb": {
+    "shirt": [
+     245,
+     245,
+     245
+    ],
+    "trim": [
+     180,
+     35,
+     40
+    ],
+    "shorts": [
+     245,
+     245,
+     245
+    ],
+    "socks": [
+     245,
+     245,
+     245
+    ]
+   }
+  }
+ },
+ "rivals": [
+  {
+   "club": "Bramhall Borough",
+   "derby": null,
+   "why": "the 1896 title race, and two cup finals (1981 and 1990) - Penrith won all three"
+  },
+  {
+   "club": "Northwick FC",
+   "derby": null,
+   "why": "1929, when Penrith beat them to the title, and the 2017 Founders' Cup final, when Penrith did it again"
+  }
+ ],
+ "history": [
+  {
+   "years": "1879-1900",
+   "title": "The first great northern club",
+   "text": "Founded in 1879 by men from the forge. Champions in 1890 (ahead of Ashvale), second in 1893, champions again in 1896 (ahead of Bramhall); beaten in the 1899 Founders' Cup final."
+  },
+  {
+   "years": "1900-1936",
+   "title": "Two more titles, then the slump",
+   "text": "Beaten in the 1910 Founders' Cup final; relegated, back as Second Division champions in 1925 - and champions twice more, 1929 (ahead of Northwick) and 1932 (ahead of Harrowby). Then the forge closed in the slump, the best players were sold to pay the bills, and the club fell apart: 0-9 at Castleford, 1-11 at Whitcombe, 1-10 at Kingsmere, and relegation."
+  },
+  {
+   "years": "1936-1975",
+   "title": "Hard years",
+   "text": "Beaten Founders' Cup finalists two years running, 1954 and 1955 (against Brackenfield); Second Division champions in 1968. The town lost its works one by one; the club hung on."
+  },
+  {
+   "years": "1975-2000",
+   "title": "The cup years",
+   "text": "The Founders' Cup in 1975 (against Wrexford) and 1981 (Bramhall), the Charter Cup in 1979 and 1990 (Bramhall again); beaten in the 1992 Founders' Cup final. Relegated, and back as Second Division champions in 1999."
+  },
+  {
+   "years": "2000-now",
+   "title": "Up the hill again",
+   "text": "Beaten in the 2010 Charter Cup final; the Founders' Cup in 2017 against Northwick. Down, up through the play-offs in 2020, down again - and back as Division 1 runners-up in 2025."
+  }
+ ],
+ "honours_note": "League seasons are given by the year they ended (1890 = 1889-90).",
+ "legends": [
+  {
+   "name": "Isaac Teasdale",
+   "role": "Founder and captain 1879-1892",
+   "note": "A forge hand; captain of the 1890 champions."
+  },
+  {
+   "name": "Billy Armstrong",
+   "role": "Centre-forward 1886-1900",
+   "note": "Both 19th-century titles; 'the Iron Man'."
+  },
+  {
+   "name": "George Nicholson",
+   "role": "Inside-forward 1922-1935",
+   "note": "188 goals - the club record."
+  },
+  {
+   "name": "Tommy Bowness",
+   "role": "Goalkeeper 1960-1979",
+   "note": "711 appearances - the club record."
+  },
+  {
+   "name": "Joe Graham",
+   "role": "Manager 1973-1991",
+   "note": "Two Founders' Cups and two Charter Cups."
+  },
+  {
+   "name": "Ryan Huddart",
+   "role": "Captain 2014-2022",
+   "note": "Lifted the 2017 Founders' Cup."
+  }
+ ],
+ "records": {
+  "attendance": "44,612 v Bramhall Borough, Founders' Cup sixth round, 1955 (Hammerfield, before seating)",
+  "win": "12-1 v Coldharbour Town, League, 1890",
+  "defeat": "1-11 v Whitcombe City, League, 1933",
+  "top_scorer": "George Nicholson, 188 goals (1922-1935)",
+  "appearances": "Tommy Bowness, 711 (1960-1979)",
+  "season_goals": "George Nicholson, 39 (1928-29)"
+ },
+ "badge": {
+  "about": "An anvil and the fells behind it; four stars for the four titles. Motto 'Igne Fortior' - stronger for the fire.",
+  "design": "An iron-grey shield with a red border. In the centre a black anvil with red sparks flying from it; behind it three grey fell summits against a red sky. Four small red stars above the shield; 'PENRITH FORGE' on a red ribbon below."
+ },
+ "ground": {
+  "name": "Hammerfield",
+  "known_as": "the Hammer",
+  "opened": 1888,
+  "capacity": 28600,
+  "pitch": {
+   "length_m": 104,
+   "width_m": 67,
+   "surface": "grass",
+   "runoff": "tight"
+  },
+  "stands": [
+   {
+    "name": "Forge Stand",
+    "side": "west",
+    "built": 2002,
+    "tiers": 2,
+    "capacity": 9600,
+    "roof": "cantilever",
+    "features": "the main stand, on the site of the old forge offices: tunnel, dugouts, the four title pennants",
+    "expandable": false
+   },
+   {
+    "name": "Hammer End",
+    "side": "north",
+    "built": 1995,
+    "tiers": 1,
+    "capacity": 7400,
+    "roof": "cantilever",
+    "features": "the home end - a big old steam hammer stands outside it as a memorial",
+    "expandable": false
+   },
+   {
+    "name": "Fell Stand",
+    "side": "east",
+    "built": 1974,
+    "tiers": 1,
+    "capacity": 6800,
+    "roof": "1970s roof",
+    "features": "a long single tier with the fells rising behind it",
+    "expandable": false
+   },
+   {
+    "name": "Railway End",
+    "side": "south",
+    "built": 1968,
+    "tiers": 1,
+    "capacity": 4800,
+    "roof": "1960s roof on pillars",
+    "features": "away fans; beside the railway line",
+    "expandable": true
+   }
+  ],
+  "corners": "open corners",
+  "roof": "four separate roofs",
+  "surroundings": "green fells rising behind the east stand, the empty brick sheds of the old forge, a steam hammer kept as a memorial, the main railway line and red sandstone terraced houses",
+  "atmosphere": "small, hard and proud - the fells echo the Hammer End's songs",
+  "for_the_engine": {
+   "home_end": "north",
+   "away_fans": "south end",
+   "dugouts": "west side, halfway line",
+   "pitch_m": [
+    104,
+    67
+   ],
+   "notes": "a small, tight old ground"
+  },
+  "images": {
+   "crest": "data/world/clubs/penrith/crest.png",
+   "inside": "data/world/clubs/penrith/inside.jpg",
+   "aerial": "data/world/clubs/penrith/aerial.jpg"
+  }
+ },
+ "image_prompts": {
+  "badge": "A football club crest for 'Penrith Forge', founded 1879, an old English iron-town club from Cumbria. An iron-grey heraldic shield with a red border. In the centre a black anvil with red sparks flying up from it; behind the anvil three grey fell summits against a red sky. Four small red stars above the shield. A red ribbon beneath the shield reading 'PENRITH FORGE' in white capitals. Flat vector emblem, clean bold lines, limited colours (iron grey, red, black), centred, on a plain transparent background, square format, no other text.",
+  "ground_inside": "Photorealistic wide-angle photo inside a 28,000-seat English football ground at the foot of the fells on a cold, bright winter afternoon, 30 minutes before kick-off. Camera: high in the main stand on the halfway line, looking across the pitch. Four separate stands with open corners. OPPOSITE: a long single-tier stand with green and brown fells rising steeply behind it. LEFT END: a single-tier home end PACKED with fans in grey and red, flags, and a huge old steam hammer standing outside behind it. RIGHT END: an older low stand with a roof on pillars and a railway line behind it, away fans. Players warming up in iron-grey shirts with a red diagonal sash and black shorts.",
+  "ground_aerial": "Aerial drone photograph of a 28,000-seat English football ground with four separate stands and open corners in a Cumbrian iron town: green fells rising behind one side, empty brick sheds of an old iron works, a big steam hammer standing outside the ground as a memorial, a main railway line, red sandstone terraced houses. Photorealistic, low winter sun, a little snow on the fell tops.",
+  "kits": "Three football kits for Penrith Forge laid out flat side by side on a plain light background, product-photo style. Home: iron-grey shirt with a red diagonal sash, black shorts, red socks. Away: red shirt with grey trim, red shorts, grey socks. Third: white shirt with a thin red and grey diagonal sash, white shorts, white socks. A small club crest on the left chest of each shirt. No sponsor logos, no other text."
+ },
+ "support": 33000
+}

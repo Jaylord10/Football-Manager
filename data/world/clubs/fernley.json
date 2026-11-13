@@ -1,0 +1,269 @@
+{
+ "id": 18,
+ "name": "Fernley Park",
+ "short": "Fernley",
+ "nicknames": [
+  "Park",
+  "the Hoppers"
+ ],
+ "founded": 1874,
+ "location": {
+  "town": "Fernley",
+  "county": "Kent",
+  "region": "the South East",
+  "about": "A Kent town of about 110,000 on the river below the Downs: hop gardens and oast houses, paper mills and the barracks. A club that has won the Founders' Cup six times and the league only once - the best cup side in the South."
+ },
+ "colours": {
+  "rgb": [
+   30,
+   120,
+   70
+  ],
+  "story": "Hop green and white - the green of the hop gardens, the white of the oast-house cowls. The club began in 1874 in a park given to the town by a paper-mill owner, and took its name from it.",
+  "home": {
+   "shirt": "hop green with white sleeves",
+   "shorts": "white",
+   "socks": "green",
+   "rgb": {
+    "shirt": [
+     30,
+     120,
+     70
+    ],
+    "trim": [
+     245,
+     245,
+     245
+    ],
+    "shorts": [
+     245,
+     245,
+     245
+    ],
+    "socks": [
+     30,
+     120,
+     70
+    ]
+   }
+  },
+  "away": {
+   "shirt": "white with green trim",
+   "shorts": "green",
+   "socks": "white",
+   "rgb": {
+    "shirt": [
+     245,
+     245,
+     245
+    ],
+    "trim": [
+     30,
+     120,
+     70
+    ],
+    "shorts": [
+     30,
+     120,
+     70
+    ],
+    "socks": [
+     245,
+     245,
+     245
+    ]
+   }
+  },
+  "third": {
+   "shirt": "chalk with green hoops",
+   "shorts": "chalk",
+   "socks": "chalk",
+   "rgb": {
+    "shirt": [
+     235,
+     230,
+     215
+    ],
+    "trim": [
+     30,
+     120,
+     70
+    ],
+    "shorts": [
+     235,
+     230,
+     215
+    ],
+    "socks": [
+     235,
+     230,
+     215
+    ]
+   }
+  }
+ },
+ "rivals": [
+  {
+   "club": "Kingsmere City",
+   "derby": null,
+   "why": "three cup finals - 1909, 1986 and 2021 - and Fernley won every one"
+  },
+  {
+   "club": "Eastvale Wanderers",
+   "derby": null,
+   "why": "the big London club up the line; Fernley beat them in the 1979 Founders' Cup final and still sing about it"
+  }
+ ],
+ "history": [
+  {
+   "years": "1874-1900",
+   "title": "The park club",
+   "text": "Founded in 1874 by hop farmers and paper-mill clerks in the park that gave the club its name. Beaten in the 1876 Founders' Cup final, winners in 1893 (against Oakhurst), beaten again in 1900 - and once lost 10-1 at Stonecross, in 1894."
+  },
+  {
+   "years": "1900-1930",
+   "title": "Champions, once",
+   "text": "Second in 1904 behind Northwick; beaten by Holloway in the 1907 Founders' Cup final, winners in 1909 (Kingsmere). Second Division champions in 1912 - and in 1928 champions of England, ahead of Millbrook: the only title, and the old men of the town talked about it for fifty years."
+  },
+  {
+   "years": "1930-1985",
+   "title": "The cup kings of the South",
+   "text": "Long years in the Second Division: champions of it in 1956 and 1976, promoted in 1970 and 1973 as runners-up; beaten in the first Charter Cup final, 1961. Then the Founders' Cup two years running: 1979 against Eastvale and 1980 against Whitcombe. Promoted again in 1981."
+  },
+  {
+   "years": "1985-2020",
+   "title": "In and out",
+   "text": "The Charter Cup in 1986 (Kingsmere again), the Founders' Cup final lost in 1993; Division 1 champions in 1998; the Charter Cup final lost in 2001, up through the play-offs in 2002 (against Coldharbour). Division 1 champions again in 2020."
+  },
+  {
+   "years": "2020-now",
+   "title": "Cup kings again",
+   "text": "Back-to-back Founders' Cups, 1979-80 all over again: 2021 against Kingsmere and 2022 against Westmoor. Relegated soon after - and back up through the play-offs in 2026, against Saltmarsh."
+  }
+ ],
+ "honours_note": "League seasons are given by the year they ended (1928 = 1927-28).",
+ "legends": [
+  {
+   "name": "Sir Henry Fernley-Croft",
+   "role": "Founder and benefactor",
+   "note": "Paper-mill owner who gave the town the park - and the club its name."
+  },
+  {
+   "name": "Alf Wenban",
+   "role": "Half-back 1919-1933",
+   "note": "Captain of the 1928 champions."
+  },
+  {
+   "name": "Charlie Pankhurst",
+   "role": "Centre-forward 1923-1936",
+   "note": "201 goals - the club record."
+  },
+  {
+   "name": "Terry Rootes",
+   "role": "Manager 1975-1988",
+   "note": "Two Founders' Cups, a Charter Cup and two promotions."
+  },
+  {
+   "name": "Dave Wickens",
+   "role": "Midfielder 1972-1991",
+   "note": "688 appearances - the club record."
+  },
+  {
+   "name": "Kai Ashdown",
+   "role": "Forward 2018-",
+   "note": "Scored in both the 2021 and 2022 finals."
+  }
+ ],
+ "records": {
+  "attendance": "41,377 v Eastvale Wanderers, Founders' Cup sixth round, 1979 (Oast Lane, before seating)",
+  "win": "9-0 v Coldharbour Town, League, 1956",
+  "defeat": "1-10 v Stonecross Albion, League, 1894",
+  "top_scorer": "Charlie Pankhurst, 201 goals (1923-1936)",
+  "appearances": "Dave Wickens, 688 (1972-1991)",
+  "season_goals": "Charlie Pankhurst, 42 (1927-28)"
+ },
+ "badge": {
+  "about": "An oast house and a hop bine; six hop cones round the edge for the six Founders' Cups. Motto 'Crescit Eundo' - it grows as it goes.",
+  "design": "A hop-green circle with a white ring. In the centre a white oast house with its pointed cowl, and a hop bine with green cones climbing a pole beside it. 'FERNLEY PARK' in green capitals around the white ring, '1874' at the bottom; six small green hop cones evenly spaced on the ring."
+ },
+ "ground": {
+  "name": "Oast Lane",
+  "known_as": "the Oast",
+  "opened": 1897,
+  "capacity": 25200,
+  "pitch": {
+   "length_m": 103,
+   "width_m": 67,
+   "surface": "grass",
+   "runoff": "normal"
+  },
+  "stands": [
+   {
+    "name": "Paper Mill Stand",
+    "side": "west",
+    "built": 2000,
+    "tiers": 2,
+    "capacity": 8400,
+    "roof": "cantilever",
+    "features": "the main stand: tunnel, dugouts, six Founders' Cup replicas in the trophy room",
+    "expandable": false
+   },
+   {
+    "name": "Oast End",
+    "side": "south",
+    "built": 1993,
+    "tiers": 1,
+    "capacity": 6600,
+    "roof": "cantilever",
+    "features": "the home end - two restored oast houses stand right behind it",
+    "expandable": false
+   },
+   {
+    "name": "Weald Stand",
+    "side": "east",
+    "built": 1980,
+    "tiers": 1,
+    "capacity": 6000,
+    "roof": "1980 roof",
+    "features": "a long single tier built with the 1979-80 cup money; hop gardens and the Downs behind it",
+    "expandable": false
+   },
+   {
+    "name": "River End",
+    "side": "north",
+    "built": 1966,
+    "tiers": 1,
+    "capacity": 4200,
+    "roof": "1960s roof on pillars",
+    "features": "away fans; by the river and the old mill",
+    "expandable": true
+   }
+  ],
+  "corners": "open corners",
+  "roof": "four separate roofs",
+  "surroundings": "white-cowled oast houses behind the home end, hop gardens and the green Downs beyond the east stand, an old paper mill on the river, the barracks on the hill",
+  "atmosphere": "warm and sunny on a good day; on a cup night, the loudest ground in Kent",
+  "for_the_engine": {
+   "home_end": "south",
+   "away_fans": "north end",
+   "dugouts": "west side, halfway line",
+   "pitch_m": [
+    103,
+    67
+   ],
+   "notes": "a small, neat ground"
+  },
+  "images": {
+   "crest": "data/world/clubs/fernley/crest.png",
+   "inside": "data/world/clubs/fernley/inside.jpg",
+   "aerial": "data/world/clubs/fernley/aerial.jpg"
+  }
+ },
+ "image_prompts": {
+  "badge": "A football club crest for 'Fernley Park', founded 1874, an English Kent town club. A hop-green circle with a white ring around it. In the centre a white oast house with its pointed cowl, and beside it a hop bine with green cones climbing a pole. 'FERNLEY PARK' in green serif capitals around the white ring, with '1874' at the bottom of the ring. Six small green hop cones evenly spaced around the ring. Flat vector emblem, clean bold lines, limited colours (hop green, white), centred, on a plain transparent background, square format, no other text.",
+  "ground_inside": "Photorealistic wide-angle photo inside a 25,000-seat English football ground in a Kent town on a warm sunny spring afternoon, 30 minutes before kick-off. Camera: high in the main stand on the halfway line, looking across the pitch. Four separate stands with open corners. OPPOSITE: a long single-tier stand with hop gardens and green chalk downs behind it. LEFT END: a single-tier home end PACKED with fans in green and white, with two white-cowled oast houses right behind it. RIGHT END: an older low stand with a roof on pillars, an old mill by a river behind it, away fans. Players warming up in hop-green shirts with white sleeves and white shorts.",
+  "ground_aerial": "Aerial drone photograph of a 25,000-seat English football ground with four separate stands and open corners in a Kent town: white-cowled oast houses behind one end, hop gardens with tall poles and the green North Downs beyond, an old paper mill on a river, red-brick Victorian houses and a barracks on the hill. Photorealistic, bright spring sunshine.",
+  "kits": "Three football kits for Fernley Park laid out flat side by side on a plain light background, product-photo style. Home: hop-green shirt with white sleeves, white shorts, green socks. Away: white shirt with green trim, green shorts, white socks. Third: chalk-white shirt with thin green hoops, chalk shorts, chalk socks. A small club crest on the left chest of each shirt. No sponsor logos, no other text."
+ },
+ "support": 29000
+}

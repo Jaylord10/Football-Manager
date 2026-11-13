@@ -1,0 +1,269 @@
+{
+ "id": 17,
+ "name": "Holloway Vale",
+ "short": "Holloway",
+ "nicknames": [
+  "the Vale",
+  "the Glovers"
+ ],
+ "founded": 1870,
+ "location": {
+  "town": "Holloway",
+  "county": "Somerset",
+  "region": "the South West",
+  "about": "A market town of about 70,000 in the Vale of Holloway, fifteen miles down the levels from Westmoor: cheese, wool and gloves, then the creamery and the aircraft factory. Small - but three times champions of England, and twice in the early 1970s."
+ },
+ "colours": {
+  "rgb": [
+   90,
+   60,
+   140
+  ],
+  "story": "Purple and white - the purple of the glove-makers' dye, the white of the vale's cheese. The club was started in 1870 by the apprentices of the glove works.",
+  "home": {
+   "shirt": "purple with white trim",
+   "shorts": "white",
+   "socks": "purple",
+   "rgb": {
+    "shirt": [
+     90,
+     60,
+     140
+    ],
+    "trim": [
+     245,
+     245,
+     245
+    ],
+    "shorts": [
+     245,
+     245,
+     245
+    ],
+    "socks": [
+     90,
+     60,
+     140
+    ]
+   }
+  },
+  "away": {
+   "shirt": "white with a purple band",
+   "shorts": "purple",
+   "socks": "white",
+   "rgb": {
+    "shirt": [
+     245,
+     245,
+     245
+    ],
+    "trim": [
+     90,
+     60,
+     140
+    ],
+    "shorts": [
+     90,
+     60,
+     140
+    ],
+    "socks": [
+     245,
+     245,
+     245
+    ]
+   }
+  },
+  "third": {
+   "shirt": "gold with purple trim",
+   "shorts": "purple",
+   "socks": "gold",
+   "rgb": {
+    "shirt": [
+     215,
+     175,
+     60
+    ],
+    "trim": [
+     90,
+     60,
+     140
+    ],
+    "shorts": [
+     90,
+     60,
+     140
+    ],
+    "socks": [
+     215,
+     175,
+     60
+    ]
+   }
+  }
+ },
+ "rivals": [
+  {
+   "club": "Westmoor County",
+   "derby": "the Somerset Derby",
+   "why": "the county town fifteen miles up the levels - the county's two clubs, at it since 1883; 61,034 saw Westmoor knock out the champions in the 1972 cup"
+  },
+  {
+   "club": "Northwick FC",
+   "derby": null,
+   "why": "1972: Northwick took the title Holloway thought was theirs - and in 1931 put eleven past them"
+  }
+ ],
+ "history": [
+  {
+   "years": "1870-1900",
+   "title": "The glovers' club",
+   "text": "Founded in 1870 by apprentices from the glove works. Founders' Cup winners in 1874 - the third final ever played, against Brackenfield. The first Somerset Derby in 1883; champions of England in 1895, ahead of Ashvale."
+  },
+  {
+   "years": "1900-1950",
+   "title": "Up, down and the cup",
+   "text": "Beaten in the Founders' Cup finals of 1902 and 1905, winners in 1907 (against Fernley). Second Division champions four times - 1907, 1920, 1924 and 1947 - and the Founders' Cup in 1922 and 1948 (Millbrook). An 11-1 at Northwick in 1931 and a 9-0 cup defeat at Lydmouth in 1935 were the low points."
+  },
+  {
+   "years": "1950-1975",
+   "title": "The great Vale side",
+   "text": "The Founders' Cup in 1960 against Castleford; promoted in 1964; beaten in the 1969 Charter Cup final. Then the side every small town dreams of: champions in 1971 (ahead of Harrowby), second in 1972 behind Northwick - and knocked out of that year's cup at Moorside in front of 61,034 - and champions again in 1973, ahead of Bramhall."
+  },
+  {
+   "years": "1975-2020",
+   "title": "Back to the vale",
+   "text": "The great side grew old and the aircraft factory closed. Beaten in the 1987 Founders' Cup final; the Founders' Cup in 2002 (against Kingsmere); beaten in the 2009 Charter Cup final. Years in Division 1."
+  },
+  {
+   "years": "2020-now",
+   "title": "Knocking on the door",
+   "text": "Up through the play-offs in 2023 (against Morwick), straight back down - and back up as Division 1 champions in 2026, ahead of Harrowby."
+  }
+ ],
+ "honours_note": "League seasons are given by the year they ended (1895 = 1894-95).",
+ "legends": [
+  {
+   "name": "Josiah Coombes",
+   "role": "Founder 1870",
+   "note": "Glove-works apprentice; captain of the 1874 cup winners."
+  },
+  {
+   "name": "Herbert Vowles",
+   "role": "Forward 1888-1899",
+   "note": "Top scorer for the 1895 champions."
+  },
+  {
+   "name": "Stan Hembury",
+   "role": "Centre-forward 1919-1932",
+   "note": "176 goals - the club record."
+  },
+  {
+   "name": "Roy Chedzoy",
+   "role": "Manager 1966-1978",
+   "note": "Two titles in three years with a side that cost almost nothing."
+  },
+  {
+   "name": "Clive Board",
+   "role": "Defender 1963-1981",
+   "note": "663 appearances - the club record; captain in 1971 and 1973."
+  },
+  {
+   "name": "Ellis Tucker",
+   "role": "Captain 2021-",
+   "note": "Lifted the 2026 Division 1 trophy."
+  }
+ ],
+ "records": {
+  "attendance": "38,442 v Westmoor County, League, 1971 (The Paddocks, before seating)",
+  "win": "10-0 v Saltmarsh Athletic, League, 1924",
+  "defeat": "1-11 v Northwick FC, League, 1931",
+  "top_scorer": "Stan Hembury, 176 goals (1919-1932)",
+  "appearances": "Clive Board, 663 (1963-1981)",
+  "season_goals": "Stan Hembury, 37 (1923-24)"
+ },
+ "badge": {
+  "about": "A glove, the vale's hill (the tor) and three stars for three titles. Motto 'Manus Juncta' - hands together.",
+  "design": "A purple shield with a white border. In the centre a white gauntlet glove, palm open; behind it a small white hill with a tower on top. Three small white stars above; 'HOLLOWAY VALE' on a white ribbon below the shield in purple capitals."
+ },
+ "ground": {
+  "name": "The Paddocks",
+  "known_as": "the Paddocks",
+  "opened": 1892,
+  "capacity": 26900,
+  "pitch": {
+   "length_m": 104,
+   "width_m": 68,
+   "surface": "grass",
+   "runoff": "normal"
+  },
+  "stands": [
+   {
+    "name": "Glovers Stand",
+    "side": "west",
+    "built": 2003,
+    "tiers": 2,
+    "capacity": 9100,
+    "roof": "cantilever",
+    "features": "the main stand, paid for by the 2002 cup run: tunnel, dugouts, the 1971 and 1973 trophies",
+    "expandable": false
+   },
+   {
+    "name": "Market End",
+    "side": "north",
+    "built": 1994,
+    "tiers": 1,
+    "capacity": 6900,
+    "roof": "cantilever",
+    "features": "the home end - on cup days the purple flags reach right down to the pitch",
+    "expandable": false
+   },
+   {
+    "name": "Levels Stand",
+    "side": "east",
+    "built": 1977,
+    "tiers": 1,
+    "capacity": 6400,
+    "roof": "1970s roof",
+    "features": "a long single tier looking out over the levels",
+    "expandable": false
+   },
+   {
+    "name": "Tor End",
+    "side": "south",
+    "built": 1958,
+    "tiers": 1,
+    "capacity": 4500,
+    "roof": "1950s roof on pillars",
+    "features": "away fans; the oldest stand in the league",
+    "expandable": true
+   }
+  ],
+  "corners": "open corners",
+  "roof": "four separate roofs",
+  "surroundings": "flat green levels and willow-lined rhynes behind the east stand, a hill with a ruined tower on top beyond the south end, the old glove works and the creamery chimney, a market square with a stone cross",
+  "atmosphere": "friendly, rural and noisy - a small town that still thinks it's 1973",
+  "for_the_engine": {
+   "home_end": "north",
+   "away_fans": "south end",
+   "dugouts": "west side, halfway line",
+   "pitch_m": [
+    104,
+    68
+   ],
+   "notes": "a small market-town ground"
+  },
+  "images": {
+   "crest": "data/world/clubs/holloway/crest.png",
+   "inside": "data/world/clubs/holloway/inside.jpg",
+   "aerial": "data/world/clubs/holloway/aerial.jpg"
+  }
+ },
+ "image_prompts": {
+  "badge": "A football club crest for 'Holloway Vale', founded 1870, a small English market-town club from Somerset. A purple heraldic shield with a white border. In the centre a white leather gauntlet glove, palm open; behind it a small white hill with a ruined tower on top. Three small white stars above the shield. A white ribbon beneath the shield reading 'HOLLOWAY VALE' in purple capitals. Flat vector emblem, clean bold lines, limited colours (purple, white, gold), centred, on a plain transparent background, square format, no other text.",
+  "ground_inside": "Photorealistic wide-angle photo inside a 27,000-seat English football ground in a Somerset market town on a hazy late-summer afternoon, 30 minutes before kick-off. Camera: high in the main stand on the halfway line, looking across the pitch. Four separate stands with open corners. OPPOSITE: a long single-tier stand with flat green levels and willow trees stretching away behind it. LEFT END: a single-tier home end PACKED with fans in purple and white, purple flags. RIGHT END: an old low stand with a roof on pillars and a green hill with a ruined tower on top in the distance behind it, away fans. Players warming up in purple shirts with white trim and white shorts.",
+  "ground_aerial": "Aerial drone photograph of a 27,000-seat English football ground with four separate stands and open corners on the edge of a Somerset market town: flat green levels with willow-lined ditches, a conical green hill with a ruined church tower, an old glove factory and a creamery chimney, a market square with a stone cross. Photorealistic, hazy late summer light.",
+  "kits": "Three football kits for Holloway Vale laid out flat side by side on a plain light background, product-photo style. Home: purple shirt with white trim, white shorts, purple socks. Away: white shirt with a purple band across the chest, purple shorts, white socks. Third: gold shirt with purple trim, purple shorts, gold socks. A small club crest on the left chest of each shirt. No sponsor logos, no other text."
+ },
+ "support": 31000
+}

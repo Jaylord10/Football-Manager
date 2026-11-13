@@ -1,0 +1,270 @@
+{
+ "id": 11,
+ "name": "Oakhurst United",
+ "short": "Oakhurst",
+ "nicknames": [
+  "United",
+  "the Whites",
+  "the Bargemen"
+ ],
+ "founded": 1875,
+ "location": {
+  "town": "Oakhurst",
+  "county": "Berkshire",
+  "region": "the Thames Valley",
+  "about": "A Thames town of about 230,000: barges, breweries and biscuit factories, then the motorway and the tech offices. Six times champions of England - the most of any club between London and the West - and, since the 1980s, one of the big clubs of the modern game."
+ },
+ "colours": {
+  "rgb": [
+   200,
+   200,
+   200
+  ],
+  "story": "All white since 1875: the club was started by the town cricket club to keep fit in winter, and they played in their cricket whites. The navy trim came in 1891, the year of the first title.",
+  "home": {
+   "shirt": "white with a navy collar",
+   "shorts": "white",
+   "socks": "white",
+   "rgb": {
+    "shirt": [
+     240,
+     240,
+     240
+    ],
+    "trim": [
+     25,
+     35,
+     70
+    ],
+    "shorts": [
+     240,
+     240,
+     240
+    ],
+    "socks": [
+     240,
+     240,
+     240
+    ]
+   }
+  },
+  "away": {
+   "shirt": "navy with white trim",
+   "shorts": "navy",
+   "socks": "navy",
+   "rgb": {
+    "shirt": [
+     25,
+     35,
+     70
+    ],
+    "trim": [
+     240,
+     240,
+     240
+    ],
+    "shorts": [
+     25,
+     35,
+     70
+    ],
+    "socks": [
+     25,
+     35,
+     70
+    ]
+   }
+  },
+  "third": {
+   "shirt": "claret with a white band",
+   "shorts": "claret",
+   "socks": "claret",
+   "rgb": {
+    "shirt": [
+     120,
+     30,
+     50
+    ],
+    "trim": [
+     240,
+     240,
+     240
+    ],
+    "shorts": [
+     120,
+     30,
+     50
+    ],
+    "socks": [
+     120,
+     30,
+     50
+    ]
+   }
+  }
+ },
+ "rivals": [
+  {
+   "club": "Eastvale Wanderers",
+   "derby": null,
+   "why": "2018: Oakhurst beat them to the title by a point and in the Charter Cup final - Eastvale have never forgiven it"
+  },
+  {
+   "club": "Kingsmere City",
+   "derby": null,
+   "why": "the South's two big clubs - Kingsmere pipped Oakhurst to the 1969 title on the last day"
+  }
+ ],
+ "history": [
+  {
+   "years": "1875-1900",
+   "title": "The cricketers' club",
+   "text": "Founded in 1875 by the town cricket club, in their whites. Beaten in the Founders' Cup final of 1879, then winners in 1883 (against Northwick), 1887 and 1890 - and champions of England in 1891, with Eastvale second. The Founders' Cup again in 1896."
+  },
+  {
+   "years": "1900-1940",
+   "title": "Champions again",
+   "text": "Champions in 1901, ahead of Westmoor; the Founders' Cup in 1903 and 1925 (against Darnford). Second to Riverton in 1914 and to Castleford in 1931 - with a season in the Second Division in between, won at the first go in 1923. Champions a third time in 1937, ahead of Castleford."
+  },
+  {
+   "years": "1945-1980",
+   "title": "Always the bridesmaid",
+   "text": "Second in 1948 and 1949, second again in 1969 - Kingsmere won it on the last day - and beaten in the Founders' Cup finals of 1969 and 1971. A big crowd, a fine side, and nothing to show for it."
+  },
+  {
+   "years": "1980-2000",
+   "title": "The Thames Valley years",
+   "text": "With the money from the new business parks along the motorway, the best side in the club's history: champions and Charter Cup winners in 1988 (beating Brackenfield in the final), the Charter Cup again in 1994, champions in 1996 - both titles ahead of Whitcombe. Founders' Cup finals lost in 1991 and 1994."
+  },
+  {
+   "years": "2000-now",
+   "title": "Down and back to the top",
+   "text": "Relegated in 2004; up through the play-offs in 2005, down again, and back as runners-up in 2007. The Founders' Cup in 2008 (against Castleford) and 2016 (against Northwick), second in 2012 and 2013 - and in 2018 the Double over Eastvale: the title by a point, and the Charter Cup final 2-1."
+  }
+ ],
+ "honours_note": "League seasons are given by the year they ended (1891 = 1890-91).",
+ "legends": [
+  {
+   "name": "Frederick Ashby",
+   "role": "Founder and captain 1875-1891",
+   "note": "The cricket club's captain; scored in the 1883 final and lifted the first title."
+  },
+  {
+   "name": "Percy Gamble",
+   "role": "Inside-forward 1895-1912",
+   "note": "Two titles, two Founders' Cups - 'the Thames Valley Wizard'."
+  },
+  {
+   "name": "Len Hatherley",
+   "role": "Centre-forward 1930-1947",
+   "note": "214 goals - the club record."
+  },
+  {
+   "name": "Ken Abbott",
+   "role": "Defender 1958-1977",
+   "note": "702 appearances - the club record; never won a thing, never left."
+  },
+  {
+   "name": "Jim Rourke",
+   "role": "Manager 1984-1999",
+   "note": "Two titles, two Charter Cups - the Thames Valley years."
+  },
+  {
+   "name": "Rafael Montoya",
+   "role": "Midfielder 2012-2021",
+   "note": "Captain of the 2018 Double side."
+  }
+ ],
+ "records": {
+  "attendance": "58,210 v Kingsmere City, League, 1969 (Abbey Meadow, before seating)",
+  "win": "11-0 v Saltmarsh Athletic, Founders' Cup, 1887",
+  "defeat": "0-8 v Northwick FC, League, 1957",
+  "top_scorer": "Len Hatherley, 214 goals (1930-1947)",
+  "appearances": "Ken Abbott, 702 (1958-1977)",
+  "season_goals": "Len Hatherley, 41 (1936-37)"
+ },
+ "badge": {
+  "about": "An oak tree on the river bank, a Thames barge on the water, and six stars for the six titles. Motto 'Robur in Radice' - strength in the root.",
+  "design": "A white shield with a navy border. A broad navy oak tree fills the top half, its roots reaching down to two wavy navy lines of river; on the river a small navy Thames sailing barge with a claret sail. 'OAKHURST UNITED' above the shield; six small navy stars in an arc over the tree."
+ },
+ "ground": {
+  "name": "Abbey Meadow",
+  "known_as": "the Meadow",
+  "opened": 1899,
+  "capacity": 41600,
+  "pitch": {
+   "length_m": 105,
+   "width_m": 68,
+   "surface": "grass",
+   "runoff": "normal"
+  },
+  "stands": [
+   {
+    "name": "Thames Stand",
+    "side": "west",
+    "built": 2006,
+    "tiers": 2,
+    "capacity": 13800,
+    "roof": "cantilever",
+    "features": "the main stand, right on the river: tunnel, dugouts, boxes with a view of the barges",
+    "expandable": false
+   },
+   {
+    "name": "Brewery End",
+    "side": "south",
+    "built": 1999,
+    "tiers": 1,
+    "capacity": 10200,
+    "roof": "cantilever",
+    "features": "the home end - one big single tier in white seats, on the site of the old Simonds-style brewery",
+    "expandable": false
+   },
+   {
+    "name": "Lock Stand",
+    "side": "east",
+    "built": 1990,
+    "tiers": 2,
+    "capacity": 10400,
+    "roof": "1990 roof",
+    "features": "two tiers with the old abbey ruins and the lock behind it",
+    "expandable": false
+   },
+   {
+    "name": "Meadow End",
+    "side": "north",
+    "built": 1972,
+    "tiers": 1,
+    "capacity": 7200,
+    "roof": "1970s roof on pillars",
+    "features": "away fans and families; old and low - the obvious one to rebuild",
+    "expandable": true
+   }
+  ],
+  "corners": "open corners",
+  "roof": "four separate roofs",
+  "surroundings": "the Thames and a lock right behind the main stand, the ruins of the medieval abbey, old brewery chimneys, glass offices of the business park along the motorway",
+  "atmosphere": "big, smart and expectant - the Brewery End sings, the rest wait to be entertained",
+  "for_the_engine": {
+   "home_end": "south",
+   "away_fans": "north end",
+   "dugouts": "west side, halfway line",
+   "pitch_m": [
+    105,
+    68
+   ],
+   "notes": "a riverside ground"
+  },
+  "images": {
+   "crest": "data/world/clubs/oakhurst/crest.png",
+   "inside": "data/world/clubs/oakhurst/inside.jpg",
+   "aerial": "data/world/clubs/oakhurst/aerial.jpg"
+  }
+ },
+ "image_prompts": {
+  "badge": "A football club crest for 'Oakhurst United', founded 1875, a big English Thames Valley club. A white heraldic shield with a navy border. A broad navy oak tree fills the top half, its roots reaching down to two wavy navy lines of river; on the river a small navy Thames sailing barge with a claret sail. 'OAKHURST UNITED' arched above the shield in navy serif capitals, with six small navy stars in an arc over the tree. Flat vector emblem, clean bold lines, limited colours (white, navy, claret), centred, on a plain transparent background, square format, no other text.",
+  "ground_inside": "Photorealistic wide-angle photo inside a 41,000-seat English football ground beside the River Thames on a bright spring afternoon, 30 minutes before kick-off. Camera: high in the main stand on the halfway line, looking across the pitch. Four separate stands with open corners. OPPOSITE: a two-tier stand with medieval abbey ruins and a river lock behind it. LEFT END: one big single-tier home end PACKED with fans in white and navy, white flags and a banner of an oak tree. RIGHT END: a low old single-tier stand with a roof on pillars, away fans. Players warming up in white shirts with navy collars and white shorts.",
+  "ground_aerial": "Aerial drone photograph of a 41,000-seat English football ground with four separate stands and open corners right on the bank of the River Thames: a lock and moored narrowboats behind the main stand, medieval abbey ruins and old brewery chimneys, a glass business park and a motorway in the distance. Photorealistic, warm summer evening light.",
+  "kits": "Three football kits for Oakhurst United laid out flat side by side on a plain light background, product-photo style. Home: white shirt with a navy collar, white shorts, white socks. Away: navy shirt with white trim, navy shorts, navy socks. Third: claret shirt with a white band across the chest, claret shorts, claret socks. A small club crest on the left chest of each shirt. No sponsor logos, no other text."
+ },
+ "support": 50000
+}

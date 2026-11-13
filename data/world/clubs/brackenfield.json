@@ -1,0 +1,274 @@
+{
+ "id": 12,
+ "name": "Brackenfield Town",
+ "short": "Brackenfield",
+ "nicknames": [
+  "Town",
+  "the Quarrymen"
+ ],
+ "founded": 1872,
+ "location": {
+  "town": "Brackenfield",
+  "county": "Derbyshire",
+  "region": "the East Midlands",
+  "about": "A gritstone town of about 140,000 where the Peak District meets the plain: quarries, lead mines, then the railway works and the limestone kilns. A small town with the biggest night in English football in its trophy room - the Crown of Europe, 2004."
+ },
+ "colours": {
+  "rgb": [
+   110,
+   110,
+   60
+  ],
+  "story": "Moss green and gold - the moss on the gritstone edges above the town and the gold of the bracken in autumn. The first shirts were dyed at a mill in the valley in 1872.",
+  "home": {
+   "shirt": "moss green with gold trim",
+   "shorts": "black",
+   "socks": "moss green",
+   "rgb": {
+    "shirt": [
+     95,
+     110,
+     55
+    ],
+    "trim": [
+     215,
+     175,
+     60
+    ],
+    "shorts": [
+     25,
+     25,
+     25
+    ],
+    "socks": [
+     95,
+     110,
+     55
+    ]
+   }
+  },
+  "away": {
+   "shirt": "gold with a moss-green collar",
+   "shorts": "moss green",
+   "socks": "gold",
+   "rgb": {
+    "shirt": [
+     215,
+     175,
+     60
+    ],
+    "trim": [
+     95,
+     110,
+     55
+    ],
+    "shorts": [
+     95,
+     110,
+     55
+    ],
+    "socks": [
+     215,
+     175,
+     60
+    ]
+   }
+  },
+  "third": {
+   "shirt": "black with moss-green and gold sleeves",
+   "shorts": "black",
+   "socks": "black",
+   "rgb": {
+    "shirt": [
+     25,
+     25,
+     25
+    ],
+    "trim": [
+     215,
+     175,
+     60
+    ],
+    "shorts": [
+     25,
+     25,
+     25
+    ],
+    "socks": [
+     25,
+     25,
+     25
+    ]
+   }
+  }
+ },
+ "rivals": [
+  {
+   "club": "Riverton Dynamo",
+   "derby": "the East Midlands Derby",
+   "why": "the Peak against the city - and the two of them the only East Midlands clubs ever to be champions of Europe (2004 and 2011)"
+  },
+  {
+   "club": "Northwick FC",
+   "derby": null,
+   "why": "second to Northwick in 1960 and 2003; Brackenfield fans say the 2003 title was won by referees"
+  }
+ ],
+ "history": [
+  {
+   "years": "1872-1910",
+   "title": "The quarrymen's club",
+   "text": "Founded in 1872 by quarrymen and railwaymen. Beaten in the 1874 Founders' Cup final by Holloway Vale, winners in 1885 against Wrexford - then thirty years in and out of the top division: Second Division champions in 1899, 1904 and 1908."
+  },
+  {
+   "years": "1910-1945",
+   "title": "Champions of England",
+   "text": "Beaten in the Founders' Cup finals of 1920 and 1928 - but champions in 1926, ahead of Northwick, and again in 1934, ahead of Riverton."
+  },
+  {
+   "years": "1945-1982",
+   "title": "Cups and comebacks",
+   "text": "The Founders' Cup in 1955 (against Penrith); second in 1960, champions in 1961. The Charter Cup in 1968 and 1972. Relegated - and back as Second Division champions in 1974 with a young side that, three years later, won the title (1977, ahead of Ashvale). Down again, up again as champions in 1981, and the Founders' Cup in 1982 against Millbrook."
+  },
+  {
+   "years": "1982-2003",
+   "title": "The yo-yo years",
+   "text": "Promoted in 1984 and 1994 (both times second), beaten by Oakhurst in the 1988 Charter Cup final - and back-to-back Founders' Cups in 1997 (Millbrook again) and 1998 (Whitcombe). Second in 2003, just behind Northwick."
+  },
+  {
+   "years": "2004",
+   "title": "The night in Vienna",
+   "text": "Champions of Europe: the Crown of Europe final won against Ajaxia Noord, and that winter the Intercontinental Cup against Boca del Plata. The town's whole population - it seemed - lined the road from the airport."
+  },
+  {
+   "years": "2005-now",
+   "title": "Falling and climbing",
+   "text": "Relegated in 2007, back through the play-offs in 2008. Second in 2015 behind Bramhall, beaten in that year's Charter Cup final - and relegated the very next season with the money gone. Back as Division 1 champions in 2018."
+  }
+ ],
+ "honours_note": "League seasons are given by the year they ended (1926 = 1925-26).",
+ "legends": [
+  {
+   "name": "Josiah Bagshaw",
+   "role": "Founder 1872",
+   "note": "Quarry foreman; the Bagshaw Stand at the old ground was named after him."
+  },
+  {
+   "name": "Arthur Slack",
+   "role": "Centre-forward 1921-1935",
+   "note": "247 goals - the club record; both 1920s-30s titles."
+  },
+  {
+   "name": "Eric Mellor",
+   "role": "Goalkeeper 1952-1971",
+   "note": "674 appearances - the club record."
+  },
+  {
+   "name": "Brian Nuttall",
+   "role": "Manager 1972-1983",
+   "note": "From the Second Division to champions in three years."
+  },
+  {
+   "name": "Luka Petrović",
+   "role": "Captain 1999-2007",
+   "note": "Lifted the Crown of Europe in 2004."
+  },
+  {
+   "name": "Danny Wragg",
+   "role": "Striker 2001-2009",
+   "note": "Scored the winner in Vienna."
+  }
+ ],
+ "records": {
+  "attendance": "53,880 v Riverton Dynamo, League, 1961 (The Delph, before seating)",
+  "win": "10-0 v Morwick United, League, 1934",
+  "defeat": "1-9 v Millbrook United, League, 1939",
+  "top_scorer": "Arthur Slack, 247 goals (1921-1935)",
+  "appearances": "Eric Mellor, 674 (1952-1971)",
+  "season_goals": "Arthur Slack, 44 (1925-26)"
+ },
+ "badge": {
+  "about": "The gritstone edge above the town, crossed quarry hammers, and the star of 2004. Motto 'Ex Rupe Fortitudo' - from the rock, strength.",
+  "design": "A moss-green shield with a gold border. In the top half a gold silhouette of a rocky gritstone edge with bracken below it; in the bottom half two crossed gold quarry hammers. A single gold star above the shield; 'BRACKENFIELD TOWN' on a gold ribbon below."
+ },
+ "ground": {
+  "name": "The Delph",
+  "known_as": "the Delph",
+  "opened": 1903,
+  "capacity": 37400,
+  "pitch": {
+   "length_m": 105,
+   "width_m": 68,
+   "surface": "grass",
+   "runoff": "tight"
+  },
+  "stands": [
+   {
+    "name": "Gritstone Stand",
+    "side": "west",
+    "built": 2005,
+    "tiers": 2,
+    "capacity": 12600,
+    "roof": "cantilever",
+    "features": "the main stand, built with the European money: tunnel, dugouts, the Crown of Europe in the trophy room",
+    "expandable": false
+   },
+   {
+    "name": "Delph End",
+    "side": "north",
+    "built": 1997,
+    "tiers": 1,
+    "capacity": 9800,
+    "roof": "cantilever",
+    "features": "the home end - a steep single tier cut into the old quarry face, with the rock showing behind the top row",
+    "expandable": false
+   },
+   {
+    "name": "Peak Stand",
+    "side": "east",
+    "built": 1988,
+    "tiers": 2,
+    "capacity": 9000,
+    "roof": "1988 roof",
+    "features": "two tiers with the gritstone edge and the moors behind",
+    "expandable": false
+   },
+   {
+    "name": "Town End",
+    "side": "south",
+    "built": 1970,
+    "tiers": 1,
+    "capacity": 6000,
+    "roof": "1970s roof on pillars",
+    "features": "away fans; the old one",
+    "expandable": true
+   }
+  ],
+  "corners": "open corners",
+  "roof": "four separate roofs",
+  "surroundings": "built in a worked-out quarry: bare rock behind the home end, the gritstone edge and moors above the town, old lime kilns, the railway viaduct, stone terraces climbing the hill",
+  "atmosphere": "close and noisy - the quarry walls throw the sound back onto the pitch",
+  "for_the_engine": {
+   "home_end": "north",
+   "away_fans": "south end",
+   "dugouts": "west side, halfway line",
+   "pitch_m": [
+    105,
+    68
+   ],
+   "notes": "a ground in an old quarry"
+  },
+  "images": {
+   "crest": "data/world/clubs/brackenfield/crest.png",
+   "inside": "data/world/clubs/brackenfield/inside.jpg",
+   "aerial": "data/world/clubs/brackenfield/aerial.jpg"
+  }
+ },
+ "image_prompts": {
+  "badge": "A football club crest for 'Brackenfield Town', founded 1872, an English Peak District quarry-town club and former champions of Europe. A moss-green heraldic shield with a gold border. In the top half a gold silhouette of a rocky gritstone edge with bracken below it; in the bottom half two crossed gold quarry hammers. A single gold star above the shield. A gold ribbon beneath the shield reading 'BRACKENFIELD TOWN' in moss-green capitals. Flat vector emblem, clean bold lines, limited colours (moss green, gold, black), centred, on a plain transparent background, square format, no other text.",
+  "ground_inside": "Photorealistic wide-angle photo inside a 37,000-seat English football ground built in an old quarry on a cold clear autumn evening under floodlights, 30 minutes before kick-off. Camera: high in the main stand on the halfway line, looking across the pitch. Four separate stands with open corners. OPPOSITE: a two-tier stand with brown moorland and a rocky gritstone edge rising behind it. LEFT END: a steep single-tier home end cut into a bare grey quarry rock face, PACKED with fans in moss green and gold, a banner of a gold star. RIGHT END: a low old single-tier stand with a roof on pillars, away fans. Players warming up in moss-green shirts with gold trim and black shorts.",
+  "ground_aerial": "Aerial drone photograph of a 37,000-seat English football ground with four separate stands and open corners built inside a worked-out quarry on the edge of a Peak District stone town: bare grey rock walls behind one end, moorland and a gritstone edge above, old lime kilns, a stone railway viaduct, stone terraced houses climbing the hill. Photorealistic, golden autumn light on brown bracken.",
+  "kits": "Three football kits for Brackenfield Town laid out flat side by side on a plain light background, product-photo style. Home: moss-green shirt with gold trim, black shorts, moss-green socks. Away: gold shirt with a moss-green collar, moss-green shorts, gold socks. Third: black shirt with moss-green and gold sleeves, black shorts, black socks. A small club crest on the left chest of each shirt. No sponsor logos, no other text."
+ },
+ "support": 46000
+}

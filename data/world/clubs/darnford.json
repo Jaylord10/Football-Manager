@@ -1,0 +1,269 @@
+{
+ "id": 15,
+ "name": "Darnford Albion",
+ "short": "Darnford",
+ "nicknames": [
+  "Albion",
+  "the Maltsters"
+ ],
+ "founded": 1883,
+ "location": {
+  "town": "Darnford",
+  "county": "Nottinghamshire",
+  "region": "the East Midlands",
+  "about": "A town of about 120,000 on the south bank of the river, facing Riverton across a dozen bridges: maltings and breweries, the canal port and the railway works. Always the smaller of the two - and always trying to prove it isn't."
+ },
+ "colours": {
+  "rgb": [
+   180,
+   110,
+   50
+  ],
+  "story": "Amber and black - the colours of the malt kilns, said the founders, men from the Trent Bank maltings who started the club in 1883 to give Riverton a game.",
+  "home": {
+   "shirt": "amber with black trim",
+   "shorts": "black",
+   "socks": "amber",
+   "rgb": {
+    "shirt": [
+     200,
+     120,
+     40
+    ],
+    "trim": [
+     25,
+     25,
+     25
+    ],
+    "shorts": [
+     25,
+     25,
+     25
+    ],
+    "socks": [
+     200,
+     120,
+     40
+    ]
+   }
+  },
+  "away": {
+   "shirt": "black with amber stripes",
+   "shorts": "black",
+   "socks": "black",
+   "rgb": {
+    "shirt": [
+     25,
+     25,
+     25
+    ],
+    "trim": [
+     200,
+     120,
+     40
+    ],
+    "shorts": [
+     25,
+     25,
+     25
+    ],
+    "socks": [
+     25,
+     25,
+     25
+    ]
+   }
+  },
+  "third": {
+   "shirt": "cream with an amber collar",
+   "shorts": "cream",
+   "socks": "cream",
+   "rgb": {
+    "shirt": [
+     235,
+     225,
+     200
+    ],
+    "trim": [
+     200,
+     120,
+     40
+    ],
+    "shorts": [
+     235,
+     225,
+     200
+    ],
+    "socks": [
+     235,
+     225,
+     200
+    ]
+   }
+  }
+ },
+ "rivals": [
+  {
+   "club": "Riverton Dynamo",
+   "derby": "the Trent Derby",
+   "why": "the city across the river - a dozen bridges and one long grudge, since the first derby in 1884"
+  },
+  {
+   "club": "Kingsmere City",
+   "derby": null,
+   "why": "Founders' Cup finals a hundred years apart - 1923 and 2023 - and Darnford won both"
+  }
+ ],
+ "history": [
+  {
+   "years": "1883-1915",
+   "title": "Across the river",
+   "text": "Founded in 1883 by men from the maltings; the first Trent Derby a year later. Beaten in three Founders' Cup finals (1897, 1901, 1911), Second Division champions in 1900 - and in 1912 second, to Riverton of all clubs. Three years later, the last season before the war, champions of England: 1915."
+  },
+  {
+   "years": "1919-1960",
+   "title": "A cup side",
+   "text": "The Founders' Cup in 1923 (against Kingsmere), lost the 1925 final to Oakhurst, won again in 1930 (Northwick) and lost in 1934. Second in 1938 behind Millbrook - and relegated in 1948, after the war. Second Division champions in 1949; the Founders' Cup in 1952 against Eastvale."
+  },
+  {
+   "years": "1960-2000",
+   "title": "The long fade",
+   "text": "The Founders' Cup in 1965 against Bramhall - and then nothing much: Charter Cup finals lost in 1971 and 1982, relegation, promotion in 1978, relegation again. Riverton's fans called the bridges 'the way to the Second Division'."
+  },
+  {
+   "years": "2000-2015",
+   "title": "Up and down the bridges",
+   "text": "Division 1 champions in 2003; beaten in the 2004 Charter Cup final; down, and back up as runners-up in 2006. The Charter Cup in 2008 against Eastvale. Down again - and up through the play-offs in 2011, the same spring Riverton went down. Up again as runners-up in 2015."
+  },
+  {
+   "years": "2016-now",
+   "title": "The best years since 1915",
+   "text": "2022 was the season of the club's life: the Charter Cup won as a Division 1 side (against Quarrington, in the first all-Division 1 final) and promotion through the play-offs a month later. A year on, back in the Premier Division, the Founders' Cup against Kingsmere - a hundred years after the first."
+  }
+ ],
+ "honours_note": "League seasons are given by the year they ended (1915 = 1914-15).",
+ "legends": [
+  {
+   "name": "Walter Pask",
+   "role": "Founder 1883",
+   "note": "Maltster; captained the side in the first Trent Derby."
+  },
+  {
+   "name": "Sam Threlfall",
+   "role": "Captain 1908-1922",
+   "note": "Led the 1915 champions."
+  },
+  {
+   "name": "Cyril Gotheridge",
+   "role": "Centre-forward 1924-1937",
+   "note": "193 goals - the club record; scored twice in the 1930 final."
+  },
+  {
+   "name": "Norman Spowage",
+   "role": "Full-back 1955-1974",
+   "note": "681 appearances - the club record."
+  },
+  {
+   "name": "Kevin Dunmore",
+   "role": "Manager 2017-2024",
+   "note": "The 2022 Charter Cup, promotion, and the 2023 Founders' Cup."
+  },
+  {
+   "name": "Tunde Bakare",
+   "role": "Striker 2019-",
+   "note": "Scored in both the 2022 and 2023 finals."
+  }
+ ],
+ "records": {
+  "attendance": "47,920 v Riverton Dynamo, League, 1938 (Trent Bank, before seating)",
+  "win": "9-1 v Saltmarsh Athletic, Founders' Cup, 1930",
+  "defeat": "0-10 v Ashvale Rovers, League, 1892 and v Eastvale Wanderers, League, 1906",
+  "top_scorer": "Cyril Gotheridge, 193 goals (1924-1937)",
+  "appearances": "Norman Spowage, 681 (1955-1974)",
+  "season_goals": "Cyril Gotheridge, 38 (1929-30)"
+ },
+ "badge": {
+  "about": "A malt kiln's cowl and the bridge over the river - Darnford's side of it. Motto 'Ultra Pontem' - beyond the bridge.",
+  "design": "An amber circle with a black ring. In the centre a black stone bridge of three arches over wavy black water, and above it the pointed cowl of an old malt kiln. 'DARNFORD ALBION' in amber capitals around the black ring, '1883' at the bottom."
+ },
+ "ground": {
+  "name": "Trent Bank",
+  "known_as": "the Bank",
+  "opened": 1890,
+  "capacity": 31200,
+  "pitch": {
+   "length_m": 104,
+   "width_m": 68,
+   "surface": "grass",
+   "runoff": "tight"
+  },
+  "stands": [
+   {
+    "name": "Maltings Stand",
+    "side": "west",
+    "built": 2001,
+    "tiers": 2,
+    "capacity": 10400,
+    "roof": "cantilever",
+    "features": "the main stand, in front of the old maltings (now flats): tunnel, dugouts, boxes",
+    "expandable": false
+   },
+   {
+    "name": "Bridge End",
+    "side": "south",
+    "built": 1996,
+    "tiers": 1,
+    "capacity": 8200,
+    "roof": "cantilever",
+    "features": "the home end - from the top row you can see Riverton's floodlights across the river",
+    "expandable": false
+   },
+   {
+    "name": "Canal Stand",
+    "side": "east",
+    "built": 1978,
+    "tiers": 1,
+    "capacity": 7600,
+    "roof": "1970s roof",
+    "features": "a long single tier along the canal towpath",
+    "expandable": false
+   },
+   {
+    "name": "Station End",
+    "side": "north",
+    "built": 1962,
+    "tiers": 1,
+    "capacity": 5000,
+    "roof": "1960s roof on pillars",
+    "features": "away fans; the oldest stand",
+    "expandable": true
+   }
+  ],
+  "corners": "open corners",
+  "roof": "four separate roofs",
+  "surroundings": "the river and its bridges right behind the home end, Riverton's floodlights and towers on the far bank, malt kilns with pointed cowls, a canal basin with narrowboats, the railway station",
+  "atmosphere": "tight and loud - and on derby days the most hostile ground in the Midlands",
+  "for_the_engine": {
+   "home_end": "south",
+   "away_fans": "north end",
+   "dugouts": "west side, halfway line",
+   "pitch_m": [
+    104,
+    68
+   ],
+   "notes": "a tight riverside ground"
+  },
+  "images": {
+   "crest": "data/world/clubs/darnford/crest.png",
+   "inside": "data/world/clubs/darnford/inside.jpg",
+   "aerial": "data/world/clubs/darnford/aerial.jpg"
+  }
+ },
+ "image_prompts": {
+  "badge": "A football club crest for 'Darnford Albion', founded 1883, an East Midlands English river-town club. An amber circle with a black ring around it. In the centre a black stone bridge of three arches over wavy black water, and above the bridge the pointed cowl of an old malt kiln. 'DARNFORD ALBION' in amber serif capitals around the black ring, with '1883' at the bottom of the ring. Flat vector emblem, clean bold lines, limited colours (amber, black), centred, on a plain transparent background, square format, no other text.",
+  "ground_inside": "Photorealistic wide-angle photo inside a 31,000-seat English football ground on a river bank on a grey, misty winter afternoon, 30 minutes before kick-off. Camera: high in the main stand on the halfway line, looking across the pitch. Four separate stands with open corners. OPPOSITE: a long single-tier stand with a canal and narrowboats behind it. LEFT END: a single-tier home end PACKED with fans in amber and black, flags, and across the river behind it the floodlights and towers of a bigger city. RIGHT END: an old low stand with a roof on pillars, away fans. Players warming up in amber shirts with black trim and black shorts.",
+  "ground_aerial": "Aerial drone photograph of a 31,000-seat English football ground with four separate stands and open corners on the south bank of a wide river: several old bridges crossing to a bigger city with its own football stadium on the far bank, Victorian malt kilns with pointed cowls, a canal basin with narrowboats, a railway station and red-brick terraces. Photorealistic, soft misty morning light.",
+  "kits": "Three football kits for Darnford Albion laid out flat side by side on a plain light background, product-photo style. Home: amber shirt with black trim, black shorts, amber socks. Away: black shirt with thin amber stripes, black shorts, black socks. Third: cream shirt with an amber collar, cream shorts, cream socks. A small club crest on the left chest of each shirt. No sponsor logos, no other text."
+ },
+ "support": 36000
+}
