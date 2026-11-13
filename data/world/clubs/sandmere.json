@@ -1,0 +1,269 @@
+{
+ "id": 13,
+ "name": "Sandmere Athletic",
+ "short": "Sandmere",
+ "nicknames": [
+  "Athletic",
+  "the Pitmen"
+ ],
+ "founded": 1881,
+ "location": {
+  "town": "Sandmere",
+  "county": "County Durham",
+  "region": "the North East",
+  "about": "A coal town of about 90,000 on the cliffs twelve miles up the coast from Whitcombe: the pits went down under the sea, and the last one closed in 1993. Now a seaside town with long beaches, a lighthouse and a fierce pride in its club."
+ },
+ "colours": {
+  "rgb": [
+   240,
+   150,
+   170
+  ],
+  "story": "Rose pink and black - the colours of the Sandmere Lodge's banner, carried by the miners at the Durham gala every July. The club was formed by the lodge in 1881 and took its colours.",
+  "home": {
+   "shirt": "rose pink with black collar and black cuffs",
+   "shorts": "black",
+   "socks": "black",
+   "rgb": {
+    "shirt": [
+     240,
+     150,
+     170
+    ],
+    "trim": [
+     22,
+     22,
+     24
+    ],
+    "shorts": [
+     22,
+     22,
+     24
+    ],
+    "socks": [
+     22,
+     22,
+     24
+    ]
+   }
+  },
+  "away": {
+   "shirt": "black with rose-pink trim",
+   "shorts": "black",
+   "socks": "rose pink",
+   "rgb": {
+    "shirt": [
+     22,
+     22,
+     24
+    ],
+    "trim": [
+     240,
+     150,
+     170
+    ],
+    "shorts": [
+     22,
+     22,
+     24
+    ],
+    "socks": [
+     240,
+     150,
+     170
+    ]
+   }
+  },
+  "third": {
+   "shirt": "white with a pink and black hoop",
+   "shorts": "white",
+   "socks": "white",
+   "rgb": {
+    "shirt": [
+     245,
+     245,
+     245
+    ],
+    "trim": [
+     240,
+     150,
+     170
+    ],
+    "shorts": [
+     245,
+     245,
+     245
+    ],
+    "socks": [
+     245,
+     245,
+     245
+    ]
+   }
+  }
+ },
+ "rivals": [
+  {
+   "club": "Whitcombe City",
+   "derby": "the North East Derby",
+   "why": "the shipbuilding city twelve miles down the coast - pits against yards, since 1881; Whitcombe's money has never felt bigger"
+  },
+  {
+   "club": "Eastvale Wanderers",
+   "derby": null,
+   "why": "the 1992 title race, won by Sandmere on goal difference"
+  }
+ ],
+ "history": [
+  {
+   "years": "1881-1939",
+   "title": "The lodge team",
+   "text": "Formed by the Sandmere miners' lodge in 1881. Second Division champions in 1894, up and down for forty years (runners-up in 1901, 1910 and 1926); the Founders' Cup in 1921; Second Division champions again in 1938."
+  },
+  {
+   "years": "1946-1971",
+   "title": "The pitmen's title",
+   "text": "Champions in 1952 - the club's first title, with eleven pitmen's sons in the side - the Founders' Cup in 1959, and in 1970 the title and the Charter Cup, and the Founders' Cup final lost: one game from the Treble."
+  },
+  {
+   "years": "1972-1995",
+   "title": "The pits close",
+   "text": "Up and down: promoted in 1979, the Charter Cup in 1981 and 1982, second in 1982 and 1986, relegated and back as champions in 1988 - and champions again in 1992, the year before the last pit closed. The Charter Cup in 1995."
+  },
+  {
+   "years": "1996-2018",
+   "title": "The yo-yo",
+   "text": "Relegated, and back as runners-up in 1997; the Europa Trophy in 2003, the club's only European trophy (after losing the 1992 final); down, Second Division champions in 2008, down, champions again in 2010; down again in the 2010s, and up as runners-up in 2018."
+  },
+  {
+   "years": "2018-now",
+   "title": "Rose pink again",
+   "text": "Second in the league in 2024 - the best season for thirty years - while Whitcombe's new money won it two years running down the coast."
+  }
+ ],
+ "honours_note": "League seasons are given by the year they ended (1952 = 1951-52).",
+ "legends": [
+  {
+   "name": "Jack Shotton",
+   "role": "Captain 1946-1957",
+   "note": "A hewer at the Sandmere pit, captain of the 1952 champions."
+  },
+  {
+   "name": "Geordie Wake",
+   "role": "Centre-forward 1960-1973",
+   "note": "215 goals - the club record."
+  },
+  {
+   "name": "Matty Lumsden",
+   "role": "Defender 1979-1997",
+   "note": "702 appearances - the club record."
+  },
+  {
+   "name": "Ronnie Pyle",
+   "role": "Manager 1986-1996",
+   "note": "Promotion, the 1992 title and the 1995 Charter Cup. The Pyle Stand is named after him."
+  },
+  {
+   "name": "Kenny Bewick",
+   "role": "Midfielder 1998-2010",
+   "note": "Scored twice in the 2003 Europa Trophy final."
+  },
+  {
+   "name": "Tom Hindmarch",
+   "role": "Striker 2019-",
+   "note": "The goals of the 2024 runners-up."
+  }
+ ],
+ "records": {
+  "attendance": "68,512 v Whitcombe City, League, 1950 (The Lodge, before seating)",
+  "win": "9-0 v Kelbridge Albion, League, 1938",
+  "defeat": "0-8 v Northwick FC, League, 2016",
+  "top_scorer": "Geordie Wake, 215 goals (1960-1973)",
+  "appearances": "Matty Lumsden, 702 (1979-1997)",
+  "season_goals": "Geordie Wake, 37 (1969-70)"
+ },
+ "badge": {
+  "about": "The pithead winding wheel and the lighthouse on the cliff; the lodge's pink and black. Motto 'Ex Profundis' - from the depths.",
+  "design": "A rose-pink shield with a black border. In the centre a black pithead winding wheel on its frame, and beside it a white lighthouse on a black cliff. Three wavy black lines for the sea at the bottom. 'SANDMERE ATHLETIC' arched above the shield in black capitals, and a black ribbon beneath reading 'EX PROFUNDIS' in pink, with '1881' on the ribbon's ends."
+ },
+ "ground": {
+  "name": "The Lodge",
+  "known_as": "the Lodge",
+  "opened": 1898,
+  "capacity": 36500,
+  "pitch": {
+   "length_m": 105,
+   "width_m": 68,
+   "surface": "grass",
+   "runoff": "tight"
+  },
+  "stands": [
+   {
+    "name": "Pyle Stand",
+    "side": "west",
+    "built": 1997,
+    "tiers": 2,
+    "capacity": 11500,
+    "roof": "cantilever",
+    "features": "the main stand: tunnel, dugouts, a row of boxes; the Lodge banner hangs in the reception",
+    "expandable": false
+   },
+   {
+    "name": "Pit End",
+    "side": "north",
+    "built": 1994,
+    "tiers": 1,
+    "capacity": 9500,
+    "roof": "cantilever",
+    "features": "the home end - one steep single tier in pink seats, a restored winding wheel on its own outside",
+    "expandable": false
+   },
+   {
+    "name": "Sea Stand",
+    "side": "east",
+    "built": 2009,
+    "tiers": 2,
+    "capacity": 9500,
+    "roof": "a modern roof",
+    "features": "two tiers with the North Sea right behind - the wind comes straight off it",
+    "expandable": false
+   },
+   {
+    "name": "Town End",
+    "side": "south",
+    "built": 1981,
+    "tiers": 1,
+    "capacity": 6000,
+    "roof": "1980s roof",
+    "features": "away fans in one half",
+    "expandable": true
+   }
+  ],
+  "corners": "open corners",
+  "roof": "four separate roofs",
+  "surroundings": "the cliff top: the North Sea and the beach right behind the east stand, a lighthouse on the headland, the restored winding wheel of the old pit, rows of miners' terraced houses",
+  "atmosphere": "windswept, loud and proud - pink scarves and the Lodge banner on derby day",
+  "for_the_engine": {
+   "home_end": "north",
+   "away_fans": "south end",
+   "dugouts": "west side, halfway line",
+   "pitch_m": [
+    105,
+    68
+   ],
+   "notes": "a windswept ground on the cliffs"
+  },
+  "images": {
+   "crest": "data/world/clubs/sandmere/crest.png",
+   "inside": "data/world/clubs/sandmere/inside.jpg",
+   "aerial": "data/world/clubs/sandmere/aerial.jpg"
+  }
+ },
+ "image_prompts": {
+  "badge": "A football club crest for 'Sandmere Athletic', founded 1881, a North East English coal-town club on the coast. A rose-pink heraldic shield with a black border. In the centre a black pithead winding wheel on its frame, and beside it a white lighthouse on a black cliff. Three wavy black lines for the sea at the bottom of the shield. 'SANDMERE ATHLETIC' arched above the shield in black serif capitals. A black ribbon beneath the shield reading 'EX PROFUNDIS' in rose-pink capitals, with '18' and '81' on the ribbon's ends. Flat vector emblem, clean bold lines, limited colours (rose pink, black, white), centred, on a plain transparent background, square format, no other text.",
+  "ground_inside": "Photorealistic wide-angle photo inside a 36,000-seat English football ground on a cliff top on a bright, blustery winter afternoon, 30 minutes before kick-off. Camera: high in the main stand on the halfway line, looking across the pitch. Four separate stands with open corners. OPPOSITE: a modern two-tier stand with the grey North Sea right behind it and a lighthouse on a headland in the distance. LEFT END: a steep single-tier home end PACKED with fans in rose pink and black, a big miners' banner and flags. RIGHT END: a low older stand with away fans. Players warming up in rose-pink shirts with black collars and black shorts.",
+  "ground_aerial": "Aerial drone photograph of a 36,000-seat English football ground with four separate stands and open corners on a cliff top in a North East coal town: the North Sea and a long beach right behind one side, a lighthouse on the headland, a restored pithead winding wheel standing on its own beside the ground, rows of terraced miners' houses. Photorealistic, low winter sun.",
+  "kits": "Three football kits for Sandmere Athletic laid out flat side by side on a plain light background, product-photo style. Home: rose-pink shirt with black collar and black cuffs, black shorts, black socks. Away: black shirt with rose-pink trim, black shorts, rose-pink socks. Third: white shirt with a rose-pink and black hoop across the chest, white shorts, white socks. A small club crest on the left chest of each shirt. No sponsor logos, no other text."
+ },
+ "support": 44000
+}

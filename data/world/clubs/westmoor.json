@@ -1,0 +1,269 @@
+{
+ "id": 7,
+ "name": "Westmoor County",
+ "short": "Westmoor",
+ "nicknames": [
+  "County",
+  "the Moormen"
+ ],
+ "founded": 1869,
+ "location": {
+  "town": "Westmoor",
+  "county": "Somerset",
+  "region": "the South West",
+  "about": "An old county town of about 180,000 where the moors meet the Somerset levels: wool, then cider, then cars and insurance offices. One of the oldest clubs in the land - and the best cup side England has ever had."
+ },
+ "colours": {
+  "rgb": [
+   120,
+   190,
+   220
+  ],
+  "story": "Sky blue and navy - the sky over the moor and the navy of the county regiment, whose officers helped found the club in 1869.",
+  "home": {
+   "shirt": "sky blue with a navy collar",
+   "shorts": "navy",
+   "socks": "sky blue",
+   "rgb": {
+    "shirt": [
+     120,
+     190,
+     220
+    ],
+    "trim": [
+     25,
+     40,
+     75
+    ],
+    "shorts": [
+     25,
+     40,
+     75
+    ],
+    "socks": [
+     120,
+     190,
+     220
+    ]
+   }
+  },
+  "away": {
+   "shirt": "amber with navy trim",
+   "shorts": "navy",
+   "socks": "amber",
+   "rgb": {
+    "shirt": [
+     230,
+     160,
+     40
+    ],
+    "trim": [
+     25,
+     40,
+     75
+    ],
+    "shorts": [
+     25,
+     40,
+     75
+    ],
+    "socks": [
+     230,
+     160,
+     40
+    ]
+   }
+  },
+  "third": {
+   "shirt": "navy with sky-blue pinstripes",
+   "shorts": "navy",
+   "socks": "navy",
+   "rgb": {
+    "shirt": [
+     25,
+     40,
+     75
+    ],
+    "trim": [
+     120,
+     190,
+     220
+    ],
+    "shorts": [
+     25,
+     40,
+     75
+    ],
+    "socks": [
+     25,
+     40,
+     75
+    ]
+   }
+  }
+ },
+ "rivals": [
+  {
+   "club": "Holloway Vale",
+   "derby": "the Somerset Derby",
+   "why": "the market town fifteen miles down the levels - the county's two clubs, at it since 1883"
+  },
+  {
+   "club": "Eastvale Wanderers",
+   "derby": null,
+   "why": "the 8-1 at Moorside Park in 1999 - still sung about on the Cider End"
+  }
+ ],
+ "history": [
+  {
+   "years": "1869-1900",
+   "title": "The county's club",
+   "text": "Founded in 1869 by officers of the county regiment and the town's grammar school. In the Founders' Cup from its first year: beaten finalists in 1873 and 1875, winners in 1878, 1892 and 1897 - the year of the club's first title, the Double."
+  },
+  {
+   "years": "1900-1960",
+   "title": "So near, then the long wait",
+   "text": "Second three years running (1900, 1901, 1902), champions again in 1930 - and then thirty years with nothing, until the Founders' Cup final of 1962 was lost too."
+  },
+  {
+   "years": "1962-1977",
+   "title": "Kings of the cup",
+   "text": "Champions in 1963 - and relegated three years later. Back as Second Division champions in 1967, the same spring they won the Founders' Cup; won it again in 1968, the Charter Cup in 1969, and the Founders' Cup in 1971, 1972 and 1974. Down again, and up as champions in 1977."
+  },
+  {
+   "years": "1977-2005",
+   "title": "Ups and downs",
+   "text": "The Founders' Cup in 1990, second in the league in 1994 - then relegation, and back up through the play-offs in 1997. In 1999 they won 8-1 against Eastvale."
+  },
+  {
+   "years": "2005-now",
+   "title": "The best of times",
+   "text": "Champions in 2006 and again in 2009 - with the Founders' Cup, the club's second Double, 112 years after the first. The Founders' Cup in 2012 and 2019, the Charter Cup in 2014: twelve Founders' Cups, level with Bramhall for the most."
+  }
+ ],
+ "honours_note": "League seasons are given by the year they ended (1897 = 1896-97).",
+ "legends": [
+  {
+   "name": "Colonel Edwin Rayne",
+   "role": "Founder and first captain",
+   "note": "Officer of the county regiment; the Rayne Stand is named after him."
+  },
+  {
+   "name": "Bill 'Cider' Pocock",
+   "role": "Centre-forward 1924-1938",
+   "note": "232 goals - the club record."
+  },
+  {
+   "name": "Len Tapscott",
+   "role": "Manager 1965-1981",
+   "note": "Six cups in nine years; the Second Division title in 1967 and 1977."
+  },
+  {
+   "name": "Harry Greenslade",
+   "role": "Goalkeeper 1961-1980",
+   "note": "689 appearances - the club record."
+  },
+  {
+   "name": "Matt Corrigan",
+   "role": "Captain 2002-2014",
+   "note": "Lifted both titles and the 2009 Double."
+  },
+  {
+   "name": "Joel Hartnell",
+   "role": "Forward 2015-",
+   "note": "Scored in the 2019 Founders' Cup final."
+  }
+ ],
+ "records": {
+  "attendance": "61,034 v Holloway Vale, Founders' Cup fifth round, 1972 (Moorside Park, before seating)",
+  "win": "12-0 v Saltmarsh, Founders' Cup, 1892",
+  "defeat": "0-7 v Bramhall Borough, League, 1965",
+  "top_scorer": "Bill Pocock, 232 goals (1924-1938)",
+  "appearances": "Harry Greenslade, 689 (1961-1980)",
+  "season_goals": "Bill Pocock, 40 (1929-30)"
+ },
+ "badge": {
+  "about": "The moor's tor and the county's stag; the twelve stars round the edge for the twelve Founders' Cups. Motto 'Semper Fidelis' - always faithful, the county regiment's.",
+  "design": "A sky-blue circle with a navy ring around it. In the centre a navy stag standing on a rocky hilltop (a tor). 'WESTMOOR COUNTY' in sky blue capitals around the navy ring, with '1869' at the bottom. Twelve small amber stars spaced around the outside of the ring."
+ },
+ "ground": {
+  "name": "Moorside Park",
+  "known_as": "the Moorside",
+  "opened": 1894,
+  "capacity": 40300,
+  "pitch": {
+   "length_m": 105,
+   "width_m": 68,
+   "surface": "grass",
+   "runoff": "tight"
+  },
+  "stands": [
+   {
+    "name": "Rayne Stand",
+    "side": "west",
+    "built": 1998,
+    "tiers": 2,
+    "capacity": 12300,
+    "roof": "cantilever",
+    "features": "the main stand: tunnel, dugouts, the trophy room with twelve Founders' Cup replicas",
+    "expandable": false
+   },
+   {
+    "name": "Cider End",
+    "side": "south",
+    "built": 1995,
+    "tiers": 1,
+    "capacity": 11000,
+    "roof": "cantilever",
+    "features": "the home end - one steep single tier in sky blue, named after the cider works that stood behind it",
+    "expandable": false
+   },
+   {
+    "name": "Moor Stand",
+    "side": "east",
+    "built": 2015,
+    "tiers": 2,
+    "capacity": 10500,
+    "roof": "a modern roof",
+    "features": "two tiers with the moor rising behind them - the view from the top row is famous",
+    "expandable": false
+   },
+   {
+    "name": "Levels End",
+    "side": "north",
+    "built": 1974,
+    "tiers": 1,
+    "capacity": 6500,
+    "roof": "1970s roof on pillars",
+    "features": "away fans; low and old - the club's next rebuild",
+    "expandable": true
+   }
+  ],
+  "corners": "open corners",
+  "roof": "four separate roofs",
+  "surroundings": "the moor rising green and brown behind the east stand, the old cider works' chimney, the cathedral-sized church of the market square, apple orchards on the edge of town",
+  "atmosphere": "proud and old-fashioned - and on cup days the loudest ground in the South West",
+  "for_the_engine": {
+   "home_end": "south",
+   "away_fans": "north end",
+   "dugouts": "west side, halfway line",
+   "pitch_m": [
+    105,
+    68
+   ],
+   "notes": "a traditional four-stand ground"
+  },
+  "images": {
+   "crest": "data/world/clubs/westmoor/crest.png",
+   "inside": "data/world/clubs/westmoor/inside.jpg",
+   "aerial": "data/world/clubs/westmoor/aerial.jpg"
+  }
+ },
+ "image_prompts": {
+  "badge": "A football club crest for 'Westmoor County', founded 1869, an old English county-town club from the South West. A sky-blue circle with a navy ring around it. In the centre a navy stag standing proudly on a rocky hilltop. 'WESTMOOR COUNTY' in sky-blue serif capitals around the navy ring, with '1869' at the bottom of the ring. Twelve small amber stars evenly spaced around the outside of the ring. Flat vector emblem, clean bold lines, limited colours (sky blue, navy, amber), centred, on a plain transparent background, square format, no other text.",
+  "ground_inside": "Photorealistic wide-angle photo inside a 40,000-seat traditional English football ground on a crisp sunny autumn afternoon, 30 minutes before kick-off. Camera: high in the main stand on the halfway line, looking across the pitch. Four separate stands with open corners. OPPOSITE: a modern two-tier stand with green-and-brown moorland hills rising high behind it. LEFT END: one steep single-tier home end PACKED with fans in sky blue and navy, flags and a banner of a stag. RIGHT END: a low old single-tier stand with a roof on pillars, away fans. Players warming up in sky-blue shirts with navy collars and navy shorts.",
+  "ground_aerial": "Aerial drone photograph of a 40,000-seat traditional English football ground with four separate stands and open corners on the edge of a South West county town: moorland hills rising behind one side, an old brick cider-works chimney behind one end, apple orchards and terraced streets around it, a big church tower in the town centre. Photorealistic, late summer evening light.",
+  "kits": "Three football kits for Westmoor County laid out flat side by side on a plain light background, product-photo style. Home: sky-blue shirt with a navy collar, navy shorts, sky-blue socks. Away: amber shirt with navy trim, navy shorts, amber socks. Third: navy shirt with thin sky-blue pinstripes, navy shorts, navy socks. A small club crest on the left chest of each shirt. No sponsor logos, no other text."
+ },
+ "support": 52000
+}
