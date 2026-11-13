@@ -643,8 +643,32 @@ def round_lines(career, comp, i):
                 if r.get("agg"):
                     s += f"  ·  agg {r['agg'][0]}-{r['agg'][1]}"
                 parts.append(s)
-        out.append(("   |   ".join(parts), career["my_club"] in (t["a"], t["b"])))
+        mine = career["my_club"] in (t["a"], t["b"])
+        out.append(("   |   ".join(parts), mine))
+        if rd["name"] == "Final" and len(ms) == 1:              # (the final: where, when, who scored)
+            m = ms[0]
+            out.append((f"{venue(career, comp)}  ·  {cal.fmt(m['date'], False)}", False))
+            r = m["result"]
+            if r and r.get("goals"):
+                for side, cid in ((0, m["home"]), (1, m["away"])):
+                    gs = [f"{g['name']} {g['minute']}'" if g.get("minute") else g["name"]
+                          for g in r["goals"] if g.get("team") == side]
+                    if gs:
+                        out.append((f"{name(career, cid, True)}: " + ", ".join(gs), False))
     return out
+
+
+FINAL_CITIES = ("Lisbon", "Vienna", "Amsterdam", "Munich", "Madrid", "Milan", "Paris", "Istanbul", "Athens",
+                "Budapest", "Glasgow", "Seville", "Prague", "Copenhagen")
+
+
+def venue(career, comp):
+    """Where a final is played: the national stadium for our cups; a different city each year for Europe's."""
+    if comp["key"] in (ASSOC, LEAGUE_CUP):
+        return VENUE[0].upper() + VENUE[1:]
+    y = career.get("year", 2026)
+    k = (y * 7 + (3 if comp["key"] == "shield" else 0) + (5 if comp["key"] == "world_club" else 0)) % len(FINAL_CITIES)
+    return f"The final in {FINAL_CITIES[k]}"
 
 
 def my_status(career, comp):
