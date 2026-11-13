@@ -731,6 +731,8 @@ def on_day(career, iso, rng):
     bids_day(career, iso, rng)                          # answers to your bids (and rivals)
     from career import spain
     spain.day(career, iso, rng)                         # the Spanish league's day
+    from career import cups
+    cups.day(career, iso, rng)                          # the cups: draws, and everyone else's ties (career/cups.py)
 
 
 def search(career, pos=None, max_age=None, max_fee=None, source="all", limit=200, for_sale=False, sort="rating"):

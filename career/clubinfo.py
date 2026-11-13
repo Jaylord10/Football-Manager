@@ -74,6 +74,11 @@ def _played(career):
             out["second_tier"][y] = [nm(t["d1"][0]), nm(t["d1"][1])]
         if len(h.get("up") or []) >= 3:
             out["second_tier_playoffs"][y] = [nm(h["up"][2]), None]
+    for h in career.get("cup_history", []):                 # (career/cups.py: the cups played since)
+        y = h.get("year_end")
+        for key in ("association_cup", "league_cup", "champions_cup", "shield", "world_club"):
+            if h.get(key + "_names"):
+                out.setdefault(key, {})[y] = h[key + "_names"]
     return out
 
 

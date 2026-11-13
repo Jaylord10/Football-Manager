@@ -197,6 +197,8 @@ def new_career(clubs, my_club, seed=None):
     from career import stadium
     stadium.sync(career)                 # (each ground's real capacity - career/stadium.py)
     divisions.start(career)              # the other division's fixtures (career/divisions.py)
+    from career import cups
+    cups.create(career)                  # the season's cups (career/cups.py, career/europe.py)
     return career
 
 
@@ -254,8 +256,9 @@ def record_matchday(career, results):
 
 
 def new_season(career, seed=None):
-    from career import divisions
+    from career import divisions, cups
     divisions.season_end(career)         # the other division's last games (career/divisions.py)
+    cups.season_end(career)              # the cups finished, their winners recorded (career/cups.py)
     t = table(career)
     tables = divisions.tables(career)    # {"pl": [...], "d1": [...]} (just yours in an older one-division world)
     up, down = divisions.movers(career, tables)     # promotion and relegation (play-offs: career/playoffs.py)
@@ -310,6 +313,7 @@ def new_season(career, seed=None):
     from career import shapes
     shapes.ai_review(career)                         # pre-season: AI managers settle on a shape
     availability.fix_lineups(career, career["calendar"][0])
+    cups.create(career)                              # this season's cups (career/cups.py)
 
 
 def clubs_mod_overall(p):
@@ -389,6 +393,8 @@ def load(path=SAVE_FILE):
     stadium.sync(career)                 # (each ground's real capacity - career/stadium.py)
     from career import divisions
     divisions.ensure(career)             # (older saves: Division 1 arrives - career/divisions.py)
+    from career import cups
+    cups.ensure(career)                  # (older saves: the cups start - career/cups.py)
     return career
 
 

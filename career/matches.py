@@ -27,7 +27,7 @@ SQUAD_DIR = os.path.join("saves", "squads")
 HALF_SECONDS = float(os.environ.get("FM_CAREER_HALF", "2700"))   # 45-minute halves (tests can shorten it)
 
 
-def write_config(career, home_id, away_id, tag, auto_subs=None, human=None, extra=None, friendly=False):
+def write_config(career, home_id, away_id, tag, auto_subs=None, human=None, extra=None, friendly=False, on=None):
     """A match_config file for this fixture; returns its path.
     auto_subs: {club id: False} for a club whose manager makes his own changes
     (you, watching) - everyone else's are made by the AI / your assistant.
@@ -38,7 +38,7 @@ def write_config(career, home_id, away_id, tag, auto_subs=None, human=None, extr
     extra = extra or {}
 
     from career import availability, league
-    date = career.get("date") if friendly else (league.match_date(career) or career.get("date"))
+    date = on or (career.get("date") if friendly else (league.match_date(career) or career.get("date")))
 
     def team(cid, side):
         c = extra[cid] if cid in extra else clubs[cid]
@@ -238,7 +238,34 @@ def watch_playoff(career, m):
     """Watch a play-off match (career/playoffs.py): a competitive match, 90 minutes.  (result, quit)"""
     me_id = career["my_club"]
     cfg = write_config(career, m["home"], m["away"], f"playoff_{m['id']}_watch",
-                       auto_subs={me_id: career.get("assistant_subs", True)}, human=me_id)
+                       auto_subs={me_id: career.get("assistant_subs", True)}, human=me_id, on=m["date"])
+    os.environ["FM_MATCH_CONFIG"] = cfg
+    import config.formations as formations
+    from core.database import PlayerDatabase
+    formations.db = PlayerDatabase(cfg)
+    import gameplay.match_engine as me
+    me.RL_ENABLED = False
+    me.HALF_DURATION_REAL = HALF_SECONDS
+    engine = me.MatchEngine(career=True)
+    engine.run()
+    if engine.my_team is not None:
+        career["assistant_subs"] = engine.subs.auto[engine.my_team]
+    if engine.match_state != "full_time":
+        return None, engine.quit_requested
+    return _summary(m["home"], m["away"], engine.result()), engine.quit_requested
+
+
+def watch_cup(career, m):
+    """Watch a cup tie (career/cups.py, career/europe.py): a competitive match, 90 minutes.  (result, quit)
+    The other side may be from anywhere (Spain, a lower-league side, the continent)."""
+    from career import cups
+    me_id = career["my_club"]
+    extra = {}
+    for cid in (m["home"], m["away"]):
+        if not (0 <= cid < len(career["clubs"])):
+            extra[cid] = cups.club(career, cid)
+    cfg = write_config(career, m["home"], m["away"], f"cup_{m['id'].replace(':', '_')}_watch",
+                       auto_subs={me_id: career.get("assistant_subs", True)}, human=me_id, extra=extra, on=m["date"])
     os.environ["FM_MATCH_CONFIG"] = cfg
     import config.formations as formations
     from core.database import PlayerDatabase

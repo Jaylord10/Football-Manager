@@ -62,7 +62,8 @@ NOISE = 0.4
 
 def _expected(career, club, opp_id, home):
     """Points a team like ours would expect from this game (0-3)."""
-    opp = career["clubs"][opp_id]
+    from career import cups
+    opp = cups.club(career, opp_id) or career["clubs"][opp_id]      # (a cup tie: the other side may be from anywhere)
     diff = morale._strength(club) - morale._strength(opp) + (1.0 if home else -1.0)
     return max(0.3, min(2.6, 1.35 + 0.12 * diff))
 

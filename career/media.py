@@ -832,6 +832,49 @@ def playoff_story(career, m, st):
                                    "Scenes at the final whistle."]), club=me if me in (w, l) else None)
 
 
+def cup_story(career, comp, m):
+    """The papers on a cup tie (career/cups.py): your results, giant-killings, the final."""
+    from career import cups
+    r = m.get("result")
+    if not r:
+        return
+    rd = comp["rounds"][m["round"]] if m.get("round") is not None and "rounds" in comp else None
+    tie = rd["ties"][m["tie"]] if rd and m.get("tie") is not None else None
+    if tie is None or tie.get("winner") is None or tie.get("how") == "bye":
+        return
+    w = tie["winner"]
+    l = tie["a"] if w == tie["b"] else tie["b"]
+    nm = lambda i: cups.name(career, i)
+    me = career["my_club"]
+    rng = _rng(career, "cup" + m["id"])
+    how = {"pens": " on penalties", "et": " after extra time"}.get(tie.get("how"), "")
+    score = f"{r['hg']}-{r['ag']}" if not r.get("agg") else f"{r['agg'][0]}-{r['agg'][1]} on aggregate"
+    if rd["name"] == "Final":
+        _add_article(career, BROADSHEET, "cup", f"{nm(w)} win {comp['name']}",
+                     f"{nm(w)} beat {nm(l)}{how} in the final ({nm(m['home'])} {score} {nm(m['away'])}).",
+                     club=me if me in (w, l) else None)
+        _add_article(career, TABLOID, "cup", rng.choice([f"{cups.name(career, w, True).upper()} LIFT THE CUP",
+                                                         "CUP GLORY!", "SILVERWARE!"]),
+                     f"Scenes at the final whistle as {nm(w)} got their hands on {comp['name']}.",
+                     club=me if me in (w, l) else None)
+        return
+    # a giant-killing: a much smaller club through
+    from career import spain
+    W, L = cups.club(career, w), cups.club(career, l)
+    if W and L and spain.xi_rating(L, L.get("lineup") or {}) - spain.xi_rating(W, W.get("lineup") or {}) >= 8:
+        _add_article(career, TABLOID, "cup", rng.choice(["GIANT-KILLING!", "CUP SHOCK!", "THE MAGIC OF THE CUP"]),
+                     f"{nm(w)} knocked out {nm(l)} in {comp['name']} {rd['name'].lower()}{how} ({score}). "
+                     + rng.choice(["What a night.", "Nobody saw that coming.", "The pubs will be busy tonight."]),
+                     club=me if me in (w, l) else None)
+    elif me in (w, l):
+        if w == me:
+            _add_article(career, local_paper(career), "cup", rng.choice(["Through to the next round", "Cup run goes on"]),
+                         f"{nm(me)} are through in {comp['name']} after beating {nm(l)}{how} ({score}).", club=me)
+        else:
+            _add_article(career, local_paper(career), "cup", rng.choice(["Out of the cup", "Cup exit"]),
+                         f"{nm(me)} are out of {comp['name']}, beaten by {nm(w)}{how} ({score}).", club=me)
+
+
 def _spain(career):
     if "spain" not in career:
         return

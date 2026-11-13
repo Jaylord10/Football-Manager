@@ -33,7 +33,7 @@ from career import finance as fin
 from career import contracts as con
 from career import transfers as trf
 from career import morale, chats, faces, captains, teamtalk, media, fitness, friendlies, clubinfo
-from career import playoffs
+from career import playoffs, cups
 from career import registration as reg
 from career import board as brd
 from career import spain
@@ -442,9 +442,10 @@ class App:
             self.go("sacked")
             return self.draw_sacked()
         if league.season_over(self.career):
-            if playoffs.my_next(self.career):            # (Division 1: your play-offs first)
-                self.go("playoff")
-                return self.draw_playoff()
+            nxt = self._after_league_next()
+            if nxt:                                      # (your play-offs or cup finals first)
+                self.go(nxt)
+                return getattr(self, "draw_" + nxt)()
             self.go("season_end")
             return self.draw_season_end()
         from career import office
@@ -457,9 +458,10 @@ class App:
             self.go("sacked")
             return self.draw_sacked()
         if league.season_over(self.career):
-            if playoffs.my_next(self.career):
-                self.go("playoff")
-                return self.draw_playoff()
+            nxt = self._after_league_next()
+            if nxt:
+                self.go(nxt)
+                return getattr(self, "draw_" + nxt)()
             self.go("season_end")
             return self.draw_season_end()
         W, H = self.size
@@ -568,7 +570,12 @@ class App:
         """Continue: on to the day of the next match - unless something needs you
         on the way (an offer for one of your players: it stops there).  A friendly
         before the next league match comes first (career/friendlies.py)."""
+        nxt_league = league.match_date(self.career)
+        cm = cups.my_next(self.career, before=nxt_league)
         f = friendlies.next_one(self.career)
+        if cm and (not f or cm["date"] <= f["date"]):
+            self._to_cup_day(cm)
+            return
         if f:
             if f["date"] > self.career["date"]:
                 from career import training
@@ -597,6 +604,143 @@ class App:
             self.go("inbox")
             return
         self.go("prematch")
+
+    def _to_cup_day(self, m):
+        """Continue to the day of a cup tie (stopping on the way if something needs you)."""
+        c = self.career
+        if m["date"] > c["date"]:
+            from career import training
+            halted = training.run_all(c, m["date"], stop=True)
+            if halted:
+                c["date"] = halted
+                league.save(c)
+                self.inbox_sel = None
+                self.inbox_reply = None
+                self.go("inbox")
+                return
+            c["date"] = m["date"]
+            avail.fix_lineups(c, m["date"])
+        league.save(c)
+        self.cup_mid = m["id"]
+        self.go("cup")
+
+    # -- a cup tie (career/cups.py, career/europe.py) ---------------------------------
+    def draw_cup(self):
+        W, H = self.size
+        c = self.career
+        self.sidebar("home")
+        x0 = 250
+        m = cups.match(c, getattr(self, "cup_mid", None))
+        if m is None:
+            return self.go("home")
+        comp = cups.comp_of(c, m)
+        rd_name = cups.round_name(c, m)
+        self.text(comp["name"], "h1", TEXT, (x0, 18))
+        self.text(f"{rd_name}  ·  {cal.fmt(m['date'])}" + (f"  ·  {cups.VENUE}" if m["neutral"] else ""), "body",
+                  MUTED, (x0, 70))
+        r = pygame.Rect(x0, 104, W - x0 - 30, 250)
+        self.panel(r)
+        cx = r.centerx
+        home, away = cups.club(c, m["home"]), cups.club(c, m["away"])
+        _badge(self.win, tuple(home["colour"]), (cx - 60, r.y + 62), 18, home)
+        _badge(self.win, tuple(away["colour"]), (cx + 60, r.y + 62), 18, away)
+        self.text(self._fit_text(home["name"], "h2", r.w // 2 - 110), "h2", TEXT, (cx - 90, r.y + 48), "topright")
+        self.text(self._fit_text(away["name"], "h2", r.w // 2 - 110), "h2", TEXT, (cx + 90, r.y + 48))
+        res = m.get("result")
+        if res:
+            self.text(f"{res['hg']} - {res['ag']}", "big", ACCENT, (cx, r.y + 96), "midtop")
+            extra = []
+            if res.get("et"):
+                extra.append(f"after extra time {res['hg'] + res['et'][0]}-{res['ag'] + res['et'][1]}")
+            if res.get("pens"):
+                extra.append(f"{res['pens'][0]}-{res['pens'][1]} on penalties")
+            if res.get("agg"):
+                extra.append(f"{res['agg'][0]}-{res['agg'][1]} on aggregate")
+            if extra:
+                self.text("  ·  ".join(extra), "body", TEXT, (cx, r.y + 170), "midtop")
+            gl = [f"{g['name'].split(' ')[-1]} {g['minute']}'" for g in res.get("goals", [])]
+            if gl:
+                self.text(self._fit_text(", ".join(gl), "small", r.w - 40), "small", MUTED, (cx, r.y + 204), "midtop")
+        else:
+            self.text("v", "h2", MUTED, (cx, r.y + 48), "midtop")
+            self.text(cups.tie_note(c, m), "body", MUTED, (cx, r.y + 120), "midtop")
+        r2 = pygame.Rect(x0, r.bottom + 16, W - x0 - 30, H - r.bottom - 112)
+        self.panel(r2, "Your cups this season")
+        y = r2.y + 50
+        for cp in cups.comps(c):
+            self.text(cp["name"], "body", TEXT, (r2.x + 16, y))
+            self.text(cups.my_status(c, cp), "body", ACCENT_HI if cups.my_status(c, cp) == "Winners!" else MUTED,
+                      (r2.x + 360, y))
+            y += 28
+        if res:
+            self.buttons.append(Button((W - 260, H - 76, 220, 50), "Continue", self.continue_to_match, primary=True))
+            self.buttons.append(Button((x0, H - 76, 200, 50), "Office", lambda: self.go("home")))
+        else:
+            self.buttons.append(Button((x0, H - 76, 200, 50), "Pick the team", lambda: self.go("tactics")))
+            self.buttons.append(Button((W - 500, H - 76, 220, 50), "Quick result", lambda: self._cup_play(False)))
+            self.buttons.append(Button((W - 260, H - 76, 220, 50), "Watch", lambda: self._cup_play(True), primary=True))
+
+    def _cup_play(self, watch):
+        c = self.career
+        m = cups.match(c, getattr(self, "cup_mid", None))
+        if m is None or m["result"] is not None:
+            return
+        avail.fix_lineups(c, m["date"])
+        if watch:
+            result, quit_ = matches.watch_cup(c, m)
+            if quit_:
+                self.quit()
+                return
+            self._window()
+            if result is None:                                   # left early: it doesn't count yet
+                self.go("cup")
+                return
+        else:
+            result = cups.quick(c, m)
+        cups.record(c, m, result)
+        league.save(c)
+        self.go("cup")
+
+    def draw_cups(self):
+        """Every cup this season: pick one, then a round."""
+        W, H = self.size
+        c = self.career
+        self.sidebar("cups")
+        self._paper_tabs("cups")
+        x0 = 250
+        self.text("Cups", "h1", TEXT, (x0, 24))
+        allc = cups.comps(c)
+        if not allc:
+            self.text("No cups this season.", "body", MUTED, (x0, 90))
+            return
+        key = getattr(self, "cups_key", None)
+        comp = next((x for x in allc if x["key"] == key), allc[0])
+        for i, cp in enumerate(allc):
+            self.buttons.append(Button((x0 + i * 172, 80, 166, 34), cups.SHORT_ANY(cp), lambda k=cp["key"]: (
+                setattr(self, "cups_key", k), setattr(self, "cups_round", None)), primary=cp is comp, font="btn_s"))
+        r = pygame.Rect(x0, 126, W - x0 - 30, H - 146)
+        self.panel(r)
+        self.text(f"{comp['name']}  ·  you: {cups.my_status(c, comp)}", "h3", TEXT, (r.x + 16, r.y + 12))
+        if comp.get("winner") is not None:
+            self.text(f"Winners: {cups.name(c, comp['winner'])}", "body", ACCENT, (r.right - 16, r.y + 14), "topright")
+        rounds = cups.stages(c, comp)
+        sel = getattr(self, "cups_round", None)
+        if sel is None or sel >= len(rounds):
+            sel = cups.current_stage(c, comp)
+        for i, (label, _) in enumerate(rounds):
+            self.buttons.append(Button((r.x + 16 + i * 122, r.y + 48, 116, 30), label,
+                                       lambda i=i: setattr(self, "cups_round", i), primary=i == sel, font="btn_s"))
+        y = r.y + 92
+        lines = rounds[sel][1]()
+        if not lines:
+            self.text("Not drawn yet.", "body", MUTED, (r.x + 16, y))
+        for txt, mine in lines:
+            if y > r.bottom - 26:
+                break
+            if mine:
+                pygame.draw.rect(self.win, HIGHLIGHT, (r.x + 8, y - 3, r.w - 16, 24), border_radius=5)
+            self.text(self._fit_text(txt, "small", r.w - 32), "small", TEXT if mine else MUTED, (r.x + 16, y))
+            y += 24
 
     def _last_result(self, cid):
         for md in sorted(self.career["results"], key=int, reverse=True):
@@ -2883,9 +3027,10 @@ class App:
     def _paper_tabs(self, active):
         """League table / Fixtures / Spain - the newspaper's sports pages (office)."""
         W, H = self.size
-        tabs = (("papers", "Papers"), ("table", "League table"), ("fixtures", "Fixtures"), ("spain", "Spain"))
+        tabs = (("papers", "Papers"), ("table", "League table"), ("fixtures", "Fixtures"), ("cups", "Cups"),
+                ("spain", "Spain"))
         for i, (key, label) in enumerate(tabs):
-            self.buttons.append(Button((W - 30 - len(tabs) * 128 + i * 128, 24, 122, 36), label,
+            self.buttons.append(Button((W - 30 - len(tabs) * 112 + i * 112, 24, 106, 36), label,
                                        lambda k=key: self._menu(k), primary=key == active, font="btn_s"))
 
     def _laptop_tabs(self, active, x):
@@ -3295,6 +3440,7 @@ class App:
         fr_on = {f["date"]: f for f in friendlies.all_(c)}
         st_po = playoffs.state(c)
         po_on = {m_["date"]: m_ for m_ in (st_po or {}).get("matches", []) if playoffs.involved(c, m_)}
+        cup_on = {m_["date"]: m_ for m_ in cups.all_matches(c) if cups.involved(c, m_)}
         self.text("Click a free day to arrange a friendly", "small", MUTED, (x0 + 470, 72), "midtop")
         today = c.get("date")
         r = pygame.Rect(x0, 90, W - x0 - 30, H - 110)
@@ -3333,6 +3479,19 @@ class App:
                         else:
                             self.text(f"{cal.kick_off(iso)}  ·  MD {md}", "small", MUTED, (cell.x + 6, cell.y + 50))
                     self.buttons.append(_Invisible(cell, lambda md=md: self._cal_open(md)))
+                elif inside and cup_on.get(iso):
+                    cm_ = cup_on[iso]
+                    opp = cm_["away"] if cm_["home"] == mc else cm_["home"]
+                    self.text(self._fit_text(cups.SHORT_ANY(cups.comp_of(c, cm_)), "small", cell.w - 10), "small",
+                              ACCENT_HI, (cell.x + 6, cell.y + 24))
+                    self.text(self._fit_text(f"{cups.name(c, opp, True)} " + ("(N)" if cm_["neutral"] else "(H)"
+                                             if cm_["home"] == mc else "(A)"), "small", cell.w - 10), "small",
+                              TEXT, (cell.x + 6, cell.y + 42))
+                    if cm_.get("result"):
+                        rr = cm_["result"]
+                        gf, ga = (rr["hg"], rr["ag"]) if cm_["home"] == mc else (rr["ag"], rr["hg"])
+                        self.text(f"{gf}-{ga}", "small", MUTED, (cell.x + 6, cell.y + 60))
+                    self.buttons.append(_Invisible(cell, lambda: self._menu("cups")))
                 elif inside and po_on.get(iso):
                     pm = po_on[iso]
                     opp = pm["away"] if pm["home"] == mc else pm["home"]
@@ -3544,7 +3703,7 @@ class App:
         po = div == playoffs.DIV and playoffs.state(c) is not None        # (a page for the play-offs)
         last = len(fixtures) + (1 if po else 0)
         md = min(self.fixtures_md, last)
-        self.text("Fixtures & results", "h1", TEXT, (250, 24))
+        self.text("Fixtures", "h1", TEXT, (250, 24))
         if divisions.exists(c):
             for i, d_ in enumerate(divisions.ORDER):
                 self.buttons.append(Button((W - 330 + i * 150, 82, 142, 34), divisions.name(d_),
@@ -4203,13 +4362,26 @@ class App:
         league.save(self.career)
         self.go("season_end")
 
+    def _after_league_next(self):
+        """The league's over: "playoff" / "cup" if you've a match still to play (the earliest), else None."""
+        c = self.career
+        po, cm = playoffs.my_next(c), cups.my_next(c)
+        if po and (not cm or po["date"] <= cm["date"]):
+            return "playoff"
+        if cm:
+            self.cup_mid = cm["id"]
+            return "cup"
+        return None
+
     def draw_season_end(self):
         W, H = self.size
         c = self.career
         from career import divisions
-        if playoffs.my_next(c):                      # (your play-offs aren't finished)
-            self.go("playoff")
-            return self.draw_playoff()
+        nxt = self._after_league_next()
+        if nxt:                                      # (your play-offs / cup finals aren't finished)
+            self.go(nxt)
+            return getattr(self, "draw_" + nxt)()
+        cups.finish_all(c)                           # (everyone else's: quick results)
         playoffs.play_others(c)                      # (everyone else's: quick results)
         t = league.table(c)
         champ = t[0]["club"]
@@ -4242,6 +4414,10 @@ class App:
         r = pygame.Rect(40, 136, W - 80, H - 236)
         self.panel(r)
         self._table_rows(t, r.x + 20, r.y + 18, r.w - 40)
+        wins = [f"{cups.SHORT_ANY(cp)}: {cups.name(c, cp['winner'], True)}" for cp in cups.comps(c) if cp.get("winner") is not None]
+        if wins:
+            self.text(self._fit_text("Cup winners  ·  " + "  ·  ".join(wins), "small", W - 600), "small", MUTED,
+                      (260, H - 62))
         self.buttons.append(Button((W - 300, H - 80, 260, 52), "Start next season", self.next_season, primary=True))
         self.buttons.append(Button((40, H - 80, 200, 52), "Save & quit", self.save_and_quit))
 
