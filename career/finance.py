@@ -330,7 +330,7 @@ def init(career, seed=2026, only=None):
 
 
 def _empty_season():
-    return {"tv": 0, "matchday": 0, "commercial": 0, "prize": 0, "transfers_in": 0,
+    return {"tv": 0, "matchday": 0, "commercial": 0, "prize": 0, "transfers_in": 0, "owner": 0,
             "wages": 0, "bonuses": 0, "staff": 0, "academy": 0, "ni": 0, "other": 0, "transfers_out": 0}
 
 
@@ -435,7 +435,12 @@ def set_budgets(career, club):
     else:
         # AI clubs spend to improve, like real ones: most of their spare money, keeping a cushion
         cushion = AI_CUSHION * income
-        f["transfer_budget"] = round(max(0.0, AI_BANK_SPEND * (f["balance"] - cushion) + AI_SURPLUS_SPEND * surplus), -5)
+        budget = max(0.0, AI_BANK_SPEND * (f["balance"] - cushion) + AI_SURPLUS_SPEND * surplus)
+        from career import ffp
+        room = ffp.ai_room(career, club)                   # (and within the squad cost rules)
+        if room is not None:
+            budget = min(budget, room)
+        f["transfer_budget"] = round(budget, -5)
 
 
 # ---------------------------------------------------------------------------
@@ -456,6 +461,9 @@ def daily(career, club, date):
         return
     f = club["finance"]
     month(career, club, d.month)
+    if d.month == 3 and club["id"] == career.get("my_club"):
+        from career import ffp
+        ffp.warn(career)                                   # (the board's warning, if we're heading over)
 
 
 def _size_share(career, club):
@@ -529,7 +537,9 @@ def season_end(career, table):
             spend = INVEST * (f["balance"] - reserve)
             _book(club, "other", -spend)
             f["invested"] = round(f.get("invested", 0) + spend)
-        income = s["tv"] + s["matchday"] + s["commercial"] + s["prize"] + s["transfers_in"]
+        from career import ffp
+        ffp.check(career, club)                            # the squad cost rules (career/ffp.py)
+        income = s["tv"] + s["matchday"] + s["commercial"] + s["prize"] + s["transfers_in"] + s.get("owner", 0)
         spend = sum(s.get(k, 0) for k in SPEND_KINDS)
         f["history"].append({"year": career.get("year"), "position": pos, "income": income, "spend": spend,
                              "profit": income - spend, "balance": f["balance"], "league": league_of(club)})

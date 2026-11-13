@@ -589,6 +589,8 @@ def move_player(career, from_cid, to_cid, p, fee, years=1, date=None):
     first = fee / years
     if to_cid >= 0:
         fin._book(dst, "transfers_out", -first)
+        from career import ffp
+        ffp.bought(career, dst, fee)                     # (spread over four seasons in the squad cost rules)
     if from_cid >= 0:
         fin._book(src, "transfers_in", first)
         src["finance"]["transfer_budget"] = src["finance"].get("transfer_budget", 0) + round(fee * SALE_TO_BUDGET)
@@ -791,7 +793,7 @@ OFFER_DAYS = 7               # an offer stands this long
 AI_BUY_CHANCE = 0.06         # per AI club per window day: has a go at strengthening...
 AI_RICH_CHANCE = 0.14        # ...up to this much more when it has money to spend (budget ~ a quarter of its income)
 AI_UPGRADE = 2               # an AI club buys a player at least this much better than the starter he'd replace
-ABROAD_RAID = 0.0015         # per day, for each club's best 3: a club abroad bids
+ABROAD_RAID = 0.0008         # per day, for each club's best 3: a club abroad bids (halved 13 Nov: real English clubs are big net buyers)
 MAX_COUNTER = 1.25           # a buyer goes up to this x what he's worth (if they can afford it)
 SIZE_STEP_DOWN = 5           # a club's top-3 player won't drop this many places in the pecking order
 AI_SQUAD_MAX = 28
@@ -800,7 +802,7 @@ ELITE_ABROAD = 0.08          # share of the players abroad who are genuinely wor
 # The other league: clubs mostly buy at home (LaLiga clubs sign few players from the Premier League;
 # Premier League clubs buy from Spain more often; the biggest clubs shop everywhere) - per attempt,
 # the chance a club looks there at all: this for the smallest, rising to 1 for the biggest
-LOOK_ABROAD = {"pl": 0.4, "es": 0.15, "d1": 0.12, "de": 0.25, "it": 0.2}
+LOOK_ABROAD = {"pl": 0.55, "es": 0.15, "d1": 0.12, "de": 0.25, "it": 0.2}
 JUST_SIGNED_DAYS = 330       # a club doesn't sell a player it signed this recently (to an AI club; you pay more)
 JUST_SIGNED_PRICE = 1.25
 WINDOW_SQUAD_MIN = 22        # in a window, an AI club below this signs a free agent now and then

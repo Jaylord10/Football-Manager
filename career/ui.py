@@ -778,7 +778,7 @@ class App:
             if i + 1 in zone:
                 pygame.draw.rect(self.win, zone[i + 1], (x - 8, y - 2, 4, rh - 4), border_radius=2)
             vals = {"": str(i + 1), "Club": None, "P": row["p"], "W": row["w"], "D": row["d"], "L": row["l"],
-                    "GD": f"{row['gd']:+d}", "Pts": row["pts"]}
+                    "GD": f"{row['gd']:+d}", "Pts": f"{row['pts']}*" if row.get("deducted") else row["pts"]}
             row_rect = pygame.Rect(x - 8, y - 4, w + 16, rh)
             if self.screen != "season_end" and row_rect.collidepoint(pygame.mouse.get_pos()) and row["club"] != mc:
                 pygame.draw.rect(self.win, PANEL_2, row_rect, border_radius=6)
@@ -2266,7 +2266,9 @@ class App:
         self.panel(r, "This season so far")
         y = r.y + 50
         income = [("TV and central payments", s["tv"]), ("Matchday", s["matchday"]), ("Commercial", s["commercial"]),
-                  ("Prize money (end of season)", s["prize"]), ("Players sold", s["transfers_in"])]
+                  ("Prize money (league, cups, Europe)", s["prize"]), ("Players sold", s["transfers_in"])]
+        if s.get("owner"):
+            income.append(("Owner's money", s["owner"]))
         spend = [("Player wages", s["wages"]), ("Bonuses and appearance fees", s.get("bonuses", 0)),
                  ("Coaches and staff", s.get("staff", 0)), ("Academy (U21s and U18s)", s.get("academy", 0)),
                  ("National Insurance", s.get("ni", 0)), ("Running the club", s["other"]),
@@ -2297,6 +2299,18 @@ class App:
             h = hist[-1]
             self.text(f"Last season: {_ordinal(h['position'])}, profit {fin.money(h['profit'])}", "body", MUTED,
                       (r2.x + 16, r2.y + 106))
+        from career import ffp
+        if fin.league_of(club) in ffp.LEAGUES:              # the squad cost rules (career/ffp.py)
+            now = ffp.projected(c, club)
+            col = LOSS if now > ffp.RED else DRAW if now > ffp.LIMIT else ACCENT
+            last = f.get("scr")
+            extra = ""
+            if last and last.get("points"):
+                extra = f"  ·  last season: {last['points']} points off"
+            elif last and last.get("fine"):
+                extra = f"  ·  last season: fined {fin.money(last['fine'])}"
+            self.text(self._fit_text(f"Squad costs: {now:.0%} of income (the limit is {ffp.LIMIT:.0%}){extra}",
+                                     "small", r2.w - 32), "small", col, (r2.x + 16, r2.y + 128))
         r3 = pygame.Rect(r2.x, r2.bottom + 14, r2.w, H - r2.bottom - 34)
         self.panel(r3, "Top earners")
         y = r3.y + 50

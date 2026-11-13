@@ -138,6 +138,15 @@ for season in range(N):
                 w, r = h[k]
                 won.append(f"{k[:-6]}: {w} (beat {r})")
     print("  cups:", "; ".join(won) if won else h)
+    # the squad cost rules (career/ffp.py): fines and points
+    scr = [(x["short"], x["finance"]["scr"]) for x in c["clubs"]
+           if (x.get("finance") or {}).get("scr", {}).get("year") == year]
+    if scr:
+        rs = sorted(v["ratio"] for _, v in scr)
+        fined = [f"{n} {m(v['fine'])}" for n, v in scr if v["fine"]]
+        docked = [f"{n} -{v['points']}" for n, v in scr if v["points"]]
+        print(f"  squad costs: {rs[0]:.0%}/{rs[len(rs) // 2]:.0%}/{rs[-1]:.0%} of income  fined: {', '.join(fined) or '-'}"
+              f"  points off: {', '.join(docked) or '-'}")
     # money and strength everywhere
     groups = {"pl": divisions.clubs_in(c, "pl"), "d1": divisions.clubs_in(c, "d1"), "es": spain.clubs(c)}
     for cfg in foreign.LEAGUES:
