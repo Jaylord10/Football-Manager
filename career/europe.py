@@ -32,8 +32,8 @@ from career import calendar as cal
 from career import clubs as clubs_mod
 
 CC, SHIELD, WORLD = "champions_cup", "shield", "world_club"
-NAMES = {CC: "The Continental Champions' Cup", SHIELD: "The Continental Shield", WORLD: "The World Club Trophy"}
-SHORTS = {CC: "Champions' Cup", SHIELD: "Shield", WORLD: "World Club Trophy"}
+NAMES = {CC: "The Crown of Europe", SHIELD: "The Europa Trophy", WORLD: "The Intercontinental Cup"}
+SHORTS = {CC: "Crown of Europe", SHIELD: "Europa Trophy", WORLD: "Intercontinental Cup"}
 BASE, SA_BASE = 300, 400
 # The continent's clubs: (name, country, level).  The roll of honour's foreign winners are among them.
 # (Germany's and Italy's clubs play in their own leagues now - career/foreign.py)
@@ -331,7 +331,7 @@ def _world_club(career, y):
     cups.draw_rounds(career, comp, career.get("date"))
     if career["my_club"] == winner:
         from career import transfers as trf
-        trf._message(career, "news", f"The World Club Trophy: as continental champions you'll play "
+        trf._message(career, "news", f"The Intercontinental Cup: as champions of Europe you'll play "
                                      f"{cups.name(career, sa)}, South America's champions, on {cal.fmt(d, False)}.")
 
 

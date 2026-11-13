@@ -39,7 +39,8 @@ allows; leave the 3D view; club photos are mine. Make the game as in depth as po
       Saturday (real life moves their league game to Sunday). Needs league games on different days.
 - [ ] **Northwick win nearly everything** in the 10-season test (8 titles, 5 Champions' Cups). Real life:
       Man City won 6 of 7, Real Madrid 6 Champions Leagues in 11 - so not mad, but maybe too much.
-- [ ] **Naming the national stadium** (the play-off final's venue - "the National Stadium" for now).
+- [x] **Cup and stadium names** - done 13 Nov (on Jay's PC): the Founders' Cup, the (sponsored) Charter Cup,
+      the Crown of Europe, the Europa Trophy, the Intercontinental Cup; finals at the National Bowl.
 
 ## Waiting on Jay
 

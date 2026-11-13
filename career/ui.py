@@ -4378,8 +4378,8 @@ class App:
         awh = {a.get("year_end"): a for a in c.get("awards") or []}
         me = c["my_club"]
         nm = lambda i: self.name(i, True) if i is not None and 0 <= i < len(c["clubs"]) else "-"
-        cols = ((0, "Season"), (90, "Champions"), (250, "Division 1"), (410, "Assoc. Cup"), (570, "League Cup"),
-                (730, "Champions' Cup"))
+        cols = ((0, "Season"), (90, "Champions"), (250, "Division 1"), (410, "Founders' Cup"), (570, "Charter Cup"),
+                (730, "Crown of Europe"))
         y = r.y + 16
         for dx, h_ in cols:
             self.text(h_, "small", MUTED, (r.x + 18 + dx, y))

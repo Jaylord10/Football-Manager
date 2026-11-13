@@ -106,12 +106,12 @@
   {
    "club": "Whitcombe City",
    "derby": null,
-   "why": "the title race of the 2020s - Whitcombe beat them to it in 2021 and 2025, Eastvale won it in 2023 and beat them in the 2026 League Cup final"
+   "why": "the title race of the 2020s - Whitcombe beat them to it in 2021 and 2025, Eastvale won it in 2023 and beat them in the 2026 Charter Cup final"
   },
   {
    "club": "Northwick FC",
    "derby": null,
-   "why": "the old giants of north and south - from the 6-0 at Pithead Road in 1913 to the Shield final of 2006"
+   "why": "the old giants of north and south - from the 6-0 at Pithead Road in 1913 to the Europa Trophy final of 2006"
   }
  ],
  "history": [
@@ -123,27 +123,27 @@
   {
    "years": "1919-1955",
    "title": "The cup that wouldn't come",
-   "text": "Second in 1947, champions in 1951 and 1953 - but the Association Cup final was lost in 1891, 1904, 1906, 1927 and 1952. 'The Curse of the Cup' was a music-hall joke before the club was fifty."
+   "text": "Second in 1947, champions in 1951 and 1953 - but the Founders' Cup final was lost in 1891, 1904, 1906, 1927 and 1952. 'The Curse of the Cup' was a music-hall joke before the club was fifty."
   },
   {
    "years": "1955-1970",
    "title": "Kings of the continent",
-   "text": "Champions in 1957, 1962 and 1968. In 1958, a year after Harrowby, Eastvale won the Continental Champions' Cup, beating Real Castellar; in 1963 they won it again, with the League Cup and the World Club Trophy (and the League Cup again in 1964). Two more finals were lost, in 1964 and 1969."
+   "text": "Champions in 1957, 1962 and 1968. In 1958, a year after Harrowby, Eastvale won the Crown of Europe, beating Real Castellar; in 1963 they won it again, with the Charter Cup and the Intercontinental Cup (and the Charter Cup again in 1964). Two more finals were lost, in 1964 and 1969."
   },
   {
    "years": "1970-1999",
    "title": "The curse lifted",
-   "text": "Champions again in 1987 - and in 1988, after eight lost finals in ninety-seven years, the Association Cup at last. The Continental Shield in 1996 and 1998, the League Cup in 1998."
+   "text": "Champions again in 1987 - and in 1988, after eight lost finals in ninety-seven years, the Founders' Cup at last. The Europa Trophy in 1996 and 1998, the Charter Cup in 1998."
   },
   {
    "years": "1999-2001",
    "title": "Down and up",
-   "text": "The money ran out: relegated in 2000, the same spring they won the League Cup. They won it again in 2001 as a Second Division club - and won the Second Division too."
+   "text": "The money ran out: relegated in 2000, the same spring they won the Charter Cup. They won it again in 2001 as a Second Division club - and won the Second Division too."
   },
   {
    "years": "2001-now",
    "title": "Back at the top",
-   "text": "Champions in 2004 (with a 7-0 at Kingsmere), the Association Cup in 2005, 2015 and 2025, the Shield in 2016, the title again in 2023 and the League Cup in 2020, 2023 and 2026. But second place seven times since 2007, and the 2021 Champions' Cup final lost to Celtic Harbour."
+   "text": "Champions in 2004 (with a 7-0 at Kingsmere), the Founders' Cup in 2005, 2015 and 2025, the Europa Trophy in 2016, the title again in 2023 and the Charter Cup in 2020, 2023 and 2026. But second place seven times since 2007, and the 2021 Crown of Europe final lost to Celtic Harbour."
   }
  ],
  "honours_note": "League seasons are given by the year they ended (1906 = 1905-06).",
@@ -151,12 +151,12 @@
   {
    "name": "Alf Mercer",
    "role": "Manager 1951-1972",
-   "note": "Five titles and both Champions' Cups. The Mercer Stand is named after him."
+   "note": "Five titles and both Crowns of Europe. The Mercer Stand is named after him."
   },
   {
    "name": "Johnny Haig",
    "role": "Inside-forward 1953-1968",
-   "note": "Scored in both Champions' Cup finals; 296 goals - the club record."
+   "note": "Scored in both Crown of Europe finals; 296 goals - the club record."
   },
   {
    "name": "Ted Varley",
@@ -188,7 +188,7 @@
   "season_goals": "Johnny Haig, 44 (1956-57)"
  },
  "badge": {
-  "about": "The dye-works chimney and the River Lea for where the club began; the star for the Champions' Cups; the purple and white of the first shirts. Motto 'Tinctus Vincit' - the dyed one conquers.",
+  "about": "The dye-works chimney and the River Lea for where the club began; the star for the Crowns of Europe; the purple and white of the first shirts. Motto 'Tinctus Vincit' - the dyed one conquers.",
   "design": "A round badge: a purple roundel with a white ring around it. In the centre a white factory chimney with a wisp of smoke, above two wavy white lines for the river. A small gold star above the chimney. 'EASTVALE WANDERERS' in purple capitals around the white ring, with '1871' at the bottom."
  },
  "ground": {

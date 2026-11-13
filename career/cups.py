@@ -44,8 +44,14 @@ from career import calendar as cal
 from career import clubs as clubs_mod
 
 ASSOC, LEAGUE_CUP = "association_cup", "league_cup"
-NAMES = {ASSOC: "The Association Cup", LEAGUE_CUP: "The League Cup"}
-SHORT = {ASSOC: "Association Cup", LEAGUE_CUP: "League Cup"}
+NAMES = {ASSOC: "The Founders' Cup", LEAGUE_CUP: "The Charter Cup"}
+SHORT = {ASSOC: "Founders' Cup", LEAGUE_CUP: "Charter Cup"}
+# The Charter Cup has a sponsor - a new one every few years, as the real League Cup has had (the Milk
+# Cup, Littlewoods, Rumbelows, Coca-Cola, Carling, Carabao): all made-up companies here
+SPONSORS = ("Brightwater Dairies", "Halcyon Building Society", "Vantor Motors", "Orbix Mobile", "Pellmann Lager",
+            "Thornbury Cider", "Redfern Tyres", "Sunburst Energy", "Mariner Insurance", "Castellan Bank",
+            "Northlight Broadband", "Zephyr Airways", "Copperfield Crisps", "Ashdown Ales", "Lumen Electric")
+SPONSOR_YEARS = (3, 5)
 GUEST_BASE = 500                  # ids of the lower-league sides in the Association Cup
 GUESTS = 24
 GUEST_LEVEL = (36.0, 47.0)        # (Division 1's clubs ~41-58, the Premier Division's 52-77)
@@ -201,7 +207,7 @@ def create(career):
     cu = career["cups"] = {"year": y, "comps": {}, "guests": _guests(career, rng)}
     ac = cu["comps"][ASSOC] = _comp(ASSOC, NAMES[ASSOC], assoc_rounds(career, y))
     ac["rounds"][0]["entrants"] = [c["id"] for c in career["clubs"]] + [int(k) for k in cu["guests"]]
-    lc = cu["comps"][LEAGUE_CUP] = _comp(LEAGUE_CUP, NAMES[LEAGUE_CUP], league_cup_rounds(career, y))
+    lc = cu["comps"][LEAGUE_CUP] = _comp(LEAGUE_CUP, charter_name(career), league_cup_rounds(career, y))
     if divisions.exists(career):
         d1 = [c["id"] for c in _rank_order(career, "d1")]
         lc["rounds"][0]["entrants"] = d1[4:]
@@ -214,11 +220,40 @@ def create(career):
     _draws_due(career, career.get("date"))
 
 
+def sponsor(career):
+    """The Charter Cup's sponsor this season: a deal runs 3-5 seasons, then someone new."""
+    y = career.get("year", 2026)
+    s = career.get("charter_sponsor")
+    if s and s.get("from", 0) <= y < s.get("until", 0):
+        return s["name"]
+    rng = random.Random(f"sponsor:{y}")
+    old = (s or {}).get("name")
+    name = rng.choice([x for x in SPONSORS if x != old])
+    career["charter_sponsor"] = {"name": name, "from": y, "until": y + rng.randint(*SPONSOR_YEARS)}
+    career.setdefault("charter_sponsors", []).append({"name": name, "from": y})
+    if old:
+        from career import transfers as trf
+        trf._message(career, "news", f"The Charter Cup has a new sponsor: from this season it's the {name} "
+                                     f"Charter Cup (after {old}).")
+    return name
+
+
+def charter_name(career):
+    return f"The {sponsor(career)} Charter Cup"
+
+
 def ensure(career):
-    """Older saves / a new season: this season's cups exist; anything already due is played (quick)."""
+    """Older saves / a new season: this season's cups exist; anything already due is played (quick).
+    (And the names are this season's - older saves had the old ones.)"""
     if state(career) is None:
         create(career)
         catch_up(career)
+    from career import europe
+    for comp in comps(career):
+        k = comp["key"]
+        comp["name"] = charter_name(career) if k == LEAGUE_CUP else NAMES.get(k) or europe.NAMES.get(k, comp["name"])
+        if k in europe.SHORTS:
+            comp["short"] = europe.SHORTS[k]
 
 
 def comps(career):
@@ -330,7 +365,7 @@ def _draw_news(career, comp, i):
         if me in (t["a"], t["b"]) and t["b"] is not None:
             opp = t["b"] if t["a"] == me else t["a"]
             m = match(career, t["matches"][0])
-            where = "at the national stadium" if m["neutral"] else ("at home" if m["home"] == me else "away")
+            where = f"at {VENUE}" if m["neutral"] else ("at home" if m["home"] == me else "away")
             from career import transfers as trf
             legs = " (two legs)" if len(t["matches"]) > 1 else ""
             trf._message(career, "news", f"{comp['name']}, {rd['name'].lower()}: {name(career, opp)}{legs}, "
@@ -697,7 +732,7 @@ def my_status(career, comp):
     return "Waiting for the draw" if entered else "Not in it"
 
 
-VENUE = "the National Stadium"
+VENUE = "the National Bowl"
 
 
 def SHORT_ANY(comp):

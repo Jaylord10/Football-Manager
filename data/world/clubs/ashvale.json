@@ -123,22 +123,22 @@
     {
       "years": "1888-1914",
       "title": "Founder members",
-      "text": "One of the twelve founder members of the League in 1888. First champions from Lancashire's cotton towns in 1892-93, again in 1897-98, and winners of the Association Cup in 1891 and 1906. Moved to Kiln Lane in 1897, on the site of an old brick kiln by the canal."
+      "text": "One of the twelve founder members of the League in 1888. First champions from Lancashire's cotton towns in 1892-93, again in 1897-98, and winners of the Founders' Cup in 1891 and 1906. Moved to Kiln Lane in 1897, on the site of an old brick kiln by the canal."
     },
     {
       "years": "1919-1939",
       "title": "Between the wars",
-      "text": "A third title in 1926-27, built on the goals of Billy Heap, still the club's record scorer. Association Cup winners in 1934 in front of a crowd of 92,000."
+      "text": "A third title in 1926-27, built on the goals of Billy Heap, still the club's record scorer. Founders' Cup winners in 1934 in front of a crowd of 92,000."
     },
     {
       "years": "1946-1970",
       "title": "The post-war boom",
-      "text": "Huge crowds - a record 71,904 packed Kiln Lane for the Association Cup sixth round against Northwick in 1957. League champions in 1954-55, Association Cup winners in 1962. The mills were closing; the club was what the town still had."
+      "text": "Huge crowds - a record 71,904 packed Kiln Lane for the Founders' Cup sixth round against Northwick in 1957. League champions in 1954-55, Founders' Cup winners in 1962. The mills were closing; the club was what the town still had."
     },
     {
       "years": "1971-1987",
       "title": "The Haworth years",
-      "text": "Tommy Haworth, a local lad and former Rovers wing-half, took over in 1971 and built the greatest side in the club's history. Champions in 1975-76 and 1981-82, Association Cup in 1977, League Cup in 1978 and 1985. On 30 May 1979 Danny Kershaw lifted the Continental Champions' Cup after a 2-1 win over FC Rheinfeld; that December they beat Boca del Plata 1-0 to win the World Club Trophy. Haworth retired in 1987, and the East Stand - built in his first full season - was renamed the Haworth Stand."
+      "text": "Tommy Haworth, a local lad and former Rovers wing-half, took over in 1971 and built the greatest side in the club's history. Champions in 1975-76 and 1981-82, Founders' Cup in 1977, Charter Cup in 1978 and 1985. On 30 May 1979 Danny Kershaw lifted the Crown of Europe after a 2-1 win over FC Rheinfeld; that December they beat Boca del Plata 1-0 to win the Intercontinental Cup. Haworth retired in 1987, and the East Stand - built in his first full season - was renamed the Haworth Stand."
     },
     {
       "years": "1987-1994",
@@ -148,12 +148,12 @@
     {
       "years": "1994-2010",
       "title": "Back among the best",
-      "text": "The ground rebuilt for the all-seater era, the club steadied, and a young side won the Continental Shield in 1999 and the Association Cup in 2004."
+      "text": "The ground rebuilt for the all-seater era, the club steadied, and a young side won the Europa Trophy in 1999 and the Founders' Cup in 2004."
     },
     {
       "years": "2010-now",
       "title": "Modern Rovers",
-      "text": "Under the Italian coach Marco Ferretti, a seventh league title in 2012-13 - the first in 31 years - and the League Cup in 2016. Now one of the league's big clubs again, expected to challenge every year."
+      "text": "Under the Italian coach Marco Ferretti, a seventh league title in 2012-13 - the first in 31 years - and the Charter Cup in 2016. Now one of the league's big clubs again, expected to challenge every year."
     }
   ],
   "honours": {
@@ -181,7 +181,7 @@
       1939,
       1994
     ],
-    "Association Cup": [
+    "Founders' Cup": [
       1891,
       1906,
       1934,
@@ -189,18 +189,18 @@
       1977,
       2004
     ],
-    "League Cup": [
+    "Charter Cup": [
       1978,
       1985,
       2016
     ],
-    "Continental Champions' Cup": [
+    "Crown of Europe": [
       1979
     ],
-    "Continental Shield": [
+    "Europa Trophy": [
       1999
     ],
-    "World Club Trophy": [
+    "Intercontinental Cup": [
       1979
     ]
   },
@@ -209,12 +209,12 @@
     {
       "name": "Tommy Haworth",
       "role": "Manager 1971-1987",
-      "note": "Two titles, a Continental Champions' Cup and a World Club Trophy. A statue of him stands outside the Haworth Stand."
+      "note": "Two titles, a Crown of Europe and an Intercontinental Cup. A statue of him stands outside the Haworth Stand."
     },
     {
       "name": "Danny Kershaw",
       "role": "Captain, centre-half 1972-1986",
-      "note": "Lifted the Continental Champions' Cup in 1979. 588 appearances."
+      "note": "Lifted the Crown of Europe in 1979. 588 appearances."
     },
     {
       "name": "Billy Heap",
@@ -238,7 +238,7 @@
     }
   ],
   "records": {
-    "attendance": "71,904 v Northwick FC, Association Cup sixth round, 9 March 1957",
+    "attendance": "71,904 v Northwick FC, Founders' Cup sixth round, 9 March 1957",
     "win": "10-0 v Darnford Albion, League, 1892",
     "defeat": "0-8 v Northwick FC, League, 1990",
     "top_scorer": "Billy Heap, 291 goals (1921-1935)",

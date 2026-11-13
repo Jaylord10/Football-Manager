@@ -40,10 +40,10 @@ for y in range(1889, 2027):
     roll["league"][y] = [ch, ru]
 for y in range(1872, 2027):
     if y in WAR: continue
-    win = "Ashvale Rovers" if y in H["Association Cup"] else pick(names, y, strength, {"Ashvale Rovers"}, 1.0)
+    win = "Ashvale Rovers" if y in H["Founders' Cup"] else pick(names, y, strength, {"Ashvale Rovers"}, 1.0)
     roll["association_cup"][y] = [win, pick(names, y, strength, {win, "Ashvale Rovers"}, 1.0)]
 for y in range(1961, 2027):
-    win = "Ashvale Rovers" if y in H["League Cup"] else pick(names, y, strength, {"Ashvale Rovers"}, 1.0)
+    win = "Ashvale Rovers" if y in H["Charter Cup"] else pick(names, y, strength, {"Ashvale Rovers"}, 1.0)
     roll["league_cup"][y] = [win, pick(names, y, strength, {win, "Ashvale Rovers"}, 1.0)]
 def cont(y, ours_won, comp_share):
     if ours_won:
@@ -54,12 +54,12 @@ def cont(y, ours_won, comp_share):
         return pick(es, y, es_str)
     return rng.choice(abroad_eu)
 for y in range(1956, 2027):
-    win = cont(y, y in H["Continental Champions' Cup"], 0.18)
+    win = cont(y, y in H["Crown of Europe"], 0.18)
     ru = "FC Rheinfeld" if y == 1979 else cont(y, False, 0.12)
     while ru == win: ru = cont(y, False, 0.12)
     roll["champions_cup"][y] = [win, ru]
 for y in range(1972, 2027):
-    win = cont(y, y in H["Continental Shield"], 0.22)
+    win = cont(y, y in H["Europa Trophy"], 0.22)
     ru = cont(y, False, 0.15)
     while ru == win: ru = cont(y, False, 0.15)
     roll["shield"][y] = [win, ru]
@@ -70,7 +70,7 @@ for y in range(1960, 2026):
         roll["world_club"][y] = [eu, sa]
     else:
         roll["world_club"][y] = [eu, sa] if rng.random() < 0.55 else [sa, eu]
-roll["league"][1991] = ["Bramhall Borough", "Millbrook United"]   # (Bramhall's profile: champions 1991, so in the 1992 Champions' Cup)
+roll["league"][1991] = ["Bramhall Borough", "Millbrook United"]   # (Bramhall's profile: champions 1991, so in the 1992 Crown of Europe)
 # ---------------------------------------------------------------------------------------------------
 # DIVISION 1 (Nov 2026): the second tier's clubs get a past too.  Everything above is unchanged (same
 # random numbers); this part has its own.  Some old titles and cups go to clubs now in Division 1 (like
@@ -142,10 +142,10 @@ for y in sorted(roll["second_tier_playoffs"]):
     if ru not in d1:
         busy = set(roll["second_tier"].get(y, [])) | {w}
         roll["second_tier_playoffs"][y] = [w, rng3.choice([n for n in d1 if n not in busy])]
-# The Continental Champions' Cup: an English club in it must have got there - league champions the
+# The Crown of Europe: an English club in it must have got there - league champions the
 # season before, or the holders (and, from 1998 when the competition opened up, the runners-up too).
 # Entries that can't have qualified go to the club that did (never one of the three with profiles);
-# the World Club Trophy follows its winner.  (Ashvale's, Northwick's and Bramhall's entries are fixed.)
+# the Intercontinental Cup follows its winner.  (Ashvale's, Northwick's and Bramhall's entries are fixed.)
 english = set(names) | set(d1)
 CUP_FIXED = {2000, 2005}          # (Northwick's profile: those finals were lost to Stonecross Albion)
 for y in sorted(roll["champions_cup"]):
@@ -165,11 +165,11 @@ for y in sorted(roll["champions_cup"]):
         if i == 0 and y in roll["world_club"]:
             roll["world_club"][y] = [new_club if n == club else n for n in roll["world_club"][y]]
     roll["champions_cup"][y] = pair
-out = {"about": "Every season's winners and runners-up (year = the season's end; 1893 = 1892-93). World Club Trophy: "
-                "the Continental Champions' Cup winners v South America's champions.",
-       "competitions": {"league": "The League", "association_cup": "The Association Cup", "league_cup": "The League Cup",
-                        "champions_cup": "The Continental Champions' Cup", "shield": "The Continental Shield",
-                        "world_club": "The World Club Trophy",
+out = {"about": "Every season's winners and runners-up (year = the season's end; 1893 = 1892-93). Intercontinental Cup: "
+                "the Crown of Europe winners v South America's champions.",
+       "competitions": {"league": "The League", "association_cup": "The Founders' Cup", "league_cup": "The Charter Cup",
+                        "champions_cup": "The Crown of Europe", "shield": "The Europa Trophy",
+                        "world_club": "The Intercontinental Cup",
                         "second_tier": "Second Division / Division 1", "second_tier_playoffs": "Division 1 play-offs"},
        "roll": {k: {str(y): v for y, v in d.items()} for k, d in roll.items()}}
 json.dump(out, open(f"{W}/honours.json", "w"), indent=0)
@@ -177,8 +177,8 @@ from collections import Counter
 for k in ("league", "association_cup", "league_cup", "champions_cup", "second_tier"):
     print(k, Counter(v[0] for v in roll[k].values()).most_common(8))
 # check Ashvale consistency
-for comp, key in (("league", "League champions"), ("association_cup", "Association Cup"), ("league_cup", "League Cup"),
-                  ("champions_cup", "Continental Champions' Cup"), ("shield", "Continental Shield"), ("world_club", "World Club Trophy")):
+for comp, key in (("league", "League champions"), ("association_cup", "Founders' Cup"), ("league_cup", "Charter Cup"),
+                  ("champions_cup", "Crown of Europe"), ("shield", "Europa Trophy"), ("world_club", "Intercontinental Cup")):
     got = sorted(int(y) for y, v in roll[comp].items() if v[0] == "Ashvale Rovers")
     assert got == sorted(H[key]), (comp, got, H[key])
 assert sorted(y for y, v in roll["league"].items() if v[1] == "Ashvale Rovers") == sorted(H["League runners-up"])

@@ -23,9 +23,9 @@ import random
 from career import calendar as cal
 from career import finance as fin
 
-TITLES = {"association_cup": ("the Association Cup", 6), "league_cup": ("the League Cup", 4),
-          "champions_cup": ("the Champions' Cup", 14), "shield": ("the Continental Shield", 7),
-          "world_club": ("the World Club Trophy", 3)}
+TITLES = {"association_cup": ("the Founders' Cup", 6), "league_cup": ("the Charter Cup", 4),
+          "champions_cup": ("the Crown of Europe", 14), "shield": ("the Europa Trophy", 7),
+          "world_club": ("the Intercontinental Cup", 3)}
 LEAGUE_TITLE, D1_TITLE, PROMOTED = 12, 6, 6
 RELEGATED, SACKED = -7, -8
 PER_PLACE = {"pl": 1.1, "d1": 0.7}          # reputation per place above (or below) where the club "should" finish
