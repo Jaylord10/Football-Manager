@@ -116,6 +116,8 @@ def _news(career, date, club_id, text, kind):
 
 def _injure(career, club, p, date, cause, rng, minute=None):
     name, days = roll_injury(rng)
+    from career import staff
+    days = max(1, round(days * staff.injury_length(career, club)))      # (your physio)
     until = (cal.parse(date) + dt.timedelta(days=days)).isoformat()
     if p.get("injury") and injured(p, date):
         # Already injured: keep the longer one

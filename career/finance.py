@@ -331,10 +331,10 @@ def init(career, seed=2026, only=None):
 
 def _empty_season():
     return {"tv": 0, "matchday": 0, "commercial": 0, "prize": 0, "transfers_in": 0, "owner": 0,
-            "wages": 0, "bonuses": 0, "staff": 0, "academy": 0, "ni": 0, "other": 0, "transfers_out": 0}
+            "wages": 0, "bonuses": 0, "coaching": 0, "staff": 0, "academy": 0, "ni": 0, "other": 0, "transfers_out": 0}
 
 
-SPEND_KINDS = ("wages", "bonuses", "staff", "academy", "ni", "other", "transfers_out")
+SPEND_KINDS = ("wages", "bonuses", "coaching", "staff", "academy", "ni", "other", "transfers_out")
 
 
 def academy_cost(career, club):
@@ -486,6 +486,8 @@ def month(career, club, m):
     income += f["commercial"] / 12
     bill = wage_bill(club)
     _book(club, "wages", -bill / 12)
+    from career import staff
+    staff.monthly(career, club)                          # your coaching staff (career/staff.py)
     if _costs(club)[2]:
         _book(club, "ni", -NI * bill / 12)
     _book(club, "academy", -academy_cost(career, club) / 12)

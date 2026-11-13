@@ -213,10 +213,12 @@ def reason(p):
     return text, v
 
 
-def assistant_note(p):
-    """What your assistant has picked up (only the strong feelings - the rest you'd have to ask him)."""
+def assistant_note(p, career=None):
+    """What your assistant has picked up (only the strong feelings - the rest you'd have to ask him; a better
+    assistant picks up more - career/staff.py)."""
     text, v = reason(p)
-    if text is None or abs(v) < 2.0:
+    from career import staff
+    if text is None or abs(v) < staff.assistant_threshold(career):
         return None
     return f"{p['Name'].split(' ')[-1]} is {text}."
 

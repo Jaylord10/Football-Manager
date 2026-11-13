@@ -125,17 +125,19 @@ def youth_intake(career, club, date, rng, used_names):
     for p in club["players"]:
         have[clubs_mod.family(p["Pos"])] = have.get(clubs_mod.family(p["Pos"]), 0) + 1
     new = []
+    from career import staff
+    plus, gem = staff.academy(career, club)            # (your academy coach)
     for _ in range(n):
         need = sorted(MIN_BY_POS, key=lambda pos: (have.get(pos, 0) - MIN_BY_POS[pos], rng.random()))
         pos = need[0] if rng.random() < 0.6 else rng.choice(list(MIN_BY_POS))
-        peak = club["strength"] - ACADEMY_BELOW + rng.gauss(0.0, ACADEMY_SPREAD)
+        peak = club["strength"] - ACADEMY_BELOW + rng.gauss(0.0, ACADEMY_SPREAD) + plus
         age = rng.choice(INTAKE_AGES)
         p = clubs_mod._player(rng, pos, peak, used_names, _next_id(club), age=age, names=career.get("name_pool"))
         if career.get("name_pool"):
             p["homegrown"] = False
             p["non_eu"] = rng.random() < 0.08                  # (a few academy players aren't EU citizens)
         p["Potential"] = round(min(95.0, max(p["Potential"], peak + rng.gauss(0, 2))), 1)
-        if rng.random() < GEM:
+        if rng.random() < GEM * gem:
             p["Potential"] = round(min(95.0, p["Potential"] + rng.uniform(8, 15)), 1)
         p["youth"] = True
         p["condition"] = 1.0

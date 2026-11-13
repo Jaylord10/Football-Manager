@@ -207,6 +207,8 @@ def new_career(clubs, my_club, seed=None):
     foreign.ensure(career)               # Germany's and Italy's leagues (career/foreign.py)
     from career import cups
     cups.create(career)                  # the season's cups (career/cups.py, career/europe.py)
+    from career import staff
+    staff.ensure(career)                 # your backroom staff (career/staff.py)
     return career
 
 
@@ -346,6 +348,8 @@ def new_season(career, seed=None):
     career["matchday"] = 1
     career["pending_results"] = {}
     set_calendar(career, career.get("year", FIRST_SEASON + career["season"] - 2) + 1)
+    from career import staff
+    staff.summer(career)                             # (staff contracts that ended roll on)
     from career import availability, training, ageing, contracts
     rng = random.Random(seed)
     left = contracts.summer_departures(career, rng)  # out of contract: gone on a free
@@ -409,6 +413,8 @@ def load(path=SAVE_FILE):
     transfers.ensure_abroad(career)
     from career import board, spain
     board.ensure(career)
+    from career import staff
+    staff.ensure(career)                 # (older saves: your backroom staff)
     spain.ensure(career)                 # (older saves: the Spanish league starts now, caught up to today)
     if not career.get("positions_v2"):   # (older saves: the modern positions - DM, AM, wingers, wing-backs)
         from career import transfers as trf, contracts as con, clubs

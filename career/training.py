@@ -184,7 +184,8 @@ def train_day(career, club, iso, rng):
         s = settings(club) if mine else ai_settings(career, club, iso)
         _, recover, dev_mult, inj_mult = INTENSITY[s["intensity"]]
         focus = FOCUS[s["focus"]][2]
-        from career import fitness as fit
+        from career import fitness as fit, staff
+        st_rec, st_inj = staff.recovery(career, club), staff.training_injuries(career, club)   # (your staff)
         if not mine:
             fit.ai_preseason(career, club, iso)          # (AI clubs' pre-season friendlies, off-screen)
         for p in club["players"]:
@@ -192,17 +193,17 @@ def train_day(career, club, iso, rng):
                 p["condition"] = min(1.0, round(condition(p) + recover * 0.5, 3))
                 fit.train_day(p, s["intensity"], True)
                 continue
-            # Recovery (no fresher than his fitness allows - career/fitness.py)
-            p["condition"] = min(1.0, round(condition(p) + recover, 3))
+            # Recovery (no fresher than his fitness allows - career/fitness.py); your fitness coach helps
+            p["condition"] = min(1.0, round(condition(p) + recover * st_rec, 3))
             fit.train_day(p, s["intensity"], False)
             # Injury
             risk = TRAINING_PER_DAY * av._age_factor(p) * inj_mult * (1 + TIRED_INJURY * (1 - condition(p))) \
-                * fit.injury_factor(p)
+                * fit.injury_factor(p) * st_inj
             if rng.random() < risk:
                 av._injure(career, club, p, iso, "training", rng)
                 continue
             # Development
-            develop(p, dev_mult, focus, rng)
+            develop(p, dev_mult * staff.development(career, club, p), focus, rng)
         from career import finance, contracts
         finance.daily(career, club, iso)                 # wages, TV money... on the 1st of the month
         if mine and iso.endswith("-01"):
