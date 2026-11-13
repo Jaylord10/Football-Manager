@@ -177,6 +177,8 @@ def season_end(career):
             p.pop("hist_since", None)
             p.pop("hist_taken", None)
     career["hist_closed"] = career.get("year")
+    from career import legends
+    legends.season_records(career)                      # (a club's goals record beaten?)
 
 
 def lines(p):

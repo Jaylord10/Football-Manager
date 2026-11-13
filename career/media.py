@@ -890,6 +890,13 @@ def awards_story(career, out):
                          club=career["my_club"] if career["my_club"] in (p["club"], (b or {}).get("club")) else None)
 
 
+def record_story(career, club, p, goals, holder, old):
+    """A club's league-goals-in-a-season record falls (career/legends.py)."""
+    _add_article(career, TABLOID, "record", f"{p['Name']} breaks {holder}'s record!",
+                 f"{p['Name']} scored {goals} league goals for {club['name']} this season - beating the club record "
+                 f"of {old} set by {holder}.", club=club["id"])
+
+
 def _spain(career):
     if "spain" not in career:
         return

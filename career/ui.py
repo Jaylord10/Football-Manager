@@ -4201,18 +4201,27 @@ class App:
         r2 = pygame.Rect(r.right + 16, top, W - r.right - 46, H - top - 20)
         self.panel(r2, "Records and legends")
         y = r2.y + 52
+        from career import legends as lgd
+        new_legends = lgd.legends(self.career, club["id"])
         if not pr:
-            self._wrap("Their records and legends haven't been written yet. The roll of honour on the left "
-                       "goes back to the 1870s - and every season you play adds to it.", "body", MUTED,
-                       r2.x + 16, y, r2.w - 32)
+            y = self._wrap("Their records and legends haven't been written yet. The roll of honour on the left "
+                           "goes back to the 1870s - and every season you play adds to it.", "body", MUTED,
+                           r2.x + 16, y, r2.w - 32) + 16
+            for lg in new_legends:
+                self.text(lg["name"], "small", ACCENT_HI, (r2.x + 16, y)); y += 20
+                y = self._wrap(f"{lg['role']}. {lg['note']}", "small", MUTED, r2.x + 16, y, r2.w - 32) + 8
+                if y > r2.bottom - 40:
+                    break
             return
         labels = {"attendance": "Record crowd", "win": "Record win", "defeat": "Record defeat",
                   "top_scorer": "Top scorer", "appearances": "Most games", "season_goals": "Most in a season"}
-        for k, v in pr.get("records", {}).items():
-            self.text(labels.get(k, k), "small", ACCENT_HI, (r2.x + 16, y)); y += 20
-            y = self._wrap(v, "small", TEXT, r2.x + 16, y, r2.w - 32) + 8
+        for k in pr.get("records", {}):
+            v = lgd.record(self.career, club, k)
+            broken = v != pr["records"][k]
+            self.text(labels.get(k, k) + ("  (new!)" if broken else ""), "small", ACCENT_HI, (r2.x + 16, y)); y += 20
+            y = self._wrap(v, "small", ACCENT if broken else TEXT, r2.x + 16, y, r2.w - 32) + 8
         y += 6
-        for lg in pr.get("legends", []):
+        for lg in new_legends + pr.get("legends", []):
             self.text(lg["name"], "small", ACCENT_HI, (r2.x + 16, y)); y += 20
             y = self._wrap(f"{lg['role']}. {lg['note']}", "small", MUTED, r2.x + 16, y, r2.w - 32) + 8
             if y > r2.bottom - 40:
