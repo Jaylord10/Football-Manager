@@ -875,6 +875,21 @@ def cup_story(career, comp, m):
                          f"{nm(me)} are out of {comp['name']}, beaten by {nm(w)}{how} ({score}).", club=me)
 
 
+def awards_story(career, out):
+    """The papers on the season's awards (career/awards.py)."""
+    from career import divisions
+    for div in divisions.ORDER:
+        aw = out.get(div)
+        if not aw:
+            continue
+        p, b = aw.get("player"), aw.get("golden_boot")
+        if p:
+            _add_article(career, BROADSHEET, "awards", f"{p['name']} is the {divisions.name(div)}'s player of the season",
+                         f"{p['name']} ({_name(career, p['club'])}, {p['note']}) takes the award"
+                         + (f"; {b['name']} ({_name(career, b['club'])}) wins the Golden Boot with {b['note']}." if b else "."),
+                         club=career["my_club"] if career["my_club"] in (p["club"], (b or {}).get("club")) else None)
+
+
 def _spain(career):
     if "spain" not in career:
         return

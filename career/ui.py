@@ -4437,7 +4437,47 @@ class App:
             self.text(self._fit_text("Cup winners  ·  " + "  ·  ".join(wins), "small", W - 600), "small", MUTED,
                       (260, H - 62))
         self.buttons.append(Button((W - 300, H - 80, 260, 52), "Start next season", self.next_season, primary=True))
+        self.buttons.append(Button((W - 300 - 196, H - 80, 180, 52), "Last awards", lambda: self.go("awards")))
         self.buttons.append(Button((40, H - 80, 200, 52), "Save & quit", self.save_and_quit))
+
+    def draw_awards(self):
+        """The end-of-season awards (career/awards.py) - the latest season's, both divisions."""
+        from career import awards, divisions
+        W, H = self.size
+        c = self.career
+        aw = awards.latest(c)
+        y_end = aw["year_end"] if aw else None
+        self.text(f"The awards {y_end - 1}-{str(y_end)[-2:]}" if aw else "The awards", "h1", TEXT, (40, 24))
+        if not aw:
+            self.text("They're handed out at the end of the season (when you start the next one).", "body", MUTED, (40, 80))
+        else:
+            for i, div in enumerate(divisions.ORDER):
+                a = aw.get(div)
+                r = pygame.Rect(40 + i * ((W - 96) // 2 + 16), 80, (W - 96) // 2, H - 180)
+                self.panel(r, divisions.name(div))
+                if not a:
+                    continue
+                y = r.y + 50
+                for key, title in (("player", "Player of the Season"), ("young", "Young Player"),
+                                   ("golden_boot", "Golden Boot")):
+                    e = a.get(key)
+                    if not e:
+                        continue
+                    self.text(title, "small", ACCENT_HI, (r.x + 16, y)); y += 20
+                    self.text(self._fit_text(f"{e['name']} ({self.name(e['club'], True)})  ·  {e['note']}", "body",
+                                             r.w - 32), "body", TEXT if e["club"] != c["my_club"] else ACCENT,
+                              (r.x + 16, y)); y += 32
+                self.text("Manager of the Season", "small", ACCENT_HI, (r.x + 16, y)); y += 20
+                mgr = "You!" if a["manager"] == c["my_club"] else f"the {self.name(a['manager'])} manager"
+                self.text(mgr, "body", ACCENT if a["manager"] == c["my_club"] else TEXT, (r.x + 16, y)); y += 40
+                self.text("Team of the Season", "small", ACCENT_HI, (r.x + 16, y)); y += 22
+                for e in a.get("team", []):
+                    self.text(self._fit_text(f"{e['pos']:<4} {e['name']} ({self.name(e['club'], True)})", "small",
+                                             r.w - 32), "small", TEXT if e["club"] != c["my_club"] else ACCENT,
+                              (r.x + 16, y))
+                    y += 21
+        back = "season_end" if league.season_over(c) else "home"
+        self.buttons.append(Button((40, H - 80, 200, 52), "Back", lambda: self.go(back)))
 
     def next_season(self):
         league.new_season(self.career)

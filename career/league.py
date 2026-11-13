@@ -261,6 +261,8 @@ def new_season(career, seed=None):
     from career import divisions, cups
     divisions.season_end(career)         # the other division's last games (career/divisions.py)
     cups.season_end(career)              # the cups finished, their winners recorded (career/cups.py)
+    from career import awards
+    awards.season(career)                # the season's awards (career/awards.py)
     t = table(career)
     tables = divisions.tables(career)    # {"pl": [...], "d1": [...]} (just yours in an older one-division world)
     up, down = divisions.movers(career, tables)     # promotion and relegation (play-offs: career/playoffs.py)
