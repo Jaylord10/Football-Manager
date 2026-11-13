@@ -1,0 +1,269 @@
+{
+ "id": 8,
+ "name": "Whitcombe City",
+ "short": "Whitcombe",
+ "nicknames": [
+  "City",
+  "the Shipwrights"
+ ],
+ "founded": 1877,
+ "location": {
+  "town": "Whitcombe",
+  "county": "County Durham",
+  "region": "the North East",
+  "about": "A shipbuilding city of about 300,000 at the mouth of the River Whit in the North East. The yards closed in the 1980s and the city had hard years; now there's a university, a car plant, wind-farm work in the old docks - and, since 2017, a football club with some of the richest owners in the world."
+ },
+ "colours": {
+  "rgb": [
+   90,
+   200,
+   200
+  ],
+  "story": "Sea green and navy - the green of the North Sea off the harbour, and the navy of the shipwrights' overalls. The founders, apprentices at the Whit yards, chose them in 1877.",
+  "home": {
+   "shirt": "sea green with a navy collar",
+   "shorts": "navy",
+   "socks": "sea green",
+   "rgb": {
+    "shirt": [
+     70,
+     175,
+     170
+    ],
+    "trim": [
+     18,
+     40,
+     60
+    ],
+    "shorts": [
+     18,
+     40,
+     60
+    ],
+    "socks": [
+     70,
+     175,
+     170
+    ]
+   }
+  },
+  "away": {
+   "shirt": "navy with sea-green trim",
+   "shorts": "navy",
+   "socks": "navy",
+   "rgb": {
+    "shirt": [
+     18,
+     40,
+     60
+    ],
+    "trim": [
+     70,
+     175,
+     170
+    ],
+    "shorts": [
+     18,
+     40,
+     60
+    ],
+    "socks": [
+     18,
+     40,
+     60
+    ]
+   }
+  },
+  "third": {
+   "shirt": "white with thin navy and green hoops",
+   "shorts": "white",
+   "socks": "white",
+   "rgb": {
+    "shirt": [
+     245,
+     245,
+     245
+    ],
+    "trim": [
+     70,
+     175,
+     170
+    ],
+    "shorts": [
+     245,
+     245,
+     245
+    ],
+    "socks": [
+     245,
+     245,
+     245
+    ]
+   }
+  }
+ },
+ "rivals": [
+  {
+   "club": "Sandmere Athletic",
+   "derby": "the North East Derby",
+   "why": "the seaside town twelve miles up the coast - yards against pits, played since 1881"
+  },
+  {
+   "club": "Eastvale Wanderers",
+   "derby": null,
+   "why": "the title race of the 2020s - Whitcombe won it in 2021 and 2025, Eastvale in 2023, and Eastvale won the 2026 League Cup final"
+  }
+ ],
+ "history": [
+  {
+   "years": "1877-1915",
+   "title": "The shipwrights",
+   "text": "Founded in 1877 by apprentices at the Whit shipyards. The Association Cup in 1881, the Second Division in its first season (1893), champions in 1899 and 1903, and the cup again in 1902 and 1912."
+  },
+  {
+   "years": "1919-1960",
+   "title": "Cup city",
+   "text": "The Association Cup in 1927, 1938 and 1949; relegated in the twenties and back as Second Division champions in 1930; champions in 1933 and 1939. Down again in the fifties - and back up as champions in 1959."
+  },
+  {
+   "years": "1960-1990",
+   "title": "The Shield",
+   "text": "The Association Cup in 1961, the League Cup in 1967, 1973 and 1984 - and the club's only European trophies, the Continental Shield in 1978 and 1986. Relegated in 1970 and straight back up in 1971; the cup again in 1983 as the yards closed around them."
+  },
+  {
+   "years": "1990-2016",
+   "title": "One last title, then the slide",
+   "text": "Champions in 1998 under Geordie Laidlaw, second in 2008 - then debts, a ground falling apart, and relegation in 2014. They came back up as runners-up in 2016."
+  },
+  {
+   "years": "2017-now",
+   "title": "The new money",
+   "text": "An overseas investment fund bought the club in 2017. The title in 2021 - the first in twenty-three years - and again in 2025 and 2026, back-to-back champions. The League Cup still won't come: finals lost in 2019, 2024 and 2026."
+  }
+ ],
+ "honours_note": "League seasons are given by the year they ended (1899 = 1898-99).",
+ "legends": [
+  {
+   "name": "Geordie Laidlaw",
+   "role": "Manager 1993-2004",
+   "note": "The 1998 title. The Laidlaw Stand is named after him."
+  },
+  {
+   "name": "Jack 'Rivets' Robson",
+   "role": "Centre-forward 1923-1939",
+   "note": "309 goals - the club record, and both titles of the thirties."
+  },
+  {
+   "name": "Billy Hepple",
+   "role": "Full-back 1955-1974",
+   "note": "688 appearances - the club record."
+  },
+  {
+   "name": "Stan Cuthbertson",
+   "role": "Manager 1972-1988",
+   "note": "Both Continental Shields, the 1983 cup and two League Cups."
+  },
+  {
+   "name": "Alan Forster",
+   "role": "Striker 1994-2003",
+   "note": "The 1998 title's goals."
+  },
+  {
+   "name": "Jordan Akintola",
+   "role": "Forward 2019-",
+   "note": "The star of the 2021, 2025 and 2026 champions."
+  }
+ ],
+ "records": {
+  "attendance": "75,118 v Sandmere Athletic, League, 1949 (Tollgate Park, before seating)",
+  "win": "11-1 v Penrith Forge, League, 1933",
+  "defeat": "0-8 v Northwick FC, League, 2013",
+  "top_scorer": "Jack Robson, 309 goals (1923-1939)",
+  "appearances": "Billy Hepple, 688 (1955-1974)",
+  "season_goals": "Jack Robson, 49 (1932-33)"
+ },
+ "badge": {
+  "about": "The ship on the river for the yards that made the city; the castle tower for the old city wall; sea green and navy. Motto 'Per Mare Ad Gloriam' - by the sea to glory.",
+  "design": "A navy shield with a sea-green border. In the centre a white sailing ship in full sail on three wavy sea-green lines. Above the ship a small white castle tower. 'WHITCOMBE CITY' arched above the shield in navy capitals, and a sea-green ribbon beneath reading 'PER MARE AD GLORIAM' in navy, with '1877' on the ribbon's ends."
+ },
+ "ground": {
+  "name": "Tollgate Park",
+  "known_as": "the Tollgate",
+  "opened": 1892,
+  "capacity": 53400,
+  "pitch": {
+   "length_m": 105,
+   "width_m": 68,
+   "surface": "hybrid grass, brand new",
+   "runoff": "medium"
+  },
+  "stands": [
+   {
+    "name": "Laidlaw Stand",
+    "side": "west",
+    "built": 2000,
+    "tiers": 3,
+    "capacity": 18500,
+    "roof": "a big cantilever, high above the pitch",
+    "features": "the main stand, towering over the city: tunnel, dugouts, boxes, the directors' box",
+    "expandable": false
+   },
+   {
+    "name": "Yard End",
+    "side": "south",
+    "built": 1997,
+    "tiers": 2,
+    "capacity": 13500,
+    "roof": "cantilever",
+    "features": "the home end, two tiers of sea-green seats; the shipyard cranes kept as monuments behind it",
+    "expandable": false
+   },
+   {
+    "name": "Harbour Stand",
+    "side": "east",
+    "built": 2020,
+    "tiers": 2,
+    "capacity": 13400,
+    "roof": "a new roof with glass panels",
+    "features": "rebuilt by the new owners: hospitality, a club shop, views of the harbour from the back",
+    "expandable": false
+   },
+   {
+    "name": "Town End",
+    "side": "north",
+    "built": 1972,
+    "tiers": 1,
+    "capacity": 8000,
+    "roof": "1970s roof",
+    "features": "a single tier, away fans in one corner - the owners plan to rebuild it with a second tier",
+    "expandable": true
+   }
+  ],
+  "corners": "the western corners filled; the north-east corner open",
+  "roof": "lop-sided - the Laidlaw Stand much higher than the rest",
+  "surroundings": "right in the city centre on a hill: the river mouth, the harbour and two old shipyard cranes below, terraced streets and the castle walls behind",
+  "atmosphere": "fierce and proud - the city waited twenty-three years for a title and it shows",
+  "for_the_engine": {
+   "home_end": "south",
+   "away_fans": "north-east corner",
+   "dugouts": "west side, halfway line",
+   "pitch_m": [
+    105,
+    68
+   ],
+   "notes": "a lop-sided city-centre ground"
+  },
+  "images": {
+   "crest": "data/world/clubs/whitcombe/crest.png",
+   "inside": "data/world/clubs/whitcombe/inside.jpg",
+   "aerial": "data/world/clubs/whitcombe/aerial.jpg"
+  }
+ },
+ "image_prompts": {
+  "badge": "A football club crest for 'Whitcombe City', founded 1877, a shipbuilding city club from the North East of England. A navy heraldic shield with a sea-green border. In the centre a white three-masted sailing ship in full sail on three wavy sea-green lines. Above the ship a small white castle tower. 'WHITCOMBE CITY' arched above the shield in navy serif capitals. A sea-green ribbon beneath the shield reading 'PER MARE AD GLORIAM' in navy capitals, with '18' and '77' on the ribbon's ends. Flat vector emblem, clean bold lines, limited colours (navy, sea green, white), centred, on a plain transparent background, square format, no other text.",
+  "ground_inside": "Photorealistic wide-angle photo inside a 53,000-seat English football stadium on a cold, clear winter evening under floodlights, 30 minutes before kick-off. Camera: high in a huge three-tier main stand on the halfway line, looking across the pitch. OPPOSITE: a new two-tier stand with a modern roof with glass panels, filling up. LEFT END: a two-tier home end PACKED with fans in sea green and navy, flags and a banner of a sailing ship; two old shipyard cranes visible against the sky behind it. RIGHT END: a lower single-tier 1970s stand with away fans in one corner, an open corner beside it. Players warming up in sea-green shirts with navy collars and navy shorts.",
+  "ground_aerial": "Aerial drone photograph of a lop-sided 53,000-seat English football stadium on a hill in the centre of a North East shipbuilding city: one enormous three-tier stand much higher than the other three, one end a low single-tier stand with an open corner. Below the ground a river mouth and harbour with two old shipyard cranes kept as monuments; terraced streets and old castle walls behind. Photorealistic, low winter sunlight.",
+  "kits": "Three football kits for Whitcombe City laid out flat side by side on a plain light background, product-photo style. Home: sea-green shirt with navy collar, navy shorts, sea-green socks. Away: navy shirt with sea-green trim, navy shorts, navy socks. Third: white shirt with thin navy and sea-green hoops, white shorts, white socks. A small club crest on the left chest of each shirt. No sponsor logos, no other text."
+ },
+ "support": 64000
+}

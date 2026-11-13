@@ -1,0 +1,274 @@
+{
+ "id": 14,
+ "name": "Lydmouth Town",
+ "short": "Lydmouth",
+ "nicknames": [
+  "Town",
+  "the Pilots"
+ ],
+ "founded": 1876,
+ "location": {
+  "town": "Lydmouth",
+  "county": "Hampshire",
+  "region": "South of England",
+  "about": "A port of about 230,000 where the River Lyd meets the sea, twenty miles downstream from Kingsmere: docks, ferries, cruise ships and the navy. A working town that looks down on the cathedral city up the river - and the most up-and-down club in England."
+ },
+ "colours": {
+  "rgb": [
+   240,
+   220,
+   60
+  ],
+  "story": "Yellow and royal blue - the colours of the Lydmouth harbour pilots' flag. The club was started by pilots and dockers in 1876.",
+  "home": {
+   "shirt": "yellow with royal-blue collar and cuffs",
+   "shorts": "royal blue",
+   "socks": "yellow",
+   "rgb": {
+    "shirt": [
+     245,
+     215,
+     50
+    ],
+    "trim": [
+     30,
+     70,
+     160
+    ],
+    "shorts": [
+     30,
+     70,
+     160
+    ],
+    "socks": [
+     245,
+     215,
+     50
+    ]
+   }
+  },
+  "away": {
+   "shirt": "royal blue with yellow trim",
+   "shorts": "royal blue",
+   "socks": "royal blue",
+   "rgb": {
+    "shirt": [
+     30,
+     70,
+     160
+    ],
+    "trim": [
+     245,
+     215,
+     50
+    ],
+    "shorts": [
+     30,
+     70,
+     160
+    ],
+    "socks": [
+     30,
+     70,
+     160
+    ]
+   }
+  },
+  "third": {
+   "shirt": "white with a yellow and blue band across the chest",
+   "shorts": "white",
+   "socks": "white",
+   "rgb": {
+    "shirt": [
+     245,
+     245,
+     245
+    ],
+    "trim": [
+     30,
+     70,
+     160
+    ],
+    "shorts": [
+     245,
+     245,
+     245
+    ],
+    "socks": [
+     245,
+     245,
+     245
+    ]
+   }
+  }
+ },
+ "rivals": [
+  {
+   "club": "Kingsmere City",
+   "derby": "the Hampshire Derby",
+   "why": "the cathedral city twenty miles up the river - coast against city since 1882"
+  },
+  {
+   "club": "Bramhall Borough",
+   "derby": null,
+   "why": "the 12-1 in the Association Cup of 1886, still the club's record defeat"
+  }
+ ],
+ "history": [
+  {
+   "years": "1876-1915",
+   "title": "The pilots' club",
+   "text": "Founded in 1876 by harbour pilots and dockers. Association Cup finals lost in 1880 and 1889 (and a 12-1 defeat at Bramhall in 1886); promoted to the top division in 1894 - and the Association Cup at last in 1914."
+  },
+  {
+   "years": "1919-1960",
+   "title": "The best years",
+   "text": "Second in the League in 1936 and the Association Cup in 1935 - then, in 1950, champions of England, the only title in the club's history. Relegated three years later; back as Second Division champions in 1955."
+  },
+  {
+   "years": "1960-1980",
+   "title": "Giant-killers",
+   "text": "Down again in the sixties - and in 1969 they won the Association Cup as a Second Division club, and the Second Division too. The League Cup in 1975 (another Second Division season, promoted as runners-up), relegated, and back as champions in 1978."
+  },
+  {
+   "years": "1980-2005",
+   "title": "The yo-yo",
+   "text": "Second in the League in 1987; down; back through the play-offs in 1990; down; up again in 1993, 2001 and 2005. No club has gone up and down more."
+  },
+  {
+   "years": "2005-2024",
+   "title": "Play-off specialists",
+   "text": "Relegated again in the 2010s, promoted through the play-offs in 2019; an Association Cup final in 2020; down; and up through the play-offs once more in 2024 - three play-off finals, three wins."
+  },
+  {
+   "years": "2024-now",
+   "title": "The season of their lives",
+   "text": "Two years after coming up, Lydmouth finished second in the League in 2026 - their best season since 1950. The same spring Kingsmere won the Association Cup. The Hampshire Derby has never been bigger."
+  }
+ ],
+ "honours_note": "League seasons are given by the year they ended (1950 = 1949-50).",
+ "legends": [
+  {
+   "name": "Captain Harry Doust",
+   "role": "Founder, harbour pilot",
+   "note": "The club's first captain and chairman. The Pilots' Bar is in his old house."
+  },
+  {
+   "name": "Reg Cobb",
+   "role": "Manager 1946-1958",
+   "note": "The 1950 title. The Cobb Stand is named after him."
+  },
+  {
+   "name": "Frank Gatwood",
+   "role": "Centre-forward 1946-1957",
+   "note": "201 goals - the club record."
+  },
+  {
+   "name": "Micky Shaw",
+   "role": "Goalkeeper 1964-1983",
+   "note": "707 appearances - the club record; kept goal in the 1969 cup final."
+  },
+  {
+   "name": "Dave Penfold",
+   "role": "Manager 2016-2023",
+   "note": "The 2019 play-off final and the 2020 cup final."
+  },
+  {
+   "name": "Theo Marsh-Adeyemi",
+   "role": "Striker 2022-",
+   "note": "The goals of the 2024 promotion and the 2026 runners-up."
+  }
+ ],
+ "records": {
+  "attendance": "51,370 v Kingsmere City, League, 1950 (Harbour Road, before seating)",
+  "win": "9-0 v Holloway Vale, Association Cup, 1935",
+  "defeat": "1-12 v Bramhall Borough, Association Cup, 1886",
+  "top_scorer": "Frank Gatwood, 201 goals (1946-1957)",
+  "appearances": "Micky Shaw, 707 (1964-1983)",
+  "season_goals": "Frank Gatwood, 39 (1949-50)"
+ },
+ "badge": {
+  "about": "The lighthouse at the harbour mouth and the pilot's flag; the waves of the Lyd. Motto 'Lumen in Undis' - a light on the waves.",
+  "design": "A royal-blue shield with a yellow border. In the centre a white lighthouse with a yellow lamp shining two beams, standing on rocks above three wavy yellow lines. A small yellow-and-blue pilot's flag flying from the lighthouse. 'LYDMOUTH TOWN' arched above the shield in royal-blue capitals, and a yellow ribbon beneath reading 'LUMEN IN UNDIS' in royal blue, with '1876' on the ribbon's ends."
+ },
+ "ground": {
+  "name": "Harbour Road",
+  "known_as": "the Harbour",
+  "opened": 1898,
+  "capacity": 32200,
+  "pitch": {
+   "length_m": 104,
+   "width_m": 67,
+   "surface": "grass",
+   "runoff": "tight"
+  },
+  "stands": [
+   {
+    "name": "Cobb Stand",
+    "side": "west",
+    "built": 1999,
+    "tiers": 2,
+    "capacity": 10200,
+    "roof": "cantilever",
+    "features": "the main stand: tunnel, dugouts, a row of boxes; Reg Cobb's statue outside",
+    "expandable": false
+   },
+   {
+    "name": "Quay End",
+    "side": "south",
+    "built": 1996,
+    "tiers": 1,
+    "capacity": 8500,
+    "roof": "cantilever",
+    "features": "the home end - one steep single tier in yellow seats, the cranes of the container port behind it",
+    "expandable": false
+   },
+   {
+    "name": "Pilots' Stand",
+    "side": "east",
+    "built": 1965,
+    "tiers": 1,
+    "capacity": 7500,
+    "roof": "an old roof on pillars",
+    "features": "the oldest stand - wooden seats long gone, a few pillars still in the way; the club wants to rebuild it",
+    "expandable": true
+   },
+   {
+    "name": "Town End",
+    "side": "north",
+    "built": 2001,
+    "tiers": 1,
+    "capacity": 6000,
+    "roof": "cantilever",
+    "features": "away fans; the old town and the ferry terminal behind it",
+    "expandable": false
+   }
+  ],
+  "corners": "open corners",
+  "roof": "four separate roofs, the Pilots' Stand's held up on pillars",
+  "surroundings": "the docks and container cranes behind the Quay End, ferries and a lighthouse at the harbour mouth, the old town's narrow streets to the north",
+  "atmosphere": "a small, tight, loud ground by the sea - and full every week since 2024",
+  "for_the_engine": {
+   "home_end": "south",
+   "away_fans": "north end",
+   "dugouts": "west side, halfway line",
+   "pitch_m": [
+    104,
+    67
+   ],
+   "notes": "a small, old-fashioned ground"
+  },
+  "images": {
+   "crest": "data/world/clubs/lydmouth/crest.png",
+   "inside": "data/world/clubs/lydmouth/inside.jpg",
+   "aerial": "data/world/clubs/lydmouth/aerial.jpg"
+  }
+ },
+ "image_prompts": {
+  "badge": "A football club crest for 'Lydmouth Town', founded 1876, a south-coast port club. A royal-blue heraldic shield with a yellow border. In the centre a white lighthouse with a yellow lamp shining two beams, standing on rocks above three wavy yellow lines. A small yellow-and-blue pennant flag flying from the top of the lighthouse. 'LYDMOUTH TOWN' arched above the shield in royal-blue serif capitals. A yellow ribbon beneath the shield reading 'LUMEN IN UNDIS' in royal-blue capitals, with '18' and '76' on the ribbon's ends. Flat vector emblem, clean bold lines, limited colours (royal blue, yellow, white), centred, on a plain transparent background, square format, no other text.",
+  "ground_inside": "Photorealistic wide-angle photo inside a small 32,000-seat English football ground by the sea on a bright, windy spring afternoon, 30 minutes before kick-off. Camera: high in the main stand on the halfway line, looking across the pitch. Four separate stands with open corners. OPPOSITE: an old single-tier stand with a roof held up by pillars, half full. LEFT END: a steep single-tier home end PACKED with fans in yellow and royal blue, flags and a banner of a lighthouse; container-port cranes visible above its roof. RIGHT END: a newer single-tier stand with away fans. Players warming up in yellow shirts with royal-blue collars and royal-blue shorts. Seagulls in the sky.",
+  "ground_aerial": "Aerial drone photograph of a small 32,000-seat English football ground with four separate stands and open corners right beside a busy south-coast port: container cranes and docks behind one end, a ferry terminal and the narrow streets of an old town behind the other, a lighthouse at the harbour mouth and the sea beyond. Photorealistic, bright afternoon light.",
+  "kits": "Three football kits for Lydmouth Town laid out flat side by side on a plain light background, product-photo style. Home: yellow shirt with royal-blue collar and royal-blue trim, royal-blue shorts, yellow socks. Away: royal-blue shirt with yellow trim, royal-blue shorts, royal-blue socks. Third: white shirt with a yellow and royal-blue band across the chest, white shorts, white socks. A small club crest on the left chest of each shirt. No sponsor logos, no other text."
+ },
+ "support": 40000
+}

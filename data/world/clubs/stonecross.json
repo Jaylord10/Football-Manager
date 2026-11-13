@@ -1,0 +1,274 @@
+{
+ "id": 9,
+ "name": "Stonecross Albion",
+ "short": "Stonecross",
+ "nicknames": [
+  "Albion",
+  "the Furnacemen"
+ ],
+ "founded": 1880,
+ "location": {
+  "town": "Stonecross",
+  "county": "West Midlands",
+  "region": "the Midlands",
+  "about": "An old iron town on the edge of Millbrook, swallowed by the city's spread but never part of it: 200,000 people, the blast furnaces gone, the canal and the brick terraces still there. The boundary runs down the middle of the Hallow Road - and so does the Midlands Derby."
+ },
+ "colours": {
+  "rgb": [
+   230,
+   120,
+   40
+  ],
+  "story": "Amber and claret - the glow of the Stonecross blast furnaces at night and the colour of the iron ore. Chosen by the ironworkers who founded the club in 1880.",
+  "home": {
+   "shirt": "amber with claret collar and claret cuffs",
+   "shorts": "claret",
+   "socks": "amber",
+   "rgb": {
+    "shirt": [
+     235,
+     130,
+     40
+    ],
+    "trim": [
+     110,
+     25,
+     45
+    ],
+    "shorts": [
+     110,
+     25,
+     45
+    ],
+    "socks": [
+     235,
+     130,
+     40
+    ]
+   }
+  },
+  "away": {
+   "shirt": "claret with amber trim",
+   "shorts": "claret",
+   "socks": "claret",
+   "rgb": {
+    "shirt": [
+     110,
+     25,
+     45
+    ],
+    "trim": [
+     235,
+     130,
+     40
+    ],
+    "shorts": [
+     110,
+     25,
+     45
+    ],
+    "socks": [
+     110,
+     25,
+     45
+    ]
+   }
+  },
+  "third": {
+   "shirt": "sky blue with claret trim",
+   "shorts": "sky blue",
+   "socks": "sky blue",
+   "rgb": {
+    "shirt": [
+     120,
+     180,
+     230
+    ],
+    "trim": [
+     110,
+     25,
+     45
+    ],
+    "shorts": [
+     120,
+     180,
+     230
+    ],
+    "socks": [
+     120,
+     180,
+     230
+    ]
+   }
+  }
+ },
+ "rivals": [
+  {
+   "club": "Millbrook United",
+   "derby": "the Midlands Derby",
+   "why": "the big city across the Hallow Road - richer, bigger, and never once a Champions' Cup winner"
+  },
+  {
+   "club": "Northwick FC",
+   "derby": null,
+   "why": "beaten in two Champions' Cup finals, 2000 and 2005 - Northwick have never forgiven them"
+  }
+ ],
+ "history": [
+  {
+   "years": "1880-1915",
+   "title": "The ironworks club",
+   "text": "Founded in 1880 by men from the Stonecross furnaces. Champions in 1894 - only the sixth season of the League - and Association Cup winners in 1913."
+  },
+  {
+   "years": "1919-1960",
+   "title": "Up and down",
+   "text": "Relegated in the twenties, back up as Second Division champions in 1927 and again in 1931 after another fall; second in 1935, the same year they lost the cup final. Down after the war, champions of the Second Division again in 1951."
+  },
+  {
+   "years": "1960-1990",
+   "title": "So close",
+   "text": "Second in 1964 and 1976 - the year of the club's second Association Cup - and League Cup finals lost in 1962, 1973 and 1980. Relegated in the mid-eighties and promoted as runners-up in 1987; second again in 1990."
+  },
+  {
+   "years": "1990-2007",
+   "title": "Kings of the continent",
+   "text": "Champions in 1993. Then the greatest nights in the club's history: the Continental Champions' Cup in 2000 and again in 2005, both finals won against Northwick, and both followed by the World Club Trophy. Champions again in 2007."
+  },
+  {
+   "years": "2007-2011",
+   "title": "The crash",
+   "text": "Three years after the title, the money had gone: relegated in 2010. They bounced straight back - Second Division champions in 2011 and Association Cup winners in the same spring."
+  },
+  {
+   "years": "2011-now",
+   "title": "Albion again",
+   "text": "Champions in 2019, second in 2022. And the League Cup? Never won - five finals lost, the last in 2025 to Millbrook, of all clubs."
+  }
+ ],
+ "honours_note": "League seasons are given by the year they ended (1894 = 1893-94).",
+ "legends": [
+  {
+   "name": "Henk de Vries",
+   "role": "Manager 1996-2008",
+   "note": "Two Champions' Cups, two World Club Trophies, two titles. The de Vries Stand is named after him."
+  },
+  {
+   "name": "Tommy Lake",
+   "role": "Centre-forward 1925-1938",
+   "note": "258 goals - the club record."
+  },
+  {
+   "name": "Gordon Pike",
+   "role": "Defender 1958-1976",
+   "note": "641 appearances - the club record."
+  },
+  {
+   "name": "Marcus Bell",
+   "role": "Striker 1997-2006",
+   "note": "Scored the winner in both Champions' Cup finals against Northwick."
+  },
+  {
+   "name": "Ray Doolan",
+   "role": "Captain 1985-1997",
+   "note": "From the Second Division in 1986 to the title in 1993."
+  },
+  {
+   "name": "Aaron Fitzgerald",
+   "role": "Midfielder 2014-",
+   "note": "The 2019 title's captain."
+  }
+ ],
+ "records": {
+  "attendance": "64,880 v Millbrook United, League, 1949 (Furnace Lane, before seating)",
+  "win": "10-1 v Fernley Park, League, 1894",
+  "defeat": "0-8 v Eastvale Wanderers, League, 1962",
+  "top_scorer": "Tommy Lake, 258 goals (1925-1938)",
+  "appearances": "Gordon Pike, 641 (1958-1976)",
+  "season_goals": "Tommy Lake, 41 (1926-27)"
+ },
+ "badge": {
+  "about": "The stone cross the town is named after, standing in the furnace's glow; two stars for the Champions' Cups. Motto 'Ex Igne Fortitudo' - from the fire, strength.",
+  "design": "An amber shield with a claret border. In the centre a tall claret stone cross (an old market cross) with flames in claret and white rising behind it. Two small white stars above the cross. 'STONECROSS ALBION' arched above the shield in claret capitals, and a claret ribbon beneath reading 'EX IGNE FORTITUDO' in amber."
+ },
+ "ground": {
+  "name": "Furnace Lane",
+  "known_as": "the Furnace",
+  "opened": 1899,
+  "capacity": 42100,
+  "pitch": {
+   "length_m": 105,
+   "width_m": 68,
+   "surface": "hybrid grass",
+   "runoff": "tight"
+  },
+  "stands": [
+   {
+    "name": "de Vries Stand",
+    "side": "west",
+    "built": 2006,
+    "tiers": 2,
+    "capacity": 12600,
+    "roof": "cantilever",
+    "features": "the main stand, built with the Champions' Cup money: tunnel, dugouts, boxes, the two cups in the trophy room",
+    "expandable": false
+   },
+   {
+    "name": "Furnace Bank",
+    "side": "south",
+    "built": 1995,
+    "tiers": 1,
+    "capacity": 12500,
+    "roof": "a huge single cantilever",
+    "features": "the home end - one of the biggest single tiers in the country, amber seats, steep and loud",
+    "expandable": false
+   },
+   {
+    "name": "Canal Stand",
+    "side": "east",
+    "built": 1979,
+    "tiers": 2,
+    "capacity": 9500,
+    "roof": "1970s cantilever",
+    "features": "two tiers backing onto the canal; the next to be rebuilt",
+    "expandable": true
+   },
+   {
+    "name": "Ironworks End",
+    "side": "north",
+    "built": 1989,
+    "tiers": 2,
+    "capacity": 7500,
+    "roof": "cantilever",
+    "features": "away fans in the upper tier; the last blast furnace's chimney behind it",
+    "expandable": false
+   }
+  ],
+  "corners": "open corners - four separate stands",
+  "roof": "four separate roofs",
+  "surroundings": "a canal along the east side with narrowboats, red-brick terraces and an old ironworks chimney, the towers of Millbrook three miles away",
+  "atmosphere": "noisy and old-fashioned - the Furnace Bank is famous, and derby day against Millbrook is the loudest afternoon in the Midlands",
+  "for_the_engine": {
+   "home_end": "south",
+   "away_fans": "north stand, upper tier",
+   "dugouts": "west side, halfway line",
+   "pitch_m": [
+    105,
+    68
+   ],
+   "notes": "a traditional four-stand ground"
+  },
+  "images": {
+   "crest": "data/world/clubs/stonecross/crest.png",
+   "inside": "data/world/clubs/stonecross/inside.jpg",
+   "aerial": "data/world/clubs/stonecross/aerial.jpg"
+  }
+ },
+ "image_prompts": {
+  "badge": "A football club crest for 'Stonecross Albion', founded 1880, an old Midlands iron-town club. An amber heraldic shield with a claret border. In the centre a tall claret stone market cross with stylised flames in claret and white rising behind it. Two small white stars above the cross. 'STONECROSS ALBION' arched above the shield in claret serif capitals. A claret ribbon beneath the shield reading 'EX IGNE FORTITUDO' in amber capitals. Flat vector emblem, clean bold lines, limited colours (amber, claret, white), centred, on a plain transparent background, square format, no other text.",
+  "ground_inside": "Photorealistic wide-angle photo inside a 42,000-seat traditional English football ground on a grey winter afternoon, 30 minutes before kick-off. Camera: high in the main stand on the halfway line, looking across the pitch. Four separate stands with open corners. OPPOSITE: an older two-tier 1970s stand, half full. LEFT END: one huge, steep single-tier home end PACKED with fans in amber and claret, flags and a banner of a stone cross. RIGHT END: a two-tier stand with away fans in the upper tier and an old brick chimney behind it. Players warming up in amber shirts with claret collars and claret shorts.",
+  "ground_aerial": "Aerial drone photograph of a 42,000-seat traditional English football ground with four separate stands and open corners, one end a single enormous steep stand. A canal with narrowboats runs along one side; around it red-brick terraced streets, an old ironworks chimney, and the towers of a big Midlands city a few miles away. Photorealistic, overcast light.",
+  "kits": "Three football kits for Stonecross Albion laid out flat side by side on a plain light background, product-photo style. Home: amber shirt with claret collar and claret cuffs, claret shorts, amber socks. Away: claret shirt with amber trim, claret shorts, claret socks. Third: sky-blue shirt with claret trim, sky-blue shorts, sky-blue socks. A small club crest on the left chest of each shirt. No sponsor logos, no other text."
+ },
+ "support": 56000
+}
