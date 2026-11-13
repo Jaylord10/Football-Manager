@@ -94,9 +94,14 @@ def table(career, div=None):
                     row["l"] += 1; row["form"].append("L")
     names = {c["id"]: c["name"] for c in clubs}
     out = list(rows.values())
+    from career import ffp
     for r in out:
         r["gd"] = r["gf"] - r["ga"]
         r["form"] = r["form"][-5:]
+        ded = ffp.deduction(career, r["club"])          # (points off for breaking the squad cost rules)
+        if ded:
+            r["pts"] -= ded
+            r["deducted"] = ded
     out.sort(key=lambda r: (-r["pts"], -r["gd"], -r["gf"], names[r["club"]]))
     return out
 

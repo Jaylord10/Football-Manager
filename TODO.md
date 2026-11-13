@@ -26,10 +26,10 @@ allows; leave the 3D view; club photos are mine. Make the game as in depth as po
 
 - [x] **The money balance, part 1** - done 13 Nov (on Jay's PC): the rest of a real wage bill (bonuses,
       appearance fees, NI, staff, the academy's U21s and U18s); Premier Division wages now ~60-70% of income.
-- [ ] **The money balance, part 2**: AI clubs spend their spare money on transfers (the middle club's bank
-      still creeps up ~£8-10m a season; small Premier Division clubs make £30-45m a year before transfers).
-- [ ] **Clubs in debt** - a few Division 1 clubs run up debts of £30-50m and nothing happens to them.
-      Real life: owners' money, or administration (a points deduction). Do we want that?
+- [x] **The money balance, part 2** - done 13 Nov (on Jay's PC): AI clubs spend their spare money to improve;
+      fewer raids from abroad. Middle Premier Division bank now levels off ~£140-170m (was rising past £200m).
+- [x] **Clubs in debt / FFP** - done 13 Nov (on Jay's PC): a simple version of the 2026-27 squad cost rules
+      (85% of income; fine over it; 6 points + 1 per £6.5m over 115%); Division 1 owners put in up to £15m a season.
 
 - [ ] **Extra time and penalty shoot-outs in the match engine** (needed for cups; the play-offs use quick ones now).
 - [ ] **The broadcast 3D view** (Panda3D side project): proper player models, football animations

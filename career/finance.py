@@ -100,6 +100,9 @@ COSTS_ELSEWHERE = (0.28, 0.08, False)
 ACADEMY = {"pl": (16 * M, 3 * M, 1.5), "d1": (4 * M, 1 * M, 1.5), "es": (12 * M, 1.5 * M, 2.0),
            "de": (12 * M, 1.5 * M, 2.0), "it": (10 * M, 1.5 * M, 2.0)}       # the U21s and U18s, a year
 RESERVE = 0.6                            # money in the bank above this x a season's income...
+AI_CUSHION = 0.10                        # AI clubs' transfer budgets: keep this x a season's income in the bank,
+AI_BANK_SPEND = 0.6                      # ...spend this share of the rest
+AI_SURPLUS_SPEND = 0.8                   # ...and of this season's expected surplus
 
 # --- Each league's money (the Premier League figures above are "pl") ---------------
 LEAGUE = {
@@ -327,7 +330,7 @@ def init(career, seed=2026, only=None):
 
 
 def _empty_season():
-    return {"tv": 0, "matchday": 0, "commercial": 0, "prize": 0, "transfers_in": 0,
+    return {"tv": 0, "matchday": 0, "commercial": 0, "prize": 0, "transfers_in": 0, "owner": 0,
             "wages": 0, "bonuses": 0, "staff": 0, "academy": 0, "ni": 0, "other": 0, "transfers_out": 0}
 
 
@@ -372,7 +375,8 @@ def _last_month(career, club, m):
     pm, py = (m - 1, y) if m > 1 else (12, y - 1)
     prefix = f"{py}-{pm:02d}"
     cid = club["id"]
-    wage = {p["id"]: p.get("wage", 0) for p in club["players"]}
+    wage = {p["id"]: p.get("wage", 0) for p in club["players"]
+            if not (p.get("terms") or {}).get("appearance")}      # (his own contract's fees: career/contracts.py)
     wins, fees = 0, 0.0
     def played(r, side):
         return sum(APPEARANCE * wage.get(a["id"], 0) for a in r.get("players", [])
@@ -426,7 +430,17 @@ def set_budgets(career, club):
     other, staff, ni = _costs(club)
     surplus = income * (1 - other - staff * (1 + NI)) - f["wage_budget"] * (1 + (NI if ni else 0)) * 1.1 \
         - academy_cost(career, club)
-    f["transfer_budget"] = round(max(0.0, 0.35 * f["balance"] + 0.5 * surplus), -5)
+    if club["id"] == career.get("my_club"):
+        f["transfer_budget"] = round(max(0.0, 0.35 * f["balance"] + 0.5 * surplus), -5)
+    else:
+        # AI clubs spend to improve, like real ones: most of their spare money, keeping a cushion
+        cushion = AI_CUSHION * income
+        budget = max(0.0, AI_BANK_SPEND * (f["balance"] - cushion) + AI_SURPLUS_SPEND * surplus)
+        from career import ffp
+        room = ffp.ai_room(career, club)                   # (and within the squad cost rules)
+        if room is not None:
+            budget = min(budget, room)
+        f["transfer_budget"] = round(budget, -5)
 
 
 # ---------------------------------------------------------------------------
@@ -447,6 +461,9 @@ def daily(career, club, date):
         return
     f = club["finance"]
     month(career, club, d.month)
+    if d.month == 3 and club["id"] == career.get("my_club"):
+        from career import ffp
+        ffp.warn(career)                                   # (the board's warning, if we're heading over)
 
 
 def _size_share(career, club):
@@ -520,7 +537,9 @@ def season_end(career, table):
             spend = INVEST * (f["balance"] - reserve)
             _book(club, "other", -spend)
             f["invested"] = round(f.get("invested", 0) + spend)
-        income = s["tv"] + s["matchday"] + s["commercial"] + s["prize"] + s["transfers_in"]
+        from career import ffp
+        ffp.check(career, club)                            # the squad cost rules (career/ffp.py)
+        income = s["tv"] + s["matchday"] + s["commercial"] + s["prize"] + s["transfers_in"] + s.get("owner", 0)
         spend = sum(s.get(k, 0) for k in SPEND_KINDS)
         f["history"].append({"year": career.get("year"), "position": pos, "income": income, "spend": spend,
                              "profit": income - spend, "balance": f["balance"], "league": league_of(club)})

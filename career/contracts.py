@@ -369,7 +369,7 @@ def pay_bonuses(career, results):
                     pay += t["goal_bonus"]
             total += pay
     if total:
-        fin._book(me, "wages", -total)
+        fin._book(me, "bonuses", -total)
     return total
 
 
