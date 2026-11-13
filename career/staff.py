@@ -135,25 +135,25 @@ def development(career, club, p):
     if not _mine(career, club):
         return 1.0
     role = "gk" if p.get("Pos") == "GK" else "coach"
-    return max(0.7, min(1.4, 1 + 0.04 * _diff(career, role)))
+    return max(0.85, min(1.15, 1 + 0.02 * _diff(career, role)))    # (at most 15% faster or slower)
 
 
 def recovery(career, club):
     if not _mine(career, club):
         return 1.0
-    return max(0.85, min(1.2, 1 + 0.03 * _diff(career, "fitness")))
+    return max(0.9, min(1.1, 1 + 0.02 * _diff(career, "fitness")))
 
 
 def training_injuries(career, club):
     if not _mine(career, club):
         return 1.0
-    return max(0.7, min(1.4, 1 - 0.04 * _diff(career, "fitness")))
+    return max(0.8, min(1.2, 1 - 0.03 * _diff(career, "fitness")))
 
 
 def injury_length(career, club):
     if not _mine(career, club):
         return 1.0
-    return max(0.65, min(1.35, 1 - 0.04 * _diff(career, "physio")))
+    return max(0.8, min(1.2, 1 - 0.03 * _diff(career, "physio")))
 
 
 def academy(career, club):
