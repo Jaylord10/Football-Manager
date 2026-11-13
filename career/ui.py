@@ -795,6 +795,7 @@ class App:
     def view_player(self, club_id, pid):
         self.player_view = (club_id, pid)
         self.player_back = self.screen
+        self.player_tab = "profile"
         self.go("player")
 
     def go(self, screen):
@@ -2340,7 +2341,12 @@ class App:
                    f"{cal.fmt(ln['until'], False)} ({ln.get('apps', 0)} games)")
         elif p.get("loan_listed"):
             sub += "  ·  on your loan list"
-        self.text(self._fit_text(sub, "body", W - x0 - 134), "body", MUTED, (x0 + 104, 72))
+        tab = getattr(self, "player_tab", "profile")
+        self.text(self._fit_text(sub, "body", W - 30 - 260 - (x0 + 104)), "body", MUTED, (x0 + 104, 72))
+        for k, (key, label) in enumerate((("profile", "Profile"), ("career", "Career"))):
+            self.buttons.append(Button((W - 30 - 250 + k * 128, 62, 122, 34), label,
+                                       lambda key=key: setattr(self, "player_tab", key),
+                                       primary=tab == key, font="btn_s"))
         today = self.career.get("date")
         if today and avail.banned(p):
             self.text(f"Suspended for {p['ban']} more match{'es' if p['ban'] > 1 else ''}", "body", DRAW,
@@ -2350,12 +2356,15 @@ class App:
             self.text(f"Injured: {inj['name']} - back {cal.fmt(inj['until'], False)}", "body", LOSS,
                       (W - 30, 30), "topright")
 
+        if tab == "career":
+            self._player_career(pygame.Rect(x0, 112, 600, H - 190), cid, p)
         # Attributes
-        groups = list(self.ATTR_GROUPS)
-        if p["Pos"] == "GK":
+        groups = list(self.ATTR_GROUPS) if tab != "career" else []
+        if p["Pos"] == "GK" and tab != "career":
             groups = [("Goalkeeping", ["Shot Stopping", "Handling"])] + groups
         r = pygame.Rect(x0, 112, 600, H - 190)
-        self.panel(r)
+        if tab != "career":
+            self.panel(r)
         col_w = r.w // 2
         cx, cy = r.x + 18, r.y + 14
         colnum = 0
@@ -2379,7 +2388,7 @@ class App:
 
         # Ratings by position, and this season
         rx = x0 + 620
-        if mine and cid >= 0:                       # how he's feeling (career/morale.py)
+        if mine and cid >= 0 and tab != "career":   # how he's feeling (career/morale.py)
             ends = self.__dict__.pop("_col_end", {}) or {0: (cx, cy)}
             mx, my = min(ends.values(), key=lambda e: e[1])          # (under the shorter column of attributes)
             my += 6
@@ -2448,29 +2457,29 @@ class App:
         apps = f"{starts}" + (f" (+{subs_on} as sub)" if subs_on else "")
         if cid >= spain.ID_BASE:                       # (quick results: starts and goals only)
             apps, minutes, goals = str(p.get("lg_apps", 0)), p.get("lg_apps", 0) * 90, [0] * p.get("lg_goals", 0)
-        self.text(f"Appearances: {apps}", "body", TEXT, (sr.x + 16, sr.y + 48))
-        self.text(f"Minutes: {minutes}", "body", TEXT, (sr.x + 16, sr.y + 76))
-        self.text(f"Goals: {len(goals)}", "body", TEXT, (sr.x + 16, sr.y + 104))
+        self.text(f"Appearances: {apps}", "body", TEXT, (sr.x + 16, sr.y + 46))
+        self.text(f"Minutes: {minutes}", "body", TEXT, (sr.x + 16, sr.y + 72))
+        self.text(f"Goals: {len(goals)}", "body", TEXT, (sr.x + 16, sr.y + 98))
         if cid >= spain.ID_BASE or quick:
-            self.text("Cards: not recorded", "body", MUTED, (sr.x + 16, sr.y + 132))
+            self.text("Cards: not recorded", "body", MUTED, (sr.x + 16, sr.y + 124))
         else:
-            self.text(f"Cards: {yellows} yellow, {reds} red", "body", TEXT, (sr.x + 16, sr.y + 132))
-        self.text(f"Overall rating: {clubs_mod.overall(p)}", "body", TEXT, (sr.x + 16, sr.y + 160))
+            self.text(f"Cards: {yellows} yellow, {reds} red", "body", TEXT, (sr.x + 16, sr.y + 124))
+        self.text(f"Overall rating: {clubs_mod.overall(p)}", "body", TEXT, (sr.x + 16, sr.y + 150))
         if "wage" in p:
             today = self.career.get("date")
-            self.text(f"Value: {fin.money(fin.value(p, today))}", "body", ACCENT, (sr.x + 16, sr.y + 196))
-            self.text(f"Wage: {fin.weekly(p['wage'])}", "body", TEXT, (sr.x + 16, sr.y + 224))
+            self.text(f"Value: {fin.money(fin.value(p, today))}", "body", ACCENT, (sr.x + 16, sr.y + 180))
+            self.text(f"Wage: {fin.weekly(p['wage'])}", "body", TEXT, (sr.x + 16, sr.y + 206))
             note = None
             if p.get("cut_from"):
-                note = f"Cut from {fin.weekly(p['cut_from'])} by his relegation clause"
+                note = f"Relegation cut (was {fin.weekly(p['cut_from'])})"
             elif 0 <= cid < len(self.career["clubs"]) and cid == self.career["my_club"] \
                     and fin.league_of(self.career["clubs"][cid]) == "pl":
                 cut = p.get("releg_cut", fin.club_clause(self.career["clubs"][cid]))
-                note = f"Relegation clause: wage cut {cut}% if we go down" if cut else "No relegation wage cut"
+                note = f"If we go down: wages cut {cut}%" if cut else "No relegation pay cut"
             if note:
-                self.text(note, "small", MUTED, (sr.x + 16, sr.y + 282))
+                self.text(self._fit_text(note, "small", sr.w - 28), "small", MUTED, (sr.x + 16, sr.y + 262))
             if p.get("contract_end"):
-                self.text(f"Contract until {cal.fmt(p['contract_end'])[4:]}", "body", TEXT, (sr.x + 16, sr.y + 252))
+                self.text(f"Contract until {cal.fmt(p['contract_end'])[4:]}", "body", TEXT, (sr.x + 16, sr.y + 232))
 
         back = getattr(self, "player_back", "squad")
         self.buttons.append(Button((x0, H - 66, 160, 46), "Back", lambda: self.go(back)))
@@ -2673,6 +2682,71 @@ class App:
             lineup[other] = current               # he was already in the XI: they swap places
         lineup[slot] = pid
         league.save(self.career)
+
+    def _player_career(self, r, cid, p):
+        """The player page's Career tab: season by season (career/playerhist.py), his trophies and awards."""
+        from career import playerhist
+        self.panel(r, "Career record")
+        cols = ((0, "Season"), (84, "Club"), (226, "Games"), (290, "Goals"), (350, "Cups"), (404, "Won"))
+        y = r.y + 50
+        for dx, h in cols:
+            self.text(h, "small", MUTED, (r.x + 18 + dx, y))
+        y += 26
+        rows = playerhist.lines(p)
+        now = playerhist.current(self.career, cid, p)
+        if now:
+            rows = rows + [now]
+        if not rows:
+            self.text("No games recorded yet - his record starts with the 2026-27 season.", "body", MUTED,
+                      (r.x + 18, y))
+            y += 30
+        for line in rows[-14:]:
+            nm = line["c"] + (" (loan)" if line.get("loan") else "")
+            col = ACCENT if line.get("now") else TEXT
+            self.text(line["y"] + ("*" if line.get("now") else ""), "body", col, (r.x + 18, y))
+            self.text(self._fit_text(nm, "body", 136), "body", col, (r.x + 18 + 84, y))
+            self.text(str(line["a"]), "body", col, (r.x + 18 + 226, y))
+            self.text(str(line["g"]), "body", col, (r.x + 18 + 290, y))
+            self.text(str(line.get("cg", 0)), "body", col, (r.x + 18 + 350, y))
+            won = ", ".join(playerhist.SHORT_WON.get(h, h) for h in line.get("h", []))
+            extra = 0
+            for k, ln in enumerate(self._lines(won, "small", r.right - (r.x + 18 + 404) - 10) if won else []):
+                self.text(ln, "small", DRAW, (r.x + 18 + 404, y + 3 + 18 * k))
+                extra = 18 * k
+            y += 27 + extra
+        if rows:
+            a, g, cg = playerhist.totals({"hist": rows})
+            pygame.draw.line(self.win, LINE, (r.x + 18, y + 2), (r.right - 18, y + 2))
+            y += 10
+            self.text("Total", "body", TEXT, (r.x + 18, y))
+            for dx, v in ((226, a), (290, g), (350, cg)):
+                self.text(str(v), "body", TEXT, (r.x + 18 + dx, y))
+            y += 30
+            if any(x.get("now") for x in rows):
+                self.text("* this season so far.  Games and goals: league; Cups: goals in every cup.", "small",
+                          MUTED, (r.x + 18, y))
+                y += 24
+        y += 8
+        tro = playerhist.trophies(p)
+        if tro and y < r.bottom - 60:
+            self.text("Trophies", "h3", TEXT, (r.x + 18, y))
+            y += 32
+            for t, ys in tro:
+                if y > r.bottom - 50:
+                    break
+                self.text(self._fit_text(f"{t}  x{len(ys)}  ({', '.join(ys)})", "body", r.w - 36), "body", TEXT,
+                          (r.x + 18, y))
+                y += 26
+            y += 8
+        aw = p.get("awards") or []
+        if aw and y < r.bottom - 60:
+            self.text("Awards", "h3", TEXT, (r.x + 18, y))
+            y += 32
+            for a_ in aw[::-1]:
+                if y > r.bottom - 30:
+                    break
+                self.text(self._fit_text(a_, "body", r.w - 36), "body", ACCENT, (r.x + 18, y))
+                y += 26
 
     def _fit_text(self, s, font, width):
         """The text, cut short with ... if it's wider than `width`."""

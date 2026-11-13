@@ -408,6 +408,7 @@ def groups_done(career, comp):
             comp["next_id"] += 1
             comp["matches"].append(mm)
             tie["matches"].append(mm["id"])
+            cups.space(career, mm)
     rd["drawn"] = True
     for first, second in pairs:
         for row in (first, second):

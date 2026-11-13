@@ -286,8 +286,41 @@ def _draw(career, comp, i, pool, rng):
             comp["next_id"] += 1
             comp["matches"].append(m)
             tie["matches"].append(m["id"])
+            if rd["name"] != "Final":
+                space(career, m)
     rd["drawn"] = True
     _draw_news(career, comp, i)
+
+
+MIN_GAP = 2                       # days between two matches for a club (real fixtures: never less than ~48 hours)
+SHIFTS = (0, 1, -1, 2, -2, 3, -3, 6, -6, 7, -7)
+
+
+def _busy(career, cid, skip):
+    """The dates a club is already playing (league days for English clubs; every cup match)."""
+    out = set()
+    if cid is not None and 0 <= cid < len(career["clubs"]):
+        out |= set(career.get("calendar") or [])
+    for comp in comps(career):
+        for x in comp["matches"]:
+            if x["id"] != skip and cid in (x["home"], x["away"]) and x.get("result") is None:
+                out.add(x["date"])
+    return out
+
+
+def space(career, m):
+    """A tie that lands on (or next to) another match for either club is moved a day or two - as real
+    cup ties are rearranged when a club's in Europe or has a league game."""
+    busy = [cal.parse(d) for d in _busy(career, m["home"], m["id"]) | _busy(career, m["away"], m["id"])]
+    d0 = cal.parse(m["date"])
+    today = cal.parse(career.get("date") or m["date"])
+    for s in SHIFTS:
+        d = d0 + dt.timedelta(days=s)
+        if d <= today:
+            continue
+        if all(abs((d - b).days) >= MIN_GAP for b in busy):
+            m["date"] = d.isoformat()
+            return
 
 
 def _draw_news(career, comp, i):

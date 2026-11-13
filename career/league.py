@@ -277,6 +277,8 @@ def new_season(career, seed=None):
     spain.season_end(career, random.Random(seed))       # Spain's last games, money, champions
     from career import foreign
     foreign.season_end(career, random.Random(seed))     # ...and Germany's and Italy's
+    from career import playerhist
+    playerhist.season_end(career)                        # every player's season in his career record
     from career import loans
     loans.season_end(career)                             # loans end: back to their clubs (or bought)
     from career import contracts

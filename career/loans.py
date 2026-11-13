@@ -161,6 +161,8 @@ def start(career, parent_cid, borrower_cid, p, terms, date=None):
     if fee:
         fin._book(borrower, "transfers_out", -fee)
         fin._book(parent, "transfers_in", fee)
+    from career import playerhist
+    playerhist.leaving(career, parent_cid, p)            # (his career record)
     parent["players"].remove(p)
     if p["id"] in (parent.get("lineup") or {}).values():
         parent["lineup"] = clubs_mod.best_lineup(parent)
@@ -250,6 +252,10 @@ def end(career, borrower, p, date=None, buy=False, why="the loan has ended"):
                 av._news(career, date, cid, f"{p['Name']}'s move to {borrower['name']} is made permanent "
                                             f"({fin.money(fee)}).", "transfer")
         return
+    from career import playerhist
+    p["loan"] = loan                                     # (so the record says "loan")
+    playerhist.leaving(career, borrower["id"], p)
+    p.pop("loan", None)
     borrower["players"].remove(p)
     if p["id"] in (borrower.get("lineup") or {}).values():
         borrower["lineup"] = clubs_mod.best_lineup(borrower)

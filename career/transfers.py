@@ -611,6 +611,8 @@ def move_player(career, from_cid, to_cid, p, fee, years=1, date=None):
             fin._book(seller(career, so["to"]), "transfers_in", cut)
     p.pop("addon", None)
     from_name = p.get("_from_club", "?") if from_cid == -1 else club_name_of(career, from_cid, p)
+    from career import playerhist
+    playerhist.leaving(career, from_cid, p)              # his games for them this season (his career record)
     src["players"].remove(p)
     if from_cid >= 0:
         if p["id"] in (src.get("lineup") or {}).values():
