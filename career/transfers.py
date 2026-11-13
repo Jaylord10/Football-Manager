@@ -788,7 +788,9 @@ def search(career, pos=None, max_age=None, max_fee=None, source="all", limit=200
 LIST_INTEREST = 0.05         # per day, a player you've listed
 STAR_INTEREST = 0.003        # per day, one of your best few (not listed)
 OFFER_DAYS = 7               # an offer stands this long
-AI_BUY_CHANCE = 0.06         # per AI club per window day: has a go at strengthening
+AI_BUY_CHANCE = 0.06         # per AI club per window day: has a go at strengthening...
+AI_RICH_CHANCE = 0.14        # ...up to this much more when it has money to spend (budget ~ a quarter of its income)
+AI_UPGRADE = 2               # an AI club buys a player at least this much better than the starter he'd replace
 ABROAD_RAID = 0.0015         # per day, for each club's best 3: a club abroad bids
 MAX_COUNTER = 1.25           # a buyer goes up to this x what he's worth (if they can afford it)
 SIZE_STEP_DOWN = 5           # a club's top-3 player won't drop this many places in the pecking order
@@ -872,7 +874,8 @@ def ai_try_buy(career, club, rng, date):
     weakest = _starter_by_group(club)
     if not weakest:
         return
-    group = min(weakest, key=lambda g: weakest[g])
+    order = sorted(weakest, key=lambda g: weakest[g])
+    group = order[0] if len(order) < 2 or rng.random() < 0.6 else order[1]     # (the weakest place, or the next)
     current = weakest[group]
     room = (club["finance"].get("wage_budget", 0) - fin.wage_bill(club)) / 52
     rank = fin.size_rank(career, club)
@@ -896,7 +899,7 @@ def ai_try_buy(career, club, rng, date):
                     and fin.stature(career, pool) < here:
                 continue                     # a bigger club doesn't sell a first-choice player to a smaller one
             r = clubs_mod.overall(p)
-            if r < current + (2 if rank < 6 else 3):
+            if r < current + AI_UPGRADE:
                 continue
             price, nfs = asking_price(career, cid, p)
             if nfs and not (cid >= 0 and here + BIG_CLUB_GAP <= fin.stature(career, seller(career, cid))):
@@ -1030,6 +1033,16 @@ def respond(career, mid, action, counter=None, rng=None):
 SALE_TO_BUDGET = 0.5         # the board lets you spend this share of a sale
 
 
+def _buy_chance(career, c):
+    """A club with money to spend has a go more often (real clubs with money spend it)."""
+    f = c.get("finance") or {}
+    try:
+        income = max(1.0, fin.expected_income(career, c))
+    except Exception:
+        return AI_BUY_CHANCE
+    return AI_BUY_CHANCE + AI_RICH_CHANCE * min(1.0, f.get("transfer_budget", 0) / (0.25 * income))
+
+
 def market_day(career, iso, rng):
     """The AI market and offers for your players - every day of a window."""
     if not in_window(iso):
@@ -1039,7 +1052,7 @@ def market_day(career, iso, rng):
     for c in career["clubs"] + spain_clubs(career):
         if c["id"] == me["id"]:
             continue
-        if rng.random() < AI_BUY_CHANCE:
+        if rng.random() < _buy_chance(career, c):
             ai_try_buy(career, c, rng, iso)
         if len(c["players"]) < WINDOW_SQUAD_MIN and rng.random() < WINDOW_TOP_UP:
             from career import contracts

@@ -100,6 +100,9 @@ COSTS_ELSEWHERE = (0.28, 0.08, False)
 ACADEMY = {"pl": (16 * M, 3 * M, 1.5), "d1": (4 * M, 1 * M, 1.5), "es": (12 * M, 1.5 * M, 2.0),
            "de": (12 * M, 1.5 * M, 2.0), "it": (10 * M, 1.5 * M, 2.0)}       # the U21s and U18s, a year
 RESERVE = 0.6                            # money in the bank above this x a season's income...
+AI_CUSHION = 0.10                        # AI clubs' transfer budgets: keep this x a season's income in the bank,
+AI_BANK_SPEND = 0.6                      # ...spend this share of the rest
+AI_SURPLUS_SPEND = 0.8                   # ...and of this season's expected surplus
 
 # --- Each league's money (the Premier League figures above are "pl") ---------------
 LEAGUE = {
@@ -372,7 +375,8 @@ def _last_month(career, club, m):
     pm, py = (m - 1, y) if m > 1 else (12, y - 1)
     prefix = f"{py}-{pm:02d}"
     cid = club["id"]
-    wage = {p["id"]: p.get("wage", 0) for p in club["players"]}
+    wage = {p["id"]: p.get("wage", 0) for p in club["players"]
+            if not (p.get("terms") or {}).get("appearance")}      # (his own contract's fees: career/contracts.py)
     wins, fees = 0, 0.0
     def played(r, side):
         return sum(APPEARANCE * wage.get(a["id"], 0) for a in r.get("players", [])
@@ -426,7 +430,12 @@ def set_budgets(career, club):
     other, staff, ni = _costs(club)
     surplus = income * (1 - other - staff * (1 + NI)) - f["wage_budget"] * (1 + (NI if ni else 0)) * 1.1 \
         - academy_cost(career, club)
-    f["transfer_budget"] = round(max(0.0, 0.35 * f["balance"] + 0.5 * surplus), -5)
+    if club["id"] == career.get("my_club"):
+        f["transfer_budget"] = round(max(0.0, 0.35 * f["balance"] + 0.5 * surplus), -5)
+    else:
+        # AI clubs spend to improve, like real ones: most of their spare money, keeping a cushion
+        cushion = AI_CUSHION * income
+        f["transfer_budget"] = round(max(0.0, AI_BANK_SPEND * (f["balance"] - cushion) + AI_SURPLUS_SPEND * surplus), -5)
 
 
 # ---------------------------------------------------------------------------
