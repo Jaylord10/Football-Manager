@@ -222,6 +222,8 @@ MIX = {
     "spain": {"SpanMed": 88, "African": 5, "SAMed": 4, "SouthAmerican": 3},
     "spain_eu": {"Italmed": 45, "CentralEuropean": 25, "YugoGreek": 20, "EECA": 10},
     "spain_non_eu": {"SouthAmerican": 60, "African": 30, "SAMed": 10},
+    "germany": {"CentralEuropean": 62, "Caucasian": 12, "African": 12, "EECA": 8, "YugoGreek": 6},
+    "italy": {"Italmed": 72, "CentralEuropean": 8, "African": 10, "SouthAmerican": 6, "YugoGreek": 4},
 }
 _NG = None
 _USED = set()
@@ -242,7 +244,10 @@ def ng():
 
 def _group(p, club):
     cid = club.get("id") if club else None
-    from career import spain, friendlies
+    from career import spain, friendlies, foreign
+    cfg = foreign.league_of_id(cid) if cid is not None else None
+    if cfg is not None:
+        return "germany" if cfg.key == "de" else "italy"
     if cid is not None and spain.is_spanish(cid) and cid < friendlies.LOCAL_ID:
         if p.get("non_eu"):
             return "spain_non_eu"
@@ -280,6 +285,10 @@ def _all_players(career):
     for c in (career.get("spain") or {}).get("clubs", []):
         for p in c.get("players", []):
             yield p, c
+    for d in (career.get("leagues") or {}).values():          # (Germany, Italy - career/foreign.py)
+        for c in d.get("clubs", []):
+            for p in c.get("players", []):
+                yield p, c
     for k in ("free_agents", "abroad"):
         c = career.get(k)
         if isinstance(c, dict):

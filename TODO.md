@@ -11,8 +11,8 @@ Items under "Talk to Jay first" are never started unattended.
 Jay, 12 Nov: "do the cup competitions including European and world club cup; German and Italian leagues if time
 allows; leave the 3D view; club photos are mine. Make the game as in depth as possible."
 
-- [x] **End-of-season awards** - done (waiting for Jay's OK).
-- [x] **Transfers with Germany and Italy** - done (waiting for Jay's OK).
+- [x] **End-of-season awards** - done (on Jay's PC).
+- [x] **Transfers with Germany and Italy** - done (on Jay's PC).
 - [x] **A long test with everything on** - done: `dev/long_all.py`. It found cup ties clashing with
       European nights (fixed: ties are moved a day or two). Clubs in the Shield play Thursday then Saturday
       (real clubs get moved to Sunday - see "Talk to Jay first").
@@ -50,7 +50,7 @@ allows; leave the 3D view; club photos are mine. Make the game as in depth as po
 - [ ] Formation imbalance (some shapes too strong / weak in the engine).
 - [ ] NewGAN pool face 0039.
 
-## Done (waiting for Jay's OK) - all on branch `overnight/2026-11-12-division1`
+## Done - on Jay's PC since 13 Nov (backup: `_backup_before_overnight`)
 
 - Division 1 stage 3, the money: parachute payments, sponsors and tickets up / down, relegation wage cuts.
 - Division 1 stage 4, the roll of honour: second-tier roll, old titles for Division 1 clubs, a club page for

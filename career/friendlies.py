@@ -69,6 +69,10 @@ def date_ok(career, iso):
     for f in all_(career):
         if not f.get("result") and abs(cal.days_between(f["date"], iso)) < GAP:
             return False, "Too close to another friendly."
+    from career import cups
+    for m in cups.all_matches(career):
+        if cups.involved(career, m) and abs(cal.days_between(m["date"], iso)) < GAP:
+            return False, "Too close to a cup tie."
     return True, ""
 
 

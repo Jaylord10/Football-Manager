@@ -1,0 +1,21 @@
+id,name,short,r,g,b,strength,defence,build_up,roles
+140,Inter Valmora,Valmora,20,60,160,79,press,play_out,red
+141,AC Montevera,Montevera,200,20,30,77,press,play_out,blue
+142,Virtus Calderano,Calderano,20,20,20,76,high_press,play_out,red
+143,SS Aurelia,Aurelia,120,200,230,73,high_press,play_out,blue
+144,SSC Vesuvia,Vesuvia,40,140,220,72,press,mixed,blue
+145,US Orobica,Orobica,20,40,100,70,press,mixed,blue
+146,ACF Arnaldi,Arnaldi,110,50,150,68,mid_block,play_out,blue
+147,AC Collina,Collina,130,20,30,66,mid_block,play_out,red
+148,US Felsina,Felsina,160,20,40,64,mid_block,mixed,red
+149,Pro Lanterna,Lanterna,150,20,40,63,mid_block,mixed,red
+150,US Carnia,Carnia,240,240,240,62,mid_block,mixed,blue
+151,Unione Marina,Marina,30,70,160,61,mid_block,mixed,blue
+152,Calcio Isola,Isola,160,20,40,60,mid_block,clear,blue
+153,Virtus Scaligera,Scaligera,240,210,30,59,mid_block,clear,red
+154,US Salento,Salento,240,200,30,58,low_block,mixed,red
+155,AC Valdarno,Valdarno,30,90,170,57,low_block,mixed,blue
+156,Calcio Crociata,Crociata,245,245,245,56,low_block,clear,blue
+157,FC Lariana,Lariana,30,90,180,55,low_block,clear,red
+158,AC Laguna,Laguna,240,120,30,54,low_block,clear,blue
+159,US Brianza,Brianza,200,30,40,53,low_block,clear,red

@@ -101,6 +101,35 @@ def table(career, div=None):
     return out
 
 
+def top_scorers(career, div=None, n=20):
+    """[(goals, apps, player, club)] in a division this season, from the match records."""
+    clubs, results = _div_data(career, div)
+    ids = {c["id"] for c in clubs}
+    goals, apps = {}, {}
+    for md in results.values():
+        for r in md:
+            for g in r.get("goals", []):
+                if g.get("own_goal") or g.get("pid") is None:
+                    continue
+                cid = r["home"] if g.get("team", 0) == 0 else r["away"]
+                goals[(cid, g["pid"])] = goals.get((cid, g["pid"]), 0) + 1
+            for a in r.get("players", []):
+                if a.get("minutes", 0) > 0:
+                    cid = r["home"] if a["team"] == 0 else r["away"]
+                    apps[(cid, a["id"])] = apps.get((cid, a["id"]), 0) + 1
+    from career import clubs as clubs_mod
+    out = []
+    for (cid, pid), n_ in goals.items():
+        if cid not in ids:
+            continue
+        club = career["clubs"][cid]
+        p = clubs_mod.player_by_id(club, pid)
+        if p is not None:
+            out.append((n_, apps.get((cid, pid), 0), p, club))
+    out.sort(key=lambda t: (-t[0], t[1], t[2]["Name"]))
+    return out[:n]
+
+
 def results_of(career, club_id):
     """The results dict ("matchday" -> [...]) of the division this club plays in."""
     from career import divisions
@@ -168,6 +197,10 @@ def new_career(clubs, my_club, seed=None):
     from career import stadium
     stadium.sync(career)                 # (each ground's real capacity - career/stadium.py)
     divisions.start(career)              # the other division's fixtures (career/divisions.py)
+    from career import foreign
+    foreign.ensure(career)               # Germany's and Italy's leagues (career/foreign.py)
+    from career import cups
+    cups.create(career)                  # the season's cups (career/cups.py, career/europe.py)
     return career
 
 
@@ -225,12 +258,16 @@ def record_matchday(career, results):
 
 
 def new_season(career, seed=None):
-    from career import divisions
+    from career import divisions, cups
     divisions.season_end(career)         # the other division's last games (career/divisions.py)
+    cups.season_end(career)              # the cups finished, their winners recorded (career/cups.py)
+    from career import awards
+    awards.season(career)                # the season's awards (career/awards.py)
     t = table(career)
     tables = divisions.tables(career)    # {"pl": [...], "d1": [...]} (just yours in an older one-division world)
     up, down = divisions.movers(career, tables)     # promotion and relegation (play-offs: career/playoffs.py)
-    from career import finance, board
+    from career import finance, board, manager
+    manager.season_end(career, tables, up, down)    # your record and reputation (career/manager.py)
     board.season_review(career, t, up, down)        # the board's verdict (and maybe the sack)
     for tt in tables.values():
         finance.season_end(career, tt)   # merit payments, the season's accounts
@@ -239,6 +276,10 @@ def new_season(career, seed=None):
         crowds.season_end(career, tt)    # fan bases grow or shrink; this season's crowds filed
     from career import spain
     spain.season_end(career, random.Random(seed))       # Spain's last games, money, champions
+    from career import foreign
+    foreign.season_end(career, random.Random(seed))     # ...and Germany's and Italy's
+    from career import playerhist
+    playerhist.season_end(career)                        # every player's season in his career record
     from career import loans
     loans.season_end(career)                             # loans end: back to their clubs (or bought)
     from career import contracts
@@ -248,11 +289,14 @@ def new_season(career, seed=None):
         "champion": tables.get("pl", t)[0]["club"],
         "my_position": position_of(career, career["my_club"]),
         "division": divisions.my_div(career),
+        "year_end": career.get("year", FIRST_SEASON + career["season"] - 1) + 1,
         "tables": {d: [r["club"] for r in tt] for d, tt in tables.items()},
         "up": up, "down": down,
     })
     if up:
         divisions.promote(career, up, down)          # everyone changes division before the new fixtures
+    from career import manager
+    manager.summer(career)                           # a bigger club may want you (career/manager.py)
     career["season"] += 1
     career["fixtures"] = make_fixtures([c["id"] for c in divisions.clubs_in(career)], random.Random(seed))
     divisions.new_season(career, seed)   # the other division's fixtures
@@ -269,6 +313,8 @@ def new_season(career, seed=None):
     contracts.new_outside_players(career, rng)       # new free agents from outside the league
     contracts.ai_sign_free_agents(career, rng)       # AI clubs short of players sign some
     spain.summer(career, rng)                        # ...and the same summer in Spain
+    from career import foreign
+    foreign.summer(career, rng)                      # ...Germany and Italy
     contracts.trim_free_agents(career)
     finance.new_season(career, rng)                  # contracts for the youngsters, budgets
     from career import registration, transfers
@@ -280,6 +326,7 @@ def new_season(career, seed=None):
     from career import shapes
     shapes.ai_review(career)                         # pre-season: AI managers settle on a shape
     availability.fix_lineups(career, career["calendar"][0])
+    cups.create(career)                              # this season's cups (career/cups.py)
 
 
 def clubs_mod_overall(p):
@@ -359,6 +406,10 @@ def load(path=SAVE_FILE):
     stadium.sync(career)                 # (each ground's real capacity - career/stadium.py)
     from career import divisions
     divisions.ensure(career)             # (older saves: Division 1 arrives - career/divisions.py)
+    from career import foreign
+    foreign.ensure(career)               # (older saves: Germany and Italy - career/foreign.py)
+    from career import cups
+    cups.ensure(career)                  # (older saves: the cups start - career/cups.py)
     return career
 
 

@@ -324,15 +324,23 @@ def movers(career, tables):
 def promote(career, up, down):
     """Swap the clubs over; the news; your fixtures follow you."""
     from career import transfers as trf
+    from career import finance as fin
     for cid in up:
         career["clubs"][cid]["league"] = "pl"
     for cid in down:
         career["clubs"][cid]["league"] = "d1"
+    bills = {}
+    for cid in up:
+        fin.promoted(career, career["clubs"][cid])       # (the money follows: career/finance.py)
+    for cid in down:
+        bills[cid] = fin.relegated(career, career["clubs"][cid])
     nm = lambda cid: career["clubs"][cid]["name"]
     career["movements"] = career.get("movements", [])[-30:] + [{"year": career.get("year"), "up": up, "down": down}]
     trf._message(career, "news", f"Promoted to the Premier Division: {', '.join(nm(c) for c in up[:2])} "
                                  f"and play-off winners {nm(up[2])}.  Relegated to Division 1: "
                                  f"{', '.join(nm(c) for c in down)}.")
+    from career import media
+    media.season_moves(career, up, down)                 # (the papers)
     me = career["my_club"]
     if me in up:
         trf._message(career, "board", "Promotion! The board are delighted - welcome to the Premier Division. "
@@ -340,3 +348,10 @@ def promote(career, up, down):
     elif me in down:
         trf._message(career, "board", "Relegation. The board are bitterly disappointed - Division 1 next season, "
                                       "and the money that goes with it. They want us back up as soon as we can.")
+        b, a = bills.get(me, (0, 0))
+        f = career["clubs"][me]["finance"]
+        pc = f.get("parachute") or []
+        trf._message(career, "board", f"The money: parachute payments of {', '.join(fin.money(x) for x in pc)} over the "
+                                      f"next {len(pc)} seasons, as long as we stay down. Sponsors and ticket prices "
+                                      f"come down too. Relegation clauses cut the squad's wages from "
+                                      f"{fin.money(b * 52)} to {fin.money(a * 52)} a year.")

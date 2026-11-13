@@ -80,10 +80,46 @@ LEAGUE = {
     # central money ~£9m a club (basic award + the Premier League's solidarity payment), no merit
     # money; wage bills ~£9m (the smallest) to ~£65m (a big club just down - more with parachute
     # payments, which come next); grounds 10,000-38,000 about 80% full at ~£22-35 a ticket
+    # GERMANY and ITALY (career/foreign.py) - Deloitte's figures, roughly (2023/24, EUR at ~0.85): the
+    # Bundesliga's biggest wage bill ~£300m (one giant), the smallest ~£20m, grounds ~93% full and cheap
+    # tickets; Serie A's wage bills ~£230m down to ~£20m, grounds ~75% full, TV money shared more evenly
+    "de": {"wage_bill": (260 * M, 20 * M, 2.6), "capacity": (81_000, 15_000, 1.4), "ticket": (40, 22, 1.2),
+           "commercial": (450 * M, 8 * M, 4.0), "balance": (100 * M, 5 * M, 2.0), "crowd": 0.93,
+           "central": 40 * M, "size_share": (40 * M, 5 * M, 2.0), "merit": 1.0 * M},
+    "it": {"wage_bill": (230 * M, 18 * M, 2.2), "capacity": (75_000, 12_000, 1.4), "ticket": (45, 20, 1.3),
+           "commercial": (250 * M, 6 * M, 3.0), "balance": (60 * M, 3 * M, 2.0), "crowd": 0.75,
+           "central": 35 * M, "size_share": (50 * M, 5 * M, 2.0), "merit": 1.2 * M},
     "d1": {"wage_bill": (65 * M, 9 * M, 1.8), "capacity": (38_000, 10_000, 1.5), "ticket": (35, 22, 1.2),
-           "commercial": (35 * M, 3 * M, 2.0), "balance": (25 * M, 2 * M, 1.5), "crowd": 0.80,
+           "commercial": (25 * M, 2 * M, 2.0), "balance": (25 * M, 2 * M, 1.5), "crowd": 0.80,
            "central": 9 * M, "size_share": (0, 0, 1.0), "merit": 0},
 }
+
+
+# --- Going up and down (career/divisions.py) - the Premier League's real rules ------------
+# PARACHUTE PAYMENTS for a relegated club: 55% of the Premier League's equal share in the first
+# season down, 45% in the second, 20% in the third - the third only for a club that had more than
+# one season up (Premier League rules since 2016/17; ~£49m / £40m / £17m in 2023/24).  They stop if
+# the club goes back up.  Division 1 clubs WITHOUT parachute money get a "solidarity" payment
+# instead (30% of the third-year parachute, ~£5m - part of Division 1's central money above).
+PARACHUTE = (0.55, 0.45, 0.20)
+SOLIDARITY = 0.30 * 0.20 * EQUAL_SHARE
+# Sponsors, shirt deals and ticket prices follow a club up or down: a relegated club's commercial
+# income falls about a third at once (relegation clauses in shirt and kit deals), tickets ~15%;
+# a promoted club's climb part of the way at once.  Then, each summer, half of what's left of the
+# gap to a club of its size in its new division.
+DROP_COMMERCIAL, DROP_TICKET = 0.35, 0.15
+CLIMB_NOW = 0.4                          # promoted: this share of the gap straight away
+PROMOTED_LIFT = 1.3                      # ...to at least this x what it made in Division 1 (bonus clauses in kit deals)
+GLIDE = 0.5                              # each summer after: this share of what's left
+# RELEGATION WAGE CUTS: most Premier League contracts cut a player's wage if the club goes down -
+# usually 25-50% (Norwich 2022 and Tottenham's contracts: 50%; Arsenal's reportedly 25%).  Each
+# club has its standard clause; your contracts can set it player by player (career/contracts.py).
+CLUB_CLAUSES = (25, 30, 40, 40, 50)
+
+
+def club_clause(club):
+    """The club's standard relegation wage cut (%) - the same all career."""
+    return random.Random(f"clause:{club.get('name')}").choice(CLUB_CLAUSES)
 
 
 def league_of(club):
@@ -207,6 +243,8 @@ def league_clubs(career, club):
     lg = league_of(club)
     if lg == "es" and "spain" in career:
         return career["spain"]["clubs"]
+    if lg in ("de", "it") and "leagues" in career and lg in career["leagues"]:
+        return career["leagues"][lg]["clubs"]               # (career/foreign.py - from the real career)
     return [c for c in career["clubs"] if league_of(c) == lg]
 
 
@@ -260,13 +298,21 @@ def _empty_season():
             "wages": 0, "other": 0, "transfers_out": 0}
 
 
+def parachute_now(club):
+    """This season's parachute payment (instead of the solidarity payment) - 0 if none."""
+    pc = (club.get("finance") or {}).get("parachute") or []
+    if not pc or league_of(club) != "d1":
+        return 0.0
+    return pc[0] - SOLIDARITY
+
+
 def expected_income(career, club):
     f = club["finance"]
     lg = _lg(club)
     n = len(league_clubs(career, club))
     home_games = (n - 1)
     pos = size_rank(career, club) + 1                       # expected to finish about where they rank
-    central = lg["central"] + _size_share(career, club) + lg["merit"] * (n + 1 - pos)
+    central = lg["central"] + _size_share(career, club) + lg["merit"] * (n + 1 - pos) + parachute_now(club)
     gate = home_games * f["capacity"] * lg["crowd"] * f["ticket"]
     return central + gate + f["commercial"]
 
@@ -315,7 +361,7 @@ def month(career, club, m):
     f = club["finance"]
     income = 0.0
     if m in CENTRAL_MONTHS:
-        tv = (_lg(club)["central"] + _size_share(career, club)) / len(CENTRAL_MONTHS)
+        tv = (_lg(club)["central"] + _size_share(career, club) + parachute_now(club)) / len(CENTRAL_MONTHS)
         _book(club, "tv", tv)
         income += tv
     _book(club, "commercial", f["commercial"] / 12)
@@ -360,7 +406,11 @@ def season_end(career, table):
         income = s["tv"] + s["matchday"] + s["commercial"] + s["prize"] + s["transfers_in"]
         spend = s["wages"] + s["other"] + s["transfers_out"]
         f["history"].append({"year": career.get("year"), "position": pos, "income": income, "spend": spend,
-                             "profit": income - spend, "balance": f["balance"]})
+                             "profit": income - spend, "balance": f["balance"], "league": league_of(club)})
+        if f.get("parachute") and league_of(club) == "d1":
+            f["parachute"] = f["parachute"][1:]             # (that season's payment's been made)
+        if league_of(club) == "pl":
+            club["pl_seasons"] = club.get("pl_seasons", 5) + 1     # (seasons up in a row; the world's clubs: established)
         f["season"] = _empty_season()
 
 
@@ -374,6 +424,7 @@ def new_season(career, rng=None):
             continue
         n = league_size(career, c)
         r = size_rank(career, c)
+        _glide(c)
         for p in c["players"]:
             end = p.get("contract_end")
             if not end or cal.parse(end) < dt.date(year, 7, 1):
@@ -389,3 +440,68 @@ def ensure(career):
         init(career)
     elif missing:
         init(career, seed=career.get("year", 2026) + 1888, only=missing)
+
+
+# ---------------------------------------------------------------------------
+# Going up and down (career/divisions.py promote)
+# ---------------------------------------------------------------------------
+def _targets(career, club):
+    """What a club of this size makes in its (new) division: commercial income and ticket price."""
+    lg = _lg(club)
+    r, n = size_rank(career, club), league_size(career, club)
+    return _curve(*lg["commercial"], r, n), _curve(*lg["ticket"], r, n)
+
+
+def _glide(club):
+    f = club.get("finance") or {}
+    for k in ("commercial", "ticket"):
+        t = f.get(k + "_target")
+        if t is None:
+            continue
+        f[k] = round(f[k] + (t - f[k]) * GLIDE)
+        if abs(f[k] - t) <= 0.02 * t:
+            f[k] = round(t)
+            f.pop(k + "_target", None)
+
+
+def relegated(career, club):
+    """Down: the parachute, smaller sponsors and tickets, and the players' relegation clauses.
+    Returns (wage bill a week before, after)."""
+    f = club["finance"]
+    seasons = club.get("pl_seasons", 5)
+    f["parachute"] = [round(x * EQUAL_SHARE) for x in PARACHUTE[:3 if seasons > 1 else 2]]
+    club["pl_seasons"] = 0
+    com, tic = _targets(career, club)
+    f["commercial"] = round(f["commercial"] * (1 - DROP_COMMERCIAL))      # (never up on the way down)
+    f["ticket"] = round(f["ticket"] * (1 - DROP_TICKET))
+    f["commercial_target"], f["ticket_target"] = min(com, f["commercial"]), min(tic, f["ticket"])
+    before = after = 0
+    default = club_clause(club)
+    for p in club["players"]:
+        if p.get("loan") and p["loan"].get("from") != club["id"]:
+            continue                                     # (on loan here: his contract's with his own club)
+        w = p.get("wage", 0)
+        before += w
+        cut = p.get("releg_cut", default) or 0
+        if cut and w:
+            p["cut_from"] = w
+            p["wage"] = _round_wage(w * (1 - cut / 100.0))
+        after += p.get("wage", 0)
+    return before, after
+
+
+def promoted(career, club):
+    """Up: Premier Division money - the parachute stops; sponsors and tickets climb; any wages cut
+    by a relegation clause go back to what they were."""
+    f = club["finance"]
+    f["parachute"] = []
+    club["pl_seasons"] = 0
+    com, tic = _targets(career, club)
+    com = max(com, f["commercial"] * PROMOTED_LIFT)                      # (never down on the way up)
+    tic = max(tic, f["ticket"] * 1.1)
+    f["commercial"] = round(f["commercial"] + (com - f["commercial"]) * CLIMB_NOW)
+    f["ticket"] = round(f["ticket"] + (tic - f["ticket"]) * CLIMB_NOW)
+    f["commercial_target"], f["ticket_target"] = com, tic
+    for p in club["players"]:
+        if p.get("cut_from"):
+            p["wage"] = max(p.get("wage", 0), p.pop("cut_from"))

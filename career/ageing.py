@@ -231,6 +231,8 @@ def summer(career, rng=None):
             if rng.random() < retire_chance(p, c):
                 c["players"].remove(p)
                 _news(career, date, c["id"], f"{p['Name']} ({p['Pos']}) retires at {p['Age']}.", "squad")
+                from career import legends
+                legends.retired(career, c, p)            # (a club legend? - career/legends.py)
                 if is_me:
                     mine["retired"].append(p)
         # 2. A year older

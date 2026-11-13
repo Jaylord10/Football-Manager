@@ -1,0 +1,274 @@
+{
+ "id": 5,
+ "name": "Eastvale Wanderers",
+ "short": "Eastvale",
+ "nicknames": [
+  "Wanderers",
+  "the Dyers"
+ ],
+ "founded": 1871,
+ "location": {
+  "town": "Eastvale",
+  "county": "London",
+  "region": "London",
+  "about": "A borough of east London strung along the River Lea: once marshes, dye works, gasworks and the docks; now flats, offices and the tube. Half a million people within three miles of the ground - and the club with the most league titles in the south of England."
+ },
+ "colours": {
+  "rgb": [
+   150,
+   80,
+   180
+  ],
+  "story": "Purple and white. The club was started in 1871 by workers at the Lea Marsh dye works, where they made the new 'mauve' dye - the first colour ever made in a factory - and their shirts were the first thing they dyed with it.",
+  "home": {
+   "shirt": "purple with white collar and white cuffs",
+   "shorts": "white",
+   "socks": "purple",
+   "rgb": {
+    "shirt": [
+     110,
+     50,
+     150
+    ],
+    "trim": [
+     245,
+     245,
+     245
+    ],
+    "shorts": [
+     245,
+     245,
+     245
+    ],
+    "socks": [
+     110,
+     50,
+     150
+    ]
+   }
+  },
+  "away": {
+   "shirt": "white with a purple sash",
+   "shorts": "purple",
+   "socks": "white",
+   "rgb": {
+    "shirt": [
+     245,
+     245,
+     245
+    ],
+    "trim": [
+     110,
+     50,
+     150
+    ],
+    "shorts": [
+     110,
+     50,
+     150
+    ],
+    "socks": [
+     245,
+     245,
+     245
+    ]
+   }
+  },
+  "third": {
+   "shirt": "black with gold trim",
+   "shorts": "black",
+   "socks": "black",
+   "rgb": {
+    "shirt": [
+     24,
+     24,
+     28
+    ],
+    "trim": [
+     215,
+     175,
+     60
+    ],
+    "shorts": [
+     24,
+     24,
+     28
+    ],
+    "socks": [
+     24,
+     24,
+     28
+    ]
+   }
+  }
+ },
+ "rivals": [
+  {
+   "club": "Whitcombe City",
+   "derby": null,
+   "why": "the title race of the 2020s - Whitcombe beat them to it in 2021 and 2025, Eastvale won it in 2023 and beat them in the 2026 League Cup final"
+  },
+  {
+   "club": "Northwick FC",
+   "derby": null,
+   "why": "the old giants of north and south - from the 6-0 at Pithead Road in 1913 to the Shield final of 2006"
+  }
+ ],
+ "history": [
+  {
+   "years": "1871-1915",
+   "title": "The Dyers",
+   "text": "Founded in 1871 by the men of the Lea Marsh dye works. Founder members of the League in 1888 and second in its first season; relegated, back up in 1903, and champions in 1906 and 1907 - the first London club to win it. In 1913 they won 6-0 at Northwick."
+  },
+  {
+   "years": "1919-1955",
+   "title": "The cup that wouldn't come",
+   "text": "Second in 1947, champions in 1951 and 1953 - but the Association Cup final was lost in 1891, 1904, 1906, 1927 and 1952. 'The Curse of the Cup' was a music-hall joke before the club was fifty."
+  },
+  {
+   "years": "1955-1970",
+   "title": "Kings of the continent",
+   "text": "Champions in 1957, 1962 and 1968. In 1958, a year after Harrowby, Eastvale won the Continental Champions' Cup, beating Real Castellar; in 1963 they won it again, with the League Cup and the World Club Trophy (and the League Cup again in 1964). Two more finals were lost, in 1964 and 1969."
+  },
+  {
+   "years": "1970-1999",
+   "title": "The curse lifted",
+   "text": "Champions again in 1987 - and in 1988, after eight lost finals in ninety-seven years, the Association Cup at last. The Continental Shield in 1996 and 1998, the League Cup in 1998."
+  },
+  {
+   "years": "1999-2001",
+   "title": "Down and up",
+   "text": "The money ran out: relegated in 2000, the same spring they won the League Cup. They won it again in 2001 as a Second Division club - and won the Second Division too."
+  },
+  {
+   "years": "2001-now",
+   "title": "Back at the top",
+   "text": "Champions in 2004 (with a 7-0 at Kingsmere), the Association Cup in 2005, 2015 and 2025, the Shield in 2016, the title again in 2023 and the League Cup in 2020, 2023 and 2026. But second place seven times since 2007, and the 2021 Champions' Cup final lost to Celtic Harbour."
+  }
+ ],
+ "honours_note": "League seasons are given by the year they ended (1906 = 1905-06).",
+ "legends": [
+  {
+   "name": "Alf Mercer",
+   "role": "Manager 1951-1972",
+   "note": "Five titles and both Champions' Cups. The Mercer Stand is named after him."
+  },
+  {
+   "name": "Johnny Haig",
+   "role": "Inside-forward 1953-1968",
+   "note": "Scored in both Champions' Cup finals; 296 goals - the club record."
+  },
+  {
+   "name": "Ted Varley",
+   "role": "Captain, centre-half 1956-1973",
+   "note": "702 appearances - the club record."
+  },
+  {
+   "name": "Dennis Okoro",
+   "role": "Striker 1982-1993",
+   "note": "The 1987 title and the 1988 cup that ended the curse."
+  },
+  {
+   "name": "Paolo Ferrante",
+   "role": "Manager 2001-2012",
+   "note": "Took over a Second Division club and won the title three years later."
+  },
+  {
+   "name": "Kofi Mensah-Bright",
+   "role": "Midfielder 2016-",
+   "note": "Captain of the 2023 champions."
+  }
+ ],
+ "records": {
+  "attendance": "71,233 v Northwick FC, League, 1951 (old Marsh Lane, before seating)",
+  "win": "10-0 v Darnford Albion, League, 1906",
+  "defeat": "1-8 v Westmoor County, League, 1999",
+  "top_scorer": "Johnny Haig, 296 goals (1953-1968)",
+  "appearances": "Ted Varley, 702 (1956-1973)",
+  "season_goals": "Johnny Haig, 44 (1956-57)"
+ },
+ "badge": {
+  "about": "The dye-works chimney and the River Lea for where the club began; the star for the Champions' Cups; the purple and white of the first shirts. Motto 'Tinctus Vincit' - the dyed one conquers.",
+  "design": "A round badge: a purple roundel with a white ring around it. In the centre a white factory chimney with a wisp of smoke, above two wavy white lines for the river. A small gold star above the chimney. 'EASTVALE WANDERERS' in purple capitals around the white ring, with '1871' at the bottom."
+ },
+ "ground": {
+  "name": "Marsh Lane",
+  "known_as": "the Lane",
+  "opened": 1896,
+  "capacity": 60200,
+  "pitch": {
+   "length_m": 105,
+   "width_m": 68,
+   "surface": "hybrid grass",
+   "runoff": "tight - the old ground's footprint"
+  },
+  "stands": [
+   {
+    "name": "Mercer Stand",
+    "side": "west",
+    "built": 2001,
+    "tiers": 2,
+    "capacity": 16000,
+    "roof": "cantilever",
+    "features": "the main stand: dressing rooms, tunnel and dugouts, boxes; Alf Mercer's statue holding the 1958 cup",
+    "expandable": false
+   },
+   {
+    "name": "Dyers End",
+    "side": "south",
+    "built": 1994,
+    "tiers": 2,
+    "capacity": 14500,
+    "roof": "cantilever",
+    "features": "the home end - two tiers in purple seats, the dye-works chimney (kept when the works came down) right behind it",
+    "expandable": false
+   },
+   {
+    "name": "Lea Stand",
+    "side": "east",
+    "built": 2012,
+    "tiers": 3,
+    "capacity": 18700,
+    "roof": "a modern roof with a glass edge",
+    "features": "three tiers along the river, the biggest stand; the club museum and the trophy room",
+    "expandable": false
+   },
+   {
+    "name": "Gasworks End",
+    "side": "north",
+    "built": 1972,
+    "tiers": 2,
+    "capacity": 11000,
+    "roof": "1970s cantilever",
+    "features": "away fans in the lower tier; the old gasholder frame behind it, now ringed with flats",
+    "expandable": true
+   }
+  ],
+  "corners": "the southern corners filled in; open corners at the north end",
+  "roof": "four separate roofs, the Lea Stand's highest",
+  "surroundings": "the River Lea and its towpath along the east side; the old dye-works chimney behind the Dyers End; a gasholder frame turned into flats; tower blocks and the City's skyscrapers in the distance",
+  "atmosphere": "tight and loud - the old ground's stands are close to the pitch, and the Dyers End is famous for it",
+  "for_the_engine": {
+   "home_end": "south",
+   "away_fans": "north stand, lower tier",
+   "dugouts": "west side, halfway line",
+   "pitch_m": [
+    105,
+    68
+   ],
+   "notes": "a tight old ground"
+  },
+  "images": {
+   "crest": "data/world/clubs/eastvale/crest.png",
+   "inside": "data/world/clubs/eastvale/inside.jpg",
+   "aerial": "data/world/clubs/eastvale/aerial.jpg"
+  }
+ },
+ "image_prompts": {
+  "badge": "A football club crest for 'Eastvale Wanderers', founded 1871, a big east London club. A purple roundel inside a white ring. In the centre a white factory chimney with a wisp of smoke, above two wavy white lines for a river. A small gold star above the chimney. 'EASTVALE WANDERERS' in purple serif capitals around the white ring, with '1871' at the bottom of the ring. Flat vector emblem, clean bold lines, limited colours (purple, white, a touch of gold), centred, on a plain transparent background, square format, no other text.",
+  "ground_inside": "Photorealistic wide-angle photo inside a 60,000-seat English football stadium on a bright autumn afternoon, 30 minutes before kick-off. Camera: high in the main stand on the halfway line, looking across the pitch. OPPOSITE: a big three-tier modern stand with a glass-edged roof, filling up with fans in purple. LEFT END: a two-tier home end PACKED with fans in purple and white, flags and a banner of a factory chimney; an old brick chimney visible above its roof. RIGHT END: an older two-tier 1970s stand with away fans in the lower tier. Stands close to the pitch, the corners at one end open. Players warming up in purple shirts with white collars and white shorts. The City of London's skyscrapers far away on the skyline.",
+  "ground_aerial": "Aerial drone photograph of a 60,000-seat English football stadium in east London: four separate stands of different ages tight around the pitch, the tallest a three-tier stand along a river with a towpath. A tall old brick factory chimney standing on its own behind one end, a Victorian gasholder frame filled with flats behind the other. Tower blocks, railway lines and the City of London's skyscrapers in the distance. Photorealistic, late afternoon light.",
+  "kits": "Three football kits for Eastvale Wanderers laid out flat side by side on a plain light background, product-photo style. Home: purple shirt with white collar and white cuffs, white shorts, purple socks. Away: white shirt with a purple diagonal sash, purple shorts, white socks. Third: black shirt with gold trim, black shorts, black socks. A small club crest on the left chest of each shirt. No sponsor logos, no other text."
+ },
+ "support": 80000
+}

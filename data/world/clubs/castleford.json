@@ -1,0 +1,279 @@
+{
+ "id": 6,
+ "name": "Castleford Rangers",
+ "short": "Castleford",
+ "nicknames": [
+  "Rangers",
+  "the Glassmen"
+ ],
+ "founded": 1872,
+ "location": {
+  "town": "Castleford",
+  "county": "Yorkshire",
+  "region": "West Riding, North of England",
+  "about": "A town of about 95,000 eleven miles down the River Wick from Northwick, where the Wick meets the Aire. Coal and glass made it: the pits ringed the town and the great glassworks by the river blew bottles for half the country. The last pit closed in 1986 and the glassworks in 2002, but the furnace chimney still stands by the river - and the football club is still called the Glassmen."
+ },
+ "colours": {
+  "rgb": [
+   20,
+   60,
+   140
+  ],
+  "story": "Royal blue for the glassworks' famous blue bottles, and white sleeves since 1921 - the year of the first title - when the captain, Harold Pickersgill, cut the sleeves off his shirt in a heatwave and the club made it the kit.",
+  "home": {
+   "shirt": "royal blue with white sleeves and a white collar",
+   "shorts": "white",
+   "socks": "blue with white tops",
+   "rgb": {
+    "shirt": [
+     24,
+     70,
+     160
+    ],
+    "trim": [
+     245,
+     245,
+     245
+    ],
+    "shorts": [
+     245,
+     245,
+     245
+    ],
+    "socks": [
+     24,
+     70,
+     160
+    ]
+   }
+  },
+  "away": {
+   "shirt": "amber with a navy collar and navy cuffs",
+   "shorts": "navy",
+   "socks": "amber",
+   "rgb": {
+    "shirt": [
+     235,
+     160,
+     40
+    ],
+    "trim": [
+     18,
+     28,
+     60
+    ],
+    "shorts": [
+     18,
+     28,
+     60
+    ],
+    "socks": [
+     235,
+     160,
+     40
+    ]
+   }
+  },
+  "third": {
+   "shirt": "navy with thin royal-blue pinstripes",
+   "shorts": "navy",
+   "socks": "navy",
+   "rgb": {
+    "shirt": [
+     18,
+     28,
+     60
+    ],
+    "trim": [
+     24,
+     70,
+     160
+    ],
+    "shorts": [
+     18,
+     28,
+     60
+    ],
+    "socks": [
+     18,
+     28,
+     60
+    ]
+   }
+  }
+ },
+ "rivals": [
+  {
+   "club": "Northwick FC",
+   "derby": "the West Riding Derby",
+   "why": "the big city eleven miles up the Wick - first played in 1873, older than the League itself; Northwick have the money and the trophies, Castleford have the grudge"
+  },
+  {
+   "club": "Kingsmere City",
+   "derby": null,
+   "why": "the 1966 title race, won on the last day at Kingsmere, and a run of bad-tempered cup ties in the eighties"
+  }
+ ],
+ "history": [
+  {
+   "years": "1872-1888",
+   "title": "Glassblowers and pitmen",
+   "text": "Founded in 1872 by workers from the riverside glassworks and the Wheldale pit. The first West Riding Derby, against Northwick in 1873, was abandoned when the crowd came onto the pitch - a tradition, some say, that has never quite died."
+  },
+  {
+   "years": "1888-1915",
+   "title": "Always second",
+   "text": "League runners-up in 1892, 1898, 1899 and 1903 - four times the bridesmaid in twelve years. Moved to Wickside, on the river bank by the glassworks, in 1901."
+  },
+  {
+   "years": "1919-1939",
+   "title": "The first titles",
+   "text": "Champions at last in 1921, the year of Harold Pickersgill's white sleeves, and again in 1931. Second in 1922, 1925, 1930 and 1937 - and the Association Cup in 1937."
+  },
+  {
+   "years": "1946-1965",
+   "title": "Down and back",
+   "text": "Relegated for the only time in their first-class history in 1949. Back up as Second Division champions in 1952, and second again in 1963 with a young side built by Bill Shackleton."
+  },
+  {
+   "years": "1965-1990",
+   "title": "Shackleton's champions",
+   "text": "Bill Shackleton's team won the title in 1966 on the last day, at Kingsmere. Champions again in 1979 - a point ahead of Northwick, the sweetest of them all - and in 1983, with the Association Cup in 1984 and 1986 and the League Cup in 1989."
+  },
+  {
+   "years": "1990-2010",
+   "title": "Wickside reborn",
+   "text": "Wickside was rebuilt through the nineties. Champions in 2001, runners-up three seasons running from 2004, and in 2006 the best year in the club's history: the Continental Champions' Cup, the World Club Trophy, the Association Cup and the League Cup."
+  },
+  {
+   "years": "2010-now",
+   "title": "Still standing",
+   "text": "Titles in 2011 and 2017, the Association Cup in 2020 and the League Cup in 2021. Northwick are bigger and richer, but Castleford have beaten them to the title three times - and the town reminds them every derby day."
+  }
+ ],
+ "honours_note": "League seasons are given by the year they ended (1921 = 1920-21).",
+ "legends": [
+  {
+   "name": "Bill Shackleton",
+   "role": "Manager 1960-1984",
+   "note": "Three titles and the 1984 Association Cup. The Shackleton Stand is named after him."
+  },
+  {
+   "name": "Harold Pickersgill",
+   "role": "Captain, wing-half 1912-1928",
+   "note": "Captain of the first title side - and the man behind the white sleeves."
+  },
+  {
+   "name": "Dennis Roebuck",
+   "role": "Centre-forward 1957-1971",
+   "note": "246 goals - the club record."
+  },
+  {
+   "name": "Tony Barraclough",
+   "role": "Full-back 1962-1980",
+   "note": "689 appearances - the club record."
+  },
+  {
+   "name": "Gareth Hollis",
+   "role": "Manager 1999-2012",
+   "note": "Two titles and the 2006 Continental Champions' Cup."
+  },
+  {
+   "name": "Marco Di Salvo",
+   "role": "Striker 2003-2011",
+   "note": "Scored twice in the 2006 Champions' Cup final."
+  }
+ ],
+ "records": {
+  "attendance": "68,207 v Northwick FC, League, 1966 (old Wickside)",
+  "win": "9-0 v Penrith Forge, League, 1931",
+  "defeat": "1-8 v Northwick FC, League, 1904",
+  "top_scorer": "Dennis Roebuck, 246 goals (1957-1971)",
+  "appearances": "Tony Barraclough, 689 (1962-1980)",
+  "season_goals": "Dennis Roebuck, 39 (1965-66)"
+ },
+ "badge": {
+  "about": "The glassworks' furnace chimney and a blue glass bottle for the town's trade; the crossed picks for the pits; the white rose for Yorkshire; 1872 for the year. Motto 'Ex Igne Lux' - out of the fire, light.",
+  "design": "A royal-blue roundel with a thin white border. In the centre, a white glassworks chimney with a curl of white smoke, and in front of it a blue glass bottle outlined in white. Two crossed white miner's picks behind the chimney. A small white Yorkshire rose at the top. '1872' in white at the bottom. 'CASTLEFORD RANGERS' in white capitals around the ring, and a white ribbon beneath reading 'EX IGNE LUX' in blue."
+ },
+ "ground": {
+  "name": "Wickside",
+  "known_as": "Wickside",
+  "opened": 1901,
+  "capacity": 48500,
+  "pitch": {
+   "length_m": 105,
+   "width_m": 68,
+   "surface": "hybrid grass",
+   "runoff": "medium"
+  },
+  "stands": [
+   {
+    "name": "Shackleton Stand",
+    "side": "west",
+    "built": 1998,
+    "tiers": 2,
+    "capacity": 13500,
+    "roof": "cantilever",
+    "features": "the main stand: dressing rooms, tunnel and dugouts on the halfway line, boxes between the tiers; Bill Shackleton's statue outside",
+    "expandable": false
+   },
+   {
+    "name": "Glassworks End",
+    "side": "north",
+    "built": 1994,
+    "tiers": 1,
+    "capacity": 15000,
+    "roof": "cantilever with a steep white truss",
+    "features": "the home end - one huge steep single tier, the old kop rebuilt with seats; the glassworks' brick furnace chimney stands right behind it by the river; a giant 'EX IGNE LUX' flag",
+    "expandable": false
+   },
+   {
+    "name": "East Stand",
+    "side": "east",
+    "built": 1974,
+    "tiers": 2,
+    "capacity": 12000,
+    "roof": "1970s cantilever on a big steel frame",
+    "features": "two tiers under a big 1970s cantilever roof, starting to show its age; family section in the lower tier; the River Wick and the old towpath right behind it",
+    "expandable": true
+   },
+   {
+    "name": "Aire Road End",
+    "side": "south",
+    "built": 1996,
+    "tiers": 2,
+    "capacity": 8000,
+    "roof": "cantilever",
+    "features": "away fans in the upper tier; the big screen in the corner",
+    "expandable": false
+   }
+  ],
+  "corners": "the two northern corners filled in with seats (2004); the southern corners open",
+  "roof": "four separate cantilever roofs, the East Stand's older and lower",
+  "surroundings": "the River Wick along the east side, the glassworks' furnace chimney and old brick sheds behind the Glassworks End, terraced streets and a rugby ground to the south, the green-capped spoil heaps of the old pits on the skyline",
+  "atmosphere": "the Glassworks End is one of the loudest home ends in the country; derby days against Northwick are ferocious",
+  "for_the_engine": {
+   "home_end": "north",
+   "away_fans": "south upper tier",
+   "dugouts": "west side, halfway line",
+   "pitch_m": [
+    105,
+    68
+   ],
+   "notes": "a standard-sized pitch; a big, steep home end"
+  },
+  "images": {
+   "crest": "data/world/clubs/castleford/crest.png",
+   "inside": "data/world/clubs/castleford/inside.jpg",
+   "aerial": "data/world/clubs/castleford/aerial.jpg"
+  }
+ },
+ "image_prompts": {
+  "badge": "A football club crest for 'Castleford Rangers', founded 1872, a historic Yorkshire coal and glassmaking town club. A royal-blue circular roundel with a thin white border. In the centre, a white industrial glassworks chimney with a curl of white smoke, and in front of it a blue glass bottle outlined in white. Two crossed white miner's pickaxes behind the chimney. A small white Yorkshire rose at the top. '1872' in white at the bottom. 'CASTLEFORD RANGERS' in white capitals around the ring. A white ribbon beneath the roundel reading 'EX IGNE LUX' in blue capitals. Flat vector emblem, clean bold lines, limited colours (royal blue, white), centred, on a plain transparent background, square format, no other text.",
+  "ground_inside": "Photorealistic wide-angle photo inside a 48,500-seat English football stadium on a cold, clear Yorkshire evening under floodlights, 30 minutes before kick-off. Camera: high in the main stand, on the halfway line, looking across the pitch. OPPOSITE: an older two-tier 1970s stand with blue seats under a big steel-framed cantilever roof, half full. LEFT END: one enormous steep single-tier home end, already PACKED with fans in royal blue and white, a giant flag reading 'EX IGNE LUX' - and right behind it, taller than the stand's roof, an old red-brick industrial furnace chimney. RIGHT END: a smaller two-tier stand, away fans arriving in the upper tier. The two corners on the left are filled in with seats; the right-hand corners are open. Players warming up in royal-blue shirts with white sleeves and white shorts. Green spoil heaps and a river glinting beyond the stands.",
+  "ground_aerial": "Aerial drone photograph of a 48,500-seat English football ground in a Yorkshire town, early evening: four separate stands with blue roofs, one end a single huge steep stand, the opposite side an older two-tier stand with a 1970s steel-framed roof; a river runs right along that side with an old towpath. Behind the big end, a tall red-brick industrial chimney and old brick factory sheds. Around it: rows of terraced houses, a rugby league ground nearby, green-capped former colliery spoil heaps and farmland in the distance. Photorealistic, soft light.",
+  "kits": "Three football kits for Castleford Rangers laid out flat side by side on a plain light background, product-photo style. Home: royal blue shirt with white sleeves and a white collar, white shorts, blue socks with white tops. Away: amber shirt with navy collar and cuffs, navy shorts, amber socks. Third: navy shirt with thin royal-blue pinstripes, navy shorts, navy socks. A small club crest on the left chest of each shirt. No sponsor logos, no other text."
+ },
+ "support": 64000
+}

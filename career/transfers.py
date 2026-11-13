@@ -159,7 +159,10 @@ def refresh_abroad(career, rng):
 
 
 def spain_clubs(career):
-    return career["spain"]["clubs"] if "spain" in career else []
+    """The clubs abroad we trade with: Spain's, Germany's and Italy's (career/spain.py, career/foreign.py)."""
+    from career import foreign
+    out = career["spain"]["clubs"] if "spain" in career else []
+    return out + [c for cfg in foreign.LEAGUES for c in foreign.clubs(career, cfg)]
 
 
 def seller(career, cid):
@@ -168,6 +171,9 @@ def seller(career, cid):
     if cid == -1:
         from career import contracts
         return contracts.free_agents(career)
+    from career import foreign
+    if foreign.league_of_id(cid) is not None:
+        return foreign.club(career, cid)
     if cid >= ID_SPAIN:
         return career["spain"]["clubs"][cid - ID_SPAIN]
     return career["clubs"][cid]
@@ -605,6 +611,8 @@ def move_player(career, from_cid, to_cid, p, fee, years=1, date=None):
             fin._book(seller(career, so["to"]), "transfers_in", cut)
     p.pop("addon", None)
     from_name = p.get("_from_club", "?") if from_cid == -1 else club_name_of(career, from_cid, p)
+    from career import playerhist
+    playerhist.leaving(career, from_cid, p)              # his games for them this season (his career record)
     src["players"].remove(p)
     if from_cid >= 0:
         if p["id"] in (src.get("lineup") or {}).values():
@@ -618,7 +626,8 @@ def move_player(career, from_cid, to_cid, p, fee, years=1, date=None):
         p["abroad_club"] = random.Random(p["Name"]).choice(FOREIGN_CLUBS)
     p["_from_club"] = from_name
     p["joined"] = date
-    if to_cid >= ID_SPAIN:
+    from career import foreign
+    if to_cid >= ID_SPAIN and foreign.league_of_id(to_cid) is None:
         from career import spain
         spain.arrives(p)                                 # EU passport or not
     p["condition"] = p.get("condition", 1.0)
@@ -731,6 +740,10 @@ def on_day(career, iso, rng):
     bids_day(career, iso, rng)                          # answers to your bids (and rivals)
     from career import spain
     spain.day(career, iso, rng)                         # the Spanish league's day
+    from career import foreign
+    foreign.day(career, iso, rng)                       # Germany's and Italy's leagues (career/foreign.py)
+    from career import cups
+    cups.day(career, iso, rng)                          # the cups: draws, and everyone else's ties (career/cups.py)
 
 
 def search(career, pos=None, max_age=None, max_fee=None, source="all", limit=200, for_sale=False, sort="rating"):
@@ -785,7 +798,7 @@ ELITE_ABROAD = 0.08          # share of the players abroad who are genuinely wor
 # The other league: clubs mostly buy at home (LaLiga clubs sign few players from the Premier League;
 # Premier League clubs buy from Spain more often; the biggest clubs shop everywhere) - per attempt,
 # the chance a club looks there at all: this for the smallest, rising to 1 for the biggest
-LOOK_ABROAD = {"pl": 0.4, "es": 0.15, "d1": 0.12}
+LOOK_ABROAD = {"pl": 0.4, "es": 0.15, "d1": 0.12, "de": 0.25, "it": 0.2}
 JUST_SIGNED_DAYS = 330       # a club doesn't sell a player it signed this recently (to an AI club; you pay more)
 JUST_SIGNED_PRICE = 1.25
 WINDOW_SQUAD_MIN = 22        # in a window, an AI club below this signs a free agent now and then

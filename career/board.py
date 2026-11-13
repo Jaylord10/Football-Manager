@@ -213,12 +213,17 @@ def sack(career, why):
     me = career["clubs"][career["my_club"]]
     b.setdefault("career_log", []).append({"club": me["name"], "until": career.get("date"), "why": why})
     career["stop"] = True                       # (Continue halts here)
+    from career import manager
+    manager.sacked(career, why)                 # your record and reputation (career/manager.py)
 
 
 def job_offers(career, rng=None):
     """Clubs that would take you on: a few, usually smaller than the one that sacked you."""
     rng = rng or random.Random(career.get("date"))
     me = career["clubs"][career["my_club"]]
+    from career import manager, divisions
+    if divisions.exists(career):
+        return manager.job_offers(career, rng)  # (the clubs your reputation reaches - career/manager.py)
     r = fin.size_rank(career, me)
     order = sorted(career["clubs"], key=lambda c: fin.size_rank(career, c))
     pool = [c for c in order if c["id"] != me["id"] and fin.size_rank(career, c) >= min(r + 2, len(order) - 4)]
@@ -232,6 +237,8 @@ def take_job(career, club_id):
     from career import availability as av, registration
     old = career["clubs"][career["my_club"]]
     career["my_club"] = club_id
+    from career import manager
+    manager.joined(career, club_id)
     from career import divisions
     divisions.follow(career)                    # (a job in the other division: its fixtures become yours)
     b = state(career)
