@@ -4,7 +4,7 @@ career/playerhist.py
 Every player's career record, season by season - like the "career" table on a real player's page:
 
     2026-27  Northwick (loan)   24 games  7 goals  (cups: 2)   League champions
-    2027-28  Ashvale            31 games 12 goals  (cups: 4)   Association Cup
+    2027-28  Ashvale            31 games 12 goals  (cups: 4)   Founders' Cup
 
 The record starts with the first season of the career (the world has no stats from before).  A line is
 written:
@@ -145,13 +145,16 @@ def _honours(career):
     return out
 
 
-SHORT_NAMES = {"association_cup": "Association Cup", "league_cup": "League Cup", "champions_cup": "Champions' Cup",
-               "shield": "Continental Shield", "world_club": "World Club Trophy"}
+SHORT_NAMES = {"association_cup": "Founders' Cup", "league_cup": "Charter Cup", "champions_cup": "Crown of Europe",
+               "shield": "Europa Trophy", "world_club": "Intercontinental Cup"}
 
 
 SHORT_WON = {"League champions": "Champions", "Division 1 champions": "D1 champions",
-             "Association Cup": "Assoc. Cup", "Champions' Cup": "Champions' Cup", "Continental Shield": "Shield",
-             "World Club Trophy": "World Club"}
+             "Founders' Cup": "Founders' Cup", "Crown of Europe": "Crown of Europe", "Europa Trophy": "Europa Trophy",
+             "Intercontinental Cup": "Intercontinental",
+             # (records written before the cups were renamed)
+             "Association Cup": "Founders' Cup", "League Cup": "Charter Cup", "Champions' Cup": "Crown of Europe",
+             "Continental Shield": "Europa Trophy", "World Club Trophy": "Intercontinental"}
 
 
 def season_end(career):

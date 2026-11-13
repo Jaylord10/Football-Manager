@@ -118,7 +118,7 @@
     {
       "years": "1867-1888",
       "title": "Pitmen and old boys",
-      "text": "Founded in 1867 at the Northwick Mechanics' Institute by miners from Wick Main Colliery - one of the oldest clubs in the world. They picked black shirts because coal dust never showed. Association Cup winners in 1876 and 1882, when the cup was still won by amateurs."
+      "text": "Founded in 1867 at the Northwick Mechanics' Institute by miners from Wick Main Colliery - one of the oldest clubs in the world. They picked black shirts because coal dust never showed. Founders' Cup winners in 1876 and 1882, when the cup was still won by amateurs."
     },
     {
       "years": "1888-1915",
@@ -128,32 +128,32 @@
     {
       "years": "1919-1939",
       "title": "So near",
-      "text": "Runners-up three times in the twenties, champions again in 1934-35. A record 84,569 squeezed into Pithead Road for the Association Cup in 1938. The 1921 lockout and the 1926 strike hit the city hard; the club let miners in for a penny."
+      "text": "Runners-up three times in the twenties, champions again in 1934-35. A record 84,569 squeezed into Pithead Road for the Founders' Cup in 1938. The 1921 lockout and the 1926 strike hit the city hard; the club let miners in for a penny."
     },
     {
       "years": "1946-1958",
       "title": "Grey years, a cup",
-      "text": "Twice runners-up in the early fifties and Association Cup winners in 1956, but no title for a quarter of a century. Then the board gave the job to a 38-year-old from the pit villages: Jack Brearley."
+      "text": "Twice runners-up in the early fifties and Founders' Cup winners in 1956, but no title for a quarter of a century. Then the board gave the job to a 38-year-old from the pit villages: Jack Brearley."
     },
     {
       "years": "1958-1978",
       "title": "Brearley's Colliers",
-      "text": "Jack Brearley built the club that the modern Northwick stands on. Champions in 1959-60 and 1963-64, the League Cup in 1965, and on 2 June 1971 Northwick beat FC Rheinfeld to win the Continental Champions' Cup - Ray Mitchell lifting it - and then the World Club Trophy that winter. Three more titles in the seventies, fought out every year with Tommy Haworth's Ashvale."
+      "text": "Jack Brearley built the club that the modern Northwick stands on. Champions in 1959-60 and 1963-64, the Charter Cup in 1965, and on 2 June 1971 Northwick beat FC Rheinfeld to win the Crown of Europe - Ray Mitchell lifting it - and then the Intercontinental Cup that winter. Three more titles in the seventies, fought out every year with Tommy Haworth's Ashvale."
     },
     {
       "years": "1978-1993",
       "title": "The pits close",
-      "text": "Titles in 1980 (Ashvale second), 1981 and 1986, and the Association Cup in 1978 and 1991. But the city was losing its pits one by one, and when Wick Main closed in 1993 the club wore black armbands for a month. In 1990 they beat Ashvale 8-0 at Pithead Road - still talked about on both sides of the Pennines."
+      "text": "Titles in 1980 (Ashvale second), 1981 and 1986, and the Founders' Cup in 1978 and 1991. But the city was losing its pits one by one, and when Wick Main closed in 1993 the club wore black armbands for a month. In 1990 they beat Ashvale 8-0 at Pithead Road - still talked about on both sides of the Pennines."
     },
     {
       "years": "1993-2011",
       "title": "The Eriksen era",
-      "text": "Champions again in 1994; then, under the Danish coach Lars Eriksen (1997-2011) Northwick became the biggest club in the country: champions in 1999, 2000, 2003, 2005 and 2008, Continental Shield winners in 2006 and 2007. In 2003 they left Pithead Road for the new Wick Main Stadium, built on the site of the old colliery. Only one thing went wrong - three Continental Champions' Cup finals, in 2000, 2005 and 2010, all lost - the first two to Stonecross Albion, of all clubs."
+      "text": "Champions again in 1994; then, under the Danish coach Lars Eriksen (1997-2011) Northwick became the biggest club in the country: champions in 1999, 2000, 2003, 2005 and 2008, Europa Trophy winners in 2006 and 2007. In 2003 they left Pithead Road for the new Wick Main Stadium, built on the site of the old colliery. Only one thing went wrong - three Crown of Europe finals, in 2000, 2005 and 2010, all lost - the first two to Stonecross Albion, of all clubs."
     },
     {
       "years": "2011-now",
       "title": "The machine",
-      "text": "Titles in 2012, 2014 (Ashvale second), 2016 and 2022, four League Cups in five years from 2011, the Association Cup in 2013 and 2018, and the Continental Shield again in 2024. Rich, ruthless and expected to win everything - and the only club that still worries Ashvale more than Bramhall do."
+      "text": "Titles in 2012, 2014 (Ashvale second), 2016 and 2022, four Charter Cups in five years from 2011, the Founders' Cup in 2013 and 2018, and the Europa Trophy again in 2024. Rich, ruthless and expected to win everything - and the only club that still worries Ashvale more than Bramhall do."
     }
   ],
   "honours": {
@@ -190,7 +190,7 @@
       1968,
       1979
     ],
-    "Association Cup": [
+    "Founders' Cup": [
       1876,
       1882,
       1956,
@@ -200,7 +200,7 @@
       2013,
       2018
     ],
-    "League Cup": [
+    "Charter Cup": [
       1965,
       1977,
       1987,
@@ -211,20 +211,20 @@
       2013,
       2015
     ],
-    "Continental Champions' Cup": [
+    "Crown of Europe": [
       1971
     ],
-    "Continental Champions' Cup runners-up": [
+    "Crown of Europe runners-up": [
       2000,
       2005,
       2010
     ],
-    "Continental Shield": [
+    "Europa Trophy": [
       2006,
       2007,
       2024
     ],
-    "World Club Trophy": [
+    "Intercontinental Cup": [
       1971
     ]
   },
@@ -233,12 +233,12 @@
     {
       "name": "Jack Brearley",
       "role": "Manager 1958-1978",
-      "note": "Five titles, the Continental Champions' Cup and the World Club Trophy. The Brearley Stand is named after him."
+      "note": "Five titles, the Crown of Europe and the Intercontinental Cup. The Brearley Stand is named after him."
     },
     {
       "name": "Ray Mitchell",
       "role": "Captain, wing-half 1962-1977",
-      "note": "Lifted the Continental Champions' Cup in 1971."
+      "note": "Lifted the Crown of Europe in 1971."
     },
     {
       "name": "Harry Lockwood",
@@ -253,7 +253,7 @@
     {
       "name": "Lars Eriksen",
       "role": "Manager 1997-2011",
-      "note": "Five titles and two Continental Shields - but three lost Champions' Cup finals."
+      "note": "Five titles and two Europa Trophies - but three lost Crown of Europe finals."
     },
     {
       "name": "Kwame Asante",
@@ -262,7 +262,7 @@
     }
   ],
   "records": {
-    "attendance": "84,569 v Kingsmere City, Association Cup quarter-final, 1938 (Pithead Road); 74,988 v Ashvale Rovers, League, 2014 (Wick Main)",
+    "attendance": "84,569 v Kingsmere City, Founders' Cup quarter-final, 1938 (Pithead Road); 74,988 v Ashvale Rovers, League, 2014 (Wick Main)",
     "win": "11-1 v Holloway Vale, League, 1931",
     "defeat": "0-6 v Eastvale Wanderers, League, 1913",
     "top_scorer": "Harry Lockwood, 312 goals (1951-1965)",

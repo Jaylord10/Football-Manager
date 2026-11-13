@@ -118,7 +118,7 @@
   {
    "years": "1874-1890",
    "title": "Cup kings",
-   "text": "Founded in 1874 as Bramhall Mechanics by spinners and fitters from the Hargreaves works. Before the League even existed they were the best cup side in the north: Association Cup winners in 1879, 1884, 1886 and 1889. The first Cotton Derby, in 1880, ended in a riot on the towpath."
+   "text": "Founded in 1874 as Bramhall Mechanics by spinners and fitters from the Hargreaves works. Before the League even existed they were the best cup side in the north: Founders' Cup winners in 1879, 1884, 1886 and 1889. The first Cotton Derby, in 1880, ended in a riot on the towpath."
   },
   {
    "years": "1890-1915",
@@ -128,7 +128,7 @@
   {
    "years": "1919-1939",
    "title": "The first title",
-   "text": "The Double in 1924 - League and Association Cup - with the great half-back line of Ainsworth, Clegg and Duckworth. Pipped by Ashvale in 1927, which still stings. Cup winners again in 1936."
+   "text": "The Double in 1924 - League and Founders' Cup - with the great half-back line of Ainsworth, Clegg and Duckworth. Pipped by Ashvale in 1927, which still stings. Cup winners again in 1936."
   },
   {
    "years": "1946-1970",
@@ -143,12 +143,12 @@
   {
    "years": "1987-2009",
    "title": "The Hargreaves years",
-   "text": "Walter Hargreaves, great-grandson of the spinning-frame family and a self-made textiles millionaire, bought the club in 1987. Champions in 1991 - won on the last day at Millbrook, the same season Ashvale were relegated - then, in 1992, the Continental Champions' Cup and the World Club Trophy. His money rebuilt Brookfold, stand by stand, between 1992 and 1995, and two more titles followed in 1995 and 1997. The League Cup in 2004."
+   "text": "Walter Hargreaves, great-grandson of the spinning-frame family and a self-made textiles millionaire, bought the club in 1987. Champions in 1991 - won on the last day at Millbrook, the same season Ashvale were relegated - then, in 1992, the Crown of Europe and the Intercontinental Cup. His money rebuilt Brookfold, stand by stand, between 1992 and 1995, and two more titles followed in 1995 and 1997. The Charter Cup in 2004."
   },
   {
    "years": "2009-now",
    "title": "Seven each",
-   "text": "Hargreaves died in 2009 and left the club to a trust of local businesses. Champions again in 2015 and, against the odds, in 2024 - taking them level with Ashvale on seven titles. The League Cup in 2017. Smaller than Northwick, poorer than Millbrook, and proud of it."
+   "text": "Hargreaves died in 2009 and left the club to a trust of local businesses. Champions again in 2015 and, against the odds, in 2024 - taking them level with Ashvale on seven titles. The Charter Cup in 2017. Smaller than Northwick, poorer than Millbrook, and proud of it."
   }
  ],
  "honours": {
@@ -169,7 +169,7 @@
    1975,
    1985
   ],
-  "Association Cup": [
+  "Founders' Cup": [
    1879,
    1884,
    1886,
@@ -183,14 +183,14 @@
    1958,
    1966
   ],
-  "League Cup": [
+  "Charter Cup": [
    2004,
    2017
   ],
-  "Continental Champions' Cup": [
+  "Crown of Europe": [
    1992
   ],
-  "World Club Trophy": [
+  "Intercontinental Cup": [
    1992
   ]
  },
@@ -204,7 +204,7 @@
   {
    "name": "Gordon McAllister",
    "role": "Manager 1988-1998",
-   "note": "Four trophies in seven seasons: the titles in 1991, 1995 and 1997 and the Continental Champions' Cup in 1992."
+   "note": "Four trophies in seven seasons: the titles in 1991, 1995 and 1997 and the Crown of Europe in 1992."
   },
   {
    "name": "Fred Royle",
@@ -219,7 +219,7 @@
   {
    "name": "Steve Ingham",
    "role": "Captain, centre-half 1986-1999",
-   "note": "Lifted the Continental Champions' Cup in 1992. Bramhall born, a Viaduct End season-ticket holder ever since."
+   "note": "Lifted the Crown of Europe in 1992. Bramhall born, a Viaduct End season-ticket holder ever since."
   },
   {
    "name": "Tomas Varga",
@@ -229,7 +229,7 @@
  ],
  "records": {
   "attendance": "63,118 v Ashvale Rovers, League, 1954 (old Brookfold); 38,962 v Northwick FC, League, 2024",
-  "win": "12-1 v Lydmouth Town, Association Cup, 1886",
+  "win": "12-1 v Lydmouth Town, Founders' Cup, 1886",
   "defeat": "0-7 v Northwick FC, League, 1978",
   "top_scorer": "Fred Royle, 268 goals (1952-1967)",
   "appearances": "Alf Clegg, 655 (1919-1934)",

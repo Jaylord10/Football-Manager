@@ -30,7 +30,7 @@ SEEDS = (3, 4, 5, 6)
 FIRST_LEG_DAYS = 4                 # after the last league game
 SECOND_LEG_DAYS = 7
 FINAL_DAYS = 14
-VENUE = "the National Stadium"
+VENUE = "the National Bowl"
 ET_SHARE = 1 / 3                   # extra time: a third of a match's goals
 PEN_SCORE = (0.62, 0.86)           # a penalty taker's chance, worst to best (Penalties 0-100) - ~76% on average
 

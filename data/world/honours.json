@@ -1,12 +1,12 @@
 {
-"about": "Every season's winners and runners-up (year = the season's end; 1893 = 1892-93). World Club Trophy: the Continental Champions' Cup winners v South America's champions.",
+"about": "Every season's winners and runners-up (year = the season's end; 1893 = 1892-93). Intercontinental Cup: the Crown of Europe winners v South America's champions.",
 "competitions": {
 "league": "The League",
-"association_cup": "The Association Cup",
-"league_cup": "The League Cup",
-"champions_cup": "The Continental Champions' Cup",
-"shield": "The Continental Shield",
-"world_club": "The World Club Trophy",
+"association_cup": "The Founders' Cup",
+"league_cup": "The Charter Cup",
+"champions_cup": "The Crown of Europe",
+"shield": "The Europa Trophy",
+"world_club": "The Intercontinental Cup",
 "second_tier": "Second Division / Division 1",
 "second_tier_playoffs": "Division 1 play-offs"
 },

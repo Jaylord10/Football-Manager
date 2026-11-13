@@ -106,19 +106,19 @@
   {
    "club": "Millbrook United",
    "derby": "the Midlands Derby",
-   "why": "the big city across the Hallow Road - richer, bigger, and never once a Champions' Cup winner"
+   "why": "the big city across the Hallow Road - richer, bigger, and never once a Crown of Europe winner"
   },
   {
    "club": "Northwick FC",
    "derby": null,
-   "why": "beaten in two Champions' Cup finals, 2000 and 2005 - Northwick have never forgiven them"
+   "why": "beaten in two Crown of Europe finals, 2000 and 2005 - Northwick have never forgiven them"
   }
  ],
  "history": [
   {
    "years": "1880-1915",
    "title": "The ironworks club",
-   "text": "Founded in 1880 by men from the Stonecross furnaces. Champions in 1894 - only the sixth season of the League - and Association Cup winners in 1913."
+   "text": "Founded in 1880 by men from the Stonecross furnaces. Champions in 1894 - only the sixth season of the League - and Founders' Cup winners in 1913."
   },
   {
    "years": "1919-1960",
@@ -128,22 +128,22 @@
   {
    "years": "1960-1990",
    "title": "So close",
-   "text": "Second in 1964 and 1976 - the year of the club's second Association Cup - and League Cup finals lost in 1962, 1973 and 1980. Relegated in the mid-eighties and promoted as runners-up in 1987; second again in 1990."
+   "text": "Second in 1964 and 1976 - the year of the club's second Founders' Cup - and Charter Cup finals lost in 1962, 1973 and 1980. Relegated in the mid-eighties and promoted as runners-up in 1987; second again in 1990."
   },
   {
    "years": "1990-2007",
    "title": "Kings of the continent",
-   "text": "Champions in 1993. Then the greatest nights in the club's history: the Continental Champions' Cup in 2000 and again in 2005, both finals won against Northwick, and both followed by the World Club Trophy. Champions again in 2007."
+   "text": "Champions in 1993. Then the greatest nights in the club's history: the Crown of Europe in 2000 and again in 2005, both finals won against Northwick, and both followed by the Intercontinental Cup. Champions again in 2007."
   },
   {
    "years": "2007-2011",
    "title": "The crash",
-   "text": "Three years after the title, the money had gone: relegated in 2010. They bounced straight back - Second Division champions in 2011 and Association Cup winners in the same spring."
+   "text": "Three years after the title, the money had gone: relegated in 2010. They bounced straight back - Second Division champions in 2011 and Founders' Cup winners in the same spring."
   },
   {
    "years": "2011-now",
    "title": "Albion again",
-   "text": "Champions in 2019, second in 2022. And the League Cup? Never won - five finals lost, the last in 2025 to Millbrook, of all clubs."
+   "text": "Champions in 2019, second in 2022. And the Charter Cup? Never won - five finals lost, the last in 2025 to Millbrook, of all clubs."
   }
  ],
  "honours_note": "League seasons are given by the year they ended (1894 = 1893-94).",
@@ -151,7 +151,7 @@
   {
    "name": "Henk de Vries",
    "role": "Manager 1996-2008",
-   "note": "Two Champions' Cups, two World Club Trophies, two titles. The de Vries Stand is named after him."
+   "note": "Two Crowns of Europe, two Intercontinental Cups, two titles. The de Vries Stand is named after him."
   },
   {
    "name": "Tommy Lake",
@@ -166,7 +166,7 @@
   {
    "name": "Marcus Bell",
    "role": "Striker 1997-2006",
-   "note": "Scored the winner in both Champions' Cup finals against Northwick."
+   "note": "Scored the winner in both Crown of Europe finals against Northwick."
   },
   {
    "name": "Ray Doolan",
@@ -188,7 +188,7 @@
   "season_goals": "Tommy Lake, 41 (1926-27)"
  },
  "badge": {
-  "about": "The stone cross the town is named after, standing in the furnace's glow; two stars for the Champions' Cups. Motto 'Ex Igne Fortitudo' - from the fire, strength.",
+  "about": "The stone cross the town is named after, standing in the furnace's glow; two stars for the Crowns of Europe. Motto 'Ex Igne Fortitudo' - from the fire, strength.",
   "design": "An amber shield with a claret border. In the centre a tall claret stone cross (an old market cross) with flames in claret and white rising behind it. Two small white stars above the cross. 'STONECROSS ALBION' arched above the shield in claret capitals, and a claret ribbon beneath reading 'EX IGNE FORTITUDO' in amber."
  },
  "ground": {
@@ -210,7 +210,7 @@
     "tiers": 2,
     "capacity": 12600,
     "roof": "cantilever",
-    "features": "the main stand, built with the Champions' Cup money: tunnel, dugouts, boxes, the two cups in the trophy room",
+    "features": "the main stand, built with the Crown of Europe money: tunnel, dugouts, boxes, the two cups in the trophy room",
     "expandable": false
    },
    {

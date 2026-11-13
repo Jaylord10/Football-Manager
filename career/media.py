@@ -818,7 +818,7 @@ def playoff_story(career, m, st):
         how = {"pens": " on penalties", "et": " after extra time"}.get(tie["how"], "")
         a = r["agg"] if m["home"] == w else r["agg"][::-1]
         _add_article(career, BROADSHEET, "playoffs", f"{_name(career, w, True)} reach the play-off final",
-                     f"{nm(w)} beat {nm(l)} {a[0]}-{a[1]} on aggregate{how} and will play at the national stadium.",
+                     f"{nm(w)} beat {nm(l)} {a[0]}-{a[1]} on aggregate{how} and will play at the National Bowl.",
                      club=me if me in (w, l) else None)
     elif m["round"] == "final":
         w = st["winner"]

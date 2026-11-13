@@ -8,9 +8,9 @@ competition (data/world/honours.json - every season's winners, built so the
 clubs' histories agree with each other).
 
 COMPETITIONS (made-up equivalents of the real ones): the League (and a
-Second Division below it), the Association Cup, the League Cup, the
-Continental Champions' Cup (Europe's elite), the Continental Shield (Europe's
-second tier) and the World Club Trophy (Europe's champions v South America's).
+Second Division below it), the Founders' Cup, the Charter Cup, the Crown of
+Europe (Europe's elite), the Europa Trophy (Europe's second tier) and the
+Intercontinental Cup (Europe's champions v South America's).
 
 The ground's facts (stands, pitch, home end, away fans) are kept as data so
 pictures can be made from them - and, later, the match engine.
