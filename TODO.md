@@ -11,13 +11,16 @@ Items under "Talk to Jay first" are never started unattended.
 Jay, 12 Nov: "do the cup competitions including European and world club cup; German and Italian leagues if time
 allows; leave the 3D view; club photos are mine. Make the game as in depth as possible."
 
-- [ ] **End-of-season awards**: player of the season, young player, golden boot, team of the season, manager of
-      the season - for both divisions; on the end-of-season screen, in the papers and in players' records.
-- [ ] **Transfers with Germany and Italy** (scouting, bids, AI clubs buying and selling across the leagues).
-- [ ] **A long test with everything on** (cups, Europe, the new leagues): money, fitness, fixture pile-ups.
-
-- [ ] **Club profiles for the other clubs** - history, location, ground, honours that match the roll,
-      image prompts (Jay makes the pictures). Castleford Rangers done; next Millbrook United and Kingsmere City.
+- [x] **End-of-season awards** - done (waiting for Jay's OK).
+- [x] **Transfers with Germany and Italy** - done (waiting for Jay's OK).
+- [x] **A long test with everything on** - done: `dev/long_all.py`. It found cup ties clashing with
+      European nights (fixed: ties are moved a day or two). Clubs in the Shield play Thursday then Saturday
+      (real clubs get moved to Sunday - see "Talk to Jay first").
+- [x] **Club profiles**: Castleford Rangers, Millbrook United, Kingsmere City done. Next: Whitcombe City
+      (the current champions), Stonecross Albion (Millbrook's derby), Lydmouth Town (Kingsmere's derby),
+      Eastvale Wanderers.
+- [x] **Players' career records** (season by season, trophies, awards) - done.
+- [x] **Your career as a manager** (record, reputation, bigger clubs asking for you) - done.
 
 ## Talk to Jay first (bigger decisions)
 
@@ -32,6 +35,10 @@ allows; leave the 3D view; club photos are mine. Make the game as in depth as po
 - [ ] **The broadcast 3D view** (Panda3D side project): proper player models, football animations
       (Mixamo), the engine telling the view about kicks / tackles / headers, ball at feet, real lighting.
 - [ ] **Bramhall's ground expansion** - which stand could grow, once Jay's seen his pictures.
+- [ ] **Thursday-Saturday**: clubs in the Continental Shield play Thursday night then the league on
+      Saturday (real life moves their league game to Sunday). Needs league games on different days.
+- [ ] **Northwick win nearly everything** in the 10-season test (8 titles, 5 Champions' Cups). Real life:
+      Man City won 6 of 7, Real Madrid 6 Champions Leagues in 11 - so not mad, but maybe too much.
 - [ ] **Naming the national stadium** (the play-off final's venue - "the National Stadium" for now).
 
 ## Waiting on Jay
@@ -58,3 +65,7 @@ allows; leave the 3D view; club photos are mine. Make the game as in depth as po
   at the national stadium, the FA's real prize money, giant-killings in the papers).
 - The Continental Champions' Cup and Shield (groups, knockouts, UEFA prize money) and the World Club Trophy.
 - Germany's and Italy's leagues in the background, feeding the continental cups; an "Abroad" tab.
+- End-of-season awards; transfers with Germany and Italy; big clubs rest players in early cup rounds.
+- Club profiles for Millbrook United and Kingsmere City (picture prompts in the morning summary).
+- Players' career records (a Career tab on every player); your own career and reputation as a manager.
+- The long test with everything on (dev/long_all.py); cup ties moved off clashing dates.
