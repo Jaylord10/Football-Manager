@@ -24,10 +24,10 @@ allows; leave the 3D view; club photos are mine. Make the game as in depth as po
 
 ## Talk to Jay first (bigger decisions)
 
-- [ ] **The money balance** (found by the long test - it was already like this before Division 1): Premier
-      Division wage bills are only ~25-30% of income (real Premier League: ~60-70%), so clubs pile up cash -
-      the median bank balance goes from ~£100m to ~£280m in 10 seasons. Options: bigger wage bills, higher
-      running costs, AI clubs spending more on transfers.
+- [x] **The money balance, part 1** - done 13 Nov (on Jay's PC): the rest of a real wage bill (bonuses,
+      appearance fees, NI, staff, the academy's U21s and U18s); Premier Division wages now ~60-70% of income.
+- [ ] **The money balance, part 2**: AI clubs spend their spare money on transfers (the middle club's bank
+      still creeps up ~£8-10m a season; small Premier Division clubs make £30-45m a year before transfers).
 - [ ] **Clubs in debt** - a few Division 1 clubs run up debts of £30-50m and nothing happens to them.
       Real life: owners' money, or administration (a points deduction). Do we want that?
 
