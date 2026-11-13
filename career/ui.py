@@ -720,9 +720,13 @@ class App:
                 setattr(self, "cups_key", k), setattr(self, "cups_round", None)), primary=cp is comp, font="btn_s"))
         r = pygame.Rect(x0, 126, W - x0 - 30, H - 146)
         self.panel(r)
-        self.text(f"{comp['name']}  ·  you: {cups.my_status(c, comp)}", "h3", TEXT, (r.x + 16, r.y + 12))
+        room = r.w - 32
         if comp.get("winner") is not None:
-            self.text(f"Winners: {cups.name(c, comp['winner'])}", "body", ACCENT, (r.right - 16, r.y + 14), "topright")
+            won = f"Winners: {cups.name(c, comp['winner'])}"
+            self.text(won, "body", ACCENT, (r.right - 16, r.y + 14), "topright")
+            room -= self.fonts["body"].size(won)[0] + 24
+        self.text(self._fit_text(f"{comp['name']}  ·  you: {cups.my_status(c, comp)}", "h3", room), "h3", TEXT,
+                  (r.x + 16, r.y + 12))
         rounds = cups.stages(c, comp)
         sel = getattr(self, "cups_round", None)
         if sel is None or sel >= len(rounds):
@@ -4562,8 +4566,9 @@ class App:
         self._table_rows(t, r.x + 20, r.y + 18, r.w - 40)
         wins = [f"{cups.SHORT_ANY(cp)}: {cups.name(c, cp['winner'], True)}" for cp in cups.comps(c) if cp.get("winner") is not None]
         if wins:
-            self.text(self._fit_text("Cup winners  ·  " + "  ·  ".join(wins), "small", W - 600), "small", MUTED,
-                      (260, H - 62))
+            lines = self._lines("Cup winners:  " + "  ·  ".join(wins), "small", W - 196 - 300 - 260 - 24)
+            for k, ln in enumerate(lines[:3]):
+                self.text(ln, "small", MUTED, (260, H - 80 + 18 * k + (9 if len(lines) < 3 else 0)))
         self.buttons.append(Button((W - 300, H - 80, 260, 52), "Start next season", self.next_season, primary=True))
         self.buttons.append(Button((W - 300 - 196, H - 80, 180, 52), "Last awards", lambda: self.go("awards")))
         self.buttons.append(Button((40, H - 80, 200, 52), "Save & quit", self.save_and_quit))
