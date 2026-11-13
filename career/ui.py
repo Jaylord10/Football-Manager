@@ -100,6 +100,18 @@ def _ordinal(n):
     return f"{n}{'th' if 10 <= n % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
 
 
+NAME_MAX = 28
+
+
+def _appointed(career):
+    """A new career: the papers announce the new manager (career/media.py)."""
+    try:
+        from career import media
+        media.appointed(career, career["clubs"][career["my_club"]])
+    except Exception:
+        pass
+
+
 def _expect(pos, n, div="pl"):
     if div == "d1":
         return ("Promotion favourites" if pos <= 2 else "Play-off hopefuls" if pos <= 6 else "Top half"
@@ -254,20 +266,38 @@ class App:
                             b.action()
                             break
                 elif e.type == pygame.KEYDOWN:
-                    self.key(e.key)
+                    self.key(e.key, getattr(e, "unicode", ""))
             if not self.running:
                 break
             self._keep_running()
             self.win.fill(BG)
             self.buttons = []
             getattr(self, "draw_" + self.screen)()
+            if getattr(self, "preview", False) and self.screen != "preview":
+                self._preview_filter()
             for b in self.buttons:
                 b.draw(self.win, self.fonts, mouse)
             pygame.display.flip()
             self.clock.tick(30)
         pygame.quit()
 
-    def key(self, k):
+    def key(self, k, ch=""):
+        if self.screen == "newname":
+            name = getattr(self, "pending_name", "")
+            if k == pygame.K_BACKSPACE:
+                self.pending_name = name[:-1]
+            elif k in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                self._name_done()
+            elif k == pygame.K_ESCAPE:
+                self.go("title")
+            elif ch and ch.isprintable() and len(name) < NAME_MAX and (ch.isalpha() or ch in " '-."):
+                self.pending_name = name + ch
+            return
+        if getattr(self, "preview", False):
+            if k == pygame.K_ESCAPE:
+                self.go("player" if False else ("preview" if self.screen != "player" else
+                                                getattr(self, "player_back", "preview")))
+            return
         if self.screen == "fixtures":
             if k in (pygame.K_LEFT, pygame.K_a):
                 self.fixtures_md = max(1, self.fixtures_md - 1)
@@ -291,6 +321,8 @@ class App:
 
     # -- shared layout --------------------------------------------------------
     def sidebar(self, active):
+        if getattr(self, "preview", False):
+            return self._preview_sidebar({"squad": "squad", "finances": "finances"}.get(active, active))
         W, H = self.size
         pygame.draw.rect(self.win, PANEL, (0, 0, 220, H))
         mc = self.career["my_club"]
@@ -371,7 +403,173 @@ class App:
         self.pending_d1 = divisions.load_world()
         self.choose_div = "pl"
         self.pending_seed = seed
+        if not getattr(self, "pending_name", ""):
+            self.pending_name = (self.career or {}).get("manager_name", "") if self.career else ""
+        self.go("newname")
+
+    # -- your name ------------------------------------------------------------
+    def draw_newname(self):
+        """Before choosing a club: your name (the papers, the fans and your manager page use it)."""
+        W, H = self.size
+        self.text("Who's the new manager?", "h1", TEXT, (W // 2, H // 3 - 40), "center")
+        self.text("Your name - the papers, the fans and the board will use it.", "body", MUTED,
+                  (W // 2, H // 3 + 6), "center")
+        box = pygame.Rect(W // 2 - 260, H // 3 + 50, 520, 64)
+        pygame.draw.rect(self.win, PANEL, box, border_radius=10)
+        pygame.draw.rect(self.win, ACCENT, box, 2, border_radius=10)
+        name = getattr(self, "pending_name", "")
+        caret = "|" if (pygame.time.get_ticks() // 500) % 2 == 0 else " "
+        self.text((name or "") + caret, "h2", TEXT if name else MUTED, (box.x + 20, box.y + 14))
+        if not name:
+            self.text("e.g. Jay Almond", "body", MUTED, (box.right - 20, box.y + 22), "topright")
+        ok = len(name.strip()) >= 2
+        self.buttons.append(Button((W // 2 - 260, box.bottom + 24, 250, 52), "Back", lambda: self.go("title")))
+        self.buttons.append(Button((W // 2 + 10, box.bottom + 24, 250, 52), "Choose a club", self._name_done,
+                                   primary=True, enabled=ok))
+        self.text("Type your name, then press Enter.", "small", MUTED, (W // 2, box.bottom + 100), "center")
+
+    def _name_done(self):
+        name = " ".join(getattr(self, "pending_name", "").split())
+        if len(name) < 2:
+            return
+        self.pending_name = name
         self.go("choose")
+
+    # -- looking round a club before you take the job ----------------------------
+    def preview_club(self, cid):
+        """Click a club on the choose screen: a look round first (its squad, players, history, ground and
+        money) - the career it would be, built now; "Manage this club" keeps it."""
+        import copy
+        self._before_preview = self.career
+        self.preview = True
+        self.preview_cid = cid
+        self.career = league.new_career(copy.deepcopy(self.pending_clubs), cid, self.pending_seed)
+        self.career["manager_name"] = getattr(self, "pending_name", "")
+        faces.bind(self.career)
+        from career import stadium
+        stadium.sync(self.career)
+        self.squad_club = cid
+        self.squad_view = "attributes"
+        self.club_view = None
+        self.club_tab = "history"
+        self.club_era = 0
+        self.go("preview")
+
+    def end_preview(self, take):
+        self.preview = False
+        if take:
+            c = self.career
+            for bg in (self.bg, self.my_bg):
+                if bg is not None:
+                    bg.stop()
+            self.bg = self.my_bg = None
+            self.my_result = None
+            self._menu_roles(c["clubs"][c["my_club"]])
+            _appointed(c)
+            league.save(c)
+            self.go("home")
+        else:
+            self.career = getattr(self, "_before_preview", None)
+            self.go("choose")
+
+    PREVIEW_OK = {"", "Back", "Profile", "Career", "Attributes", "Contracts", "History", "Honours", "The ground",
+                  "Inside", "From above", "About the club"}
+
+    def _preview_filter(self):
+        """Looking round: nothing that changes anything (no contracts, sales, building...)."""
+        keep = []
+        for b in self.buttons:
+            if getattr(b, "preview_nav", False) or b.label in self.PREVIEW_OK:
+                keep.append(b)
+        self.buttons = keep
+        if getattr(self, "squad_view", "attributes") not in ("attributes", "contracts"):
+            self.squad_view = "attributes"
+
+    def _preview_sidebar(self, active):
+        W, H = self.size
+        c = self.career
+        mc = c["my_club"]
+        pygame.draw.rect(self.win, PANEL, (0, 0, 220, H))
+        _badge(self.win, self.colour(mc), (36, 40), 16, self._club_of(mc))
+        self.text(self.name(mc, short=True), "h3", TEXT, (62, 28))
+        self.text("Looking round", "small", MUTED, (62, 52))
+        y = 96
+        for key, label in (("preview", "Overview"), ("squad", "The squad"), ("club", "The club"),
+                           ("finances", "The money")):
+            def go(k=key):
+                if k == "club":
+                    self.club_view = None
+                    self.club_tab = "history"
+                if k == "squad":
+                    self.squad_club = mc
+                self.go(k)
+            b = Button((14, y, 192, 44), label, go, primary=active == key)
+            b.preview_nav = True
+            self.buttons.append(b)
+            y += 52
+        b = Button((14, H - 128, 192, 52), "Manage this club", lambda: self.end_preview(True), primary=True)
+        b.preview_nav = True
+        self.buttons.append(b)
+        b = Button((14, H - 66, 192, 42), "Back to the clubs", lambda: self.end_preview(False))
+        b.preview_nav = True
+        self.buttons.append(b)
+
+    def draw_preview(self):
+        """The look round: the club in a page - what the board wants, the money, the squad's best."""
+        W, H = self.size
+        c = self.career
+        club = c["clubs"][c["my_club"]]
+        self._preview_sidebar("preview")
+        x0 = 250
+        _badge(self.win, tuple(club["colour"]), (x0 + 24, 50), 24, club)
+        self.text(club["name"], "h1", TEXT, (x0 + 60, 24))
+        from career import divisions, clubinfo
+        pr = clubinfo.profile(club) or {}
+        loc = (pr.get("location") or {})
+        sub = f"{divisions.name(divisions.div_of(club))}"
+        if pr:
+            sub += f"  ·  {pr['ground']['name']} ({pr['ground']['capacity']:,})  ·  {loc.get('town', '')}, {loc.get('county', '')}"
+        self.text(self._fit_text(sub, "body", W - x0 - 90), "body", MUTED, (x0 + 60, 72))
+        # What the board wants
+        r = pygame.Rect(x0, 112, (W - x0 - 44) // 2, 210)
+        self.panel(r, "The board")
+        b = brd.state(c)
+        y = self._wrap(f"Objective: {brd.objective(c, club)[0]}", "body", TEXT, r.x + 16, r.y + 48, r.w - 32) + 8
+        t = league.table(c)
+        ranked = sorted(t, key=lambda row: fin.size_rank(c, c["clubs"][row["club"]]))
+        pos = next((i for i, row in enumerate(ranked, 1) if row["club"] == club["id"]), None)
+        if pos:
+            self.text(f"The papers expect: {_ordinal(pos)}", "body", ACCENT_HI, (r.x + 16, y)); y += 30
+        self.text(f"Style: {STYLE_TEXT[club['tactics']['defence']].capitalize()}, "
+                  f"{BUILD_TEXT[club['tactics']['build_up']]}", "small", MUTED, (r.x + 16, y))
+        # The money
+        f = club.get("finance") or {}
+        r2 = pygame.Rect(r.right + 14, 112, W - r.right - 44, 210)
+        self.panel(r2, "The money")
+        rows = [("In the bank", fin.money(f.get("balance", 0))), ("Transfer budget", fin.money(f.get("transfer_budget", 0))),
+                ("Wage budget", f"{fin.money(f.get('wage_budget', 0))} a year"),
+                ("Wage bill", f"{fin.money(fin.wage_bill(club))} a year")]
+        y = r2.y + 48
+        for label, v in rows:
+            self.text(label, "body", MUTED, (r2.x + 16, y)); self.text(v, "body", TEXT, (r2.right - 16, y), "topright")
+            y += 32
+        # The squad's best
+        r3 = pygame.Rect(x0, r.bottom + 14, W - x0 - 30, H - r.bottom - 34)
+        self.panel(r3, "The best players")
+        best = sorted(club["players"], key=lambda p: -clubs_mod.overall(p))[:10]
+        y = r3.y + 48
+        colw = (r3.w - 32) // 2
+        for i, p in enumerate(best):
+            x = r3.x + 16 + (i // 5) * colw
+            yy = y + (i % 5) * 52
+            self._face(p, club["id"], 44, (x, yy))
+            self.text(p["Name"], "body", TEXT, (x + 56, yy + 2))
+            self.text(f"{p['Pos']}  ·  {p.get('Age', '?')}  ·  rated {clubs_mod.overall(p)}  ·  {fin.money(fin.value(p, c.get('date')))}",
+                      "small", MUTED, (x + 56, yy + 24))
+            rect = pygame.Rect(x, yy, colw - 10, 48)
+            self.buttons.append(_Invisible(rect, lambda pid=p["id"]: self.view_player(club["id"], pid)))
+        self.text("Click a player for his profile, or look at the whole squad, the club's history and ground, and "
+                  "the money on the left.", "small", MUTED, (r3.x + 16, r3.bottom - 30))
 
     def draw_choose(self):
         W, H = self.size
@@ -399,7 +597,7 @@ class App:
             x = 40 + (i // rows) * (col_w + 20)
             y = 108 + (i % rows) * (row_h + 6)
             rect = pygame.Rect(x, y, col_w, row_h)
-            b = Button(rect, "", lambda c=c: self.start_career(c["id"]))
+            b = Button(rect, "", lambda c=c: self.preview_club(c["id"]))
             pygame.draw.rect(self.win, PANEL_2 if rect.collidepoint(mouse) else PANEL, rect, border_radius=10)
             _badge(self.win, tuple(c["colour"]), (x + 30, y + row_h // 2), 16 if not big else 20, c)
             pos = predicted[c["id"]]
@@ -429,6 +627,8 @@ class App:
         self.bg = self.my_bg = None
         self.my_result = None
         self.career = league.new_career(self.pending_clubs, cid, self.pending_seed)
+        self.career["manager_name"] = getattr(self, "pending_name", "")
+        _appointed(self.career)
         faces.bind(self.career)
         from career import stadium
         stadium.sync(self.career)
@@ -826,8 +1026,9 @@ class App:
         x0 = 250
         if mine:
             self.text("Squad", "h1", TEXT, (x0, 24))
-            self.text(f"Your {len(c['players'])} players - click one to see his profile. Pick the XI on the "
-                      f"Tactics screen; SUB = on the bench (9).", "body", MUTED, (x0, 76))
+            self.text(f"Their {len(c['players'])} players - click one to see his profile." if getattr(self, "preview", False)
+                      else f"Your {len(c['players'])} players - click one to see his profile. Pick the XI on the "
+                           f"Tactics screen; SUB = on the bench (9).", "body", MUTED, (x0, 76))
         else:
             _badge(self.win, self.colour(cid), (x0 + 18, 48), 18, self._club_of(cid))
             self.text(c["name"], "h1", TEXT, (x0 + 48, 24))
@@ -4440,9 +4641,11 @@ class App:
         m = mgr.state(c)
         x0 = 250
         self._club_tabs("manager")
+        from career import media as _media
         self.text("Manager", "h1", TEXT, (x0, 18))
         r = pygame.Rect(x0, 80, W - x0 - 30, 150)
-        self.panel(r, "Reputation")
+        nm_ = _media.manager_name(c)
+        self.panel(r, f"{nm_}  ·  reputation" if nm_ else "Reputation")
         rep = m["rep"]
         col = ACCENT if rep >= 60 else DRAW if rep >= 34 else TEXT
         self.text(f"{mgr.label(rep)}  ({round(rep)}/100)", "h3", col, (r.right - 16, r.y + 14), "topright")
