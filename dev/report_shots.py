@@ -48,6 +48,7 @@ app.go("cups"); app.cups_key = "league_cup"; app.cups_round = None; shot("league
 for md in range(13, 18):
     play(md)
 app.go("cups"); app.cups_key = "world_club"; app.cups_round = None; shot("world_club")
+app.go("finances"); shot("finances_december")
 for md in range(18, 33):
     play(md)
 for key in ("association_cup", "league_cup", "champions_cup", "shield"):
@@ -58,6 +59,7 @@ for md in range(33, n + 1):
 cups.finish_all(c)
 for key in ("association_cup", "champions_cup"):
     app.go("cups"); app.cups_key = key; app.cups_round = None; shot(key + "_final")
+app.go("finances"); shot("finances_may")
 app.go("table"); shot("table")
 app.go("season_end"); shot("season_end")
 app.next_season = lambda: None

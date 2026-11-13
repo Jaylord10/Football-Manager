@@ -2267,7 +2267,10 @@ class App:
         y = r.y + 50
         income = [("TV and central payments", s["tv"]), ("Matchday", s["matchday"]), ("Commercial", s["commercial"]),
                   ("Prize money (end of season)", s["prize"]), ("Players sold", s["transfers_in"])]
-        spend = [("Player wages", s["wages"]), ("Running the club", s["other"]), ("Players bought", s["transfers_out"])]
+        spend = [("Player wages", s["wages"]), ("Bonuses and appearance fees", s.get("bonuses", 0)),
+                 ("Coaches and staff", s.get("staff", 0)), ("Academy (U21s and U18s)", s.get("academy", 0)),
+                 ("National Insurance", s.get("ni", 0)), ("Running the club", s["other"]),
+                 ("Players bought", s["transfers_out"])]
         self.text("Income", "h3", ACCENT, (r.x + 16, y)); y += 32
         for label, v in income:
             self.text(label, "body", TEXT, (r.x + 16, y)); self.text(fin.money(v), "body", TEXT, (r.right - 20, y), "topright")

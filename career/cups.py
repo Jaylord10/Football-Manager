@@ -515,6 +515,10 @@ def _won(career, comp, winner, loser, m):
 
 def _prize(career, comp, rd, winner, loser):
     from career import finance as fin, europe
+    if rd["name"] == "Final":                                   # (the players' bonus for a trophy)
+        wc = club(career, winner)
+        if wc is not None and "finance" in wc:
+            fin.bonus(career, wc, fin.CUP_BONUS.get(comp["key"], 0.03))
     if comp["key"] in (europe.CC, europe.SHIELD, europe.WORLD):
         return europe.final_prizes(career, comp, rd, winner, loser)
     w, l = PRIZE.get(comp["key"], {}).get(rd["name"], (0, 0))
