@@ -19,9 +19,28 @@ INCOME
 SPENDING
   - player wages: Premier League wage bills run from ~£200m a year (the
     biggest) down to ~£33m (the smallest) - 2024/25 estimates
-  - running the club (non-playing staff, travel, the stadium, write-downs
-    of past transfer fees...): OTHER_COSTS of income.  Before transfers a
-    club makes a healthy surplus - real clubs spend it on transfer fees.
+  - the rest of a real club's wage bill.  The players' own pay above is
+    like Capology's estimates (Man City ~£4.5m a week, ~£234m a year), but
+    the wages in a club's accounts are nearly double (Man City £408m,
+    Liverpool £428m in 2024/25 - 61% of Liverpool's income), because they
+    also hold:
+      * BONUSES and APPEARANCE FEES - for wins and for every game a player
+        plays (paid month by month), for winning the league or a cup, for
+        promotion;
+      * employer's NATIONAL INSURANCE - 15% of everyone's pay (the UK rate
+        since April 2025);
+      * the STAFF - coaches, medical, analysts, scouts, the office: STAFF
+        of income;
+      * the ACADEMY - the U21s and U18s, their coaches and the training
+        ground (a top-category academy must spend at least £2.5m a year;
+        the big clubs spend far more).
+  - running the club (the stadium, travel, kit, insurance, write-downs of
+    past transfer fees...): OTHER_COSTS of income.
+  Deloitte, 2024/25: Premier League income £6.8bn, wages £4.4bn (65%),
+  everything else left an operating profit of only £263m (8 clubs out of
+  20 made one) - and after transfers the league lost £948m before tax.
+  So here, before transfers, a club keeps only a few per cent of its
+  income; buying players tips many into a loss.
 
 WHAT A PLAYER IS WORTH (like Transfermarkt): it doubles every 6 rating
 points - a 60 is ~£8m, 65 ~£15m, 70 ~£27m, 75 ~£48m, 80 ~£85m - more for
@@ -65,7 +84,21 @@ EQUAL_SHARE = 95.1 * M                   # every club
 FACILITY_FEES = 15 * M                   # TV appearances, roughly - every club here
 MERIT_PER_PLACE = 2.8 * M                # x (21 - position)
 CENTRAL_MONTHS = (8, 9, 10, 11, 12, 1, 2, 3, 4, 5)
-OTHER_COSTS = 0.40                       # running the club (staff, operations, write-downs...): share of income
+OTHER_COSTS = 0.30                       # running the club (stadium, travel, write-downs...): share of income
+STAFF = 0.12                             # coaches, medical, scouts, the office: share of income
+NI = 0.15                                # employer's National Insurance on all pay (UK, from April 2025)
+WIN_BONUS = 0.004                        # each league win: this x the players' yearly wages, between them
+APPEARANCE = 0.2                         # each game a player plays (league or cup): this x his weekly wage
+TROPHY_BONUS = 0.10                      # winning the league, or promotion: x the players' yearly wages
+CUP_BONUS = {"association_cup": 0.04, "league_cup": 0.02, "champions_cup": 0.08, "shield": 0.04,
+             "world_club": 0.02}         # ...and the cups
+# Elsewhere (Division 1, Spain, Germany, Italy) the wage bills above are already the accounts' totals
+# (the Championship's ~£9m-65m; Deloitte's figures abroad), so the staff and NI there come out of the
+# old 40% running costs instead - about the same money as before, split into its parts:
+COSTS = {"pl": (OTHER_COSTS, STAFF, True)}                # other, staff, NI on the players' wages?
+COSTS_ELSEWHERE = (0.28, 0.08, False)
+ACADEMY = {"pl": (16 * M, 3 * M, 1.5), "d1": (4 * M, 1 * M, 1.5), "es": (12 * M, 1.5 * M, 2.0),
+           "de": (12 * M, 1.5 * M, 2.0), "it": (10 * M, 1.5 * M, 2.0)}       # the U21s and U18s, a year
 RESERVE = 0.6                            # money in the bank above this x a season's income...
 
 # --- Each league's money (the Premier League figures above are "pl") ---------------
@@ -295,7 +328,73 @@ def init(career, seed=2026, only=None):
 
 def _empty_season():
     return {"tv": 0, "matchday": 0, "commercial": 0, "prize": 0, "transfers_in": 0,
-            "wages": 0, "other": 0, "transfers_out": 0}
+            "wages": 0, "bonuses": 0, "staff": 0, "academy": 0, "ni": 0, "other": 0, "transfers_out": 0}
+
+
+SPEND_KINDS = ("wages", "bonuses", "staff", "academy", "ni", "other", "transfers_out")
+
+
+def academy_cost(career, club):
+    """The U21s and U18s for a year (bigger clubs spend more)."""
+    lg = league_of(club)
+    top, bottom, power = ACADEMY.get(lg, ACADEMY["d1"])
+    return _curve(top, bottom, power, size_rank(career, club), len(league_clubs(career, club)))
+
+
+def _costs(club):
+    return COSTS.get(league_of(club), COSTS_ELSEWHERE)
+
+
+def _costs_of(club, amount):
+    """Each bit of income brings its share of running costs and staff (and the staff's NI)."""
+    other, staff, _ = _costs(club)
+    _book(club, "other", -other * amount)
+    _book(club, "staff", -staff * amount)
+    _book(club, "ni", -NI * staff * amount)
+
+
+def bonus(career, club, share, why=None):
+    """Bonuses for the players: share x their yearly wages (plus NI)."""
+    if "finance" not in club:
+        return 0
+    amount = share * wage_bill(club)
+    _book(club, "bonuses", -amount)
+    if _costs(club)[2]:
+        _book(club, "ni", -NI * amount)
+    return amount
+
+
+def _last_month(career, club, m):
+    """(league wins, appearance fees) for the month before month m (English clubs): the win bonuses, and
+    APPEARANCE x his weekly wage for every league or cup game each player played."""
+    from career import league, cups
+    y = career.get("year", 2026) + (1 if m <= 7 else 0)
+    pm, py = (m - 1, y) if m > 1 else (12, y - 1)
+    prefix = f"{py}-{pm:02d}"
+    cid = club["id"]
+    wage = {p["id"]: p.get("wage", 0) for p in club["players"]}
+    wins, fees = 0, 0.0
+    def played(r, side):
+        return sum(APPEARANCE * wage.get(a["id"], 0) for a in r.get("players", [])
+                   if a.get("team") == side and a.get("minutes", 0) > 0)
+    try:
+        for md, day in league.results_of(career, cid).items():
+            d = league.match_date(career, int(md)) or ""
+            if not d.startswith(prefix):
+                continue
+            for r in day:
+                if cid in (r["home"], r["away"]):
+                    side = 0 if r["home"] == cid else 1
+                    f, a = (r["hg"], r["ag"]) if side == 0 else (r["ag"], r["hg"])
+                    wins += f > a
+                    fees += played(r, side)
+        for mt in cups.all_matches(career):
+            r = mt.get("result")
+            if r and cid in (mt["home"], mt["away"]) and mt["date"].startswith(prefix):
+                fees += played(r, 0 if mt["home"] == cid else 1)
+    except Exception:
+        return wins, fees
+    return wins, fees
 
 
 def parachute_now(club):
@@ -324,7 +423,9 @@ def set_budgets(career, club):
     income = expected_income(career, club)
     bill = wage_bill(club)
     f["wage_budget"] = round(max(bill * 1.05, min(income * 0.45, bill * 1.25)), -5)
-    surplus = income * (1 - OTHER_COSTS) - f["wage_budget"]
+    other, staff, ni = _costs(club)
+    surplus = income * (1 - other - staff * (1 + NI)) - f["wage_budget"] * (1 + (NI if ni else 0)) * 1.1 \
+        - academy_cost(career, club)
     f["transfer_budget"] = round(max(0.0, 0.35 * f["balance"] + 0.5 * surplus), -5)
 
 
@@ -366,8 +467,22 @@ def month(career, club, m):
         income += tv
     _book(club, "commercial", f["commercial"] / 12)
     income += f["commercial"] / 12
-    _book(club, "wages", -wage_bill(club) / 12)
-    _book(club, "other", -OTHER_COSTS * income)
+    bill = wage_bill(club)
+    _book(club, "wages", -bill / 12)
+    if _costs(club)[2]:
+        _book(club, "ni", -NI * bill / 12)
+    _book(club, "academy", -academy_cost(career, club) / 12)
+    _costs_of(club, income)
+    if league_of(club) in ("pl", "d1"):
+        wins, fees = _last_month(career, club, m)
+        if wins:
+            bonus(career, club, WIN_BONUS * wins)
+        if fees:
+            _book(club, "bonuses", -fees)
+            if _costs(club)[2]:
+                _book(club, "ni", -NI * fees)
+    elif m in CENTRAL_MONTHS:
+        bonus(career, club, (WIN_BONUS * 18 + APPEARANCE * 0.6 * 40 / 52) / len(CENTRAL_MONTHS))   # (abroad: roughly)
 
 
 def home_game(career, club, attendance=None):
@@ -379,7 +494,7 @@ def home_game(career, club, attendance=None):
     crowd = attendance if attendance is not None else f["capacity"] * _lg(club)["crowd"]
     gate = crowd * f["ticket"]
     _book(club, "matchday", gate)
-    _book(club, "other", -OTHER_COSTS * gate)
+    _costs_of(club, gate)
 
 
 def season_end(career, table):
@@ -392,7 +507,9 @@ def season_end(career, table):
             continue
         prize = _lg(club)["merit"] * (n + 1 - pos)
         _book(club, "prize", prize)
-        _book(club, "other", -OTHER_COSTS * prize)
+        _costs_of(club, prize)
+        if pos == 1:
+            bonus(career, club, TROPHY_BONUS)              # (the title bonus)
         month(career, club, 6)                             # June (July: the new season's days)
         f = club["finance"]
         s = f["season"]
@@ -404,7 +521,7 @@ def season_end(career, table):
             _book(club, "other", -spend)
             f["invested"] = round(f.get("invested", 0) + spend)
         income = s["tv"] + s["matchday"] + s["commercial"] + s["prize"] + s["transfers_in"]
-        spend = s["wages"] + s["other"] + s["transfers_out"]
+        spend = sum(s.get(k, 0) for k in SPEND_KINDS)
         f["history"].append({"year": career.get("year"), "position": pos, "income": income, "spend": spend,
                              "profit": income - spend, "balance": f["balance"], "league": league_of(club)})
         if f.get("parachute") and league_of(club) == "d1":
@@ -505,3 +622,4 @@ def promoted(career, club):
     for p in club["players"]:
         if p.get("cut_from"):
             p["wage"] = max(p.get("wage", 0), p.pop("cut_from"))
+    bonus(career, club, TROPHY_BONUS)                        # (the promotion bonus)
