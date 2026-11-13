@@ -92,6 +92,7 @@ class PlayerDatabase:
         self.human = {0: False, 1: False}        # your team, when you watch (the S panel)
         self.ht_talk = {0: None, 1: None}        # the half-time team talk table (career/teamtalk.py)
         self.formation = {0: None, 1: None}      # the spots used (config/slots.py); None = 4-4-2
+        self.knockout = None                     # a knockout tie this match decides: {"agg": [h, a]} (extra time)
         self.load_match_config(config_file)
 
     def load_match_config(self, config_file):
@@ -133,6 +134,7 @@ class PlayerDatabase:
                     elif f and slots.check(f):
                         print(f"[Formation] {config[side].get('name')}: {'; '.join(slots.check(f))} - playing 4-4-2")
 
+            self.knockout = config.get('knockout')     # (extra time and penalties if level - career cups)
             self.home_team_name = config['home_team']['name']
             self.load_csv_data(config['home_team']['file'], override_team_id=0)
             

@@ -176,8 +176,9 @@ class Substitutions:
         except Exception:
             pass
 
-    def half_time(self, now):
-        """Changes at half-time: AI managers decide, then everything queued is made (no window used)."""
+    def half_time(self, now, minute=46):
+        """Changes at half-time (and at the breaks in extra time): AI managers decide, then everything
+        queued is made (no window used)."""
         if not self.active:
             return
         for tid in (0, 1):
@@ -187,7 +188,7 @@ class Substitutions:
                 if self.friendly:
                     self._friendly_changes(tid)
             if self.queue[tid]:
-                self._make(tid, now, 46, half_time=True)
+                self._make(tid, now, minute, half_time=True)
 
     def _friendly_changes(self, tid):
         """A friendly at half-time: give the bench a run-out, like for like."""
@@ -385,7 +386,7 @@ class Substitutions:
                     rec["stamina"] = round(getattr(p, "stamina", 1.0), 3)
         out = []
         for (_, pid), r in self.apps.items():
-            on, off = r["on"], (r["off"] if r["off"] is not None else 90)
+            on, off = r["on"], (r["off"] if r["off"] is not None else getattr(self.engine, "final_minute", 90))
             out.append(dict(r, id=pid, minutes=max(0, off - on)))
         return out
 
