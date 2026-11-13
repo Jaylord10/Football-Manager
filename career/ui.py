@@ -213,7 +213,7 @@ class App:
         if cid == -2:
             return trf.abroad(self.career)
         if cid >= spain.ID_BASE:
-            return spain.club(self.career, cid)
+            return cups.club(self.career, cid) or spain.club(self.career, cid)   # (Spain, Germany, Italy, the cups' guests)
         return con.free_agents(self.career) if cid == -1 else self.career["clubs"][cid]
 
     def name(self, cid, short=False):
@@ -793,6 +793,10 @@ class App:
         self.go("squad")
 
     def view_player(self, club_id, pid):
+        from career import foreign
+        if foreign.league_of_id(club_id) is not None:          # (Germany / Italy: no transfers with them yet)
+            self.flash = "Players in Germany and Italy can't be scouted or signed yet - that's to come."
+            return
         self.player_view = (club_id, pid)
         self.player_back = self.screen
         self.go("player")
@@ -828,9 +832,14 @@ class App:
             if 0 <= cid < len(self.career["clubs"]):          # (their history, honours and ground)
                 self.buttons.append(Button((W - 30 - 170, 72, 170, 32), "About the club",
                                            lambda: self.open_club_page(cid), font="btn_s"))
-            pos = spain.position_of(self.career, cid) if es else league.position_of(self.career, cid)
-            from career import divisions
-            where = f"the {spain.NAME}" if es else divisions.name(divisions.div_of(c))
+            from career import divisions, foreign
+            cfg_ = foreign.league_of_id(cid)
+            if cfg_ is not None:
+                pos = next((i for i, r_ in enumerate(foreign.table(self.career, cfg_), 1) if r_["club"] == cid), None)
+                where = cfg_.name
+            else:
+                pos = spain.position_of(self.career, cid) if es else league.position_of(self.career, cid)
+                where = f"the {spain.NAME}" if es else divisions.name(divisions.div_of(c))
             self.text(f"{_ordinal(pos)} in {where}  ·  {STYLE_TEXT[c['tactics']['defence']]}, "
                       f"{BUILD_TEXT[c['tactics']['build_up']]}  ·  click a player to scout him", "body", MUTED,
                       (x0, 76))
@@ -2960,15 +2969,23 @@ class App:
         self.sidebar("spain")
         self._paper_tabs("spain")
         c = self.career
-        s = c["spain"]
+        from career import foreign
+        key = getattr(self, "abroad_key", "es")
+        cfg = None if key == "es" else foreign.by_key(key)
+        if cfg is not None and not foreign.exists(c, cfg):
+            cfg, key = None, "es"
+        s = c["spain"] if cfg is None else c["leagues"][cfg.key]
         x0 = 250
-        self.text(spain.NAME, "h1", TEXT, (x0, 18))
+        for i, (k_, label) in enumerate((("es", "Spain"), ("de", "Germany"), ("it", "Italy"))):
+            self.buttons.append(Button((x0 + i * 112, 70, 106, 28), label, lambda k_=k_: (
+                setattr(self, "abroad_key", k_), setattr(self, "es_md", None)), primary=k_ == key, font="btn_s"))
+        self.text(spain.NAME if cfg is None else cfg.name, "h1", TEXT, (x0, 18))
         played = s["matchday"] - 1
-        sub = f"Spain  ·  played {played} of {len(s['fixtures'])} matchdays  ·  quick results, in the background"
+        sub = f"played {played} of {len(s['fixtures'])}  ·  quick results"
         if s.get("history"):
             last = s["history"][-1]
-            sub += f"  ·  champions last season: {self.name(last['champion'])}"
-        self.text(self._fit_text(sub, "body", W - 30 - 3 * 112 - x0 - 16), "body", MUTED, (x0, 72))
+            sub += f"  ·  champions last season: {self.name(last['champion'], True)}"
+        self.text(self._fit_text(sub, "small", W - 30 - 3 * 112 - x0 - 16 - 340), "small", MUTED, (x0 + 340, 76))
         tab = getattr(self, "es_tab", "table")
         for i, (key, label) in enumerate((("table", "Table"), ("results", "Results"), ("scorers", "Top scorers"))):
             self.buttons.append(Button((W - 30 - (3 - i) * 112, 68, 106, 30), label,
@@ -2976,14 +2993,15 @@ class App:
         r = pygame.Rect(x0, 106, W - x0 - 30, H - 126)
         self.panel(r)
         if tab == "table":
-            self._table_rows(spain.table(c), r.x + 20, r.y + 14, r.w - 40)
+            self._table_rows(spain.table(c) if cfg is None else foreign.table(c, cfg), r.x + 20, r.y + 14, r.w - 40)
             return
         if tab == "scorers":
             y = r.y + 14
             for label, cx in (("", 0), ("Player", 40), ("Club", 330), ("Apps", r.w - 170), ("Goals", r.w - 90)):
                 self.text(label, "small", MUTED, (r.x + 20 + cx, y))
             y += 28
-            for i, (n, p, club) in enumerate(spain.top_scorers(c, 20), start=1):
+            for i, (n, p, club) in enumerate(spain.top_scorers(c, 20) if cfg is None else foreign.top_scorers(c, cfg, 20),
+                                             start=1):
                 self.text(str(i), "body", MUTED, (r.x + 20, y))
                 self.text(f"{p['Name']} ({p['Pos']}, {p['Age']})", "body", TEXT, (r.x + 60, y))
                 _badge(self.win, tuple(club["colour"]), (r.x + 358, y + 11), 7, club)
@@ -2993,7 +3011,7 @@ class App:
                 self.buttons.append(_Invisible(pygame.Rect(r.x + 10, y - 3, r.w - 20, 27),
                                                lambda cid=club["id"], pid=p["id"]: self.view_player(cid, pid)))
                 y += 30
-            if not spain.top_scorers(c, 1):
+            if not (spain.top_scorers(c, 1) if cfg is None else foreign.top_scorers(c, cfg, 1)):
                 self.text("No goals yet - the season hasn't started.", "body", MUTED, (r.x + 20, y))
             return
         # Results, a matchday at a time
@@ -3028,7 +3046,7 @@ class App:
         """League table / Fixtures / Spain - the newspaper's sports pages (office)."""
         W, H = self.size
         tabs = (("papers", "Papers"), ("table", "League table"), ("fixtures", "Fixtures"), ("cups", "Cups"),
-                ("spain", "Spain"))
+                ("spain", "Abroad"))
         for i, (key, label) in enumerate(tabs):
             self.buttons.append(Button((W - 30 - len(tabs) * 112 + i * 112, 24, 106, 36), label,
                                        lambda k=key: self._menu(k), primary=key == active, font="btn_s"))

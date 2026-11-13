@@ -731,6 +731,8 @@ def on_day(career, iso, rng):
     bids_day(career, iso, rng)                          # answers to your bids (and rivals)
     from career import spain
     spain.day(career, iso, rng)                         # the Spanish league's day
+    from career import foreign
+    foreign.day(career, iso, rng)                       # Germany's and Italy's leagues (career/foreign.py)
     from career import cups
     cups.day(career, iso, rng)                          # the cups: draws, and everyone else's ties (career/cups.py)
 

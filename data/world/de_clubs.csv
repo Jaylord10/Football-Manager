@@ -1,0 +1,19 @@
+id,name,short,r,g,b,strength,defence,build_up,roles
+120,FC Rheinfeld,Rheinfeld,210,20,40,80,press,play_out,red
+121,Borussia Kaltenbach,Kaltenbach,245,205,30,76,press,play_out,blue
+122,SV Edelstein,Edelstein,230,30,30,73,high_press,play_out,blue
+123,Eintracht Lindenau,Lindenau,20,20,20,70,high_press,play_out,red
+124,VfB Hohenwald,Hohenwald,240,240,240,68,press,mixed,blue
+125,SC Altmark,Altmark,200,20,20,66,press,mixed,blue
+126,TSG Weidenbach,Weidenbach,30,90,180,65,mid_block,play_out,blue
+127,SC Grunfeld,Grunfeld,30,140,60,64,mid_block,play_out,red
+128,Fortuna Elbstadt,Elbstadt,210,30,40,63,mid_block,mixed,red
+129,FC Seeburg,Seeburg,30,70,160,62,mid_block,mixed,blue
+130,1. FC Bergheim,Bergheim,230,40,40,61,mid_block,mixed,blue
+131,SV Moorstadt,Moorstadt,30,130,70,60,mid_block,clear,red
+132,VfL Ostwald,Ostwald,40,140,60,59,mid_block,clear,red
+133,Union Spreewald,Spreewald,200,30,30,58,low_block,mixed,red
+134,FSV Mainau,Mainau,210,30,40,57,low_block,mixed,blue
+135,SpVgg Talheim,Talheim,20,110,60,56,low_block,clear,red
+136,TuS Kohlberg,Kohlberg,30,50,120,55,low_block,clear,blue
+137,SV Nordhafen,Nordhafen,30,60,140,54,low_block,clear,red

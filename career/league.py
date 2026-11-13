@@ -197,6 +197,8 @@ def new_career(clubs, my_club, seed=None):
     from career import stadium
     stadium.sync(career)                 # (each ground's real capacity - career/stadium.py)
     divisions.start(career)              # the other division's fixtures (career/divisions.py)
+    from career import foreign
+    foreign.ensure(career)               # Germany's and Italy's leagues (career/foreign.py)
     from career import cups
     cups.create(career)                  # the season's cups (career/cups.py, career/europe.py)
     return career
@@ -271,6 +273,8 @@ def new_season(career, seed=None):
         crowds.season_end(career, tt)    # fan bases grow or shrink; this season's crowds filed
     from career import spain
     spain.season_end(career, random.Random(seed))       # Spain's last games, money, champions
+    from career import foreign
+    foreign.season_end(career, random.Random(seed))     # ...and Germany's and Italy's
     from career import loans
     loans.season_end(career)                             # loans end: back to their clubs (or bought)
     from career import contracts
@@ -302,6 +306,8 @@ def new_season(career, seed=None):
     contracts.new_outside_players(career, rng)       # new free agents from outside the league
     contracts.ai_sign_free_agents(career, rng)       # AI clubs short of players sign some
     spain.summer(career, rng)                        # ...and the same summer in Spain
+    from career import foreign
+    foreign.summer(career, rng)                      # ...Germany and Italy
     contracts.trim_free_agents(career)
     finance.new_season(career, rng)                  # contracts for the youngsters, budgets
     from career import registration, transfers
@@ -393,6 +399,8 @@ def load(path=SAVE_FILE):
     stadium.sync(career)                 # (each ground's real capacity - career/stadium.py)
     from career import divisions
     divisions.ensure(career)             # (older saves: Division 1 arrives - career/divisions.py)
+    from career import foreign
+    foreign.ensure(career)               # (older saves: Germany and Italy - career/foreign.py)
     from career import cups
     cups.ensure(career)                  # (older saves: the cups start - career/cups.py)
     return career

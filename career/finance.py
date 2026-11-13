@@ -80,6 +80,15 @@ LEAGUE = {
     # central money ~£9m a club (basic award + the Premier League's solidarity payment), no merit
     # money; wage bills ~£9m (the smallest) to ~£65m (a big club just down - more with parachute
     # payments, which come next); grounds 10,000-38,000 about 80% full at ~£22-35 a ticket
+    # GERMANY and ITALY (career/foreign.py) - Deloitte's figures, roughly (2023/24, EUR at ~0.85): the
+    # Bundesliga's biggest wage bill ~£300m (one giant), the smallest ~£20m, grounds ~93% full and cheap
+    # tickets; Serie A's wage bills ~£230m down to ~£20m, grounds ~75% full, TV money shared more evenly
+    "de": {"wage_bill": (260 * M, 20 * M, 2.6), "capacity": (81_000, 15_000, 1.4), "ticket": (40, 22, 1.2),
+           "commercial": (450 * M, 8 * M, 4.0), "balance": (100 * M, 5 * M, 2.0), "crowd": 0.93,
+           "central": 40 * M, "size_share": (40 * M, 5 * M, 2.0), "merit": 1.0 * M},
+    "it": {"wage_bill": (230 * M, 18 * M, 2.2), "capacity": (75_000, 12_000, 1.4), "ticket": (45, 20, 1.3),
+           "commercial": (250 * M, 6 * M, 3.0), "balance": (60 * M, 3 * M, 2.0), "crowd": 0.75,
+           "central": 35 * M, "size_share": (50 * M, 5 * M, 2.0), "merit": 1.2 * M},
     "d1": {"wage_bill": (65 * M, 9 * M, 1.8), "capacity": (38_000, 10_000, 1.5), "ticket": (35, 22, 1.2),
            "commercial": (25 * M, 2 * M, 2.0), "balance": (25 * M, 2 * M, 1.5), "crowd": 0.80,
            "central": 9 * M, "size_share": (0, 0, 1.0), "merit": 0},

@@ -36,15 +36,15 @@ NAMES = {CC: "The Continental Champions' Cup", SHIELD: "The Continental Shield",
 SHORTS = {CC: "Champions' Cup", SHIELD: "Shield", WORLD: "World Club Trophy"}
 BASE, SA_BASE = 300, 400
 # The continent's clubs: (name, country, level).  The roll of honour's foreign winners are among them.
+# (Germany's and Italy's clubs play in their own leagues now - career/foreign.py)
 CONTINENT = [
-    ("Sporting Esteira", "Portugal", 77), ("FC Rheinfeld", "Germany", 79), ("Inter Valmora", "Italy", 78),
-    ("AC Montevera", "Italy", 76), ("Olympique Varennes", "France", 75), ("Ajaxia Noord", "Netherlands", 72),
+    ("Sporting Esteira", "Portugal", 77), ("Olympique Varennes", "France", 75), ("Ajaxia Noord", "Netherlands", 72),
     ("Celtic Harbour", "Scotland", 68), ("Dinamo Kravetz", "Ukraine", 67), ("Galatur SK", "Turkey", 69),
     ("FC Lindholm", "Sweden", 63), ("Union Saint-Lys", "Belgium", 67), ("Hellas Korinna", "Greece", 66),
-    ("Steaua Ravna", "Romania", 64), ("Borussia Kaltenbach", "Germany", 74), ("Virtus Calderano", "Italy", 71),
-    ("Racing Clairmont", "France", 69), ("SC Veldhoven", "Netherlands", 68), ("Dinamo Zarkov", "Croatia", 65),
+    ("Steaua Ravna", "Romania", 64), ("Racing Clairmont", "France", 69), ("SC Veldhoven", "Netherlands", 68), ("Dinamo Zarkov", "Croatia", 65),
     ("Slavia Brezno", "Czechia", 64), ("Rapid Donaustadt", "Austria", 63), ("FC Basellen", "Switzerland", 63),
-    ("Legia Ostrowa", "Poland", 62), ("Red Star Kragova", "Serbia", 64), ("SV Edelstein", "Germany", 70)]
+    ("Legia Ostrowa", "Poland", 62), ("Red Star Kragova", "Serbia", 64), ("Sport Ribeira", "Portugal", 73),
+    ("Olympique Calanques", "France", 71), ("Kempen Vooruit", "Netherlands", 70)]
 SOUTH = [("Boca del Plata", "Argentina", 72), ("Estrela da Serra", "Brazil", 73), ("Club Atletico Montevista", "Uruguay", 68),
          ("Nacional de Sierra Alta", "Colombia", 67), ("Gremio Litoral", "Brazil", 71), ("Universitario del Sur", "Peru", 66),
          ("Deportivo Cumbre", "Ecuador", 67), ("Santa Fe del Rio", "Argentina", 69)]
@@ -132,17 +132,21 @@ def _squads(career, y):
 def country(career, cid):
     if cid is not None and 0 <= cid < len(career["clubs"]):
         return "England"
-    from career import spain
+    from career import spain, foreign
     if spain.exists(career) and spain.ID_BASE <= cid < spain.ID_BASE + 20:
         return "Spain"
+    cfg = foreign.league_of_id(cid)
+    if cfg is not None:
+        return cfg.country
     c = club(career, cid)
     return c.get("country", "?") if c else "?"
 
 
 def find(career, nm):
     """A club id by name (the roll of honour's names: ours, Spain's, the continent's)."""
-    from career import spain
-    for c in career["clubs"] + spain.clubs(career) + list(_eu(career)["clubs"].values()) + list(_eu(career)["south"].values()):
+    from career import spain, foreign
+    others = [c for cfg in foreign.LEAGUES for c in foreign.clubs(career, cfg)]
+    for c in career["clubs"] + spain.clubs(career) + others + list(_eu(career)["clubs"].values()) + list(_eu(career)["south"].values()):
         if c["name"] == nm:
             return c["id"]
     return None
@@ -203,12 +207,26 @@ def _spanish(career):
     return t[:4], t[4:8]
 
 
-def _continent(career, rng, taken):
-    """Eight for the Champions' Cup (the strongest, with a little luck) and eight for the Shield."""
+def _foreign_leagues(career):
+    """(Champions' Cup places, Shield places) from Germany and Italy: their top three, then 4th-6th."""
+    from career import foreign
+    cc, sh = [], []
+    for cfg in foreign.LEAGUES:
+        if not foreign.exists(career, cfg):
+            continue
+        h = career["leagues"][cfg.key].get("history") or []
+        t = h[-1]["table"] if h and h[-1].get("table") else \
+            [c["id"] for c in sorted(foreign.clubs(career, cfg), key=lambda c: -c.get("strength", 0))]
+        cc += t[:3]
+        sh += t[3:6]
+    return cc, sh
+
+
+def _continent(career, rng, n_cc, n_sh):
+    """The rest of the continent: the strongest (with a little luck) to the Champions' Cup, the next to the Shield."""
     e = _eu(career)
-    cs = [c for c in e["clubs"].values() if c["id"] not in taken]
-    ranked = sorted(cs, key=lambda c: -(c["strength"] + rng.uniform(-4, 4)))
-    return [c["id"] for c in ranked[:8]], [c["id"] for c in ranked[8:16]]
+    ranked = sorted(e["clubs"].values(), key=lambda c: -(c["strength"] + rng.uniform(-4, 4)))
+    return [c["id"] for c in ranked[:n_cc]], [c["id"] for c in ranked[n_cc:n_cc + n_sh]]
 
 
 # ---------------------------------------------------------------------------
@@ -222,7 +240,9 @@ def create(career):
     cu = cups.state(career)
     eng_cc, eng_sh = _english(career, y)
     es_cc, es_sh = _spanish(career)
-    for_cc, for_sh = _continent(career, rng, set())
+    fl_cc, fl_sh = _foreign_leagues(career)
+    es_cc, es_sh = es_cc + fl_cc, es_sh + fl_sh
+    for_cc, for_sh = _continent(career, rng, 16 - len(eng_cc) - len(es_cc), 16 - len(eng_sh) - len(es_sh))
     for key, entrants in ((CC, eng_cc + es_cc + for_cc), (SHIELD, eng_sh + es_sh + for_sh)):
         groups_d, ko = _dates(career, key, y)
         comp = cups._comp(key, NAMES[key], [(n, [cal.parse(d) if isinstance(d, str) else d for d in ds], neu, None)

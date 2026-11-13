@@ -124,8 +124,8 @@ def club(career, cid):
     g = (career.get("cups") or {}).get("guests", {}).get(str(cid))
     if g is not None:
         return g
-    from career import europe
-    c = europe.club(career, cid)
+    from career import europe, foreign
+    c = europe.club(career, cid) or foreign.club(career, cid)
     if c is not None:
         return c
     from career import spain
