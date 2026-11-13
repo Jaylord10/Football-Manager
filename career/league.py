@@ -209,6 +209,8 @@ def new_career(clubs, my_club, seed=None):
     cups.create(career)                  # the season's cups (career/cups.py, career/europe.py)
     from career import staff
     staff.ensure(career)                 # your backroom staff (career/staff.py)
+    from career import youth
+    youth.create(career)                 # the U21s and U18s, and their leagues (career/youth.py)
     return career
 
 
@@ -307,6 +309,8 @@ def new_season(career, seed=None):
     cups.season_end(career)              # the cups finished, their winners recorded (career/cups.py)
     from career import awards
     awards.season(career)                # the season's awards (career/awards.py)
+    from career import youth
+    youth.season_end(career)             # the youth leagues' champions
     t = table(career)
     tables = divisions.tables(career)    # {"pl": [...], "d1": [...]} (just yours in an older one-division world)
     up, down = divisions.movers(career, tables)     # promotion and relegation (play-offs: career/playoffs.py)
@@ -376,6 +380,7 @@ def new_season(career, seed=None):
     shapes.ai_review(career)                         # pre-season: AI managers settle on a shape
     availability.fix_lineups(career, career["calendar"][0])
     cups.create(career)                              # this season's cups (career/cups.py)
+    youth.new_season(career)                         # the U21s and U18s move up; new youth leagues
 
 
 def clubs_mod_overall(p):
@@ -418,6 +423,8 @@ def load(path=SAVE_FILE):
     board.ensure(career)
     from career import staff
     staff.ensure(career)                 # (older saves: your backroom staff)
+    from career import youth
+    youth.ensure(career)                 # (older saves: the U21s and U18s)
     spain.ensure(career)                 # (older saves: the Spanish league starts now, caught up to today)
     if not career.get("positions_v2"):   # (older saves: the modern positions - DM, AM, wingers, wing-backs)
         from career import transfers as trf, contracts as con, clubs

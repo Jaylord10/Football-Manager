@@ -38,6 +38,7 @@ from career import registration as reg
 from career import board as brd
 from career import spain
 from career import loans as lns
+from career import youth
 
 # ---------------------------------------------------------------------------
 # Look
@@ -1134,6 +1135,8 @@ class App:
         views = (("attributes", "Attributes"), ("contracts", "Contracts"), ("registration", "Registration"))
         if mine:
             views += (("room", "Dressing room"),)
+            if youth.state(self.career) and not getattr(self, "preview", False):
+                views += (("youth", "Youth"),)
         for i, (key, label) in enumerate(views):
             self.buttons.append(Button((W - 30 - len(views) * 130 + i * 130, 24, 124, 34), label,
                                        lambda k=key: setattr(self, "squad_view", k), primary=view == key,
@@ -1142,6 +1145,8 @@ class App:
             return self._squad_contracts(c, x0)
         if view == "room" and mine:
             return self._squad_room(c, x0)
+        if view == "youth" and mine:
+            return self._squad_youth(c, x0)
         if view == "registration" and "registered" in c:
             return self._squad_registration(c, x0)
         r = pygame.Rect(x0, 112, W - x0 - 30, H - 132)
@@ -1567,6 +1572,127 @@ class App:
         self.go("chat")
 
     # -- the dressing room at a glance (Squad screen) ---------------------------
+    def _youth_move(self, p, squad):
+        youth.move(self.career, p, squad)
+        league.save(self.career)
+
+    def _squad_youth(self, club, x0):
+        """The academy (career/youth.py): the U21s or the U18s - who's in them, their games and goals, your
+        academy coach's view of how good they could become, call-ups and send-downs - and their league."""
+        W, H = self.size
+        c = self.career
+        today = c["date"]
+        mouse = pygame.mouse.get_pos()
+        tab = getattr(self, "youth_tab", "u21")
+        for i, k in enumerate(youth.TEAMS):
+            self.buttons.append(Button((x0 + i * 128, 112, 122, 32), youth.NAME[k],
+                                       lambda k=k: setattr(self, "youth_tab", k), primary=tab == k, font="btn_s"))
+        r = pygame.Rect(x0, 154, 560, H - 174)
+        self.panel(r)
+        order = {p: i for i, p in enumerate(["GK", "LB", "LWB", "CB", "RB", "RWB", "DM", "CM", "AM", "LM", "LW",
+                                                "RM", "RW", "ST"])}
+        sort = lambda ps: sorted(ps, key=lambda p: (order.get(p["Pos"], 99), -clubs_mod.overall(p)))
+        side = sort(youth.pool(c, club, tab))
+        cand = sort(p for p in club["players"] if youth._here(p, club) and not p.get("squad")
+                    and p.get("Age", 26) <= youth.AGE_MAX[tab])
+        ft = youth.first_team(c)                       # (first-team league games and goals)
+        rows = len(side) + max(1, len(cand))
+        step = max(22, min(30, (r.h - 120) // max(1, rows)))
+        y = r.y + 12
+        g = youth.results(c, tab, 1)
+        nx = youth.next_game(c, tab)
+        bits = ([f"last: {g[0][1]}"] if g else []) + ([f"next: {cal.fmt(nx[0], False)} {nx[1]}"] if nx else [])
+        self.text(f"{youth.NAME[tab]} ({len(side)})", "h3", TEXT, (r.x + 16, y))
+        self.text("  ·  ".join(bits), "small", MUTED, (r.right - 16, y + 6), "topright")
+        y += 30
+        cols = (("Pos", 0), ("Name", 40), ("Age", 210), ("Rating", 244), ("Could be", 298), ("Apps", 366),
+                ("Goals", 410))
+        for label, cx in cols:
+            self.text(label, "small", MUTED, (r.x + 16 + cx, y))
+        y += 20
+
+        def line(p, games, goals, moves):
+            nonlocal y
+            row = pygame.Rect(r.x + 8, y - 3, r.w - 24 - 50 * len(moves), step - 2)
+            if row.collidepoint(mouse):
+                pygame.draw.rect(self.win, PANEL_2, row, border_radius=6)
+            st = avail.status(p, today) or ""
+            if p.get("squad_down"):
+                st = st or "RUN-OUT"
+            nw = 164 - (self.fonts["small"].size(st)[0] + 8 if st else 0)
+            ov = clubs_mod.overall(p)
+            lo, hi = youth.report(c, p)
+            for v, cx, col in ((p["Pos"], 0, TEXT), (self._fit_text(p["Name"], "body", nw), 40, TEXT),
+                               (p.get("Age", ""), 210, TEXT), (ov, 244, ACCENT if ov >= 70 else TEXT),
+                               (f"{lo}-{hi}" if p.get("Age", 26) <= 23 else "-", 298,
+                                ACCENT_HI if lo >= 70 else TEXT if lo >= 55 else MUTED),
+                               (games, 366, TEXT), (goals, 414, TEXT)):
+                self.text(v, "body", col, (r.x + 16 + cx, y))
+            if st:
+                self.text(st, "small", LOSS if st.startswith("INJ") else DRAW, (r.x + 16 + 202, y + 2), "topright")
+            self.buttons.append(_Invisible(row, lambda pid=p["id"]: self.view_player(club["id"], pid)))
+            bx = r.right - 12 - 50 * len(moves)
+            for k2, lab in moves:
+                self.buttons.append(Button((bx, y - 3, 46, step - 3), lab,
+                                           lambda p=p, k2=k2: self._youth_move(p, k2), font="btn_s",
+                                           primary=k2 is None))
+                bx += 50
+            y += step
+
+        other = "u18" if tab == "u21" else "u21"
+        for p in side:
+            gms, gls = youth.stats(p, tab)
+            moves = [(None, "Up")] + ([(other, other.upper())] if youth.can_drop(p, other)
+                                      and p.get("Age", 26) <= youth.AGE_MAX[other] else [])
+            line(p, gms, gls, moves)
+        y += 12
+        self.text("First-team players who could play for them", "small", MUTED, (r.x + 16, y))
+        y += 24
+        if not cand:
+            self.text("none", "small", MUTED, (r.x + 56, y))
+        for p in cand:
+            gms, gls = ft.get(p["id"], (0, 0))
+            line(p, gms, gls, [(tab, "Down")])
+        self.text("First-team games help youngsters most; U21 games half as much, U18 games a third.",
+                  "small", MUTED, (r.x + 16, r.bottom - 48))
+        self.text("Senior players back from injury can have a run-out with the U21s - from their own page.",
+                  "small", MUTED, (r.x + 16, r.bottom - 26))
+        # right: the league
+        r2 = pygame.Rect(r.right + 16, 154, W - r.right - 46, H - 174)
+        self.panel(r2)
+        y = r2.y + 12
+        self.text(youth.LEAGUE[tab], "h3", TEXT, (r2.x + 16, y))
+        y += 32
+        cP, cGD, cPts = r2.right - 96, r2.right - 54, r2.right - 16
+        self.text("Club", "small", MUTED, (r2.x + 44, y))
+        for label, cx in (("P", cP), ("GD", cGD), ("Pts", cPts)):
+            self.text(label, "small", MUTED, (cx, y), "topright")
+        y += 20
+        tbl = youth.table(c, tab)
+        lh = max(18, min(24, (r2.bottom - y - 130) // max(1, len(tbl))))
+        for i, row in enumerate(tbl, 1):
+            me = row["club"] == c["my_club"]
+            if me:
+                pygame.draw.rect(self.win, HIGHLIGHT, (r2.x + 8, y - 2, r2.w - 16, lh), border_radius=4)
+            col = TEXT if me or i <= 3 else MUTED
+            nm = self._fit_text(self.name(row["club"], short=True), "small", cP - 30 - (r2.x + 44))
+            self.text(str(i), "small", MUTED, (r2.x + 16, y))
+            self.text(nm, "small", col, (r2.x + 44, y))
+            self.text(str(row["p"]), "small", col, (cP, y), "topright")
+            self.text(f"{row['gd']:+d}" if row["p"] else "0", "small", col, (cGD, y), "topright")
+            self.text(str(row["pts"]), "small", ACCENT if me else col, (cPts, y), "topright")
+            y += lh
+        y += 12
+        self.text("Recent results", "small", MUTED, (r2.x + 16, y))
+        y += 22
+        res = youth.results(c, tab, 4)
+        if not res:
+            self.text("No games yet - the season starts in mid-August.", "small", MUTED, (r2.x + 16, y))
+        for d, txt in res:
+            self.text(f"{cal.fmt(d, False)}  {txt}", "small",
+                      WIN if txt[0] == "W" else DRAW if txt[0] == "D" else LOSS, (r2.x + 16, y))
+            y += 20
+
     def _squad_room(self, club, x0):
         W, H = self.size
         c = self.career
@@ -2650,8 +2776,19 @@ class App:
                    f"{cal.fmt(ln['until'], False)} ({ln.get('apps', 0)} games)")
         elif p.get("loan_listed"):
             sub += "  ·  on your loan list"
+        acad = youth.in_academy(p)
+        if mine and p.get("squad") and not p.get("loan"):
+            sub = sub.replace("not in the starting XI", ("academy - " if acad else "in the ") + youth.NAME[p["squad"]])
+            if p.get("squad_down"):
+                sub += " (a run-out)"
         tab = getattr(self, "player_tab", "profile")
         self.text(self._fit_text(sub, "body", W - 30 - 260 - (x0 + 104)), "body", MUTED, (x0 + 104, 72))
+        if mine and youth.state(self.career) and not p.get("loan") and not getattr(self, "preview", False):
+            label = ("Sign him for the first team" if acad else "Back to the first team" if p.get("squad")
+                     else "Send to the U21s")
+            self.buttons.append(Button((W - 30 - 250, 20, 250, 34), label,
+                                       lambda: self._youth_move(p, None if p.get("squad") else "u21"),
+                                       font="btn_s"))
         for k, (key, label) in enumerate((("profile", "Profile"), ("career", "Career"))):
             self.buttons.append(Button((W - 30 - 250 + k * 128, 62, 122, 34), label,
                                        lambda key=key: setattr(self, "player_tab", key),
@@ -2780,7 +2917,10 @@ class App:
         apps = f"{starts}" + (f" (+{subs_on} as sub)" if subs_on else "")
         if cid >= spain.ID_BASE:                       # (quick results: starts and goals only)
             apps, minutes, goals = str(p.get("lg_apps", 0)), p.get("lg_apps", 0) * 90, [0] * p.get("lg_goals", 0)
-        self.text(f"Appearances: {apps}", "body", TEXT, (sr.x + 16, sr.y + 46))
+        yst = [(youth.NAME[t], *youth.stats(p, t)) for t in youth.TEAMS if youth.stats(p, t)[0]]
+        if yst and not youth.in_academy(p):
+            apps += "  ·  " + ", ".join(f"{n}: {g}" for n, g, _ in yst)
+        self.text(self._fit_text(f"Appearances: {apps}", "body", sr.w - 28), "body", TEXT, (sr.x + 16, sr.y + 46))
         self.text(f"Minutes: {minutes}", "body", TEXT, (sr.x + 16, sr.y + 72))
         self.text(f"Goals: {len(goals)}", "body", TEXT, (sr.x + 16, sr.y + 98))
         if cid >= spain.ID_BASE or quick:
@@ -2788,6 +2928,16 @@ class App:
         else:
             self.text(f"Cards: {yellows} yellow, {reds} red", "body", TEXT, (sr.x + 16, sr.y + 124))
         self.text(f"Overall rating: {clubs_mod.overall(p)}", "body", TEXT, (sr.x + 16, sr.y + 150))
+        if youth.in_academy(p):
+            yy = sr.y + 180
+            for t in youth.TEAMS:
+                g, gl = youth.stats(p, t)
+                if g or p.get("squad") == t:
+                    self.text(f"{youth.NAME[t]}: {g} games, {gl} goals", "body", ACCENT, (sr.x + 16, yy))
+                    yy += 26
+            if mine:
+                lo, hi = youth.report(self.career, p)
+                self.text(f"Could become {lo}-{hi}", "body", TEXT, (sr.x + 16, yy))
         if "wage" in p:
             today = self.career.get("date")
             self.text(f"Value: {fin.money(fin.value(p, today))}", "body", ACCENT, (sr.x + 16, sr.y + 180))
@@ -2824,7 +2974,7 @@ class App:
             if getattr(self, "flash", None):
                 self.text(self.flash, "body", LOSS, (x0, H - 100))
             return
-        if mine and "finance" in club:
+        if mine and "finance" in club and not acad:
             self.buttons.append(Button((W - 30 - 220 - 200, H - 66, 190, 46),
                                        "Off the loan list" if p.get("loan_listed") else "Loan list",
                                        lambda: self._loan_list(p)))

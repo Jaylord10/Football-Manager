@@ -428,7 +428,10 @@ def lineup_ok(club, lineup=None):
 
 
 def player_by_id(club, pid):
-    return next((p for p in club["players"] if p["id"] == pid), None)
+    p = next((p for p in club["players"] if p["id"] == pid), None)
+    if p is None and club.get("academy"):                      # (an academy player - career/youth.py)
+        p = next((q for q in club["academy"] if q["id"] == pid), None)
+    return p
 
 
 def _squad(rng, strength, used):

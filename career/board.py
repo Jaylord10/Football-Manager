@@ -246,6 +246,9 @@ def take_job(career, club_id):
     media.appointed(career, career["clubs"][club_id])
     from career import staff
     staff.ensure(career)                        # (the new club's staff)
+    from career import youth
+    if youth.state(career):
+        youth.set_squads(career, keep=False)    # (the new club's U21s and U18s)
     from career import divisions
     divisions.follow(career)                    # (a job in the other division: its fixtures become yours)
     b = state(career)

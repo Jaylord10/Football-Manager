@@ -45,7 +45,7 @@ WHAT = {"assistant": "Picks up more about moods and fitness.",
         "fitness": "Quicker recovery, fewer training injuries.",
         "physio": "Injured players back sooner.",
         "scout": "Better guesses at other clubs' young players.",
-        "academy": "Better youngsters from the academy."}
+        "academy": "Better youngsters from the academy; they improve faster."}
 PLURAL = {"coach": "First-team coaches"}
 BASE_WAGE = {"assistant": 0.6 * M, "coach": 0.4 * M, "gk": 0.25 * M, "fitness": 0.25 * M, "physio": 0.15 * M,
              "scout": 0.2 * M, "academy": 0.2 * M}       # a year, at ability 10 in the Premier Division
@@ -162,6 +162,13 @@ def academy(career, club):
         return 0.0, 1.0
     d = _diff(career, "academy")
     return 0.5 * d, max(0.5, min(2.0, 1 + 0.1 * d))
+
+
+def academy_development(career, club):
+    """How fast your academy players improve (at most 15% faster or slower)."""
+    if not _mine(career, club):
+        return 1.0
+    return max(0.85, min(1.15, 1 + 0.03 * _diff(career, "academy")))
 
 
 def assistant_threshold(career):

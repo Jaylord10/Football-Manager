@@ -227,7 +227,8 @@ def develop(p, dev_mult, focus, rng):
     if gap <= 0:
         return
     lo, hi = PLAYING_TIME
-    play = lo + (hi - lo) * min(1.0, p.get("mins_avg", 45) / 75.0)
+    from career import youth                             # (first-team minutes, plus youth games at their weight)
+    play = lo + (hi - lo) * min(1.0, youth.effective_minutes(p) / 75.0)
     gain = gap * rate / 365.0 * dev_mult * play          # level points today
     # Spread over the attributes: position keys and the focus get more
     keys = set(clubs_mod.RATING_KEYS[clubs_mod.NATURAL_GROUP[p["Pos"]]])
