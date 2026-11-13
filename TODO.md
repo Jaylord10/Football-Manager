@@ -16,9 +16,9 @@ allows; leave the 3D view; club photos are mine. Make the game as in depth as po
 - [x] **A long test with everything on** - done: `dev/long_all.py`. It found cup ties clashing with
       European nights (fixed: ties are moved a day or two). Clubs in the Shield play Thursday then Saturday
       (real clubs get moved to Sunday - see "Talk to Jay first").
-- [x] **Club profiles**: Castleford Rangers, Millbrook United, Kingsmere City done. Next: Whitcombe City
-      (the current champions), Stonecross Albion (Millbrook's derby), Lydmouth Town (Kingsmere's derby),
-      Eastvale Wanderers.
+- [x] **Club profiles**: Castleford, Millbrook, Kingsmere, Eastvale, Whitcombe, Stonecross, Lydmouth done.
+      Next: Westmoor County, Riverton Dynamo, Sandmere Athletic (Whitcombe's North East derby), then the rest.
+- [x] **The record books** (History tab), new club legends, broken club records, cup final details - done.
 - [x] **Players' career records** (season by season, trophies, awards) - done.
 - [x] **Your career as a manager** (record, reputation, bigger clubs asking for you) - done.
 
@@ -69,3 +69,5 @@ allows; leave the 3D view; club photos are mine. Make the game as in depth as po
 - Club profiles for Millbrook United and Kingsmere City (picture prompts in the morning summary).
 - Players' career records (a Career tab on every player); your own career and reputation as a manager.
 - The long test with everything on (dev/long_all.py); cup ties moved off clashing dates.
+- Four more club profiles (Eastvale, Whitcombe, Stonecross, Lydmouth); the History tab; new legends and
+  broken records; cup finals show venue, date and scorers. Morning report with screenshots and picture prompts.
