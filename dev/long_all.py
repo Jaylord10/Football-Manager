@@ -138,6 +138,9 @@ for season in range(N):
                 w, r = h[k]
                 won.append(f"{k[:-6]}: {w} (beat {r})")
     print("  cups:", "; ".join(won) if won else h)
+    tk = [t for t in c.get("takeovers") or [] if t["year"] == c["year"]]
+    if tk:
+        print("  takeovers:", "; ".join(f"{c['clubs'][t['club']]['short']}: {t['name']} ({t['what']})" for t in tk))
     # the squad cost rules (career/ffp.py): fines and points
     scr = [(x["short"], x["finance"]["scr"]) for x in c["clubs"]
            if (x.get("finance") or {}).get("scr", {}).get("year") == year]

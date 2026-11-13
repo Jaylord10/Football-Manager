@@ -48,7 +48,8 @@ def objective(career, club):
     """(text, target place: finish this or higher; 'avoid' targets stored as 17 = stay above 18th)"""
     n = fin.league_size(career, club)
     if fin.league_of(club) == "d1":                # Division 1 (career/divisions.py): promotion's the thing
-        r = fin.size_rank(career, club)
+        from career import owners
+        r = max(0, fin.size_rank(career, club) + owners.ambition(club))
         if r <= 1:
             return "Win promotion", 2
         if r <= 5:
@@ -57,6 +58,8 @@ def objective(career, club):
             return "Finish in the top half", n // 2
         return "Finish in the top fifteen", 15
     r = fin.size_rank(career, club)               # 0 = biggest
+    from career import owners
+    r = max(0, min(n - 1, r + owners.ambition(club)))   # (new owners aim higher - or lower)
     scale = n / 20.0
     if r == 0:
         return "Win the league", 1

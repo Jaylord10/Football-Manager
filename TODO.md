@@ -24,6 +24,7 @@ allows; leave the 3D view; club photos are mine. Make the game as in depth as po
 
 ## Talk to Jay first (bigger decisions)
 
+- [x] **Takeovers** - done 13 Nov (on Jay's PC): rich investors, local businessmen, cost-cutters (~1-2 a season).
 - [x] **Start of a career** - done 13 Nov (on Jay's PC): enter your name (papers, fans, manager page); look round a
       club (squad, players, history, ground, money) before taking the job.
 - [x] **Staff** - done 13 Nov (on Jay's PC): 8 staff to start, hire and sack, effects at most 15% (coaches) /

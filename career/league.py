@@ -362,6 +362,9 @@ def new_season(career, seed=None):
     from career import foreign
     foreign.summer(career, rng)                      # ...Germany and Italy
     contracts.trim_free_agents(career)
+    from career import owners
+    owners.summer(career, rng)                       # takeovers (career/owners.py)
+    owners.interest(career)                          # (cost-cutting owners' borrowing)
     finance.new_season(career, rng)                  # contracts for the youngsters, budgets
     from career import registration, transfers
     transfers.refresh_abroad(career, rng)            # clubs outside the league

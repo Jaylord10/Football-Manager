@@ -2554,6 +2554,8 @@ class App:
                   ("Prize money (league, cups, Europe)", s["prize"]), ("Players sold", s["transfers_in"])]
         if s.get("owner"):
             income.append(("Owner's money", s["owner"]))
+        if s.get("investment"):
+            income.append(("New owners' investment", s["investment"]))
         spend = [("Player wages", s["wages"]), ("Bonuses and appearance fees", s.get("bonuses", 0)),
                  ("Coaching staff", s.get("coaching", 0)), ("Other staff (office, ground...)", s.get("staff", 0)), ("Academy (U21s and U18s)", s.get("academy", 0)),
                  ("National Insurance", s.get("ni", 0)), ("Running the club", s["other"]),
@@ -4723,6 +4725,13 @@ class App:
             if bits:
                 self.text(self._fit_text("   ·   ".join(bits), "small", r.w - 36 - 90), "small", MUTED,
                           (r.x + 18 + 90, y))
+                y += 21
+            tk = [t for t in c.get("takeovers") or [] if t.get("year") == ye]
+            if tk:
+                from career import owners as _ow
+                self.text(self._fit_text("Takeovers that summer: " + ", ".join(
+                    f"{nm(t['club'])} ({_ow.LABEL[t['kind']]})" for t in tk), "small", r.w - 36 - 90), "small", DRAW,
+                    (r.x + 18 + 90, y))
                 y += 21
             if gb:
                 self.text(self._fit_text(f"Golden Boot: {gb['name']} ({nm(gb['club'])}, {gb['note']})", "small",
