@@ -396,13 +396,18 @@ def record(career, m, r, rng=None):
     """A cup match is over: extra time / penalties if the tie needs them; fitness, knocks, the gate;
     who goes through (and the next draw, if it's due)."""
     comp = comp_of(career, m)
-    rd = comp["rounds"][m["round"]]
-    tie = rd["ties"][m["tie"]] if m.get("tie") is not None else None
     rng = rng or random.Random(f"cup-after:{m['id']}:{r['hg']}:{r['ag']}:{career.get('year')}")
     res = {"hg": r["hg"], "ag": r["ag"], "quick": bool(r.get("quick")),
            "goals": [{"team": g["team"], "name": g["name"], "minute": g.get("minute"), "pid": g.get("pid")}
                      for g in r.get("goals", [])]}
     m["result"] = res
+    if m.get("group") is not None:                     # (a continental group match - career/europe.py)
+        _after(career, m, r, rng)
+        from career import europe
+        europe.record_group(career, comp, m, res)
+        return res
+    rd = comp["rounds"][m["round"]]
+    tie = rd["ties"][m["tie"]] if m.get("tie") is not None else None
     if tie is not None:
         ms = [match(career, x) for x in tie["matches"]]
         last = all(x["result"] is not None for x in ms)
@@ -454,7 +459,9 @@ def _won(career, comp, winner, loser, m):
 
 
 def _prize(career, comp, rd, winner, loser):
-    from career import finance as fin
+    from career import finance as fin, europe
+    if comp["key"] in (europe.CC, europe.SHIELD, europe.WORLD):
+        return europe.final_prizes(career, comp, rd, winner, loser)
     w, l = PRIZE.get(comp["key"], {}).get(rd["name"], (0, 0))
     for cid, amount in ((winner, w), (loser, l)):
         c = club(career, cid)
@@ -548,6 +555,8 @@ def season_end(career):
     for comp in comps(career):
         out[comp["key"]] = [comp.get("winner"), comp.get("runner_up")]
         out[comp["key"] + "_names"] = [name(career, comp.get("winner")), name(career, comp.get("runner_up"))]
+        if comp.get("year_label"):
+            out[comp["key"] + "_year"] = comp["year_label"]
     career.setdefault("cup_history", []).append(out)
     career["cup_history"] = career["cup_history"][-60:]
     return out

@@ -728,7 +728,7 @@ class App:
         if sel is None or sel >= len(rounds):
             sel = cups.current_stage(c, comp)
         for i, (label, _) in enumerate(rounds):
-            self.buttons.append(Button((r.x + 16 + i * 122, r.y + 48, 116, 30), label,
+            self.buttons.append(Button((r.x + 16 + i * 120, r.y + 48, 114, 30), label,
                                        lambda i=i: setattr(self, "cups_round", i), primary=i == sel, font="btn_s"))
         y = r.y + 92
         lines = rounds[sel][1]()
