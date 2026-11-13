@@ -1,0 +1,274 @@
+{
+ "id": 1,
+ "name": "Millbrook United",
+ "short": "Millbrook",
+ "nicknames": [
+  "United",
+  "the Wheelmen"
+ ],
+ "founded": 1879,
+ "location": {
+  "town": "Millbrook",
+  "county": "West Midlands",
+  "region": "the Midlands",
+  "about": "A big Midlands city of about 900,000, grown up along the Mill Brook where a hundred water wheels once turned the brass and button works. The brass trade made it rich, the car plants kept it busy, and the club is the biggest thing in the city - and, for a few seasons now, one of the richest in the land."
+ },
+ "colours": {
+  "rgb": [
+   230,
+   180,
+   40
+  ],
+  "story": "Old gold and black - the brass of the city's foundries and the soot that came with it. The colours were picked in 1879 by the founders, workers at Hadley's Brass Mill, and have never changed.",
+  "home": {
+   "shirt": "old gold with a black collar and black cuffs",
+   "shorts": "black",
+   "socks": "old gold",
+   "rgb": {
+    "shirt": [
+     232,
+     176,
+     36
+    ],
+    "trim": [
+     22,
+     22,
+     24
+    ],
+    "shorts": [
+     22,
+     22,
+     24
+    ],
+    "socks": [
+     232,
+     176,
+     36
+    ]
+   }
+  },
+  "away": {
+   "shirt": "black with old-gold trim",
+   "shorts": "black",
+   "socks": "black",
+   "rgb": {
+    "shirt": [
+     22,
+     22,
+     24
+    ],
+    "trim": [
+     232,
+     176,
+     36
+    ],
+    "shorts": [
+     22,
+     22,
+     24
+    ],
+    "socks": [
+     22,
+     22,
+     24
+    ]
+   }
+  },
+  "third": {
+   "shirt": "white with a thin gold pinstripe",
+   "shorts": "white",
+   "socks": "white",
+   "rgb": {
+    "shirt": [
+     245,
+     245,
+     245
+    ],
+    "trim": [
+     232,
+     176,
+     36
+    ],
+    "shorts": [
+     245,
+     245,
+     245
+    ],
+    "socks": [
+     245,
+     245,
+     245
+    ]
+   }
+  }
+ },
+ "rivals": [
+  {
+   "club": "Stonecross Albion",
+   "derby": "the Midlands Derby",
+   "why": "the old enemy across the city boundary - the biggest crowd of the season, every season, since 1883"
+  },
+  {
+   "club": "Bramhall Borough",
+   "derby": null,
+   "why": "the last day of 1990-91, when Bramhall won the title at Millstream Park - the city has never forgiven them"
+  }
+ ],
+ "history": [
+  {
+   "years": "1879-1915",
+   "title": "The brass mill boys",
+   "text": "Founded in 1879 by workers at Hadley's Brass Mill. The Association Cup came in 1899, and second place in the League in 1910. The club moved to Millstream Park, on the old mill pond, in 1904."
+  },
+  {
+   "years": "1919-1939",
+   "title": "The first golden age",
+   "text": "Champions in 1920, second three times in five seasons in the twenties (1923, 1924, 1928), Association Cup winners in 1931 and 1933, and champions again in 1938."
+  },
+  {
+   "years": "1946-1970",
+   "title": "Highs and a fall",
+   "text": "The Association Cup in 1947 and the title in 1949, the cup again in 1954. Then the slow decline: relegated in 1965 for the only time, and back up as runners-up in 1968."
+  },
+  {
+   "years": "1970-1992",
+   "title": "Ron Pickering's Golds",
+   "text": "The League Cup in 1974, second in 1978, then Ron Pickering's great side: the Double in 1985, the Association Cup in 1987 and another Double in 1989. On the last day of 1990-91 they needed a draw at home to Bramhall to win the title - and lost."
+  },
+  {
+   "years": "1992-2020",
+   "title": "Cups and near misses",
+   "text": "A team built for the cups: the League Cup in 1993, 1996, 1999 and 2005, the Association Cup in 1994 and 1995 - but only second place in the league in 1998 and 2017."
+  },
+  {
+   "years": "2021-now",
+   "title": "New money",
+   "text": "An American investment group bought the club in 2021 and spent: a new North Stand, a squad to match Northwick's - and the Association Cup and League Cup in 2024 and the League Cup again in 2025. The title is the one thing missing."
+  }
+ ],
+ "honours_note": "League seasons are given by the year they ended (1920 = 1919-20).",
+ "legends": [
+  {
+   "name": "Ron Pickering",
+   "role": "Manager 1979-1993",
+   "note": "Two Doubles (1985 and 1989) and four other cups. The Pickering Stand is named after him."
+  },
+  {
+   "name": "Walter Hadley",
+   "role": "Founder and first chairman",
+   "note": "Owner of the brass mill whose workers started the club."
+  },
+  {
+   "name": "Jimmy Kettle",
+   "role": "Centre-forward 1929-1946",
+   "note": "273 goals - the club record."
+  },
+  {
+   "name": "Les Bannister",
+   "role": "Wing-half 1946-1963",
+   "note": "671 appearances - the club record."
+  },
+  {
+   "name": "Gary Whitlock",
+   "role": "Captain, midfielder 1982-1995",
+   "note": "Lifted both Doubles."
+  },
+  {
+   "name": "Callum Barnes",
+   "role": "Midfielder 2019-",
+   "note": "The star of the 2024 and 2025 cup wins."
+  }
+ ],
+ "records": {
+  "attendance": "78,412 v Stonecross Albion, Association Cup fifth round, 1938 (old Millstream Park)",
+  "win": "11-0 v Harrowby Athletic, Association Cup, 1899",
+  "defeat": "0-7 v Castleford Rangers, League, 1959",
+  "top_scorer": "Jimmy Kettle, 273 goals (1929-1946)",
+  "appearances": "Les Bannister, 671 (1946-1963)",
+  "season_goals": "Jimmy Kettle, 46 (1937-38)"
+ },
+ "badge": {
+  "about": "The water wheel for the Mill Brook and the mills that made the city; the brook beneath it; the old gold and black of the brass works. Motto 'Semper Volvens' - always turning.",
+  "design": "A black heraldic shield with a thin old-gold border. In the centre, a large old-gold water wheel with spokes and paddles. Beneath it, three wavy old-gold lines for the brook. 'MILLBROOK UNITED' arched above the shield in old-gold capitals, and an old-gold ribbon beneath reading 'SEMPER VOLVENS' in black, with '1879' on the ribbon's ends."
+ },
+ "ground": {
+  "name": "Millstream Park",
+  "known_as": "the Millstream",
+  "opened": 1904,
+  "capacity": 61500,
+  "pitch": {
+   "length_m": 105,
+   "width_m": 68,
+   "surface": "hybrid grass, perfect",
+   "runoff": "medium"
+  },
+  "stands": [
+   {
+    "name": "Pickering Stand",
+    "side": "west",
+    "built": 1996,
+    "tiers": 2,
+    "capacity": 15500,
+    "roof": "cantilever",
+    "features": "the main stand: dressing rooms, tunnel and dugouts on the halfway line, boxes between the tiers; Ron Pickering's statue outside",
+    "expandable": false
+   },
+   {
+    "name": "Brook End",
+    "side": "south",
+    "built": 1993,
+    "tiers": 2,
+    "capacity": 15000,
+    "roof": "cantilever",
+    "features": "the home end - two steep tiers in gold seats; the old mill pond, now an ornamental lake with a restored water wheel, right behind it",
+    "expandable": false
+   },
+   {
+    "name": "North Stand",
+    "side": "north",
+    "built": 2023,
+    "tiers": 3,
+    "capacity": 19000,
+    "roof": "a sweeping modern roof",
+    "features": "the new owners' stand: three tiers, glass-fronted hospitality, the club's museum; away fans in the lower tier corner",
+    "expandable": false
+   },
+   {
+    "name": "East Stand",
+    "side": "east",
+    "built": 1981,
+    "tiers": 2,
+    "capacity": 12000,
+    "roof": "1980s cantilever",
+    "features": "an older two-tier stand with a long, low roof - the next one to be rebuilt",
+    "expandable": true
+   }
+  ],
+  "corners": "the southern corners filled in (1990s); the northern corners part of the new North Stand",
+  "roof": "four roofs - the North Stand's new sweeping one, the others older cantilevers",
+  "surroundings": "the old mill pond and its restored water wheel behind the Brook End, the Mill Brook running past, red-brick factories turned into flats, the city's towers on the skyline",
+  "atmosphere": "big, loud and expectant - the Brook End sings, and the city expects trophies now",
+  "for_the_engine": {
+   "home_end": "south",
+   "away_fans": "north-east corner",
+   "dugouts": "west side, halfway line",
+   "pitch_m": [
+    105,
+    68
+   ],
+   "notes": "a big, modern-ish ground"
+  },
+  "images": {
+   "crest": "data/world/clubs/millbrook/crest.png",
+   "inside": "data/world/clubs/millbrook/inside.jpg",
+   "aerial": "data/world/clubs/millbrook/aerial.jpg"
+  }
+ },
+ "image_prompts": {
+  "badge": "A football club crest for 'Millbrook United', founded 1879, a big Midlands city club. A black heraldic shield with a thin old-gold border. In the centre a large old-gold water wheel with spokes and paddles; beneath it three wavy old-gold lines for a brook. 'MILLBROOK UNITED' arched above the shield in old-gold serif capitals. An old-gold ribbon beneath the shield reading 'SEMPER VOLVENS' in black capitals, with '18' and '79' on the ribbon's ends. Flat vector emblem, clean bold lines, limited colours (old gold, black), centred, on a plain transparent background, square format, no other text.",
+  "ground_inside": "Photorealistic wide-angle photo inside a 61,500-seat English football stadium on a bright autumn afternoon, 30 minutes before kick-off. Camera: high in the main stand on the halfway line, looking across the pitch. OPPOSITE: an older two-tier 1980s stand with gold seats under a long, low cantilever roof, half full. LEFT END: a brand-new, much bigger three-tier stand with a sweeping modern roof and glass-fronted boxes, filling up. RIGHT END: a steep two-tier home end PACKED with fans in old gold and black, with flags and a big banner of a water wheel. Players warming up in old-gold shirts with black collars and black shorts. Red-brick factory buildings and city towers beyond the stands.",
+  "ground_aerial": "Aerial drone photograph of a 61,500-seat English football stadium in a big Midlands city: one end a big new three-tier stand with a sweeping modern roof, the other three sides older two-tier stands with gold seats. Right behind one end, an ornamental lake with a restored old water wheel and a brook running past the ground. Around it: red-brick Victorian factories turned into flats, roads, and the city's towers. Photorealistic, soft afternoon light.",
+  "kits": "Three football kits for Millbrook United laid out flat side by side on a plain light background, product-photo style. Home: old-gold shirt with black collar and black cuffs, black shorts, old-gold socks. Away: black shirt with old-gold trim, black shorts, black socks. Third: white shirt with a thin gold pinstripe, white shorts, white socks. A small club crest on the left chest of each shirt. No sponsor logos, no other text."
+ },
+ "support": 82000
+}

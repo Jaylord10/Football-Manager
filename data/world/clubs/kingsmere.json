@@ -1,0 +1,275 @@
+{
+ "id": 3,
+ "name": "Kingsmere City",
+ "short": "Kingsmere",
+ "nicknames": [
+  "City",
+  "the Kings"
+ ],
+ "founded": 1874,
+ "location": {
+  "town": "Kingsmere",
+  "county": "Hampshire",
+  "region": "South of England",
+  "about": "An old cathedral city of about 250,000 in Hampshire, built round the royal mere where Saxon kings kept their summer court. A market city, then a railway and printing city; now offices, students and commuters - and a football club that has been up and down more than any other big club in the country."
+ },
+ "colours": {
+  "rgb": [
+   70,
+   130,
+   210
+  ],
+  "story": "Sky blue for the mere on a summer's day, with navy - the colour of the cathedral school, whose old boys founded the club in 1874.",
+  "home": {
+   "shirt": "sky blue with navy collar and navy cuffs",
+   "shorts": "navy",
+   "socks": "sky blue",
+   "rgb": {
+    "shirt": [
+     92,
+     150,
+     220
+    ],
+    "trim": [
+     20,
+     34,
+     70
+    ],
+    "shorts": [
+     20,
+     34,
+     70
+    ],
+    "socks": [
+     92,
+     150,
+     220
+    ]
+   }
+  },
+  "away": {
+   "shirt": "navy with thin sky-blue hoops",
+   "shorts": "navy",
+   "socks": "navy",
+   "rgb": {
+    "shirt": [
+     20,
+     34,
+     70
+    ],
+    "trim": [
+     92,
+     150,
+     220
+    ],
+    "shorts": [
+     20,
+     34,
+     70
+    ],
+    "socks": [
+     20,
+     34,
+     70
+    ]
+   }
+  },
+  "third": {
+   "shirt": "claret with sky-blue trim",
+   "shorts": "claret",
+   "socks": "claret",
+   "rgb": {
+    "shirt": [
+     110,
+     25,
+     45
+    ],
+    "trim": [
+     92,
+     150,
+     220
+    ],
+    "shorts": [
+     110,
+     25,
+     45
+    ],
+    "socks": [
+     110,
+     25,
+     45
+    ]
+   }
+  }
+ },
+ "rivals": [
+  {
+   "club": "Lydmouth Town",
+   "derby": "the Hampshire Derby",
+   "why": "the port twenty miles down the river - city against coast since 1882"
+  },
+  {
+   "club": "Castleford Rangers",
+   "derby": null,
+   "why": "the 1966 title race, lost on the last day at home to Castleford"
+  }
+ ],
+ "history": [
+  {
+   "years": "1874-1915",
+   "title": "The first champions",
+   "text": "Founded in 1874 by old boys of the cathedral school. Association Cup winners in 1880 and 1898 - and the first champions of the League in 1889. Champions again in 1910."
+  },
+  {
+   "years": "1919-1965",
+   "title": "City's cups",
+   "text": "The Association Cup in 1929, 1950 and 1964, the League Cup in its first year, 1961, and the title in 1936 - but second in 1951, 1955 and, painfully, 1966, beaten to it on the last day by Castleford."
+  },
+  {
+   "years": "1966-1992",
+   "title": "Champions and Europe",
+   "text": "Champions in 1969, the Association Cup in 1970, the League Cup in 1976, and the club's only European trophy: the Continental Shield in 1988. The League Cup again in 1992."
+  },
+  {
+   "years": "1993-2005",
+   "title": "So near",
+   "text": "Second in 1995, 1999, 2001 and 2002 - four times the runners-up in eight seasons - with the Association Cup in 2001 to show for it. Then the money ran out: relegated in 2005."
+  },
+  {
+   "years": "2005-2018",
+   "title": "The yo-yo years",
+   "text": "Won the League Cup in 2009 as a Second Division club, promoted as runners-up in 2010, down again in 2014 - and back up through the play-offs in 2018."
+  },
+  {
+   "years": "2018-now",
+   "title": "The miracle",
+   "text": "The League Cup in 2019 and then, two years after coming up, the title in 2020 - the greatest season in the club's history. The Association Cup came in 2026."
+  }
+ ],
+ "honours_note": "League seasons are given by the year they ended (1889 = 1888-89).",
+ "legends": [
+  {
+   "name": "Arthur Pennington",
+   "role": "Captain 1885-1898",
+   "note": "Captain of the first champions in 1889."
+  },
+  {
+   "name": "Eddie Marsh",
+   "role": "Manager 1963-1979",
+   "note": "The 1969 title, the 1964 and 1970 Association Cups. The Marsh Stand is named after him."
+  },
+  {
+   "name": "Tony Fairweather",
+   "role": "Striker 1961-1974",
+   "note": "241 goals - the club record."
+  },
+  {
+   "name": "Bobby Lane",
+   "role": "Defender 1984-2002",
+   "note": "698 appearances - the club record."
+  },
+  {
+   "name": "Sofia Okonkwo-Reid",
+   "role": "Chair 2016-",
+   "note": "Saved the club from administration in 2016 and appointed the manager who won the title."
+  },
+  {
+   "name": "Liam Foster",
+   "role": "Winger 2017-",
+   "note": "The 2020 title's star - promoted with the club in 2018."
+  }
+ ],
+ "records": {
+  "attendance": "66,780 v Northwick FC, Association Cup sixth round, 1938 (old Mere Road)",
+  "win": "10-1 v Penrith Forge, League, 1936",
+  "defeat": "0-7 v Eastvale Wanderers, League, 2004",
+  "top_scorer": "Tony Fairweather, 241 goals (1961-1974)",
+  "appearances": "Bobby Lane, 698 (1984-2002)",
+  "season_goals": "Tony Fairweather, 38 (1968-69)"
+ },
+ "badge": {
+  "about": "The crown for the Saxon kings who held court here; the mere's waters; the cathedral spire; 1874 for the year. Motto 'Regis ad Exemplar' - after the example of the king.",
+  "design": "A sky-blue shield with a thin navy border. At the top a gold crown. In the centre a white cathedral spire rising from three wavy navy lines for the mere. '1874' in navy beneath. 'KINGSMERE CITY' arched above the shield in navy capitals, and a navy ribbon beneath reading 'REGIS AD EXEMPLAR' in white."
+ },
+ "ground": {
+  "name": "The Mere",
+  "known_as": "the Mere",
+  "opened": 2008,
+  "capacity": 52000,
+  "former": "Mere Road (1890-2008), by the cathedral - now houses and a park, the old centre spot marked by a bench",
+  "pitch": {
+   "length_m": 105,
+   "width_m": 68,
+   "surface": "hybrid grass",
+   "runoff": "wide - a modern bowl"
+  },
+  "stands": [
+   {
+    "name": "Marsh Stand",
+    "side": "west",
+    "built": 2008,
+    "tiers": 2,
+    "capacity": 15000,
+    "roof": "part of the bowl roof",
+    "features": "the main stand: tunnel, dugouts and boxes; Eddie Marsh's statue in the plaza",
+    "expandable": false
+   },
+   {
+    "name": "Lakeside",
+    "side": "east",
+    "built": 2008,
+    "tiers": 2,
+    "capacity": 14000,
+    "roof": "part of the bowl roof",
+    "features": "two tiers facing the main stand, with the mere itself just behind it - the stand's glass back wall looks out over the water",
+    "expandable": false
+   },
+   {
+    "name": "Cathedral End",
+    "side": "north",
+    "built": 2008,
+    "tiers": 1,
+    "capacity": 13000,
+    "roof": "part of the bowl roof",
+    "features": "the home end - one big single tier; the cathedral spire in view over the roof",
+    "expandable": false
+   },
+   {
+    "name": "South Stand",
+    "side": "south",
+    "built": 2008,
+    "tiers": 1,
+    "capacity": 10000,
+    "roof": "part of the bowl roof",
+    "features": "away fans in one corner; built with room for a second tier",
+    "expandable": true
+   }
+  ],
+  "corners": "closed - a modern bowl",
+  "roof": "a continuous white roof on a steel frame",
+  "surroundings": "the mere right behind the Lakeside stand, with boats and a waterside path; the cathedral spire and the old city to the north; new housing and a railway line to the south",
+  "atmosphere": "a modern bowl, a bit quiet in the bad years - but the Cathedral End found its voice in the title season",
+  "for_the_engine": {
+   "home_end": "north",
+   "away_fans": "south-east corner",
+   "dugouts": "west side, halfway line",
+   "pitch_m": [
+    105,
+    68
+   ],
+   "notes": "a modern bowl - room to play"
+  },
+  "images": {
+   "crest": "data/world/clubs/kingsmere/crest.png",
+   "inside": "data/world/clubs/kingsmere/inside.jpg",
+   "aerial": "data/world/clubs/kingsmere/aerial.jpg"
+  }
+ },
+ "image_prompts": {
+  "badge": "A football club crest for 'Kingsmere City', founded 1874, an old English cathedral-city club. A sky-blue heraldic shield with a thin navy border. A gold crown at the top. In the centre a white cathedral spire rising from three wavy navy lines for a lake. '1874' in navy beneath the spire. 'KINGSMERE CITY' arched above the shield in navy serif capitals. A navy ribbon beneath the shield reading 'REGIS AD EXEMPLAR' in white capitals. Flat vector emblem, clean bold lines, limited colours (sky blue, navy, white, gold), centred, on a plain transparent background, square format, no other text.",
+  "ground_inside": "Photorealistic wide-angle photo inside a modern 52,000-seat English football bowl stadium on a bright spring evening under floodlights, 30 minutes before kick-off. Camera: high in the main stand on the halfway line, looking across the pitch. A continuous white roof all the way round; sky-blue seats. OPPOSITE: a two-tier stand, half full, with glimpses of a lake through glass at the very back. LEFT END: one big single-tier home end PACKED with fans in sky blue and navy, a banner reading 'REGIS AD EXEMPLAR', and a gothic cathedral spire visible above the roof behind it. RIGHT END: a single-tier stand with away fans in one corner. Players warming up in sky-blue shirts with navy collars and navy shorts.",
+  "ground_aerial": "Aerial drone photograph of a modern oval 52,000-seat football stadium with a continuous white roof beside a lake in an old English cathedral city. The lake is right along one side of the stadium, with boats and a waterside path; to the north the old city with a tall gothic cathedral spire; to the south new housing and a railway line. Summer evening light, photorealistic.",
+  "kits": "Three football kits for Kingsmere City laid out flat side by side on a plain light background, product-photo style. Home: sky-blue shirt with navy collar and navy cuffs, navy shorts, sky-blue socks. Away: navy shirt with thin sky-blue hoops, navy shorts, navy socks. Third: claret shirt with sky-blue trim, claret shorts, claret socks. A small club crest on the left chest of each shirt. No sponsor logos, no other text."
+ },
+ "support": 71000
+}

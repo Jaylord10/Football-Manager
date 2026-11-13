@@ -133,6 +133,15 @@ for y in range(1893, 2027):
     roll["second_tier"][y] = [ch, ru]
     if po:
         roll["second_tier_playoffs"][y] = [po, draw({ch, ru, po}) if y != 2026 else "Saltmarsh Athletic"]
+# A beaten play-off finalist stayed down - so it has to be a club that's in Division 1 now (a Premier Division
+# club today would have needed promoting later, and the roll doesn't know that it was).  Own random numbers, so
+# nothing above changes.
+rng3 = random.Random(1987)
+for y in sorted(roll["second_tier_playoffs"]):
+    w, ru = roll["second_tier_playoffs"][y]
+    if ru not in d1:
+        busy = set(roll["second_tier"].get(y, [])) | {w}
+        roll["second_tier_playoffs"][y] = [w, rng3.choice([n for n in d1 if n not in busy])]
 # The Continental Champions' Cup: an English club in it must have got there - league champions the
 # season before, or the holders (and, from 1998 when the competition opened up, the runners-up too).
 # Entries that can't have qualified go to the club that did (never one of the three with profiles);
