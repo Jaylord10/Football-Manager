@@ -310,7 +310,7 @@ class App:
         elif k == pygame.K_ESCAPE and self.screen in ("squad", "table", "fixtures", "prematch", "tactics",
                                                      "calendar", "training", "finances", "transfers",
                                                      "freeagents", "bid", "inbox", "board", "spain", "loan",
-                                                     "history", "cups", "manager"):
+                                                     "history", "cups", "manager", "staff"):
             self.go("home")
 
     def quit(self):
@@ -513,6 +513,90 @@ class App:
         b = Button((14, H - 66, 192, 42), "Back to the clubs", lambda: self.end_preview(False))
         b.preview_nav = True
         self.buttons.append(b)
+
+    def _training_tabs(self, active):
+        W, H = self.size
+        for i, (key, label) in enumerate((("training", "Training"), ("staff", "Staff"))):
+            self.buttons.append(Button((W - 30 - 2 * 128 + i * 128, 24, 122, 34), label,
+                                       lambda k=key: self.go(k), primary=active == key, font="btn_s"))
+
+    def draw_staff(self):
+        """Your backroom staff (career/staff.py): who they are and what they do; people looking for work."""
+        from career import staff
+        W, H = self.size
+        c = self.career
+        staff.ensure(c)
+        self.sidebar("training")
+        self._training_tabs("staff")
+        x0 = 250
+        self.text("Staff", "h1", TEXT, (x0, 18))
+        club = self._my_club()
+        exp = staff.expected(c, club)
+        self.text(f"Ability out of 20 - a club your size usually has about {exp:.0f}.  Better staff help; worse ones "
+                  f"cost you.  Coaching staff: {fin.money(staff.wage_bill(c))} a year.", "small", MUTED, (x0, 70))
+        # Your staff
+        r = pygame.Rect(x0, 100, 540, H - 120)
+        self.panel(r, "Your staff")
+        y = r.y + 48
+        confirm = getattr(self, "staff_confirm", None)
+        for role, label, n in staff.ROLES:
+            people = staff.of_role(c, role)
+            self.text(staff.PLURAL.get(role, label) if n > 1 else label, "small", ACCENT_HI, (r.x + 16, y))
+            self.text(self._fit_text(staff.WHAT[role], "small", r.right - 16 - (r.x + 190)), "small", MUTED,
+                      (r.x + 190, y))
+            y += 22
+            for s in people:
+                col = ACCENT if s["ability"] >= exp + 2 else LOSS if s["ability"] <= exp - 2 else TEXT
+                self.text(s["name"], "body", TEXT, (r.x + 16, y))
+                self.text(f"{s['ability']}", "body", col, (r.x + 200, y))
+                self.text(f"age {s['age']}  ·  {fin.money(s['wage'])}/yr  ·  to {s['until'][:4]}", "small", MUTED,
+                          (r.x + 232, y + 3))
+                if confirm == s["name"]:
+                    pay = staff.settlement(c, s)
+                    def go(name=s["name"]):
+                        staff.sack(c, name)
+                        self.staff_confirm = None
+                    self.buttons.append(Button((r.right - 136, y - 4, 122, 28), f"Pay {fin.money(pay)}?", go,
+                                               font="btn_s"))
+                else:
+                    self.buttons.append(Button((r.right - 96, y - 4, 82, 28), "Sack",
+                                               lambda name=s["name"]: setattr(self, "staff_confirm", name),
+                                               font="btn_s"))
+                y += 30
+            for _ in range(n - len(people)):
+                self.text("(nobody - hire someone on the right)", "small", LOSS, (r.x + 16, y + 3))
+                y += 30
+            y += 8
+        if confirm:
+            self.text("Sacking him means paying half of what's left on his contract.", "small", LOSS,
+                      (r.x + 16, r.bottom - 30))
+        # Looking for work
+        r2 = pygame.Rect(r.right + 14, 100, W - r.right - 44, H - 120)
+        self.panel(r2, "Looking for work")
+        role = getattr(self, "staff_role", "coach")
+        bx = r2.x + 16
+        by = r2.y + 46
+        short = {"assistant": "Assistant", "coach": "Coach", "gk": "GK coach", "fitness": "Fitness",
+                 "physio": "Physio", "scout": "Scout", "academy": "Academy"}
+        bw = (r2.w - 32 - 3 * 6) // 4
+        for i, (k, _, _) in enumerate(staff.ROLES):
+            self.buttons.append(Button((bx + (i % 4) * (bw + 6), by + (i // 4) * 36, bw, 30), short[k],
+                                       lambda k=k: setattr(self, "staff_role", k), primary=role == k, font="btn_s"))
+        y = by + 84
+        room = staff.room(c, role)
+        self.text(("Space for one more." if room == 1 else f"Space for {room}.") if room > 0 else
+                  "No space - sack someone in this job first.", "small", ACCENT_HI if room > 0 else LOSS,
+                  (r2.x + 16, y))
+        y += 30
+        for s in [x for x in staff.market(c) if x["role"] == role]:
+            col = ACCENT if s["ability"] >= exp + 2 else LOSS if s["ability"] <= exp - 2 else TEXT
+            self.text(s["name"], "body", TEXT, (r2.x + 16, y))
+            self.text(f"{s['ability']}", "body", col, (r2.right - 110, y), "topright")
+            self.text(f"age {s['age']}  ·  wants {fin.money(s['wage'])} a year", "small", MUTED, (r2.x + 16, y + 24))
+            self.buttons.append(Button((r2.right - 92, y + 2, 78, 32), "Hire",
+                                       lambda m=s["mid"]: staff.hire(c, m), enabled=room > 0, font="btn_s"))
+            y += 54
+        self._wrap("New names on the 1st of each month.", "small", MUTED, r2.x + 16, r2.bottom - 30, r2.w - 32)
 
     def draw_preview(self):
         """The look round: the club in a page - what the board wants, the money, the squad's best."""
@@ -1557,7 +1641,7 @@ class App:
             self.text(morale.label(p), "body", MORALE_COLOUR[morale.colour_key(p)], (lx, y))
             lx += self.fonts["body"].size(morale.label(p))[0] + 14
             told = p.get("told") or {}
-            note = morale.assistant_note(p)
+            note = morale.assistant_note(p, self.career)
             if note:
                 why = note
             elif told and cal.days_between(told["date"], today) <= 30:
@@ -2471,7 +2555,7 @@ class App:
         if s.get("owner"):
             income.append(("Owner's money", s["owner"]))
         spend = [("Player wages", s["wages"]), ("Bonuses and appearance fees", s.get("bonuses", 0)),
-                 ("Coaches and staff", s.get("staff", 0)), ("Academy (U21s and U18s)", s.get("academy", 0)),
+                 ("Coaching staff", s.get("coaching", 0)), ("Other staff (office, ground...)", s.get("staff", 0)), ("Academy (U21s and U18s)", s.get("academy", 0)),
                  ("National Insurance", s.get("ni", 0)), ("Running the club", s["other"]),
                  ("Players bought", s["transfers_out"])]
         self.text("Income", "h3", ACCENT, (r.x + 16, y)); y += 32
@@ -2611,13 +2695,27 @@ class App:
 
         # Ratings by position, and this season
         rx = x0 + 620
+        if not mine and tab != "career" and not getattr(self, "preview", False):   # your chief scout's view
+            from career import staff
+            rep = staff.scout_report(self.career, p)
+            if rep:
+                ends = self.__dict__.get("_col_end", {}) or {0: (cx, cy)}
+                mx, my = min(ends.values(), key=lambda e: e[1])
+                my += 6
+                sc = staff.of_role(self.career, "scout")
+                self.text("Scout's report", "h3", TEXT, (mx, my))
+                lo, hi = rep
+                now_r = clubs_mod.overall(p)
+                txt = (f"{sc[0]['name']} reckons he could reach {lo}-{hi}" if hi > now_r + 1 else
+                       f"{sc[0]['name']} reckons he's about as good as he'll get")
+                self._wrap(txt + f" (he's {now_r} now).", "small", MUTED, mx, my + 34, col_w - 20)
         if mine and cid >= 0 and tab != "career":   # how he's feeling (career/morale.py)
             ends = self.__dict__.pop("_col_end", {}) or {0: (cx, cy)}
             mx, my = min(ends.values(), key=lambda e: e[1])          # (under the shorter column of attributes)
             my += 6
             self.text("Morale", "h3", TEXT, (mx, my))
             self.text(morale.label(p), "h3", MORALE_COLOUR[morale.colour_key(p)], (mx + col_w - 52, my), "topright")
-            note = morale.assistant_note(p)
+            note = morale.assistant_note(p, self.career)
             told = p.get("told")
             line_y = my + 36
             if told and cal.days_between(told["date"], self.career["date"]) <= 21:
@@ -3651,6 +3749,7 @@ class App:
         s = training.settings(club)
         x0 = 250
         self.text("Training", "h1", TEXT, (x0, 18))
+        self._training_tabs("training")
         self.text("Counts from today until each match. Young players improve towards their potential - "
                   "faster with games and harder training.", "small", MUTED, (x0, 70))
         y = 104

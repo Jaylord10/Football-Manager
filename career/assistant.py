@@ -57,7 +57,7 @@ def report(career):
     low = sorted((p for p in here if morale.level(p) < 45), key=morale.level)
     lines = []
     for p in low[:3]:
-        note = morale.assistant_note(p)
+        note = morale.assistant_note(p, career)
         told = p.get("told") or {}
         if note:
             why = note
