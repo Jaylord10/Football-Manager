@@ -213,8 +213,9 @@ def sack(career, why):
     me = career["clubs"][career["my_club"]]
     b.setdefault("career_log", []).append({"club": me["name"], "until": career.get("date"), "why": why})
     career["stop"] = True                       # (Continue halts here)
-    from career import manager
+    from career import manager, media
     manager.sacked(career, why)                 # your record and reputation (career/manager.py)
+    media.sacked(career, me, why)
 
 
 def job_offers(career, rng=None):
@@ -237,8 +238,9 @@ def take_job(career, club_id):
     from career import availability as av, registration
     old = career["clubs"][career["my_club"]]
     career["my_club"] = club_id
-    from career import manager
+    from career import manager, media
     manager.joined(career, club_id)
+    media.appointed(career, career["clubs"][club_id])
     from career import divisions
     divisions.follow(career)                    # (a job in the other division: its fixtures become yours)
     b = state(career)

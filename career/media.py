@@ -93,8 +93,54 @@ def _nick(career, cid):
     return w[-1] if len(w) > 1 and w[-1] not in ("FC", "City", "Town", "United", "Park") else w[0]
 
 
+def manager_name(career, short=False):
+    """Your name (entered at the start) - or None for older saves."""
+    n = (career.get("manager_name") or "").strip()
+    if not n:
+        return None
+    return n.split()[-1] if short else n
+
+
+def _named(career, text):
+    """Stories about your club: 'the manager' becomes you."""
+    full, short = manager_name(career), manager_name(career, True)
+    if not full or not text:
+        return text
+    for a, b in (("The manager", short), ("the manager", full), ("this manager", short), ("This manager", short)):
+        text = text.replace(a, b)
+    return text
+
+
+def appointed(career, club):
+    """The papers: a new manager (a new career, or a new job)."""
+    full = manager_name(career)
+    if not full:
+        return
+    _add_article(career, LOCAL, "appointed", f"{club['name']} appoint {full}",
+                 f"{club['name']} have named {full} as their new manager. The board want: "
+                 f"{_objective(career, club).lower()}.", club=club["id"])
+
+
+def sacked(career, club, why=None):
+    full = manager_name(career)
+    if not full:
+        return
+    _add_article(career, TABLOID, "sacked", f"{manager_name(career, True).upper()} AXED",
+                 f"{club['name']} have sacked {full}" + (f" - {why}." if why else "."), club=club["id"])
+
+
+def _objective(career, club):
+    try:
+        from career import board
+        return board.objective(career, club)[0]
+    except Exception:
+        return "a good season"
+
+
 def _add_article(career, paper, kind, head, body, club=None, date=None):
     m = _m(career)
+    if club is not None and club == career.get("my_club"):
+        head, body = _named(career, head), _named(career, body)
     m["articles"].append({"id": m["next_id"], "date": date or career.get("date"), "paper": paper, "kind": kind,
                           "head": head, "body": body, "club": club})
     m["next_id"] += 1
@@ -423,6 +469,7 @@ def _fresh(career, rng, options):
     import zlib
     m = _m(career)
     said = m.setdefault("said", [])
+    options = [_named(career, o) for o in options]
     keys = [format(zlib.crc32(o.encode()) & 0xFFFFF, "x") for o in options]
     fresh = [o for o, k in zip(options, keys) if k not in said] or options
     line = rng.choice(fresh)
