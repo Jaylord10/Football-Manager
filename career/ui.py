@@ -793,10 +793,6 @@ class App:
         self.go("squad")
 
     def view_player(self, club_id, pid):
-        from career import foreign
-        if foreign.league_of_id(club_id) is not None:          # (Germany / Italy: no transfers with them yet)
-            self.flash = "Players in Germany and Italy can't be scouted or signed yet - that's to come."
-            return
         self.player_view = (club_id, pid)
         self.player_back = self.screen
         self.go("player")
@@ -2072,7 +2068,7 @@ class App:
                 ("src", ["all", "league", "spain", "abroad"]), ("sale", [True, False]), ("sort", ["rating", "price", "age"])]
         labels = {"pos": lambda v: v or "Any pos", "age": lambda v: f"Age <= {v}" if v else "Any age",
                   "fee": lambda v: "Within budget" if v == "budget" else f"<= {fin.money(v)}" if v else "Any fee",
-                  "src": lambda v: {"all": "Everywhere", "league": "Our league", "spain": "Spain",
+                  "src": lambda v: {"all": "Everywhere", "league": "Our league", "spain": "Spain, Germany, Italy",
                                     "abroad": "Rest of world"}[v],
                   "sale": lambda v: "For sale only" if v else "Incl. not for sale",
                   "sort": lambda v: {"rating": "Best first", "price": "Cheapest first", "age": "Youngest first"}[v]}
@@ -2328,7 +2324,10 @@ class App:
         sub = f"{club['name']}  ·  {POS_NAMES.get(p['Pos'], p['Pos'])}  ·  age {p.get('Age', '?')}"
         if cid == -2:
             sub = sub.replace(club["name"], p.get("abroad_club", "abroad") + " (outside the league)")
-        if cid >= spain.ID_BASE:
+        from career import foreign
+        if foreign.league_of_id(cid) is not None:
+            sub = sub.replace(club["name"], club["name"] + f" ({foreign.league_of_id(cid).country})")
+        elif cid >= spain.ID_BASE:
             sub = sub.replace(club["name"], club["name"] + " (Spain" + (", non-EU)" if p.get("non_eu") else ")"))
         if cid == -1:
             sub += f"  ·  last club: {p.get('_from_club', '?')}"

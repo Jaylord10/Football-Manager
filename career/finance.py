@@ -243,6 +243,8 @@ def league_clubs(career, club):
     lg = league_of(club)
     if lg == "es" and "spain" in career:
         return career["spain"]["clubs"]
+    if lg in ("de", "it") and "leagues" in career and lg in career["leagues"]:
+        return career["leagues"][lg]["clubs"]               # (career/foreign.py - from the real career)
     return [c for c in career["clubs"] if league_of(c) == lg]
 
 

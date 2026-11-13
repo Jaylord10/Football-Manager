@@ -183,7 +183,8 @@ def start(career, parent_cid, borrower_cid, p, terms, date=None):
         borrower.setdefault("pl_loans", {})[sk] = borrower.get("pl_loans", {}).get(sk, 0) + 1
         if p["Pos"] == "GK":
             parent.setdefault("pl_gk_out", {})[sk] = parent.get("pl_gk_out", {}).get(sk, 0) + 1
-    if borrower_cid >= transfers.ID_SPAIN:
+    from career import foreign
+    if borrower_cid >= transfers.ID_SPAIN and foreign.league_of_id(borrower_cid) is None:
         from career import spain
         spain.arrives(p)
     # Registration
