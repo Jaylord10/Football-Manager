@@ -41,7 +41,11 @@ def play(md):
         res.append({"home": h, "away": a, "hg": hg, "ag": ag, "goals": goals, "players": players})
     league.record_matchday(c, res); av.after_matchday(c, md, res, rng)
 n = len(c["fixtures"])
-for md in range(1, 18):
+for md in range(1, 13):
+    play(md)
+app.go("cups"); app.cups_key = "champions_cup"; app.cups_round = None; shot("champions_cup_groups")
+app.go("cups"); app.cups_key = "league_cup"; app.cups_round = None; shot("league_cup_autumn")
+for md in range(13, 18):
     play(md)
 app.go("cups"); app.cups_key = "world_club"; app.cups_round = None; shot("world_club")
 for md in range(18, 33):

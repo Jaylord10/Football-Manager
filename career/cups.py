@@ -720,6 +720,10 @@ def current_stage(career, comp):
     st = stages(career, comp)
     n_groups = len(st) - len(comp["rounds"])
     cur = 0
+    me = career["my_club"]
+    for k, g in enumerate(comp.get("groups") or {}):            # (in the groups: yours, if you're in one)
+        if any(me in (m["home"], m["away"]) for m in comp["matches"] if m.get("group") == g):
+            cur = k
     for i, rd in enumerate(comp["rounds"]):
         if rd["drawn"]:
             cur = n_groups + i
