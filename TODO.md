@@ -11,13 +11,10 @@ Items under "Talk to Jay first" are never started unattended.
 Jay, 12 Nov: "do the cup competitions including European and world club cup; German and Italian leagues if time
 allows; leave the 3D view; club photos are mine. Make the game as in depth as possible."
 
-- [ ] **The Association Cup** (FA Cup): 40 clubs + lower-league sides from the third round (early January), one-off
-      ties, extra time and penalties, semi-finals and final at the national stadium; prize money (FA's real figures).
-- [ ] **The League Cup**: midweek rounds from August, two-legged semi-finals, a final at the national stadium.
-- [ ] **The Continental Champions' Cup and Continental Shield**: groups, two-legged knockouts, a final; places from
-      the league (and the cups); UEFA-style prize money.
-- [ ] **The World Club Trophy**: Europe's champions v South America's champions.
-- [ ] **German and Italian leagues** in the background (like Spain).
+- [ ] **End-of-season awards**: player of the season, young player, golden boot, team of the season, manager of
+      the season - for both divisions; on the end-of-season screen, in the papers and in players' records.
+- [ ] **Transfers with Germany and Italy** (scouting, bids, AI clubs buying and selling across the leagues).
+- [ ] **A long test with everything on** (cups, Europe, the new leagues): money, fitness, fixture pile-ups.
 
 - [ ] **Club profiles for the other clubs** - history, location, ground, honours that match the roll,
       image prompts (Jay makes the pictures). Castleford Rangers done; next Millbrook United and Kingsmere City.
@@ -57,3 +54,7 @@ allows; leave the 3D view; club photos are mine. Make the game as in depth as po
 - Play-off dates on the calendar; Division 1 results, play-off page and top scorers on the screens.
 - The papers on promotion, relegation and the play-offs; a round-up of the other division.
 - Castleford Rangers' club profile (picture prompts in the morning summary); the roll of honour tidied.
+- The Association Cup and the League Cup (draws, one-off ties, two-legged semis, extra time and penalties, finals
+  at the national stadium, the FA's real prize money, giant-killings in the papers).
+- The Continental Champions' Cup and Shield (groups, knockouts, UEFA prize money) and the World Club Trophy.
+- Germany's and Italy's leagues in the background, feeding the continental cups; an "Abroad" tab.
