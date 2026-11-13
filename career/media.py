@@ -121,6 +121,19 @@ def appointed(career, club):
                  f"{_objective(career, club).lower()}.", club=club["id"])
 
 
+def takeover_story(career, club, rec):
+    """A takeover (career/owners.py)."""
+    head = {"rich": f"{club['name'].upper()} TAKEN OVER - THE BIG MONEY'S ARRIVED",
+            "local": f"{club['name']} sold to {rec['name'].split(' ')[-1] if rec['name'].startswith('local') else rec['name']}",
+            "cutters": f"Fans fear the worst as {club['name']} change hands"}[rec["kind"]]
+    body = {"rich": f"{club['name']} have been bought by {rec['name']}: {rec['what']}, and big ambitions.",
+            "local": f"{rec['name'][0].upper() + rec['name'][1:]} has bought {club['name']}: {rec['what']}. "
+                     f"Steady progress, the new owner says.",
+            "cutters": f"{rec['name']} have bought {club['name']} with borrowed money - {rec['what']}. "
+                       f"Supporters' groups are worried."}[rec["kind"]]
+    _add_article(career, TABLOID if rec["kind"] != "local" else BROADSHEET, "takeover", head, body, club=club["id"])
+
+
 def sacked(career, club, why=None):
     full = manager_name(career)
     if not full:
