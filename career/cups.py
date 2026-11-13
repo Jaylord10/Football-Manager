@@ -341,10 +341,32 @@ def my_next(career, before=None):
     return None
 
 
-def _xi(career, c, date, vs):
-    from career import spain
+ROTATE = {LEAGUE_CUP: ("First round", "Second round", "Third round"), ASSOC: ("Third round", "Fourth round")}
+ROTATE_REST = 5                    # a big club's early cup ties: its best five rested (the kids and the squad get a game)
+
+
+def _rotating(career, c, m):
+    """Does an AI manager rest his best players for this tie?  Premier Division clubs do in the League Cup's early
+    rounds and the Association Cup's third and fourth rounds - unless the other side's from their own level."""
+    if m is None or c.get("league") != "pl":
+        return False
+    if comp_of(career, m)["rounds"][m["round"]]["name"] not in ROTATE.get(m["comp"], ()):
+        return False
+    other = club(career, m["away"] if m["home"] == c["id"] else m["home"])
+    return other is None or other.get("league") != "pl"
+
+
+def _xi(career, c, date, vs, m=None):
+    from career import spain, availability as av
     if c["id"] == career["my_club"] and c.get("lineup"):
         return c["lineup"]
+    if m is not None and m.get("round") is not None and _rotating(career, c, m):
+        rest = sorted((p for p in c["players"] if not av.injured(p, date)), key=lambda p: -clubs_mod.overall(p))[:ROTATE_REST]
+        keep = c.get("lineup")
+        xi = clubs_mod.best_lineup(c, exclude={p["id"] for p in rest} | {p["id"] for p in c["players"] if av.injured(p, date)})
+        if len(xi) >= 11:
+            c["lineup"] = keep                 # (the league side's untouched)
+            return xi
     xi = spain.pick_xi(c, date, vs)
     c["lineup"] = xi
     return xi
@@ -356,7 +378,7 @@ def quick(career, m, rng=None):
     rng = rng or random.Random(f"cup:{career.get('year')}:{m['id']}:{m['home']}:{m['away']}:"
                                f"{len(career.get('transfer_log') or [])}")
     H, A = club(career, m["home"]), club(career, m["away"])
-    hxi, axi = _xi(career, H, m["date"], A["id"]), _xi(career, A, m["date"], H["id"])
+    hxi, axi = _xi(career, H, m["date"], A["id"], m), _xi(career, A, m["date"], H["id"], m)
     d = spain.xi_rating(H, hxi) - spain.xi_rating(A, axi)
     hl, al = spain.HOME_GOALS, spain.AWAY_GOALS
     if m["neutral"]:
