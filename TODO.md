@@ -16,14 +16,18 @@ allows; leave the 3D view; club photos are mine. Make the game as in depth as po
 - [x] **A long test with everything on** - done: `dev/long_all.py`. It found cup ties clashing with
       European nights (fixed: ties are moved a day or two). Clubs in the Shield play Thursday then Saturday
       (real clubs get moved to Sunday - see "Talk to Jay first").
-- [x] **Club profiles**: Castleford, Millbrook, Kingsmere, Eastvale, Whitcombe, Stonecross, Lydmouth done.
-      Next: Westmoor County, Riverton Dynamo, Sandmere Athletic (Whitcombe's North East derby), then the rest.
+- [x] **Club profiles**: Castleford, Millbrook, Kingsmere, Eastvale, Whitcombe, Stonecross, Lydmouth, Westmoor County,
+      Riverton Dynamo, Sandmere Athletic done (the last three on Jay's PC 13 Nov; picture prompts in their JSON).
+      Next: the rest.
 - [x] **The record books** (History tab), new club legends, broken club records, cup final details - done.
 - [x] **Players' career records** (season by season, trophies, awards) - done.
 - [x] **Your career as a manager** (record, reputation, bigger clubs asking for you) - done.
 
 ## Talk to Jay first (bigger decisions)
 
+- [x] **U21s and U18s** - done 13 Nov (on Jay's PC): every club's named academy (~9 U18s, ~8 U21s), U21 / U18
+      leagues per division (quick results), youth minutes help development (first team > U21 > U18 > none),
+      call-ups, send-downs, run-outs; each summer pro contracts at 19, graduates or released at 22, new scholars.
 - [x] **Takeovers** - done 13 Nov (on Jay's PC): rich investors, local businessmen, cost-cutters (~1-2 a season).
 - [x] **Start of a career** - done 13 Nov (on Jay's PC): enter your name (papers, fans, manager page); look round a
       club (squad, players, history, ground, money) before taking the job.

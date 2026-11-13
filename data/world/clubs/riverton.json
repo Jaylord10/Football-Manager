@@ -1,0 +1,274 @@
+{
+ "id": 10,
+ "name": "Riverton Dynamo",
+ "short": "Riverton",
+ "nicknames": [
+  "Dynamo",
+  "the Sparks"
+ ],
+ "founded": 1879,
+ "location": {
+  "town": "Riverton",
+  "county": "Nottinghamshire",
+  "region": "the East Midlands",
+  "about": "A city of about 330,000 on a wide bend of the river: lace, then bicycles, then electrical engineering - the Hollins Brothers' dynamo works, where the club began, made the generators that lit half of Victorian England."
+ },
+ "colours": {
+  "rgb": [
+   180,
+   30,
+   90
+  ],
+  "story": "Cerise and white - the colour of the copper windings in the dynamos, glowing when they were tested, and the white of the works' overalls.",
+  "home": {
+   "shirt": "cerise with white sleeves",
+   "shorts": "white",
+   "socks": "cerise",
+   "rgb": {
+    "shirt": [
+     180,
+     30,
+     90
+    ],
+    "trim": [
+     245,
+     245,
+     245
+    ],
+    "shorts": [
+     245,
+     245,
+     245
+    ],
+    "socks": [
+     180,
+     30,
+     90
+    ]
+   }
+  },
+  "away": {
+   "shirt": "slate grey with a cerise lightning flash",
+   "shorts": "slate grey",
+   "socks": "slate grey",
+   "rgb": {
+    "shirt": [
+     60,
+     66,
+     78
+    ],
+    "trim": [
+     180,
+     30,
+     90
+    ],
+    "shorts": [
+     60,
+     66,
+     78
+    ],
+    "socks": [
+     60,
+     66,
+     78
+    ]
+   }
+  },
+  "third": {
+   "shirt": "white with cerise trim",
+   "shorts": "cerise",
+   "socks": "white",
+   "rgb": {
+    "shirt": [
+     245,
+     245,
+     245
+    ],
+    "trim": [
+     180,
+     30,
+     90
+    ],
+    "shorts": [
+     180,
+     30,
+     90
+    ],
+    "socks": [
+     245,
+     245,
+     245
+    ]
+   }
+  }
+ },
+ "rivals": [
+  {
+   "club": "Stonecross Albion",
+   "derby": null,
+   "why": "the Midlands' two European champions - Stonecross's two to Riverton's one, and they never let Riverton forget it"
+  },
+  {
+   "club": "Darnford Albion",
+   "derby": "the Trent Derby",
+   "why": "the town across the river - a dozen bridges and one long grudge, since 1884"
+  }
+ ],
+ "history": [
+  {
+   "years": "1879-1915",
+   "title": "The works team",
+   "text": "Founded in 1879 by workers at Hollins Brothers' dynamo works. The Founders' Cup in 1894, 1895 and 1905; Second Division champions in 1901; second in 1907, and champions in 1912 and 1914."
+  },
+  {
+   "years": "1919-1960",
+   "title": "Up and down the river",
+   "text": "Champions again in 1922 - and relegated a few years later, back as Second Division champions in 1928. Second in 1934, the Founders' Cup in 1932 and 1957."
+  },
+  {
+   "years": "1960-1995",
+   "title": "The lean years",
+   "text": "Second in 1965 and 1970, but no trophy until the Charter Cup in 1983. Twice relegated, twice Second Division champions (1986 and 1992)."
+  },
+  {
+   "years": "1995-2010",
+   "title": "The Sparks fly",
+   "text": "The Charter Cup in 1997 and second in the league, the Founders' Cup in 1999 and 2000, champions in 2002 - and in 2010 the Treble: the title, the Founders' Cup and the Charter Cup."
+  },
+  {
+   "years": "2011",
+   "title": "The strangest season",
+   "text": "In the spring of 2011 Riverton won the Crown of Europe - and were relegated from the Premier Division in the same month, the cost of the European run. That December they won the Intercontinental Cup as a Second Division club."
+  },
+  {
+   "years": "2012-now",
+   "title": "Back again",
+   "text": "Promoted as runners-up in 2012 and a top-division club ever since; Founders' Cup finalists in 2009 and 2025."
+  }
+ ],
+ "honours_note": "League seasons are given by the year they ended (1912 = 1911-12).",
+ "legends": [
+  {
+   "name": "Arthur Hollins",
+   "role": "Founder and chairman",
+   "note": "Owner of the dynamo works; the club played on his works' ground until 1902."
+  },
+  {
+   "name": "Sid Kemp",
+   "role": "Centre-forward 1906-1923",
+   "note": "247 goals - the club record, and all three of the early titles."
+  },
+  {
+   "name": "Joe Brannigan",
+   "role": "Defender 1955-1972",
+   "note": "651 appearances - the club record."
+  },
+  {
+   "name": "Henrik Solberg",
+   "role": "Manager 2005-2013",
+   "note": "The Treble, the Crown of Europe, the Intercontinental Cup - and the relegation in between."
+  },
+  {
+   "name": "Danny Achterberg",
+   "role": "Striker 2007-2012",
+   "note": "Scored the winner in the 2011 Crown of Europe final."
+  },
+  {
+   "name": "Ollie Prentice",
+   "role": "Midfielder 2016-",
+   "note": "Captain since 2021."
+  }
+ ],
+ "records": {
+  "attendance": "58,700 v Darnford Albion, League, 1947 (Powerhouse Lane, before seating)",
+  "win": "10-0 v Burnleigh, Founders' Cup, 1894",
+  "defeat": "1-9 v Ashvale Rovers, League, 1964",
+  "top_scorer": "Sid Kemp, 247 goals (1906-1923)",
+  "appearances": "Joe Brannigan, 651 (1955-1972)",
+  "season_goals": "Sid Kemp, 39 (1911-12)"
+ },
+ "badge": {
+  "about": "The dynamo's lightning bolt and the river's bend; one star for the Crown of Europe. Motto 'Lux Ex Labore' - light from work.",
+  "design": "A cerise shield with a white border. In the centre a white lightning bolt striking down across a white wavy river. A small white star above the shield. 'RIVERTON DYNAMO' arched above the shield in cerise capitals, and a white ribbon beneath reading 'LUX EX LABORE' in cerise, with '1879' on the ribbon's ends."
+ },
+ "ground": {
+  "name": "Powerhouse Lane",
+  "known_as": "the Powerhouse",
+  "opened": 1902,
+  "capacity": 45200,
+  "pitch": {
+   "length_m": 105,
+   "width_m": 68,
+   "surface": "hybrid grass",
+   "runoff": "medium"
+  },
+  "stands": [
+   {
+    "name": "Hollins Stand",
+    "side": "west",
+    "built": 2004,
+    "tiers": 2,
+    "capacity": 14000,
+    "roof": "cantilever",
+    "features": "the main stand: tunnel, dugouts, boxes, built with the 2002 title money",
+    "expandable": false
+   },
+   {
+    "name": "Turbine End",
+    "side": "south",
+    "built": 1996,
+    "tiers": 2,
+    "capacity": 12500,
+    "roof": "cantilever",
+    "features": "the home end - two tiers in cerise seats; the old turbine hall of the works, now flats, behind it",
+    "expandable": false
+   },
+   {
+    "name": "River Stand",
+    "side": "east",
+    "built": 1977,
+    "tiers": 2,
+    "capacity": 11200,
+    "roof": "1970s cantilever",
+    "features": "two tiers backing onto the river towpath; the next to be rebuilt",
+    "expandable": true
+   },
+   {
+    "name": "Bridge End",
+    "side": "north",
+    "built": 2012,
+    "tiers": 1,
+    "capacity": 7500,
+    "roof": "a modern roof",
+    "features": "away fans; built during the season in the Second Division",
+    "expandable": false
+   }
+  ],
+  "corners": "the western corners filled; the eastern ones open",
+  "roof": "four roofs of different ages",
+  "surroundings": "the wide river bending past the east stand, a dozen bridges, the brick turbine hall of the old dynamo works turned into flats, cooling towers far off on the skyline",
+  "atmosphere": "a big, loud city ground - and every visit from Darnford is a war",
+  "for_the_engine": {
+   "home_end": "south",
+   "away_fans": "north end",
+   "dugouts": "west side, halfway line",
+   "pitch_m": [
+    105,
+    68
+   ],
+   "notes": "a city ground by the river"
+  },
+  "images": {
+   "crest": "data/world/clubs/riverton/crest.png",
+   "inside": "data/world/clubs/riverton/inside.jpg",
+   "aerial": "data/world/clubs/riverton/aerial.jpg"
+  }
+ },
+ "image_prompts": {
+  "badge": "A football club crest for 'Riverton Dynamo', founded 1879, an English Midlands city club born at an electrical works. A cerise heraldic shield with a white border. In the centre a white lightning bolt striking down across a white wavy river line. A small white star above the shield. 'RIVERTON DYNAMO' arched above the shield in cerise serif capitals. A white ribbon beneath the shield reading 'LUX EX LABORE' in cerise capitals, with '18' and '79' on the ribbon's ends. Flat vector emblem, clean bold lines, limited colours (cerise, white), centred, on a plain transparent background, square format, no other text.",
+  "ground_inside": "Photorealistic wide-angle photo inside a 45,000-seat English football stadium on a wet winter evening under floodlights, 30 minutes before kick-off. Camera: high in the main stand on the halfway line, looking across the pitch. OPPOSITE: an older two-tier 1970s stand, half full, with a wide river and bridges glimpsed behind it. LEFT END: a two-tier home end PACKED with fans in cerise and white, flags and a banner of a lightning bolt, a big old brick industrial hall behind it. RIGHT END: a newer single-tier stand with away fans. Players warming up in cerise shirts with white sleeves and white shorts. Rain in the floodlights.",
+  "ground_aerial": "Aerial drone photograph of a 45,000-seat English football stadium on a wide bend of a river in a Midlands city: four stands of different ages, a towpath and a dozen bridges along the river beside it, a huge red-brick Victorian turbine hall turned into flats behind one end, terraced streets and cooling towers far off. Photorealistic, soft afternoon light.",
+  "kits": "Three football kits for Riverton Dynamo laid out flat side by side on a plain light background, product-photo style. Home: cerise shirt with white sleeves, white shorts, cerise socks. Away: slate-grey shirt with a cerise lightning flash across the chest, slate-grey shorts, slate-grey socks. Third: white shirt with cerise trim, cerise shorts, white socks. A small club crest on the left chest of each shirt. No sponsor logos, no other text."
+ },
+ "support": 55000
+}
