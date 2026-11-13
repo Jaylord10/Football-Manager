@@ -266,7 +266,8 @@ def new_season(career, seed=None):
     t = table(career)
     tables = divisions.tables(career)    # {"pl": [...], "d1": [...]} (just yours in an older one-division world)
     up, down = divisions.movers(career, tables)     # promotion and relegation (play-offs: career/playoffs.py)
-    from career import finance, board
+    from career import finance, board, manager
+    manager.season_end(career, tables, up, down)    # your record and reputation (career/manager.py)
     board.season_review(career, t, up, down)        # the board's verdict (and maybe the sack)
     for tt in tables.values():
         finance.season_end(career, tt)   # merit payments, the season's accounts
@@ -294,6 +295,8 @@ def new_season(career, seed=None):
     })
     if up:
         divisions.promote(career, up, down)          # everyone changes division before the new fixtures
+    from career import manager
+    manager.summer(career)                           # a bigger club may want you (career/manager.py)
     career["season"] += 1
     career["fixtures"] = make_fixtures([c["id"] for c in divisions.clubs_in(career)], random.Random(seed))
     divisions.new_season(career, seed)   # the other division's fixtures

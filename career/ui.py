@@ -4077,11 +4077,11 @@ class App:
         W, H = self.size
         tabs = (("history", "History"), ("honours", "Honours"), ("ground", "The ground"))
         if board:
-            tabs += (("board", "The board"),)
+            tabs += (("board", "The board"), ("manager", "Your career"))
         for i, (key, label) in enumerate(tabs):
             def go(k=key):
-                if k == "board":
-                    self.go("board")
+                if k in ("board", "manager"):
+                    self.go(k)
                 else:
                     self.club_tab = k
                     self.go("club")
@@ -4325,6 +4325,61 @@ class App:
             y += 26
         if not b.get("history") and not b.get("career_log"):
             self.text("Your first season.", "body", MUTED, (r3.x + 16, y))
+
+    def draw_manager(self):
+        """Your career as a manager (career/manager.py): reputation, season by season, totals."""
+        from career import manager as mgr, divisions
+        W, H = self.size
+        self.sidebar("board")
+        c = self.career
+        m = mgr.state(c)
+        x0 = 250
+        self._club_tabs("manager")
+        self.text("Manager", "h1", TEXT, (x0, 18))
+        r = pygame.Rect(x0, 80, W - x0 - 30, 150)
+        self.panel(r, "Reputation")
+        rep = m["rep"]
+        col = ACCENT if rep >= 60 else DRAW if rep >= 34 else TEXT
+        self.text(f"{mgr.label(rep)}  ({round(rep)}/100)", "h3", col, (r.right - 16, r.y + 14), "topright")
+        bar = pygame.Rect(r.x + 16, r.y + 56, r.w - 32, 16)
+        pygame.draw.rect(self.win, PANEL_2, bar, border_radius=8)
+        pygame.draw.rect(self.win, col, (bar.x, bar.y, int(bar.w * rep / 100), bar.h), border_radius=8)
+        g, w, d, l, tro, ns = mgr.totals(c)
+        pct = f"{100 * w / g:.0f}%" if g else "-"
+        self.text(f"{ns} season{'s' if ns != 1 else ''}  ·  {g} games: won {w}, drawn {d}, lost {l} ({pct} won)  ·  "
+                  f"{len(tro)} trophi{'es' if len(tro) != 1 else 'y'}", "body", TEXT, (r.x + 16, r.y + 86))
+        self.text("Clubs want managers who do better than their budget - and who win things. "
+                  "The bigger your name, the bigger the clubs that call.", "small", MUTED, (r.x + 16, r.y + 116))
+        r2 = pygame.Rect(x0, 244, W - x0 - 30, H - 264)
+        self.panel(r2, "Season by season")
+        cols = ((0, "Season"), (90, "Club"), (290, "League"), (420, "P"), (470, "W"), (515, "D"), (560, "L"),
+                (610, "Won / notes"))
+        y = r2.y + 50
+        for dx, h_ in cols:
+            self.text(h_, "small", MUTED, (r2.x + 16 + dx, y))
+        y += 26
+        rows = list(m["seasons"])
+        if not rows:
+            self.text("Your first season - the record starts at the end of it.", "body", MUTED, (r2.x + 16, y))
+        for s in rows[-16:][::-1]:
+            if y > r2.bottom - 30:
+                break
+            a = s.get("all") or [0, 0, 0, 0]
+            pos = s.get("pos")
+            where = {"pl": "Premier", "d1": "Division 1"}.get(s.get("div"), s.get("div", "")) \
+                + (f", {pos}{brd._suffix(pos)}" if pos else "")
+            notes = s.get("won", []) + s.get("notes", [])
+            sk = "sacked" in s.get("notes", [])
+            col = LOSS if sk else ACCENT if s.get("won") else TEXT
+            self.text(cal.season_label(s["year"]) if s.get("year") else "", "body", TEXT, (r2.x + 16, y))
+            self.text(self._fit_text(s.get("name", "?"), "body", 190), "body", TEXT, (r2.x + 16 + 90, y))
+            self.text(self._fit_text(where, "small", 124), "small", MUTED, (r2.x + 16 + 290, y + 3))
+            for dx, v in ((420, a[0]), (470, a[1]), (515, a[2]), (560, a[3])):
+                self.text(str(v), "body", TEXT, (r2.x + 16 + dx, y))
+            txt = ", ".join(x[0].upper() + x[1:] for x in notes)
+            self.text(self._fit_text(txt, "small", r2.right - (r2.x + 16 + 610) - 12), "small", col,
+                      (r2.x + 16 + 610, y + 3))
+            y += 28
 
     def draw_sacked(self):
         W, H = self.size
@@ -4595,15 +4650,39 @@ class App:
                     self.buttons.append(_Invisible(pygame.Rect(r.x + 8, y - 2, r.w - 16, 60),
                                                    lambda pid=p["id"]: self.view_player(mc, pid)))
                 y += 66 if title == "Youth intake" else 50
+        # A bigger club wants you? (career/manager.py)
+        from career import manager as mgr
+        job = mgr.offer(c)
+        wide = W - 80
+        if job is not None:
+            wide = (W - 80) // 2 - 6
+            jr = pygame.Rect(40 + wide + 12, H - 200, wide, 110)
+            self.panel(jr)
+            jc = c["clubs"][job]
+            _badge(self.win, tuple(jc["colour"]), (jr.x + 30, jr.y + 30), 16, jc)
+            self.text(self._fit_text(f"{jc['name']} want you as their manager", "h3", jr.w - 76), "h3", TEXT,
+                      (jr.x + 56, jr.y + 16))
+            self.text(f"A bigger job - your reputation: {mgr.label(mgr.state(c)['rep']).lower()}.", "small",
+                      MUTED, (jr.x + 56, jr.y + 44))
+            def take():
+                if mgr.take_offer(c):
+                    league.save(c)
+                    self.go("home")
+            def stay():
+                mgr.turn_down(c)
+            self.buttons.append(Button((jr.x + 56, jr.y + 64, 150, 36), "Take the job", take, primary=True,
+                                       font="btn_s"))
+            self.buttons.append(Button((jr.x + 216, jr.y + 64, 120, 36), "Stay", stay, font="btn_s"))
         # Around the league
-        r = pygame.Rect(40, H - 200, W - 80, 110)
+        r = pygame.Rect(40, H - 200, wide, 110)
         self.panel(r, "Around the league")
         notes = [n for n in c.get("news", []) if n["club"] != mc and n["date"] == c.get("date")
                  and "retires" in n["text"]]
         big = []
         for n in notes:
             big.append(f"{self.name(n['club'], True)}: {n['text']}")
-        self.text(("   ".join(big[:3]) or "A quiet summer.")[:170], "small", MUTED, (r.x + 16, r.y + 50))
+        self.text(self._fit_text("   ".join(big[:3]) or "A quiet summer.", "small", r.w - 32), "small", MUTED,
+                  (r.x + 16, r.y + 50))
         if len(big) > 3:
             self.text(f"...and {len(big) - 3} more retirements.", "small", MUTED, (r.x + 16, r.y + 74))
         self.buttons.append(Button((W - 300, H - 70, 260, 52), "On to the new season", lambda: self.go("home"),
