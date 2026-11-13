@@ -14,6 +14,7 @@ The league: fixtures, results and the table - and saving / loading a career.
 
 import json
 import os
+import datetime as dt
 import random
 
 from career import calendar as cal
@@ -217,10 +218,43 @@ def set_calendar(career, year):
     career["date"] = f"{year}-07-01"
 
 
-def match_date(career, md=None):
-    md = career["matchday"] if md is None else md
+def match_date(career, md=None, club=None):
+    """A round's date - or, for a club (your next match, when md is None), its own match's date: a club that
+    played on the Thursday (the Europa Trophy) plays its weekend league game on the Sunday, as in real life."""
+    if md is None:
+        md, club = career["matchday"], career["my_club"] if club is None else club
     cal_ = career.get("calendar") or []
-    return cal_[md - 1] if 0 < md <= len(cal_) else None
+    d = cal_[md - 1] if 0 < md <= len(cal_) else None
+    if d and club is not None and moved_to_sunday(career, d, club):
+        d = (cal.parse(d) + dt.timedelta(days=1)).isoformat()
+    return d
+
+
+def moved_to_sunday(career, round_date, club_id):
+    """A Saturday round, and the club played a cup / European match on the Thursday before it."""
+    d = cal.parse(round_date)
+    if d.weekday() != 5:
+        return False
+    thu = (d - dt.timedelta(days=2)).isoformat()
+    try:
+        from career import cups
+        return any(m["date"] == thu and club_id in (m["home"], m["away"]) for m in cups.all_matches(career))
+    except Exception:
+        return False
+
+
+def sunday_rest(career, round_date, club_ids):
+    """Your match is on the Saturday, but clubs moved to the Sunday get their extra day's rest before
+    their game (the round's games are all worked out together)."""
+    from career import training
+    for cid in club_ids:
+        if not (0 <= cid < len(career["clubs"])) or not moved_to_sunday(career, round_date, cid):
+            continue
+        club = career["clubs"][cid]
+        s = training.ai_settings(career, club, round_date) if cid != career["my_club"] else training.settings(club)
+        recover = training.INTENSITY[s["intensity"]][1]
+        for p in club["players"]:
+            p["condition"] = min(1.0, round(training.condition(p) + recover, 3))
 
 
 def advance_to_match(career, stop=False):
@@ -236,6 +270,9 @@ def advance_to_match(career, stop=False):
             return False
         availability.fix_lineups(career, d)
         career["date"] = d
+        md = career["matchday"]
+        if md <= len(career["fixtures"]) and d == match_date(career, md):     # (your game's on the Saturday)
+            sunday_rest(career, d, [x for f in career["fixtures"][md - 1] for x in f])
     return True
 
 

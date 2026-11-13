@@ -3844,9 +3844,11 @@ class App:
         day = fixtures[md - 1]
         step = min(98, (r.h - 20) // max(1, len(day)))
         y = r.y + 16
+        self._row_md = md
         for home, away in day:
             self._match_row(r, y, step, home, away, results.get((home, away)))
             y += step
+        self._row_md = None
 
     def _match_row(self, r, y, step, home, away, res, minute=None):
         """One match on the fixtures / results screens: names, score (or a progress
@@ -3874,6 +3876,15 @@ class App:
             self.text(f"{minute}'", "small", MUTED, (bar.right + 10, sub_y), "topleft")
         else:
             self.text("v", "h3", MUTED, (cx, y - (0 if big else 2)), "midtop")
+            md = getattr(self, "_row_md", None)
+            if md and not minute:
+                d0 = league.match_date(c, md)
+                for cid in (home, away):
+                    d1 = league.match_date(c, md, cid)
+                    if d0 and d1 and d1 != d0:
+                        self.text(f"{cal.fmt(d1, False)} (after their Thursday game)", "small", DRAW,
+                                  (cx, sub_y + 2), "midtop")
+                        break
 
     def _scorers(self, res, cx, y):
         hs = [g for g in res["goals"] if g["team"] == 0]

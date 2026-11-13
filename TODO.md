@@ -35,8 +35,8 @@ allows; leave the 3D view; club photos are mine. Make the game as in depth as po
 - [ ] **The broadcast 3D view** (Panda3D side project): proper player models, football animations
       (Mixamo), the engine telling the view about kicks / tackles / headers, ball at feet, real lighting.
 - [ ] **Bramhall's ground expansion** - which stand could grow, once Jay's seen his pictures.
-- [ ] **Thursday-Saturday**: clubs in the Continental Shield play Thursday night then the league on
-      Saturday (real life moves their league game to Sunday). Needs league games on different days.
+- [x] **Thursday then Sunday** - done 13 Nov (on Jay's PC): a club that played on the Thursday plays its
+      weekend league game on the Sunday.
 - [ ] **Northwick win nearly everything** in the 10-season test (8 titles, 5 Champions' Cups). Real life:
       Man City won 6 of 7, Real Madrid 6 Champions Leagues in 11 - so not mad, but maybe too much.
 - [x] **Cup and stadium names** - done 13 Nov (on Jay's PC): the Founders' Cup, the (sponsored) Charter Cup,
