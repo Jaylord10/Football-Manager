@@ -279,7 +279,8 @@ class App:
             self.go(getattr(self, "player_back", "squad"))
         elif k == pygame.K_ESCAPE and self.screen in ("squad", "table", "fixtures", "prematch", "tactics",
                                                      "calendar", "training", "finances", "transfers",
-                                                     "freeagents", "bid", "inbox", "board", "spain", "loan"):
+                                                     "freeagents", "bid", "inbox", "board", "spain", "loan",
+                                                     "history", "cups", "manager"):
             self.go("home")
 
     def quit(self):
@@ -3122,10 +3123,10 @@ class App:
     def _paper_tabs(self, active):
         """League table / Fixtures / Spain - the newspaper's sports pages (office)."""
         W, H = self.size
-        tabs = (("papers", "Papers"), ("table", "League table"), ("fixtures", "Fixtures"), ("cups", "Cups"),
-                ("spain", "Abroad"))
+        tabs = (("papers", "Papers"), ("table", "Table"), ("fixtures", "Fixtures"), ("cups", "Cups"),
+                ("spain", "Abroad"), ("history", "History"))
         for i, (key, label) in enumerate(tabs):
-            self.buttons.append(Button((W - 30 - len(tabs) * 112 + i * 112, 24, 106, 36), label,
+            self.buttons.append(Button((W - 30 - len(tabs) * 98 + i * 98, 24, 92, 36), label,
                                        lambda k=key: self._menu(k), primary=key == active, font="btn_s"))
 
     def _laptop_tabs(self, active, x):
@@ -4338,6 +4339,69 @@ class App:
             y += 26
         if not b.get("history") and not b.get("career_log"):
             self.text("Your first season.", "body", MUTED, (r3.x + 16, y))
+
+    def draw_history(self):
+        """The record books: every season of this career - champions, promotion and relegation, the cups,
+        the Golden Boot (career["history"], career["cup_history"], career["awards"])."""
+        W, H = self.size
+        c = self.career
+        self.sidebar("papers")
+        self._paper_tabs("history")
+        x0 = 250
+        self.text("History", "h1", TEXT, (x0, 18))
+        r = pygame.Rect(x0, 80, W - x0 - 30, H - 100)
+        self.panel(r)
+        hist = list(c.get("history") or [])
+        if not hist:
+            self._wrap("The record books start when your first season ends: who won the league, who went up and "
+                       "down, the cups and the Golden Boot - every season you play.", "body", MUTED, r.x + 18,
+                       r.y + 20, r.w - 36)
+            return
+        cuph = {h.get("year_end"): h for h in c.get("cup_history") or []}
+        awh = {a.get("year_end"): a for a in c.get("awards") or []}
+        me = c["my_club"]
+        nm = lambda i: self.name(i, True) if i is not None and 0 <= i < len(c["clubs"]) else "-"
+        cols = ((0, "Season"), (90, "Champions"), (250, "Division 1"), (410, "Assoc. Cup"), (570, "League Cup"),
+                (730, "Champions' Cup"))
+        y = r.y + 16
+        for dx, h_ in cols:
+            self.text(h_, "small", MUTED, (r.x + 18 + dx, y))
+        y += 26
+        for h in reversed(hist):
+            if y > r.bottom - 50:
+                break
+            ye = h.get("year_end")
+            t = h.get("tables") or {}
+            ch = (cuph.get(ye) or {})
+            aw = (awh.get(ye) or {}).get("pl") or {}
+            gb = aw.get("golden_boot")
+            cells = [(0, clubinfo.season(ye) if ye else f"Season {h.get('season')}", None),
+                     (90, nm((t.get("pl") or [h.get("champion")])[0]), (t.get("pl") or [h.get("champion")])[0]),
+                     (250, nm((t.get("d1") or [None])[0]), (t.get("d1") or [None])[0])]
+            for dx, key in ((410, "association_cup"), (570, "league_cup"), (730, "champions_cup")):
+                w_ = (ch.get(key) or [None])[0]
+                cells.append((dx, cups.name(c, w_, True) if w_ is not None else "-", w_))
+            xs = [k for k, _ in cols] + [r.w - 36]
+            for dx, txt, cid in cells:
+                col = ACCENT if cid == me and cid is not None else TEXT
+                room = xs[xs.index(dx) + 1] - dx - 10
+                self.text(self._fit_text(txt, "small", room), "small", col, (r.x + 18 + dx, y))
+            y += 21
+            up, down = h.get("up") or [], h.get("down") or []
+            bits = []
+            if up or down:
+                bits.append(f"Up: {', '.join(nm(i) for i in up)}" + (" (play-offs)" if len(up) >= 3 else ""))
+                bits.append(f"Down: {', '.join(nm(i) for i in down)}")
+            if bits:
+                self.text(self._fit_text("   ·   ".join(bits), "small", r.w - 36 - 90), "small", MUTED,
+                          (r.x + 18 + 90, y))
+                y += 21
+            if gb:
+                self.text(self._fit_text(f"Golden Boot: {gb['name']} ({nm(gb['club'])}, {gb['note']})", "small",
+                                         r.w - 36 - 90), "small", ACCENT if gb["club"] == me else MUTED,
+                          (r.x + 18 + 90, y))
+                y += 21
+            y += 8
 
     def draw_manager(self):
         """Your career as a manager (career/manager.py): reputation, season by season, totals."""
