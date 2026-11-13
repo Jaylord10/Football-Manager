@@ -335,7 +335,9 @@ def _busy(career, cid, skip):
     """The dates a club is already playing (league days for English clubs; every cup match)."""
     out = set()
     if cid is not None and 0 <= cid < len(career["clubs"]):
-        out |= set(career.get("calendar") or [])
+        from career import league
+        out |= {league.match_date(career, md, cid) for md in range(1, len(career.get("calendar") or []) + 1)}
+        out.discard(None)
     for comp in comps(career):
         for x in comp["matches"]:
             if x["id"] != skip and cid in (x["home"], x["away"]) and x.get("result") is None:
