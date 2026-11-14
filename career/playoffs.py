@@ -233,12 +233,13 @@ def record(career, m, r, rng=None):
         level = m["round"] == "final" and r["hg"] == r["ag"]
     how = None
     if level:
-        eh, ea = _extra_time(career, m, rng)
+        eh, ea = r["et"] if r.get("et") is not None else _extra_time(career, m, rng)     # (engine: played)
         res["et"] = [eh, ea]
         agg_h += eh
         agg_a += ea
         if agg_h == agg_a:
-            ph, pa = _shootout(rng, career["clubs"][m["home"]], career["clubs"][m["away"]])
+            ph, pa = (r["pens"] if r.get("pens") is not None else
+                      _shootout(rng, career["clubs"][m["home"]], career["clubs"][m["away"]]))
             res["pens"] = [ph, pa]
             how = "pens"
             winner = m["home"] if ph > pa else m["away"]
@@ -269,6 +270,19 @@ def record(career, m, r, rng=None):
         from career import media
         media.playoff_story(career, m, st)
     return res
+
+
+def knockout_info(career, m):
+    """For the match engine: {"agg": [home, away]} if this match decides a tie (the final, a second leg),
+    else None (a first leg)."""
+    if m["round"] == "final":
+        return {"agg": [0, 0]}
+    if m["round"] == "semi" and m["leg"] == 2:
+        first = next(x for x in state(career)["matches"] if x["tie"] == m["tie"] and x["leg"] == 1)["result"]
+        if first is None:
+            return None
+        return {"agg": [first["ag"], first["hg"]]}
+    return None
 
 
 def _after(career, m, r, rng):

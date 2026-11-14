@@ -25,8 +25,9 @@ THE LEAGUE CUP: midweek, from August.
   - small prize money, as in real life (the EFL Cup pays its winners about £100,000) - it's about the trophy
     and a place in Europe (the Continental Shield)
 
-Your matches: watch them or take a quick result (the cup screen); the match engine plays 90 minutes, and
-extra time / penalties are worked out like the play-offs' (career/playoffs.py) until the engine has them.
+Your matches: watch them or take a quick result (the cup screen).  Watched, a match that decides a tie goes to
+extra time and a penalty shoot-out in the match engine itself (gameplay/shootout.py) if it's level; a quick
+result works them out like the play-offs' (career/playoffs.py).
 Everyone else's: quick results on the day.
 
 career["cups"]: {year, comps: {key: competition}, guests: {id: club}}
@@ -511,13 +512,14 @@ def record(career, m, r, rng=None):
                 res["agg"] = [agg_h, agg_a]
             how = None
             if agg_h == agg_a:
-                eh, ea = _extra_time(career, m, rng)
+                eh, ea = r["et"] if r.get("et") is not None else _extra_time(career, m, rng)   # (engine: played)
                 res["et"] = [eh, ea]
                 agg_h, agg_a = agg_h + eh, agg_a + ea
                 if len(ms) > 1:
                     res["agg"] = [agg_h, agg_a]
                 if agg_h == agg_a:
-                    ph, pa = _shootout(rng, club(career, m["home"]), club(career, m["away"]))
+                    ph, pa = (r["pens"] if r.get("pens") is not None else
+                              _shootout(rng, club(career, m["home"]), club(career, m["away"])))
                     res["pens"] = [ph, pa]
                     how = "pens"
                     winner = m["home"] if ph > pa else m["away"]
@@ -536,6 +538,21 @@ def record(career, m, r, rng=None):
     media.cup_story(career, comp, m)
     draw_rounds(career, comp, m["date"])
     return res
+
+
+def knockout_info(career, m):
+    """For the match engine: does this match decide its tie?  {"agg": [home, away]} - the goals from the
+    earlier legs, from this match's home side's point of view - or None (a first leg, a group match)."""
+    if m.get("group") is not None or m.get("tie") is None:
+        return None
+    comp = comp_of(career, m)
+    tie = comp["rounds"][m["round"]]["ties"][m["tie"]]
+    others = [match(career, x) for x in tie["matches"] if x != m["id"]]
+    if any(x is None or x["result"] is None for x in others):
+        return None
+    h = sum(x["result"]["hg"] if x["home"] == m["home"] else x["result"]["ag"] for x in others)
+    a = sum(x["result"]["ag"] if x["home"] == m["home"] else x["result"]["hg"] for x in others)
+    return {"agg": [h, a]}
 
 
 def _won(career, comp, winner, loser, m):

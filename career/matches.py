@@ -27,12 +27,15 @@ SQUAD_DIR = os.path.join("saves", "squads")
 HALF_SECONDS = float(os.environ.get("FM_CAREER_HALF", "2700"))   # 45-minute halves (tests can shorten it)
 
 
-def write_config(career, home_id, away_id, tag, auto_subs=None, human=None, extra=None, friendly=False, on=None):
+def write_config(career, home_id, away_id, tag, auto_subs=None, human=None, extra=None, friendly=False, on=None,
+                 knockout=None):
     """A match_config file for this fixture; returns its path.
     auto_subs: {club id: False} for a club whose manager makes his own changes
     (you, watching) - everyone else's are made by the AI / your assistant.
     extra: {club id: club} for clubs not in your league (a friendly's opponents);
-    friendly: lots of substitutes, no half-time team talk table (career/friendlies.py)."""
+    friendly: lots of substitutes, no half-time team talk table (career/friendlies.py).
+    knockout: this match decides a knockout tie - {"agg": [home, away]} from earlier legs; level at the end, the
+    engine plays extra time and penalties (gameplay/shootout.py)."""
     os.makedirs(CONFIG_DIR, exist_ok=True)
     clubs = career["clubs"]
     extra = extra or {}
@@ -64,6 +67,8 @@ def write_config(career, home_id, away_id, tag, auto_subs=None, human=None, extr
     name = lambda i: (extra[i] if i in extra else clubs[i])["name"]
     cfg = {"match_name": f"{name(home_id)} v {name(away_id)}",
            "home_team": team(home_id, 0), "away_team": team(away_id, 1)}
+    if knockout:
+        cfg["knockout"] = knockout
     path = os.path.join(CONFIG_DIR, f"{tag}.json")
     with open(path, "w", encoding="utf-8") as f:
         json.dump(cfg, f, indent=1)
@@ -235,10 +240,13 @@ def watch_friendly(career, f):
 
 
 def watch_playoff(career, m):
-    """Watch a play-off match (career/playoffs.py): a competitive match, 90 minutes.  (result, quit)"""
+    """Watch a play-off match (career/playoffs.py): a competitive match - extra time and penalties in the engine
+    if it decides a tie and it's level.  (result, quit)"""
     me_id = career["my_club"]
+    from career import playoffs
     cfg = write_config(career, m["home"], m["away"], f"playoff_{m['id']}_watch",
-                       auto_subs={me_id: career.get("assistant_subs", True)}, human=me_id, on=m["date"])
+                       auto_subs={me_id: career.get("assistant_subs", True)}, human=me_id, on=m["date"],
+                       knockout=playoffs.knockout_info(career, m))
     os.environ["FM_MATCH_CONFIG"] = cfg
     import config.formations as formations
     from core.database import PlayerDatabase
@@ -256,7 +264,8 @@ def watch_playoff(career, m):
 
 
 def watch_cup(career, m):
-    """Watch a cup tie (career/cups.py, career/europe.py): a competitive match, 90 minutes.  (result, quit)
+    """Watch a cup tie (career/cups.py, career/europe.py): a competitive match - extra time and penalties in the
+    engine if it decides the tie and it's level.  (result, quit)
     The other side may be from anywhere (Spain, a lower-league side, the continent)."""
     from career import cups
     me_id = career["my_club"]
@@ -265,7 +274,8 @@ def watch_cup(career, m):
         if not (0 <= cid < len(career["clubs"])):
             extra[cid] = cups.club(career, cid)
     cfg = write_config(career, m["home"], m["away"], f"cup_{m['id'].replace(':', '_')}_watch",
-                       auto_subs={me_id: career.get("assistant_subs", True)}, human=me_id, extra=extra, on=m["date"])
+                       auto_subs={me_id: career.get("assistant_subs", True)}, human=me_id, extra=extra, on=m["date"],
+                       knockout=cups.knockout_info(career, m))
     os.environ["FM_MATCH_CONFIG"] = cfg
     import config.formations as formations
     from core.database import PlayerDatabase
@@ -284,6 +294,10 @@ def watch_cup(career, m):
 
 def _summary(home, away, r):
     """What the career keeps from a match."""
-    return {"home": home, "away": away, "hg": r["hg"], "ag": r["ag"], "goals": r["goals"],
-            "possession": r["possession"], "subs": r.get("subs", []), "players": r.get("players", []),
-            "ht_talk": r.get("ht_talk")}
+    out = {"home": home, "away": away, "hg": r["hg"], "ag": r["ag"], "goals": r["goals"],
+           "possession": r["possession"], "subs": r.get("subs", []), "players": r.get("players", []),
+           "ht_talk": r.get("ht_talk")}
+    for k in ("et", "pens", "pen_kicks"):                 # (extra time / penalties, played in the engine)
+        if r.get(k) is not None:
+            out[k] = r[k]
+    return out

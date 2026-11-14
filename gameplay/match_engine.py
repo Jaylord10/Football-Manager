@@ -64,6 +64,12 @@ class MatchEngine:
         self.ht_tables = {t: (getattr(formations.db, "ht_talk", {}) or {}).get(t) for t in (0, 1)}
         self.ht_panel = None              # rendering/ht_panel.py while you choose
         self.ht_given = None              # what was said, for the result
+        # A knockout tie this match decides (career cups / play-offs): level at the end - extra time, then
+        # penalties (gameplay/shootout.py).  {"agg": [home, away]} = the goals from earlier legs.
+        self.knockout = getattr(formations.db, "knockout", None)
+        self.score_90 = None              # the score after 90 minutes, once extra time starts
+        self.shootout = None
+        self.final_minute = 90
 
         # ── Learning players (Neo + Messi) ───────────────────────────────────
         # Off by default: set RL_ENABLED = True in config/constants.py to use them.
@@ -294,6 +300,52 @@ class MatchEngine:
         # The team that kicked off the first half doesn't kick off the second
         self._kickoff(conceding_team_id=getattr(self, "_first_kickoff", None))
 
+    # --- Extra time and penalties (knockout ties only) ------------------------------------------------
+    def _tie_level(self):
+        if not self.knockout:
+            return False
+        agg = self.knockout.get("agg") or [0, 0]
+        return self.score[0] + agg[0] == self.score[1] + agg[1]
+
+    def _stop_ball(self):
+        self.ball.vel = Vector2(0, 0)
+        self.ball.owner = None
+        self.ball.is_dead = True
+
+    def _start_et_break(self):
+        """Level after 90 minutes: a short break, then 2 x 15 minutes.  (IFAB: one more substitution, and one
+        more window, in extra time.)"""
+        self.match_state = "et_break"
+        self.ht_elapsed = 0.0
+        self.score_90 = list(self.score)
+        self.final_minute = 120
+        self._stop_ball()
+        if not self.subs.friendly:
+            self.subs.max_subs += 1
+            self.subs.max_windows += 1
+
+    def _start_et_halftime(self):
+        self.match_state = "et_halftime"
+        self.ht_elapsed = 0.0
+        self._stop_ball()
+
+    def _start_et_half(self, which):
+        self.match_state = which
+        self.half_elapsed = 0.0
+        self.subs.half_time(self.time_elapsed, 91 if which == "et_first" else 106)   # (changes at the break)
+        if which == "et_first":
+            self._kickoff()                             # a new toss
+            self._et_kickoff = getattr(self, "_first_kickoff", 0)
+        else:
+            self._kickoff(conceding_team_id=getattr(self, "_et_kickoff", 0))
+
+    def _start_penalties(self):
+        from gameplay.shootout import Shootout
+        self.match_state = "penalties"
+        self._stop_ball()
+        self.subs.messages.clear()                      # (no substitution boards over the shoot-out)
+        self.shootout = Shootout(self)
+
     def _start_fulltime(self):
         self.match_state  = "full_time"
         self.ball.vel     = Vector2(0, 0)
@@ -366,10 +418,12 @@ class MatchEngine:
             # The football always runs in fixed 1/60 s steps (exactly like
             # sim.py); watching at 8x just plays 8 steps per drawn frame.
             # (Half-time / full-time screens stay at normal speed.)
-            steps = self.match_speed if self.match_state in ("first_half", "second_half") else 1
+            playing = ("first_half", "second_half", "et_first", "et_second")
+            steps = (self.match_speed if self.match_state in playing else
+                     min(2, self.match_speed) if self.match_state == "penalties" else 1)
             for _ in range(steps):
                 self.step(1.0 / FPS)
-                if self.match_state not in ("first_half", "second_half"):
+                if self.match_state not in playing and self.match_state != "penalties":
                     break
             self._render()
         if not self.career:
@@ -400,7 +454,7 @@ class MatchEngine:
                     self.sub_panel = None                # back to the match
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_s and self.my_team is not None and self.subs.active \
-                        and self.match_state != "full_time":
+                        and self.match_state not in ("full_time", "penalties"):
                     from rendering.sub_panel import SubPanel
                     self.sub_panel = SubPanel()          # the match waits while it's open
                     continue
@@ -442,6 +496,17 @@ class MatchEngine:
                 self._start_second_half()
             return   # nothing else ticks during HT
 
+        if self.match_state in ("et_break", "et_halftime"):
+            self.ht_elapsed += delta_time
+            if self.ht_elapsed >= HALFTIME_DURATION:
+                self._start_et_half("et_first" if self.match_state == "et_break" else "et_second")
+            return
+        if self.match_state == "penalties":
+            self.shootout.update(delta_time)
+            if self.shootout.finished():
+                self._start_fulltime()
+            return
+
         if self.match_state == "full_time":
             return   # game frozen; press R to restart
 
@@ -453,7 +518,18 @@ class MatchEngine:
             self._start_halftime()
             return
         if self.match_state == "second_half" and self.half_elapsed >= HALF_DURATION_REAL:
-            self._start_fulltime()
+            if self._tie_level():
+                self._start_et_break()                  # (a knockout tie, still level: extra time)
+            else:
+                self._start_fulltime()
+            return
+        if self.match_state in ("et_first", "et_second") and self.half_elapsed >= HALF_DURATION_REAL / 3.0:
+            if self.match_state == "et_first":
+                self._start_et_halftime()
+            elif self._tie_level():
+                self._start_penalties()
+            else:
+                self._start_fulltime()
             return
 
         # ── Possession counter ─────────────────────────────────────────
@@ -625,6 +701,11 @@ class MatchEngine:
         return name
 
     def match_minute(self):
+        if self.match_state in ("et_first", "et_second"):
+            m = int(self.half_elapsed * 15.0 / (HALF_DURATION_REAL / 3.0)) + 1
+            return min(105, 90 + m) if self.match_state == "et_first" else min(120, 105 + m)
+        if self.match_state in ("et_break", "et_halftime", "penalties") or self.score_90 is not None:
+            return {"et_break": 90, "et_halftime": 105}.get(self.match_state, 120)
         m = int(self.half_elapsed * 45.0 / HALF_DURATION_REAL) + 1
         return min(90, 45 + m) if self.match_state == "second_half" else min(45, m)
 
@@ -642,8 +723,16 @@ class MatchEngine:
     def result(self):
         """What the manager game needs from a finished match."""
         total = sum(self.possession_frames) or 1
+        out = {}
+        if self.score_90 is not None:               # (extra time: the 90-minute score + the extra-time goals)
+            out["et"] = [self.score[0] - self.score_90[0], self.score[1] - self.score_90[1]]
+            if self.shootout is not None:
+                out["pens"] = self.shootout.score()
+                out["pen_kicks"] = [list(k) for k in self.shootout.kicks]
+        s = self.score_90 if self.score_90 is not None else self.score
         return {
-            "hg": self.score[0], "ag": self.score[1],
+            **out,
+            "hg": s[0], "ag": s[1],
             "goals": list(self.goal_events),
             "possession": [round(100 * f / total) for f in self.possession_frames],
             "shots_on_target": list(self.shots_on_target),
@@ -805,6 +894,11 @@ class MatchEngine:
         elif self.match_state == "second_half":
             gm         = min(90, 45 + int(self.half_elapsed * scale) + 1)
             half_label = "2ND"
+        elif self.match_state in ("et_first", "et_second", "et_break", "et_halftime", "penalties") or \
+                (self.match_state == "full_time" and self.score_90 is not None):
+            gm         = self.match_minute()
+            half_label = {"et_first": "ET1", "et_second": "ET2", "penalties": "PEN",
+                          "full_time": "AET"}.get(self.match_state, "ET")
         else:   # full_time
             gm         = 90
             half_label = "FT"
@@ -868,14 +962,39 @@ class MatchEngine:
             self.ui_renderer.draw_sub_flash(self.screen, msg["text"], msg["team"], row=i,
                                             kind=msg.get("kind", "sub"))
 
-        if self.match_state in ("halftime", "full_time") and self.sub_panel is None:
+        names = (self._team_name(0), self._team_name(1))
+        if self.match_state == "penalties" and self.shootout is not None:
+            self.shootout.draw(self.screen, self.ui_renderer, names)
+        if self.match_state in ("halftime", "full_time", "et_break", "et_halftime") and self.sub_panel is None:
             self.ui_renderer.draw_match_event_overlay(
-                self.screen, self.match_state, self.score,
-                (self._team_name(0), self._team_name(1)), self.career
+                self.screen, self.match_state, self.score, names, self.career, extra=self._extra_line()
             )
 
         if flip:
             pygame.display.flip()
+
+    def _extra_line(self):
+        """The line under the score on the extra-time / full-time screens (knockout ties)."""
+        if not self.knockout:
+            return None
+        agg = self.knockout.get("agg") or [0, 0]
+        two_legs = any(agg)
+        n = (self._team_name(0), self._team_name(1))
+        if self.match_state == "et_break":
+            return ("Level on aggregate" if two_legs else "Level after 90 minutes") + " - 30 minutes of extra time"
+        if self.match_state == "et_halftime":
+            return "Extra time: half time"
+        if self.match_state != "full_time":
+            return None
+        if self.shootout is not None and self.shootout.winner is not None:
+            p = self.shootout.score()
+            return f"{n[self.shootout.winner]} win {max(p)}-{min(p)} on penalties"
+        tot = [self.score[0] + agg[0], self.score[1] + agg[1]]
+        how = " after extra time" if self.score_90 is not None else ""
+        if two_legs:
+            return f"Aggregate {tot[0]}-{tot[1]}{how}" + (f" - {n[0 if tot[0] > tot[1] else 1]} go through"
+                                                          if tot[0] != tot[1] else "")
+        return how.strip().capitalize() or None
 
     def _draw_overlay(self):
         mode = getattr(self, "overlay_mode", "off")

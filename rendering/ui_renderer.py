@@ -195,7 +195,7 @@ class UIRenderer:
     # Overlay screens
     # ------------------------------------------------------------------
 
-    def draw_match_event_overlay(self, surface, match_state, score, names=("Blue", "Red"), career=False):
+    def draw_match_event_overlay(self, surface, match_state, score, names=("Blue", "Red"), career=False, extra=None):
         """Semi-transparent overlay for HALF TIME and FULL TIME."""
         overlay = pygame.Surface(
             (WIDTH + FIELD_MARGIN * 2, HEIGHT + FIELD_MARGIN * 2), pygame.SRCALPHA
@@ -209,6 +209,9 @@ class UIRenderer:
         if match_state == "halftime":
             title = "HALF TIME"
             sub   = "2nd half starting shortly…"
+        elif match_state in ("et_break", "et_halftime"):
+            title = "EXTRA TIME" if match_state == "et_break" else "EXTRA TIME - HALF TIME"
+            sub   = "Starting shortly…"
         else:   # full_time
             title = "FULL TIME"
             after = "Press ENTER to continue" if career else "Press R to replay"
@@ -226,6 +229,9 @@ class UIRenderer:
         surface.blit(title_surf, (cx - title_surf.get_width() // 2, cy - 60))
         surface.blit(score_surf, (cx - score_surf.get_width() // 2, cy))
         surface.blit(sub_surf,   (cx - sub_surf.get_width() // 2,   cy + 48))
+        if extra:
+            ex = self.med_font.render(extra, True, YELLOW)
+            surface.blit(ex, (cx - ex.get_width() // 2, cy + 78))
 
     def draw_paused_message(self, surface):
         overlay = pygame.Surface(
