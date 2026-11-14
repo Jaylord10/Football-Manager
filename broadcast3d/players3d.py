@@ -205,8 +205,10 @@ class AnimPlayer:
             ct.setRamImage(b"\x00\x00\x00\x00")
         st1 = TextureStage("crest"); st1.setSort(1); st1.setTexcoordName("1")   #  through these two stages)
         self.a.setTexture(st1, ct, 2)
+        hs = zlib.crc32(f"hair{name}{number}".encode())
+        style = (0 if hs % 10 < 6 else 1 if hs % 10 < 8 else 2) + (4 if (hs // 10) % 10 < 3 else 0)  # (~30% beards)
         r.setShaderInput("kit_info", (PATTERNS.get(kit.get("pattern"), 0), 1.0 if kit.get("keeper") else 0.0,
-                                      1.0 if crest else 0.0, 0.0))
+                                      1.0 if crest else 0.0, float(style)))
         self.num = None
         self.action_names = []
         if self.cfg.get("make_walk"):

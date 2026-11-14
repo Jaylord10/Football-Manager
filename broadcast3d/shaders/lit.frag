@@ -48,6 +48,26 @@ vec3 shirt_at(float x, float y, float z, bool torso) {
     return s;
 }
 
+// The head: hair (his style - kit_info.w: 0 short, 1 shaved, 2 longer, +4 a beard), and a simple face.
+vec4 head_colour(float x, float y, float z, float ax) {
+    float style = mod(kit_info.w, 4.0);
+    bool beard = kit_info.w >= 3.5;
+    float top = style > 0.5 && style < 1.5 ? 1.765 : 1.72;          // (where the hair starts at the front)
+    float back = style > 1.5 ? 1.53 : (style > 0.5 ? 1.68 : 1.60);  // (and how far down the back)
+    if (z >= top || (y > 0.02 && z > back) || (style > 1.5 && ax > 0.085 && z > 1.6 && y > -0.05))
+        return kit_hair;
+    if (y < -0.06) {                                                // the face
+        vec2 e = vec2(ax - 0.036, (z - 1.655) * 1.6);
+        if (dot(e, e) < 0.011 * 0.011) return vec4(0.08, 0.06, 0.05, 1.0);                       // eyes
+        if (z > 1.674 && z < 1.683 && ax > 0.016 && ax < 0.056) return mix(kit_hair, kit_skin, 0.2);  // brows
+        if (z > 1.572 && z < 1.578 && ax < 0.022) return vec4(kit_skin.rgb * vec3(0.62, 0.45, 0.42), 1.0); // mouth
+        if (ax < 0.012 && z > 1.60 && z < 1.645) return vec4(kit_skin.rgb * 0.9, 1.0);         // the nose's shade
+    }
+    if (beard && y < -0.02 && z < 1.605 && (ax > 0.028 || z < 1.565 || (z > 1.583 && z < 1.592)))
+        return mix(kit_hair, kit_skin, 0.35);                       // a beard (and moustache)
+    return kit_skin;
+}
+
 vec4 kit_colour() {
     float x = v_uv.x, z = v_uv.y, y = v_uv1.x, ax = abs(x);
     bool keeper = kit_info.y > 0.5;
@@ -75,8 +95,7 @@ vec4 kit_colour() {
     if (keeper && z < 1.49 && ax < 0.70) return vec4(shirt_at(x, y, z, false), 1.0);   // a keeper's long sleeves
     if (keeper && z < 1.49) return kit_gloves;                                       // and gloves
     if (z < 1.49 && ax < 0.40) return kit_trim;                                    // the sleeve's hem
-    if (z >= 1.72 || (z > 1.62 && y > 0.02)) return kit_hair;
-    return kit_skin;
+    return head_colour(x, y, z, ax);
 }
 
 float sun_visible() {
