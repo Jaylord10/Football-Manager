@@ -31,11 +31,40 @@ def C(rgb):
     return (rgb[0] / 255.0, rgb[1] / 255.0, rgb[2] / 255.0, 1.0)
 
 
+def _kit_colour(kit, x, y, z, ax):
+    """The shirt's colour at this point of the body (bind pose, metres): its pattern (broadcast3d/kits.py)."""
+    shirt, trim = C(kit["shirt"]), C(kit.get("trim", kit["shirt"]))
+    pat = kit.get("pattern")
+    torso = ax < 0.24
+    if pat == "sleeves":
+        return shirt if torso else trim
+    if not torso:
+        return shirt
+    if pat == "hoops":
+        return trim if int((z - 0.97) / 0.105) % 2 else shirt
+    if pat == "stripes":
+        return trim if int((x + 0.5) / 0.075) % 2 else shirt
+    if pat == "pinstripe":                                              # (too fine for the figure: a hint of it)
+        k = 0.22 if ((x + 0.5) % 0.07) < 0.018 else 0.0
+        return tuple(shirt[i] * (1 - k) + trim[i] * k for i in range(4))
+    if pat == "band":
+        return trim if 1.24 < z < 1.33 else shirt
+    if pat == "halves":
+        return trim if x > 0 else shirt
+    if pat == "sash":                                                  # (left shoulder down to the right hip)
+        return trim if abs(x * (1 if y < 0 else -1) - (z - 1.18) * 0.85) < 0.07 else shirt
+    return shirt
+
+
 def paint(actor, kit, skin, hair):
-    """Colour each vertex by where it sits on the body (bind pose): boots, socks, skin, shorts, shirt, head."""
-    shirt, shorts, socks = C(kit["shirt"]), C(kit["shorts"]), C(kit["socks"])
+    """Colour each vertex by where it sits on the body (bind pose): boots, socks (and their tops), skin, shorts,
+    shirt (with its pattern, collar and cuffs), head.  Keepers: long sleeves and gloves."""
+    shorts, socks = C(kit["shorts"]), C(kit["socks"])
     sk, hr, boot = C(skin), C(hair), C((22, 22, 24))
     trim = C(kit.get("trim", kit["shirt"]))
+    socktop = C(kit["socktop"]) if kit.get("socktop") else socks
+    keeper = kit.get("keeper", False)
+    gloves = C((235, 235, 235)) if sum(kit["shirt"]) < 600 else C((40, 40, 44))
     for np in actor.findAllMatches("**/+GeomNode"):
         gn = np.node()
         mat = np.getMat(actor)
@@ -58,14 +87,20 @@ def paint(actor, kit, skin, hair):
                 ax = abs(x)
                 if z < 0.075:
                     c = boot
-                elif z < 0.46:
+                elif z < 0.40:
                     c = socks
+                elif z < 0.46:
+                    c = socktop
                 elif z < 0.66:
                     c = sk
                 elif z < 0.97 and ax < 0.24:
                     c = shorts
                 elif z < 1.49 and ax < 0.36:
-                    c = trim if (z > 1.43 and ax < 0.09) else shirt
+                    c = trim if (z > 1.43 and ax < 0.09) else _kit_colour(kit, x, y, z, ax)
+                elif keeper and z < 1.49 and ax < 0.70:
+                    c = _kit_colour(kit, x, y, z, ax)              # (a keeper's long sleeves...)
+                elif keeper and z < 1.49:
+                    c = gloves                                     # (...and gloves)
                 elif z < 1.49 and ax < 0.40:
                     c = trim                                       # the sleeve hem
                 elif z >= 1.72 or (z > 1.62 and y > 0.02):

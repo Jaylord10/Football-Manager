@@ -7,6 +7,8 @@ import sys, json, math, os
 from panda3d.core import loadPrcFileData
 OFF = "--live" not in sys.argv
 CLOSE = "--close" in sys.argv
+TEAMS = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--teams=")), None)
+                                            # (--teams=Penrith,Fernley: show other clubs' kits)
 OVERCAST = "--overcast" in sys.argv
 SUN_AZ, SUN_EL = 200.0, 22.0               # the sun: degrees round from behind the Main Stand, and up
 SHADOW_MAP = 4096
@@ -22,6 +24,7 @@ from geom import Mesh, box, box_into, sphere, prism
 
 HERE = os.path.dirname(os.path.abspath(__file__))       # (this folder: broadcast3d/)
 GAME = os.path.dirname(HERE)                             # (the game folder)
+sys.path.insert(0, HERE)
 T = os.path.join(HERE, "tex") + os.sep
 CLUBS = os.path.join(GAME, "data", "world", "clubs") + os.sep
 L, WD = 110.0, 70.0
@@ -302,10 +305,11 @@ class Viewer(ShowBase):
         self.light_up()
         fog = Fog("haze"); fog.setColor(0.62, 0.66, 0.7); fog.setExpDensity(0.0012); self.render.setFog(fog)
         # kits (Ashvale home v Northwick home)
-        home = {"shirt": (200, 40, 45), "shorts": (245, 245, 245), "socks": (200, 40, 45)}
-        away = {"shirt": (30, 30, 32), "shorts": (30, 30, 32), "socks": (30, 30, 32), "number": (212, 170, 60)}
-        gk0 = {"shirt": (60, 170, 90), "shorts": (30, 30, 30), "socks": (60, 170, 90)}
-        gk1 = {"shirt": (235, 120, 40), "shorts": (235, 120, 40), "socks": (235, 120, 40)}
+        import kits                                                       # (the clubs' own kits, from their profiles)
+        self.home_name = TEAMS[0] if TEAMS else match.get("home", "Ashvale Rovers")
+        self.away_name = TEAMS[1] if TEAMS else match.get("away", "Northwick FC")
+        home, away, gk0, gk1, self.home_info, self.away_info = kits.choose(self.home_name, self.away_name)
+        self.kits = (home, away)
         import random
         rnd = random.Random(11)
         self.players = []
@@ -383,9 +387,14 @@ class Viewer(ShowBase):
     def hud(self, match):
         from direct.gui.DirectGui import DirectFrame
         DirectFrame(frameColor=(0.06, 0.07, 0.09, 0.88), frameSize=(0, 0.92, -0.11, 0), pos=(-1.72, 0, 0.94))
-        for i, (club, x) in enumerate((("ashvale", -1.66), ("northwick", -1.04))):
-            img = OnscreenImage(image=CLUBS + club + "/crest.png", pos=(x, 0, 0.885), scale=(0.042, 1, 0.044))
-            img.setTransparency(TransparencyAttrib.MAlpha)
+        for info, kit, x in ((self.home_info, self.kits[0], -1.66), (self.away_info, self.kits[1], -1.04)):
+            if info.get("crest"):
+                img = OnscreenImage(image=self.loader.loadTexture(Filename.fromOsSpecific(info["crest"])),
+                                    pos=(x, 0, 0.885), scale=(0.042, 1, 0.044))
+                img.setTransparency(TransparencyAttrib.MAlpha)
+            else:                                                       # (no crest yet: a patch of the shirt colour)
+                DirectFrame(frameColor=C(kit["shirt"]), frameSize=(-0.03, 0.03, -0.03, 0.03), pos=(x, 0, 0.885))
+        self.labels = (self.home_info["short"][:3].upper(), self.away_info["short"][:3].upper())
         self.score_t = OnscreenText(text="", pos=(-1.35, 0.87), scale=0.055, fg=(1, 1, 1, 1), align=TextNode.ACenter,
                                     mayChange=True)
         self.clock_t = OnscreenText(text="", pos=(-0.88, 0.87), scale=0.05, fg=(0.85, 0.9, 0.85, 1), align=TextNode.ACenter,
@@ -415,7 +424,7 @@ class Viewer(ShowBase):
             self.cam.setPos(self.cx * 0.8, -HY - 62, 33)
             self.cam.lookAt(self.cx, self.cy * 0.35 + 9, 0)
         s = fr["s"]
-        self.score_t.setText(f"ASH  {s[0]} - {s[1]}  NOR")
+        self.score_t.setText(f"{self.labels[0]}  {s[0]} - {s[1]}  {self.labels[1]}")
         mins = int(fr["t"] / 600.0 * 45)
         self.clock_t.setText(f"{mins:02d}:{int((fr['t'] / 600.0 * 45 * 60) % 60):02d}")
 
