@@ -6,7 +6,8 @@ usage: python viewer.py [first_frame] [n_frames] [out_dir]   (renders frames off
 import sys, json, math, os
 from panda3d.core import loadPrcFileData
 OFF = "--live" not in sys.argv
-ANIM = "--anim" in sys.argv
+CLOSE = "--close" in sys.argv
+ANIM = "--boxes" not in sys.argv          # (animated figures unless --boxes: the old block players)
 loadPrcFileData("", ("window-type offscreen\n" if OFF else "") + "win-size 1280 720\naudio-library-name null\n"
                 "framebuffer-multisample 1\nmultisamples 4\ntextures-power-2 none\nsync-video 0")
 from direct.showbase.ShowBase import ShowBase
@@ -272,6 +273,9 @@ class Player:
         self.body.setP(-min(12, sp * 1.6))                                    # lean into the run
         self.body.setZ(abs(math.sin(self.phase)) * 0.05 * amp)
 
+    def act(self, kind, t):
+        pass                                                                  # (the block figures don't kick)
+
 
 class Viewer(ShowBase):
     def __init__(self, match):
@@ -323,6 +327,11 @@ class Viewer(ShowBase):
         self.camLens.setFov(36)
         self.camLens.setNearFar(1, 3000)
         self.cx, self.cy = 0.0, 0.0
+        self.events = find_events(match["frames"])
+        self.ball_off = Vec3(0, 0, 0)
+        self.ball_mode = None
+        self.last_ball = None
+        self.dribble = {}
         self.hud(match)
 
     def hud(self, match):
@@ -338,23 +347,142 @@ class Viewer(ShowBase):
         DirectFrame(frameColor=(0.06, 0.07, 0.09, 0.0), frameSize=(0, 0.1, -0.1, 0), pos=(-1.7, 0, 0.94))
 
     def show(self, fr, dt):
-        for p, (x, y, fx, fy, sp, state, act) in zip(self.players, fr["p"]):
+        k = fr.get("k", 0)
+        for i, (p, (x, y, fx, fy, sp, state, act)) in enumerate(zip(self.players, fr["p"])):
             wx, wy = to_world(x, y)
             p.update(wx, wy, fx, -fy, sp, dt, act)
-        bx, by = to_world(fr["b"][0], fr["b"][1])
-        bz = fr["b"][2] / 10.0 + 0.2
+            kind, t = self.events.action(i, k)
+            if kind is None and fr["o"] == i:
+                kind, t = self._dribble_touch(i, p, dt)
+            p.act(kind, t)
+        bx, by, bz = self._ball(fr, dt)
         self.ball.setPos(bx, by, bz)
         self.bsh.setPos(bx, by, 0.02)
         # the camera pans with the ball (smoothly), a little zoom when it's near the far side
         k = min(1.0, dt * 2.2)
         self.cx += (max(-34, min(34, bx)) - self.cx) * k
         self.cy += (by - self.cy) * k
-        self.cam.setPos(self.cx * 0.8, -HY - 62, 33)
-        self.cam.lookAt(self.cx, self.cy * 0.35 + 9, 0)
+        if CLOSE:                                                           # (a close camera, for checking)
+            self.cam.setPos(bx - 6, by - 14, 4.5)
+            self.cam.lookAt(bx, by, 0.9)
+        else:
+            self.cam.setPos(self.cx * 0.8, -HY - 62, 33)
+            self.cam.lookAt(self.cx, self.cy * 0.35 + 9, 0)
         s = fr["s"]
         self.score_t.setText(f"ASH  {s[0]} - {s[1]}  NOR")
         mins = int(fr["t"] / 600.0 * 45)
         self.clock_t.setText(f"{mins:02d}:{int((fr['t'] / 600.0 * 45 * 60) % 60):02d}")
+
+
+# --- The ball at the players' feet, and what each player is doing with it ------------------------------------
+DRIBBLE_TOUCH = 0.7          # seconds between touches when running with the ball
+BALL_R = 0.2                 # (the ball is drawn a touch big, as TV games do)
+
+
+def _viewer_ball(self, fr, dt):
+    """Where to draw the ball.  Loose: where the engine has it.  At a player's feet: just in front of him,
+    pushed ahead with each touch when he's running with it.  Switching between the two eases over ~0.1 s."""
+    import math as _m
+    o = fr["o"]
+    bx, by = to_world(fr["b"][0], fr["b"][1])
+    bz = fr["b"][2] / 10.0 + BALL_R
+    mode = o if (o >= 0 and fr["p"][o][6]) else None
+    if mode is not None:
+        p = self.players[o]
+        hd = _m.radians(p.h or 0.0)
+        fx, fy = -_m.sin(hd), _m.cos(hd)
+        ph = self.dribble.get(o, 0.0)
+        push = min(1.0, max(0.0, (p.sp - 1.0) / 4.0))                    # (standing: at his feet; running: pushed on)
+        dist = 0.42 + 0.65 * push * _m.sin(_m.pi * ph)
+        kind, t = self.events.action(o, fr.get("k", 0))
+        if kind in ("kick", "shot") and t < 0:                              # (setting it up for the kick)
+            dist = 0.38 + (dist - 0.38) * min(1.0, -t / 0.3)
+        px, py = p.root.getX(), p.root.getY()
+        bx, by, bz = px + fx * dist + fy * 0.09, py + fy * dist - fx * 0.09, BALL_R
+    if mode != self.ball_mode:
+        if self.last_ball is not None:
+            self.ball_off = Vec3(*self.last_ball) - Vec3(bx, by, bz)        # (ease from where it was drawn)
+        self.ball_mode = mode
+    self.ball_off *= _m.exp(-dt / 0.09)
+    out = (bx + self.ball_off.x, by + self.ball_off.y, max(BALL_R, bz + self.ball_off.z))
+    self.last_ball = out
+    return out
+
+
+def _viewer_dribble(self, i, p, dt):
+    """Running with the ball: a touch every DRIBBLE_TOUCH seconds - the pose either side of it."""
+    if p.sp < 1.2:
+        return None, 0.0
+    ph = (self.dribble.get(i, 0.0) + dt / DRIBBLE_TOUCH) % 1.0
+    self.dribble[i] = ph
+    t = ph * DRIBBLE_TOUCH
+    if t > DRIBBLE_TOUCH - 0.16:
+        t -= DRIBBLE_TOUCH
+    return "touch", t
+
+
+Viewer._ball = _viewer_ball
+Viewer._dribble_touch = _viewer_dribble
+
+
+class Events:
+    """Kicks, shots, first touches, headers and tackles, found from the recording (who had the ball, how fast
+    it moved), so each player can be posed around the moment he plays it."""
+    WINDOW = 0.45
+
+    def __init__(self, frames):
+        self.by_player = {}
+        self.fps = 30.0
+
+    RANK = {"shot": 4, "header": 3, "tackle": 3, "kick": 2, "touch": 1}
+
+    def add(self, i, k, kind):
+        l = self.by_player.setdefault(i, [])
+        for n, (k2, kind2) in enumerate(l):
+            if abs(k2 - k) <= 8:                                            # (the same moment, seen twice)
+                if self.RANK[kind] > self.RANK[kind2]:
+                    l[n] = (k, kind)
+                return
+        l.append((k, kind))
+
+    def action(self, i, k):
+        best = None
+        for (ke, kind) in self.by_player.get(i, ()):
+            t = (k - ke) / self.fps
+            if -self.WINDOW <= t <= self.WINDOW and (best is None or abs(t) < abs(best[1])):
+                best = (kind, t)
+        return best if best else (None, 0.0)
+
+
+def find_events(F):
+    import math as _m
+    ev = Events(F)
+    for k, fr in enumerate(F):
+        fr["k"] = k
+    sp = lambda a, b: _m.dist(a[:2], b[:2]) / 10.0 * 30.0                  # m/s, from two frames
+    for k in range(2, len(F) - 4):
+        a, b = F[k - 1]["o"], F[k]["o"]
+        if a >= 0 and b < 0:                                                # he's played it
+            v = sp(F[k]["b"], F[k + 3]["b"]) / 3.0
+            z = F[k - 1]["b"][2] / 10.0
+            ev.add(a, k, "header" if z > 1.3 else "shot" if v > 21 else "kick")
+        elif a < 0 and b >= 0:
+            z = F[k]["b"][2] / 10.0
+            ev.add(b, k, "header" if z > 1.3 else "touch")                  # (the first touch)
+        elif a >= 0 and b >= 0 and a != b:
+            if (a < 11) != (b < 11):
+                ev.add(b, k, "tackle")
+        elif a < 0 and b < 0:                                               # a loose ball changes course
+            v0 = [(F[k - 1]["b"][j] - F[k - 2]["b"][j]) * 3.0 for j in range(3)]
+            v1 = [(F[k]["b"][j] - F[k - 1]["b"][j]) * 3.0 for j in range(3)]
+            if _m.dist(v0, v1) > 5.0:
+                bx, by = F[k]["b"][0], F[k]["b"][1]
+                near = min(((_m.hypot(p[0] - bx, p[1] - by) / 10.0, i) for i, p in enumerate(F[k]["p"]) if p[6]),
+                           default=(99, -1))
+                if near[0] < 2.0:
+                    z = F[k]["b"][2] / 10.0
+                    ev.add(near[1], k, "header" if z > 1.3 else "kick")
+    return ev
 
 
 def intro(v, F, first, n, out, start_idx):

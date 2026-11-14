@@ -76,12 +76,68 @@ class AnimPlayer:
         t = n.attachNewNode(tn); t.setScale(0.22); t.setPos(0, -0.16, 0.0); t.setTwoSided(True)
         self.h = None
         self.sp = 0.0
+        self.ctl = {}                       # joints we're posing by hand (kicks, headers), while we do
+        self.lift = 0.0
+
+    # --- kicks, headers, tackles: posed by hand on top of the running animation -------------------------
+    # Angles in degrees (the figure faces +Y: thigh P + = forward, knee P - = bends, spine P - = leans in).
+    # Each pose is a list of (seconds from the moment the ball is struck, {joint: P}); in between we ease.
+    POSES = {
+        "kick":   [(-0.30, {"RightUpLeg": 0, "RightLeg": 0, "Spine": 0}),
+                   (-0.12, {"RightUpLeg": -28, "RightLeg": -95, "Spine": -4}),
+                   (0.00, {"RightUpLeg": 38, "RightLeg": -12, "Spine": -10}),
+                   (0.13, {"RightUpLeg": 48, "RightLeg": -8, "Spine": -5}),
+                   (0.36, {"RightUpLeg": 0, "RightLeg": 0, "Spine": 0})],
+        "shot":   [(-0.32, {"RightUpLeg": 0, "RightLeg": 0, "Spine": 0}),
+                   (-0.13, {"RightUpLeg": -35, "RightLeg": -110, "Spine": -6}),
+                   (0.00, {"RightUpLeg": 42, "RightLeg": -10, "Spine": -10}),
+                   (0.15, {"RightUpLeg": 55, "RightLeg": -6, "Spine": -6}),
+                   (0.42, {"RightUpLeg": 0, "RightLeg": 0, "Spine": 0})],
+        "touch":  [(-0.16, {"RightUpLeg": 0, "RightLeg": 0}),
+                   (-0.06, {"RightUpLeg": -6, "RightLeg": -40}),
+                   (0.00, {"RightUpLeg": 18, "RightLeg": -18}),
+                   (0.16, {"RightUpLeg": 0, "RightLeg": 0})],
+        "header": [(-0.28, {"Spine": 0, "Neck": 0}),
+                   (-0.10, {"Spine": 16, "Neck": 12}),
+                   (0.00, {"Spine": -18, "Neck": -22}),
+                   (0.28, {"Spine": 0, "Neck": 0})],
+        "tackle": [(-0.30, {"LeftUpLeg": 0, "LeftLeg": 0, "Spine": 0}),
+                   (-0.05, {"LeftUpLeg": 55, "LeftLeg": -15, "Spine": -12}),
+                   (0.15, {"LeftUpLeg": 60, "LeftLeg": -10, "Spine": -14}),
+                   (0.45, {"LeftUpLeg": 0, "LeftLeg": 0, "Spine": 0})],
+    }
+    JUMP = {"header": (0.30, 0.30), "tackle": (-0.18, 0.40)}      # (height m, how long either side of the moment)
+
+    def _joint(self, name):
+        if name not in self.ctl:
+            self.ctl[name] = self.a.controlJoint(None, "modelRoot", "mixamorig:" + name)
+        return self.ctl[name]
+
+    def act(self, kind, t):
+        """Pose an action: kind = "kick" / "shot" / "touch" / "header" / "tackle", t = seconds from the moment
+        the ball is struck (negative = the wind-up).  kind None: back to the plain animation."""
+        keys = self.POSES.get(kind)
+        if keys is None or t < keys[0][0] or t > keys[-1][0]:
+            for name in list(self.ctl):
+                self.a.releaseJoint("modelRoot", "mixamorig:" + name)
+                self.ctl.pop(name).removeNode()
+            self.lift = 0.0
+            return
+        for (t0, a), (t1, b) in zip(keys, keys[1:]):
+            if t0 <= t <= t1:
+                k = (t - t0) / max(1e-6, t1 - t0)
+                k = k * k * (3 - 2 * k)                                         # (ease in and out)
+                for j in a:
+                    self._joint(j).setHpr(0, a[j] + (b[j] - a[j]) * k, 0)
+                break
+        h, w = self.JUMP.get(kind, (0.0, 1.0))
+        self.lift = h * max(0.0, math.cos(min(1.0, abs(t) / w) * math.pi / 2)) if h > 0 else h * max(0.0, 1 - abs(t) / w)
 
     def update(self, x, y, fx, fy, speed, dt, active=True):
         if not active:
             self.root.hide(); return
         self.root.show()
-        self.root.setPos(x, y, 0)
+        self.root.setPos(x, y, self.lift)
         h = math.degrees(math.atan2(-fx, fy))
         if self.h is None:
             self.h = h
