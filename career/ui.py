@@ -3700,12 +3700,48 @@ class App:
         pygame.draw.line(self.win, (170, 165, 155), (r.x + 18, y), (r.right - 18, y), 1)
         y += 12
         bf = self._pfont(17, False, serif=True)
-        stop = r.bottom - 26 - (30 + 26 * len(more) if more else 0)
-        for line in self._wrap_font(a["body"], bf, r.w - 36):
-            if y > stop:
-                break
-            self.win.blit(bf.render(line, True, (35, 32, 30)), (r.x + 18, y))
-            y += bf.get_height() + 4
+        lines = []                                          # (paragraphs: a half-line gap between them)
+        for i, para in enumerate(a["body"].split("\n\n")):
+            if i:
+                lines.append(None)
+            for ln in para.split("\n"):
+                lines += self._wrap_font(ln, bf, r.w - 36) or [""]
+        lh = bf.get_height() + 4
+        room_all = (r.bottom - 26 - y)
+        fits = sum(lh // 2 if ln is None else lh for ln in lines) <= room_all - (30 + 26 * len(more) if more else 0)
+        if not fits:
+            more = ()                                       # (a long piece: the whole page for it)
+        stop = r.bottom - 26 - (30 + 26 * len(more) if more else 0) - (0 if fits else 30)
+        pages, cur, hh = [], [], 0
+        for ln in lines:                                    # (split into pages that fit)
+            h = lh // 2 if ln is None else lh
+            if hh + h > stop - y and cur:
+                pages.append(cur)
+                cur, hh = [], 0
+                if ln is None:
+                    continue
+            cur.append(ln)
+            hh += h
+        pages.append(cur)
+        key = (a["id"], len(pages))
+        pg = getattr(self, "article_page", {}).get(key, 0) if isinstance(getattr(self, "article_page", None), dict) else 0
+        pg = min(pg, len(pages) - 1)
+        for ln in pages[pg]:
+            if ln is None:
+                y += lh // 2
+                continue
+            self.win.blit(bf.render(ln, True, (35, 32, 30)), (r.x + 18, y))
+            y += lh
+        if len(pages) > 1:
+            if not isinstance(getattr(self, "article_page", None), dict):
+                self.article_page = {}
+            setp = lambda v: self.article_page.__setitem__(key, v)
+            self.buttons.append(Button((r.x + 14, r.bottom - 40, 110, 30), "Back", lambda: setp(max(0, pg - 1)),
+                                       enabled=pg > 0, font="btn_s"))
+            self.buttons.append(Button((r.right - 124, r.bottom - 40, 110, 30), "Read on", lambda: setp(pg + 1),
+                                       enabled=pg < len(pages) - 1, font="btn_s", primary=pg < len(pages) - 1))
+            self.win.blit(self._pfont(13, False, serif=False).render(f"page {pg + 1} of {len(pages)}", True,
+                          (110, 100, 90)), (r.centerx - 30, r.bottom - 32))
         if more:                                            # the rest of the page
             y = r.bottom - 22 - 26 * len(more) - 24
             pygame.draw.line(self.win, (170, 165, 155), (r.x + 18, y), (r.right - 18, y), 1)

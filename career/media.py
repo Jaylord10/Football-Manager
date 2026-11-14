@@ -30,8 +30,8 @@ import random
 
 from career import league, calendar as cal, morale
 
-KEEP_ARTICLES = 160
-KEEP_POSTS = 220
+KEEP_ARTICLES = 220
+KEEP_POSTS = 400
 MOOD_START = 58.0
 MOOD_NORMAL = 55.0
 MOOD_DRIFT = 0.05            # each matchday: this share of the way back to normal
@@ -335,6 +335,8 @@ def after_matchday(career, md, results):
     _rumour(career)
     _spain(career)
     _other_division(career)
+    from career import press
+    press.after_matchday(career, md, my)              # previews, talking points, features, the column
     m["mood_hist"] = (m["mood_hist"] + [round(m["mood"], 1)])[-12:]
 
 
@@ -368,7 +370,7 @@ def _match_report(career, r):
         (f"{them.split(' ')[0]}: {sc_them}" if sc_them else "")
     # local paper - always
     if pts == 3:
-        head = rng.choice([f"{us.split(' ')[-1]} see off {them}" if gf - ga >= 2 else f"{us} edge past {them}",
+        head = rng.choice([f"{_name(career, me, True)} see off {them}" if gf - ga >= 2 else f"{us} edge past {them}",
                            f"Three points for {us}", f"Delight as {us} beat {them}"])
         mood_line = rng.choice(["The supporters went home happy.", "A performance to build on.",
                                 "The manager will be pleased with that."])
@@ -380,11 +382,8 @@ def _match_report(career, r):
         head = rng.choice([f"{us} beaten by {them}", f"Frustration for {us}", f"No joy for {us} against {them}"])
         mood_line = rng.choice(["Plenty to work on.", "The boos at full time said it all." if shock < -1.2 else
                                 "Not the day anyone wanted.", "Back to the training ground."])
-    body = f"{line}. " + (f"{goals_line}. " if goals_line else "") + \
-        (f"{us} had {round(poss_us)}% of the ball. " if poss_us is not None else "") + mood_line
-    if r.get("att"):                                    # the crowd (career/crowds.py)
-        body += " " + _crowd_line(career, r)
-    body += " " + _table_line(career, me) + " " + _next_line(career, me)
+    from career import press                            # (the full report, in paragraphs - career/press.py)
+    body = press.match_report(career, r) + "\n\n" + mood_line
     _add_article(career, local_paper(career), "report", head, body.strip(), club=me)
     # nationals - only if it's a story
     if shock >= 1.3:
