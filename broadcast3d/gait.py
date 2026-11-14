@@ -1,28 +1,55 @@
 """
 broadcast3d/gait.py - movements the mannequin model doesn't come with, made here from real-world figures.
 
-The mannequin has a standing ("idle") and a running animation, but no walk - so at walking pace it used to do a
-slow-motion jog.  make_walk() builds a proper walk cycle, joint by joint, from normal human walking data:
+The mannequin comes with a standing ("idle") and a running animation only.  Everything else - walking, kicks,
+shots, touches, headers, tackles, a keeper's set position, dives, throw-ins, celebrations - is built here as
+proper animations (key poses, eased in between), so they blend smoothly with the running and the standing, and
+the whole body takes part (arms out for balance, hips and shoulders turning), not just a leg.
 
-  - hips: about 25-30 deg forward at heel strike, 10 deg back at toe-off;  knees: nearly straight at heel strike,
-    ~15-20 deg as the weight comes on, ~60 deg as the foot swings through;  ankles: a little drop after heel
+Poses are written in plain movements, in degrees (see MOVES): "hip_r" + = right thigh swung forward, "knee_r" +
+= bent, "ankle_r" + = toes up, "arm_r" + = right arm swung forward, "out_r" + = right arm lifted out to the side,
+"elbow_r" + = bent, "lean" / "chest" + = bending forward, "turn" + = hips turned to his left (right hip forward),
+"twist" + = shoulders turned to his left, "nod" + = head forward, "tilt" + = leaning over to his right.
+Each is a turn about an axis of the body as it stands (x across him, y front-to-back, z up), fixed to the bone
+above - so a knee bends about the thigh's own across-axis wherever the thigh has swung.  The model faces -Y and
+his right is -X.  After posing, each frame is "grounded": the body is lowered or raised so the lower foot stays on
+the grass (unless the pose says he's off the ground).
+
+The walk, from normal human walking data:
+  - hips about 25-30 deg forward at heel strike, 10 deg back at toe-off;  knees nearly straight at heel strike,
+    ~15-20 deg as the weight comes on, ~60 deg as the foot swings through;  ankles a little drop after heel
     strike, ~10 deg up at mid-stance, ~15-20 deg pushed down at toe-off  (Winter, "Biomechanics and Motor
-    Control of Human Movement", 4th ed. ch. 4 / Perry & Burnfield, "Gait Analysis" 2nd ed.)
-  - the body rises and falls ~4-5 cm a stride (lowest when both feet are down), sways ~2-4 cm side to side,
-    the pelvis turns ~+/-4 deg, the chest turns the other way, the arms swing ~+/-15-20 deg against the legs
-    with the elbows bent ~20-40 deg  (Perry & Burnfield; Meyns et al. 2013 "How to swing your arms").
-  - one cycle (two steps) is 1 second at 30 frames; the viewer speeds it up or slows it to suit the pace
-    (people walk ~1.6 steps a second at 1 m/s, ~1.9 at 1.4 m/s).
-
-How a joint is turned: about an axis of the body as it stands (x = across him, z = up), fixed to the bone above
-it - so a knee bends about the thigh's own across-axis wherever the thigh has swung.  The model faces -Y, his
-right is -X.
+    Control of Human Movement", 4th ed. ch. 4;  Perry & Burnfield, "Gait Analysis", 2nd ed.)
+  - the body sways ~2-4 cm side to side, the pelvis turns ~+/-4 deg, the chest the other way, the arms swing
+    ~+/-15-20 deg against the legs with the elbows bent ~20-40 deg  (Perry & Burnfield; Meyns et al. 2013,
+    "How to swing your arms").  One cycle (two steps) is 1 s at 30 frames; the viewer sets the pace.
+The kicks, from studies of the instep kick (Lees et al. 2010, "The biomechanics of kicking in soccer: a review",
+J Sports Sci 28(8)):  the standing foot is planted beside the ball with the knee bent ~25-40 deg; the kicking hip
+goes ~30 deg back with the knee bent ~90-110 deg at the top of the backswing, then whips through - knee
+straightening fast just before contact - to ~60-80 deg forward in the follow-through; the pelvis turns ~20-30
+deg back and then through towards the target; the arm on the standing-leg side swings out wide for balance.
 """
 import math
 from panda3d.core import (AnimBundle, AnimGroup, AnimChannelMatrixXfmTable, AnimBundleNode, NodePath, PTA_stdfloat,
-                          LMatrix4f, LQuaternionf, LVecBase3f, TransformState, Vec3)
+                          LMatrix4f, LQuaternionf, LVecBase3f, TransformState, Vec3, LPoint3f)
 
 FPS = 30
+
+# Plain movements -> (joint, axis of the body, sign).
+MOVES = {
+    "hip_r": ("thigh.r", "x", -1), "hip_l": ("thigh.l", "x", -1),
+    "hipout_r": ("thigh.r", "y", 1), "hipout_l": ("thigh.l", "y", -1),
+    "knee_r": ("calf.r", "x", 1), "knee_l": ("calf.l", "x", 1),
+    "ankle_r": ("foot.r", "x", -1), "ankle_l": ("foot.l", "x", -1),
+    "arm_r": ("upperarm.r", "x", -1), "arm_l": ("upperarm.l", "x", -1),
+    "out_r": ("upperarm.r", "y", 1), "out_l": ("upperarm.l", "y", -1),
+    "elbow_r": ("lowerarm.r", "x", -1), "elbow_l": ("lowerarm.l", "x", -1),
+    "turn": ("pelvis", "z", 1), "tilt": ("pelvis", "y", 1),
+    "lean": ("spine_01", "x", 1), "chest": ("spine_02", "x", 1), "twist": ("spine_01", "z", 1),
+    "side": ("spine_01", "y", 1),
+    "nod": ("neck_01", "x", 1),
+}
+AXES = {"x": Vec3(1, 0, 0), "y": Vec3(0, 1, 0), "z": Vec3(0, 0, 1)}
 
 
 def _cyc(keys, ph):
@@ -44,37 +71,133 @@ def _cyc(keys, ph):
     return keys[0][1]
 
 
-# One stride, right heel strike at phase 0, left at 0.5.  Degrees; + = forward / bent / toes up.
+# --- the walk -------------------------------------------------------------------------------------------------
+# One stride, right heel strike at phase 0, left at 0.5.
 HIP = [(0.00, 26), (0.12, 22), (0.30, 6), (0.50, -10), (0.62, -6), (0.75, 14), (0.88, 28)]
 KNEE = [(0.00, 4), (0.13, 18), (0.30, 8), (0.42, 5), (0.60, 38), (0.72, 60), (0.85, 30), (0.95, 6)]
 ANKLE = [(0.00, 0), (0.07, -6), (0.30, 5), (0.45, 10), (0.62, -18), (0.72, -6), (0.85, 0)]
 
 
 def walk_pose(ph):
-    """{joint: [(model axis, degrees), ...]} and the body's (x, y, z) shift (metres) at this point of the stride."""
     c, s = math.cos(2 * math.pi * ph), math.sin(2 * math.pi * ph)
+    m = {}
+    for side, off in (("r", 0.0), ("l", 0.5)):
+        m["hip_" + side] = _cyc(HIP, ph + off)
+        m["knee_" + side] = _cyc(KNEE, ph + off)
+        m["ankle_" + side] = _cyc(ANKLE, ph + off)
+    m["arm_r"], m["arm_l"] = -17 * c, 17 * c                      # (each arm forward with the other leg)
+    m["elbow_r"], m["elbow_l"] = 10 - 8 * c, 10 + 8 * c
+    m["turn"] = 4 * c                                             # (the right hip comes forward with the right leg)
+    m["twist"] = -7 * c                                           # (the shoulders turn against it)
+    m["tilt"] = 2 * s
+    return m, {"sway": -0.018 * s}                                # (over the right foot in the first half)
+
+
+# --- actions: key poses at seconds from the moment (the ball struck, the dive's start...) ---------------------------
+# "air": metres he is off the ground (no grounding then).  "hold": the pose stays put (a held stance).
+N = {}
+ACTIONS = {
+    # A pass / clearance with the right instep.
+    "kick": [(-0.32, N),
+             (-0.14, {"hip_r": -28, "knee_r": 95, "ankle_r": -20, "hip_l": 12, "knee_l": 30, "turn": -16, "twist": -6,
+                      "lean": 4, "out_l": 50, "arm_l": 15, "elbow_l": 30, "out_r": 25, "arm_r": -20, "elbow_r": 25}),
+             (0.00, {"hip_r": 24, "knee_r": 35, "ankle_r": -30, "hip_l": 10, "knee_l": 32, "turn": 8, "twist": 6,
+                     "lean": 2, "out_l": 60, "arm_l": 10, "elbow_l": 25, "out_r": 30, "arm_r": -25, "elbow_r": 20}),
+             (0.14, {"hip_r": 55, "knee_r": 10, "ankle_r": -25, "hip_l": 5, "knee_l": 25, "turn": 18, "twist": 10,
+                     "lean": -2, "out_l": 45, "arm_l": 20, "elbow_l": 30, "out_r": 25, "arm_r": -10, "elbow_r": 25}),
+             (0.40, N)],
+    # A shot: a longer backswing and a bigger follow-through, over the ball to keep it down.
+    "shot": [(-0.36, N),
+             (-0.14, {"hip_r": -35, "knee_r": 110, "ankle_r": -25, "hip_l": 15, "knee_l": 35, "turn": -24, "twist": -10,
+                      "lean": 8, "out_l": 60, "arm_l": 25, "elbow_l": 30, "out_r": 35, "arm_r": -35, "elbow_r": 30}),
+             (0.00, {"hip_r": 30, "knee_r": 40, "ankle_r": -35, "hip_l": 12, "knee_l": 35, "turn": 10, "twist": 8,
+                     "lean": 12, "chest": 4, "out_l": 70, "arm_l": 10, "elbow_l": 25, "out_r": 40, "arm_r": -30,
+                     "elbow_r": 20}),
+             (0.16, {"hip_r": 75, "knee_r": 12, "ankle_r": -25, "hip_l": 5, "knee_l": 25, "turn": 26, "twist": 14,
+                     "lean": 6, "out_l": 50, "arm_l": 25, "elbow_l": 35, "out_r": 30, "arm_r": -10, "elbow_r": 30}),
+             (0.30, {"hip_r": 35, "knee_r": 30, "ankle_r": -10, "knee_l": 15, "turn": 12, "twist": 6, "lean": 4,
+                     "out_l": 30, "arm_l": 15, "elbow_l": 30, "out_r": 20, "elbow_r": 30}),
+             (0.48, N)],
+    # A touch while dribbling: a little push with the right foot (blended lightly over the running).
+    "touch": [(-0.16, N),
+              (-0.06, {"hip_r": -8, "knee_r": 45, "ankle_r": -10, "knee_l": 15}),
+              (0.00, {"hip_r": 22, "knee_r": 20, "ankle_r": -15, "knee_l": 15, "out_l": 15}),
+              (0.16, N)],
+    # A header: arms up for balance and leverage, back arched, then the neck and trunk snap forward.
+    "header": [(-0.30, N),
+               (-0.10, {"lean": -14, "chest": -6, "nod": -14, "out_l": 60, "out_r": 60, "arm_l": 40, "arm_r": 40,
+                        "elbow_l": 70, "elbow_r": 70, "hip_r": 25, "knee_r": 55, "hip_l": 10, "knee_l": 40}),
+               (0.00, {"lean": 16, "chest": 6, "nod": 20, "out_l": 45, "out_r": 45, "arm_l": 15, "arm_r": 15,
+                       "elbow_l": 60, "elbow_r": 60, "hip_r": 20, "knee_r": 45, "hip_l": 15, "knee_l": 35}),
+               (0.30, N)],
+    # A block tackle with the left: low, stretching the left leg across, arms out.
+    "tackle": [(-0.30, N),
+               (-0.06, {"hip_l": 55, "knee_l": 12, "ankle_l": 15, "hipout_l": 20, "hip_r": 30, "knee_r": 55, "ankle_r": 20,
+                        "lean": 18, "turn": -14, "out_l": 45, "out_r": 50, "arm_r": 20, "elbow_l": 30, "elbow_r": 30}),
+               (0.15, {"hip_l": 62, "knee_l": 8, "ankle_l": 10, "hipout_l": 22, "hip_r": 32, "knee_r": 60, "ankle_r": 22,
+                       "lean": 20, "turn": -16, "out_l": 50, "out_r": 55, "arm_r": 25, "elbow_l": 30, "elbow_r": 30}),
+               (0.45, N)],
+    # A keeper's set position: weight forward on bent knees, hands out in front at waist height.
+    "ready": [(0.0, {"hip_r": 28, "knee_r": 50, "ankle_r": 18, "hip_l": 28, "knee_l": 50, "ankle_l": 18,
+                     "hipout_r": 6, "hipout_l": 6, "lean": 18, "chest": 6, "nod": -14, "arm_r": 35, "arm_l": 35,
+                     "out_r": 22, "out_l": 22, "elbow_r": 55, "elbow_l": 55}),
+              (1.0, "same")],
+    # A keeper's dive to his right (to his left: mirrored).  0 = he springs.
+    "dive": [(0.00, {"hip_r": 28, "knee_r": 50, "ankle_r": 18, "hip_l": 28, "knee_l": 50, "ankle_l": 18,
+                     "lean": 18, "arm_r": 35, "arm_l": 35, "out_r": 22, "out_l": 22, "elbow_r": 55, "elbow_l": 55}),
+             (0.12, {"hip_r": 15, "knee_r": 25, "hip_l": 5, "knee_l": 10, "ankle_l": -30, "lean": 5, "side": 10,
+                     "out_r": 120, "out_l": 150, "arm_r": 20, "arm_l": 20, "elbow_r": 15, "elbow_l": 15, "nod": -10}),
+             (0.32, {"hip_r": 15, "knee_r": 30, "hip_l": 20, "knee_l": 45, "lean": 0, "side": 12,
+                     "out_r": 165, "out_l": 170, "arm_r": 10, "arm_l": 10, "elbow_r": 5, "elbow_l": 5, "nod": -15}),
+             (0.60, {"hip_r": 10, "knee_r": 35, "hip_l": 30, "knee_l": 60, "lean": 8, "side": 6,
+                     "out_r": 150, "out_l": 150, "arm_r": 40, "arm_l": 40, "elbow_r": 30, "elbow_l": 30, "nod": 5})],
+    # Getting back up after a dive: onto a knee, then up.
+    "recover": [(0.00, {"hip_r": 10, "knee_r": 35, "hip_l": 30, "knee_l": 60, "lean": 8, "side": 6,
+                        "out_r": 150, "out_l": 150, "arm_r": 40, "arm_l": 40, "elbow_r": 30, "elbow_l": 30, "nod": 5}),
+                (0.40, {"hip_r": 70, "knee_r": 110, "hip_l": 20, "knee_l": 95, "ankle_l": -20, "lean": 30,
+                        "out_r": 30, "out_l": 30, "arm_r": 40, "arm_l": 40, "elbow_r": 60, "elbow_l": 60}),
+                (0.85, {"hip_r": 30, "knee_r": 45, "hip_l": 15, "knee_l": 30, "lean": 18, "arm_r": 25, "arm_l": 25,
+                        "out_r": 15, "out_l": 15, "elbow_r": 40, "elbow_l": 40}),
+                (1.20, N)],
+}
+# How strongly each blends over the running (a dribbling touch stays light), and whether it's grounded.
+WEIGHT = {"touch": 0.55}
+
+
+def action_pose(keys):
+    """A pose function over time for a key-posed action."""
+    keys = [(t, (keys[i - 1][1] if p == "same" else p)) for i, (t, p) in enumerate(keys)]
+
+    def at(t):
+        if t <= keys[0][0]:
+            return dict(keys[0][1]), {}
+        for (t0, a), (t1, b) in zip(keys, keys[1:]):
+            if t <= t1:
+                k = (t - t0) / max(1e-6, t1 - t0)
+                k = k * k * (3 - 2 * k)
+                return {m: a.get(m, 0) + (b.get(m, 0) - a.get(m, 0)) * k for m in set(a) | set(b)}, {}
+        return dict(keys[-1][1]), {}
+    return at, keys[0][0], keys[-1][0]
+
+
+def mirror(pose):
+    """The same pose done to the other side (a dive to his left, a kick with the left foot)."""
     out = {}
-    for side, off, sx in (("r", 0.0, -1), ("l", 0.5, 1)):
-        p = ph + off
-        out["thigh." + side] = [("x", -_cyc(HIP, p))]            # (forward is a turn of -x: the model faces -Y)
-        out["calf." + side] = [("x", _cyc(KNEE, p))]
-        out["foot." + side] = [("x", -_cyc(ANKLE, p))]
-    swing = 17 * c                                                # right arm forward when the left leg is
-    out["upperarm.r"] = [("x", swing)]
-    out["upperarm.l"] = [("x", -swing)]
-    out["lowerarm.r"] = [("x", -(10 + 8 * -c))]
-    out["lowerarm.l"] = [("x", -(10 + 8 * c))]
-    out["pelvis"] = [("z", -4 * c)]                               # (the right hip comes forward with the right leg)
-    out["spine_01"] = [("z", 6 * c)]                              # (the chest turns against it)
-    out["spine_02"] = [("z", 2 * c)]
-    bob = -0.022 * math.cos(4 * math.pi * ph)                     # (lowest with both feet down)
-    sway = -0.018 * s                                             # (over the right foot in the first half)
-    return out, (sway, 0.0, bob)
+    for m, v in pose.items():
+        if m.endswith("_r"):
+            out[m[:-2] + "_l"] = v
+        elif m.endswith("_l"):
+            out[m[:-2] + "_r"] = v
+        elif m in ("turn", "twist", "tilt", "side"):
+            out[m] = -v
+        else:
+            out[m] = v
+    return out
 
 
+# --- building an animation --------------------------------------------------------------------------------
 def _local_mats(bundle, frame):
-    """{joint: (its channel, its local matrix at this frame)} and the joint tree, from an animation."""
-    mats, parent = {}, {}
+    mats, parent, order = {}, {}, []
 
     def walk(g, par):
         for i in range(g.getNumChildren()):
@@ -84,53 +207,81 @@ def _local_mats(bundle, frame):
                 ch.getValue(frame % max(1, bundle.getNumFrames()), m)
                 mats[ch.getName()] = (ch, m)
                 parent[ch.getName()] = par
+                order.append(ch.getName())
                 walk(ch, ch.getName())
             else:
                 walk(ch, par)
     walk(bundle, None)
-    return mats, parent
+    return mats, parent, order
 
 
-def _quat(m):
-    q = LQuaternionf()
-    ts = TransformState.makeMat(m)
-    q.setHpr(ts.getHpr())
-    return q, ts
+FEET = ("foot.r", "foot.l", "ball.r", "ball.l")
 
 
-def build(actor, name, pose_fn, frames, base_anim="idle", base_frame=0):
-    """A new animation for the actor: each frame, the base animation's pose (one frame of it) with pose_fn(phase)
-    turned on top.  Returns a NodePath holding it, for Actor.loadAnims({name: it})."""
+def build(actor, name, pose_fn, frames, ground=True, base_anim="idle", base_frame=0):
+    """A new animation: each frame, the base pose (one frame of the base animation) with pose_fn(i / frames)
+    (-> ({move: degrees}, {"sway": m, "air": m})) turned on top, grounded.  Returns a NodePath holding it."""
     base = actor.getAnimControl(base_anim).getAnim()
-    mats, parent = _local_mats(base, base_frame)
-    # Each joint's whole turn (from the model) in the base pose: an axis of the body, fixed to the bone above.
+    mats, parent, order = _local_mats(base, base_frame)
+    base_ts = {j: TransformState.makeMat(mats[j][1]) for j in order}
     net = {}
 
     def net_q(j):
         if j is None:
             return LQuaternionf.identQuat()
         if j not in net:
-            net[j] = _quat(mats[j][1])[0] * net_q(parent[j])
+            net[j] = base_ts[j].getQuat() * net_q(parent[j])
         return net[j]
-    tables = {j: {k: [] for k in "hprxyz"} for j in mats}
+
+    def nets(local):
+        nm = {}
+        for j in order:
+            m = local[j].getMat()
+            nm[j] = m * nm[parent[j]] if parent[j] else m
+        return nm
+    # Points under each foot: the heel (a little behind the ankle, at the sole) and the ball of the foot.
+    nm0 = nets(base_ts)
+    soles = []
+    for sd in ("r", "l"):
+        a = nm0["foot." + sd].xformPoint(LPoint3f(0, 0, 0))
+        b = nm0["ball." + sd].xformPoint(LPoint3f(0, 0, 0))
+        heel = LPoint3f(a[0], a[1] + 0.045, b[2])
+        inv = LMatrix4f(nm0["foot." + sd]); inv.invertInPlace()
+        soles.append(("foot." + sd, inv.xformPoint(heel)))
+        soles.append(("ball." + sd, LPoint3f(0, 0, 0)))
+
+    def feet_z(local):
+        """The lowest point of the soles, in the model, for these local transforms."""
+        nm = nets(local)
+        return min(nm[j].xformPoint(pt)[2] for j, pt in soles)
+    rest = feet_z(base_ts)
+    tables = {j: {k: [] for k in "hprxyz"} for j in order}
     for f in range(frames):
-        pose, shift = pose_fn(f / float(frames))
-        for j, (ch, m) in mats.items():
-            q, ts = _quat(m)
-            pos = ts.getPos()
-            for ax, deg in pose.get(j, ()):
-                a = {"x": Vec3(1, 0, 0), "y": Vec3(0, 1, 0), "z": Vec3(0, 0, 1)}[ax]
+        moves, extra = pose_fn(f / float(frames))
+        turns = {}
+        for m, deg in moves.items():
+            if m in MOVES and deg:
+                j, ax, sign = MOVES[m]
+                turns.setdefault(j, []).append((ax, deg * sign))
+        local = {}
+        for j in order:
+            ts = base_ts[j]
+            q = ts.getQuat()
+            for ax, deg in turns.get(j, ()):
                 r = LQuaternionf()
-                r.setFromAxisAngle(deg, a)
+                r.setFromAxisAngle(deg, AXES[ax])
                 pq = net_q(parent[j])
                 q = q * (pq * r * pq.conjugate())
-            if j == "pelvis":
-                pos = pos + LVecBase3f(*shift)
-            hpr = q.getHpr()
+            local[j] = TransformState.makePosQuatScale(ts.getPos(), q, ts.getScale())
+        shift = LVecBase3f(extra.get("sway", 0.0), 0, 0)
+        if ground:
+            shift[2] = rest - feet_z(local) + extra.get("air", 0.0)
+        local["pelvis"] = local["pelvis"].setPos(local["pelvis"].getPos() + shift)
+        for j in order:
             t = tables[j]
-            for k, v in zip("hpr", hpr):
+            for k, v in zip("hpr", local[j].getHpr()):
                 t[k].append(v)
-            for k, v in zip("xyz", pos):
+            for k, v in zip("xyz", local[j].getPos()):
                 t[k].append(v)
     nb = AnimBundle(name, FPS, frames)
 
@@ -142,10 +293,10 @@ def build(actor, name, pose_fn, frames, base_anim="idle", base_frame=0):
                 for k in "ijkabc":                                       # (scale / shear: as in the base frame)
                     tb = ch.getTable(k)
                     if len(tb):
-                        val = tb[base_frame % len(tb)] if len(tb) > 1 else tb[0]
-                        n.setTable(k, _pta([val]))
+                        n.setTable(k, _pta([tb[base_frame % len(tb)]]))
                 for k in "hprxyz":
-                    n.setTable(k, _pta(tables[ch.getName()][k]))
+                    vals = tables[ch.getName()][k]
+                    n.setTable(k, _pta(vals if max(vals) - min(vals) > 1e-5 else vals[:1]))
                 copy(ch, n)
             else:
                 copy(ch, AnimGroup(dst, ch.getName()))
@@ -161,10 +312,25 @@ def _pta(vals):
 
 
 _CACHE = {}
+SPANS = {}          # action -> (first second, last second)
 
 
-def add_walk(actor):
-    """Give this actor (the mannequin) a "walk" animation (built once, shared by every player)."""
-    if "walk" not in _CACHE:
-        _CACHE["walk"] = build(actor, "walk", walk_pose, 30)
-    actor.loadAnims({"walk": _CACHE["walk"]})
+def _make(actor):
+    _CACHE["walk"] = build(actor, "walk", walk_pose, 30)
+    for name, keys in ACTIONS.items():
+        variants = [(name, keys)]
+        if name in ("dive", "recover", "kick", "shot", "touch", "tackle"):
+            variants.append((name + "_m", [(t, mirror(p) if isinstance(p, dict) else p) for t, p in keys]))
+        for vn, vk in variants:
+            fn, t0, t1 = action_pose(vk)
+            n = max(2, int(round((t1 - t0) * FPS)) + 1)
+            _CACHE[vn] = build(actor, vn, lambda u, fn=fn, t0=t0, t1=t1, n=n: fn(t0 + u * n / FPS), n)
+            SPANS[vn] = (t0, t1)
+
+
+def add_all(actor):
+    """Give this actor (the mannequin) the walk and every action (built once, shared by every player)."""
+    if not _CACHE:
+        _make(actor)
+    actor.loadAnims(dict(_CACHE))
+    return list(_CACHE)

@@ -425,7 +425,7 @@ class Viewer(ShowBase):
                 gx = -HX if wx < 0 else HX
                 if math.hypot(rbx - gx, rby) < 30 and fr["o"] not in (range(0, 11) if i < 11 else range(11, 22)):
                     kind, t = "ready", 0.0
-            p.act(kind, t)
+            p.act(kind, t, self._left_foot(i, p, kind, t, k))
         self._prev_pos = prev
         bx, by, bz = self._ball(fr, dt)
         self.ball.setPos(bx, by, bz)
@@ -442,7 +442,7 @@ class Viewer(ShowBase):
                 self._sv = getattr(self, "_sv", (math.cos(hd), math.sin(hd)))
                 k2 = min(1.0, dt * 1.5)
                 self._sv = (self._sv[0] + (math.cos(hd) - self._sv[0]) * k2, self._sv[1] + (math.sin(hd) - self._sv[1]) * k2)
-                self.cam.setPos(fx_ + self._sv[0] * 8, fy_ + self._sv[1] * 8, 1.6)
+                self.cam.setPos(fx_ + self._sv[0] * 11, fy_ + self._sv[1] * 11, 2.0)
             else:
                 self.cam.setPos(fx_ + sx * 9, fy_ - 7, 3.2)
             self.cam.lookAt(fx_, fy_, 0.8)
@@ -528,6 +528,25 @@ def _viewer_keeper_dive(self, i, p, stage, k):
     p.root.setHpr(p.h, 0, p.roll * p.roll_side)
 
 
+def _viewer_left_foot(self, i, p, kind, t, k):
+    """Which foot he plays it with: the one on the ball's side - or, if it's straight in front of him, his
+    stronger foot (about 1 in 5 players are left-footed)."""
+    if kind not in ("kick", "shot", "touch", "tackle"):
+        return False
+    F = self.m["frames"]
+    fe = F[max(0, min(len(F) - 1, int(round(k - t * 30))))]
+    x, y, fx, fy = fe["p"][i][:4]
+    px, py = to_world(x, y)
+    bx, by = to_world(fe["b"][0], fe["b"][1])
+    fwx, fwy = fx, -fy
+    side = (bx - px) * fwy - (by - py) * fwx                        # (+ = the ball is on his right)
+    if kind == "tackle":
+        side = -side                                                # (a tackle: the leg stretched across)
+    lefty = (i * 7 + 3) % 5 == 0
+    return side < -0.12 or (lefty and side < 0.12)
+
+
+Viewer._left_foot = _viewer_left_foot
 Viewer._keeper_dive = _viewer_keeper_dive
 Viewer._ball = _viewer_ball
 Viewer._dribble_touch = _viewer_dribble

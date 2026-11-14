@@ -135,13 +135,19 @@ class AnimPlayer:
         t.setPos(0, spine.getY(self.a) + 0.135, spine.getZ(self.a) - 0.1)
         t.wrtReparentTo(spine)                              # (...and it leans and twists with his back)
         self.num = t
+        self.action_names = []
         if self.cfg.get("make_walk"):
             import gait
-            gait.add_walk(self.a)                           # (the mannequin has no walk: one made from real data)
+            made = gait.add_all(self.a)                     # (the walk and every action: built from real figures)
+            self.action_names = [n for n in made if n != "walk"]
         self.a.enableBlend()
         self.loops = ["idle", "run"] + ([self.cfg["walk"]] if self.cfg["walk"] else [])
-        for n in self.loops:
+        for n in self.loops + self.action_names:
             self.a.pose(n, 0)
+            self.a.setControlEffect(n, 0.0)
+        self.loco = {"idle": 1.0}
+        self.cur = (None, 0.0, 0.0)
+        self.ready = 0.0
         self.nf = {n: self.a.getNumFrames(n) for n in self.loops}
         self.phase = 0.0                    # where he is in his stride (0..1 = two steps), walk and run in step
         self.t_idle = 0.0
@@ -155,104 +161,68 @@ class AnimPlayer:
         self.roll = 0.0                     # (a keeper's dive: tipped over sideways...)
         self.roll_side = 1
 
-    # --- kicks, headers, tackles: posed by hand on top of the running animation -------------------------
-    # Degrees: thigh + = swung forward, knee + = bent, spine / neck + = leaning forward.  Each pose is a list of
-    # (seconds from the moment the ball is struck, {joint: angle}); in between we ease.
-    POSES = {
-        "kick":   [(-0.30, {"thigh_r": 0, "knee_r": 0, "spine": 0}),
-                   (-0.12, {"thigh_r": -28, "knee_r": 95, "spine": 4}),
-                   (0.00, {"thigh_r": 38, "knee_r": 12, "spine": 6}),
-                   (0.13, {"thigh_r": 48, "knee_r": 8, "spine": 4}),
-                   (0.36, {"thigh_r": 0, "knee_r": 0, "spine": 0})],
-        "shot":   [(-0.32, {"thigh_r": 0, "knee_r": 0, "spine": 0}),
-                   (-0.13, {"thigh_r": -35, "knee_r": 110, "spine": 6}),
-                   (0.00, {"thigh_r": 42, "knee_r": 10, "spine": 8}),
-                   (0.15, {"thigh_r": 55, "knee_r": 6, "spine": 5}),
-                   (0.42, {"thigh_r": 0, "knee_r": 0, "spine": 0})],
-        "touch":  [(-0.16, {"thigh_r": 0, "knee_r": 0}),
-                   (-0.06, {"thigh_r": -6, "knee_r": 40}),
-                   (0.00, {"thigh_r": 18, "knee_r": 18}),
-                   (0.16, {"thigh_r": 0, "knee_r": 0})],
-        "header": [(-0.28, {"spine": 0, "neck": 0}),
-                   (-0.10, {"spine": -16, "neck": -12}),
-                   (0.00, {"spine": 18, "neck": 22}),
-                   (0.28, {"spine": 0, "neck": 0})],
-        "tackle": [(-0.30, {"thigh_l": 0, "knee_l": 0, "spine": 0}),
-                   (-0.05, {"thigh_l": 55, "knee_l": 15, "spine": 12}),
-                   (0.15, {"thigh_l": 60, "knee_l": 10, "spine": 14}),
-                   (0.45, {"thigh_l": 0, "knee_l": 0, "spine": 0})],
-    }
-    # A keeper's dive (gameplay: ai/goalkeeper.py - "preparing", "diving", "recover"): t from the start of each.
-    # roll = degrees tipped over towards the side he dives to; lift = metres off the ground.
-    DIVE = [(0.00, 0, 0.00, {"arm_r": 0, "arm_l": 0, "thigh_r": 0, "knee_r": 0, "thigh_l": 0, "knee_l": 0}),
-            (0.15, 30, 0.35, {"arm_r": 110, "arm_l": 110, "thigh_r": 10, "knee_r": 30, "thigh_l": 25, "knee_l": 50}),
-            (0.35, 72, 0.50, {"arm_r": 160, "arm_l": 160, "thigh_r": 5, "knee_r": 15, "thigh_l": 10, "knee_l": 20}),
-            (0.67, 84, 0.08, {"arm_r": 165, "arm_l": 165, "thigh_r": 5, "knee_r": 20, "thigh_l": 10, "knee_l": 25})]
-    RECOVER = [(0.00, 84, 0.08, {"arm_r": 165, "arm_l": 165, "thigh_r": 5, "knee_r": 20, "thigh_l": 10, "knee_l": 25}),
-               (0.35, 45, 0.0, {"arm_r": 70, "arm_l": 70, "thigh_r": 40, "knee_r": 80, "thigh_l": 30, "knee_l": 70}),
-               (0.80, 0, 0.0, {"arm_r": 0, "arm_l": 0, "thigh_r": 0, "knee_r": 0, "thigh_l": 0, "knee_l": 0})]
+    # --- kicks, shots, touches, headers, tackles, a keeper's set position and dives -------------------------
+    # Each is a whole-body animation built in gait.py (from real kicking / gait figures), blended over the
+    # running: act() picks it and how far into it he is; the keeper's dive also tips his whole body over.
+    JUMP = {"header": (0.30, 0.30)}          # (a header: off the ground - height m, and how long either side)
+    # The dive: (seconds, degrees tipped over, metres off the ground) - he springs, flies, lands on his side.
+    DIVE_ROOT = [(0.00, 0, 0.00), (0.12, 22, 0.28), (0.32, 70, 0.50), (0.50, 84, 0.30), (0.60, 86, 0.06)]
+    RECOVER_ROOT = [(0.00, 86, 0.06), (0.25, 70, 0.0), (0.45, 25, 0.0), (0.85, 0, 0.0), (1.20, 0, 0.0)]
+
+    def _mix(self):
+        """Set the blend: the action (if any) at its weight, the walk / run / stand sharing the rest."""
+        name, w, frame = self.cur
+        for n in self.action_names:
+            self.a.setControlEffect(n, w if n == name else 0.0)
+        if name:
+            self.a.pose(name, frame)
+        for n, lw in self.loco.items():
+            self.a.setControlEffect(n, lw * (1.0 - w))
+
+    def _curve(self, keys, t):
+        t = max(keys[0][0], min(keys[-1][0], t))
+        for (t0, r0, l0), (t1, r1, l1) in zip(keys, keys[1:]):
+            if t <= t1:
+                k = (t - t0) / max(1e-6, t1 - t0)
+                k = k * k * (3 - 2 * k)
+                return r0 + (r1 - r0) * k, l0 + (l1 - l0) * k
+        return keys[-1][1], keys[-1][2]
 
     def dive(self, stage, t, side):
         """A keeper's dive: stage "diving" / "recover", t seconds into it, side +1 = to his right, -1 = left."""
-        keys = self.DIVE if stage == "diving" else self.RECOVER
-        t = max(keys[0][0], min(keys[-1][0], t))
-        for (t0, r0, l0, a), (t1, r1, l1, b) in zip(keys, keys[1:]):
-            if t0 <= t <= t1:
-                k = (t - t0) / max(1e-6, t1 - t0)
-                k = k * k * (3 - 2 * k)
-                self.roll = r0 + (r1 - r0) * k
-                self.lift = l0 + (l1 - l0) * k
-                self.roll_side = side
-                for j in a:
-                    c, base = self._joint(j)
-                    _, axis, sign = self.cfg["joints"][j]
-                    hpr = [base[0], base[1], base[2]]
-                    hpr[axis] += sign * (a[j] + (b[j] - a[j]) * k)
-                    c.setHpr(*hpr)
-                break
+        import gait
+        name = ("dive" if stage == "diving" else "recover") + ("" if side > 0 else "_m")
+        t0, t1 = gait.SPANS[name]
+        self.roll, self.lift = self._curve(self.DIVE_ROOT if stage == "diving" else self.RECOVER_ROOT, t)
+        self.roll_side = side
+        self.ready = 0.0
+        self.cur = (name, 1.0, max(0.0, min(t1 - t0, t - t0)) * 30.0)
+        self._mix()
 
-    POSES["ready"] = [(-1.0, {"thigh_r": 22, "knee_r": 42, "thigh_l": 22, "knee_l": 42, "spine": 22}),
-                      (1.0, {"thigh_r": 22, "knee_r": 42, "thigh_l": 22, "knee_l": 42, "spine": 22})]
-    JUMP = {"header": (0.30, 0.30), "tackle": (-0.18, 0.40), "ready": (-0.16, 99.0)}      # (height m, how long either side of the moment)
-
-    def _joint(self, key):
-        if key not in self.ctl:
-            name = self.cfg["joints"][key][0]
-            c = self.a.controlJoint(None, "modelRoot", name)
-            self.ctl[key] = (c, c.getHpr())                              # (its resting turn: we add to it)
-        return self.ctl[key]
-
-    def act(self, kind, t):
-        """Pose an action: kind = "kick" / "shot" / "touch" / "header" / "tackle", t = seconds from the moment
-        the ball is struck (negative = the wind-up).  kind None: back to the plain animation."""
-        keys = self.POSES.get(kind)
+    def act(self, kind, t, left=False):
+        """Pose an action: kind = "kick" / "shot" / "touch" / "header" / "tackle" / "ready", t = seconds from the
+        moment the ball is struck (negative = the wind-up); left = with his left foot.  None: just running."""
+        import gait
+        self.roll = 0.0
+        self.lift = 0.0
         if kind == "ready":                                                 # (a keeper's set position: eases in)
-            self.ready = min(1.0, getattr(self, "ready", 0.0) + 0.08)
+            self.ready = min(1.0, self.ready + 0.06)
         else:
-            self.ready = 0.0
-        if keys is None or t < keys[0][0] or t > keys[-1][0]:
-            for key in list(self.ctl):
-                self.a.releaseJoint("modelRoot", self.cfg["joints"][key][0])
-                self.ctl.pop(key)[0].removeNode()
-            self.lift = 0.0
-            self.roll = 0.0
-            return
-        for (t0, a), (t1, b) in zip(keys, keys[1:]):
-            if t0 <= t <= t1:
-                k = (t - t0) / max(1e-6, t1 - t0)
-                k = k * k * (3 - 2 * k)                                         # (ease in and out)
-                amt = self.ready if kind == "ready" else 1.0
-                for j in a:
-                    c, base = self._joint(j)
-                    _, axis, sign = self.cfg["joints"][j]
-                    hpr = [base[0], base[1], base[2]]
-                    hpr[axis] += sign * (a[j] + (b[j] - a[j]) * k) * amt
-                    c.setHpr(*hpr)
-                break
-        h, w = self.JUMP.get(kind, (0.0, 1.0))
-        self.lift = h * max(0.0, math.cos(min(1.0, abs(t) / w) * math.pi / 2)) if h > 0 else h * max(0.0, 1 - abs(t) / w)
-        if kind == "ready":
-            self.lift *= self.ready
+            self.ready = max(0.0, self.ready - 0.08)                        # (...and out)
+        name = kind + ("_m" if left and (kind + "_m") in gait.SPANS else "") if kind else None
+        if kind == "ready" or (name not in gait.SPANS and self.ready > 0):
+            self.cur = ("ready", self.ready * 0.9, 0.0)
+        elif name in gait.SPANS and gait.SPANS[name][0] <= t <= gait.SPANS[name][1]:
+            t0, t1 = gait.SPANS[name]
+            w = max(0.0, min(1.0, (t - t0) / 0.08, (t1 - t) / 0.12)) * gait.WEIGHT.get(kind, 1.0)
+            self.cur = (name, w, (t - t0) * 30.0)
+            h, wd = self.JUMP.get(kind, (0.0, 1.0))
+            if h > 0:
+                self.lift = h * max(0.0, math.cos(min(1.0, abs(t) / wd) * math.pi / 2))
+        else:
+            self.cur = (None, 0.0, 0.0)
+        self._mix()
+        self.root.setZ(self.lift)
 
     def update(self, x, y, fx, fy, speed, dt, active=True, vel=None, ball=None):
         """Place him, face him the way he's facing, and pick his gait from how fast (and which way) he's moving:
@@ -291,14 +261,14 @@ class AnimPlayer:
         else:
             w_walk = 0.0
         w_idle = max(0.0, 1 - w_run - w_walk)
-        self.a.setControlEffect("idle", w_idle)
-        self.a.setControlEffect("run", w_run)
+        self.loco = {"idle": w_idle, "run": w_run}
         self.a.pose("idle", self.t_idle)
         r0, r1 = self.cfg["run_range"]                                        # (the frames that make one stride)
         self.a.pose("run", r0 + (self.phase * (r1 - r0) + self.cfg["run_offset"]) % (r1 - r0))
         if self.cfg["walk"]:
-            self.a.setControlEffect(self.cfg["walk"], w_walk)
+            self.loco[self.cfg["walk"]] = w_walk
             self.a.pose(self.cfg["walk"], self.phase * self.nf[self.cfg["walk"]])
+        self._mix()
         if ball is not None:
             self._watch(ball, x, y, dt)
 
