@@ -4,6 +4,8 @@ by height, with kicks, shots, touches, headers and tackles posed by hand on top.
 The figure is the GDQuest "Mannequiny" (CC-BY 4.0, GDQuest and contributors - github.com/GDQuest/godot-3d-mannequin),
 a male mannequin.  (The older Xbot, from the three.js examples, is still here as MODELS["xbot"].)"""
 import math
+from panda3d.core import loadPrcFileData
+loadPrcFileData("", "interpolate-frames 1")          # (smooth in-between frames: we set the frames ourselves)
 from direct.actor.Actor import Actor
 from panda3d.core import (GeomVertexFormat, GeomVertexArrayFormat, GeomVertexWriter, GeomVertexReader, Geom,
                           InternalName, ColorAttrib, TextNode)
@@ -13,7 +15,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 # Each model: its file, how tall it is, and for each joint we pose: (its name, which of H/P/R to turn, which way
 # is "forward" / "bends").  Both models face -Y in their own frame.
 MODELS = {
-    "mannequin": {"file": os.path.join(HERE, "models", "mannequin.glb"), "walk": None, "scale": 1.02,
+    "mannequin": {"file": os.path.join(HERE, "models", "mannequin.glb"), "walk": "walk", "make_walk": True,
+                  "run_range": (2, 17), "run_offset": 10.5, "scale": 1.02,
                   "joints": {"thigh_r": ("thigh.r", 2, -1), "knee_r": ("calf.r", 1, 1),
                              "thigh_l": ("thigh.l", 2, 1), "knee_l": ("calf.l", 1, 1),
                              "spine": ("spine_01", 1, 1), "neck": ("neck_01", 1, 1),
@@ -25,7 +28,7 @@ MODELS = {
                         "thigh_l": ("mixamorig:LeftUpLeg", 1, -1), "knee_l": ("mixamorig:LeftLeg", 1, 1),
                         "spine": ("mixamorig:Spine", 1, 1), "neck": ("mixamorig:Neck", 1, 1),
                         "head_turn": ("mixamorig:Head", 0, 1)},
-             "number_joint": "mixamorig:Spine2", "run_steps": 3.0},
+             "number_joint": "mixamorig:Spine2", "run_steps": 3.0, "run_range": (0, 21), "run_offset": 0.0},
 }
 MODEL = "mannequin"
 
@@ -132,10 +135,16 @@ class AnimPlayer:
         t.setPos(0, spine.getY(self.a) + 0.135, spine.getZ(self.a) - 0.1)
         t.wrtReparentTo(spine)                              # (...and it leans and twists with his back)
         self.num = t
+        if self.cfg.get("make_walk"):
+            import gait
+            gait.add_walk(self.a)                           # (the mannequin has no walk: one made from real data)
         self.a.enableBlend()
         self.loops = ["idle", "run"] + ([self.cfg["walk"]] if self.cfg["walk"] else [])
         for n in self.loops:
-            self.a.loop(n)
+            self.a.pose(n, 0)
+        self.nf = {n: self.a.getNumFrames(n) for n in self.loops}
+        self.phase = 0.0                    # where he is in his stride (0..1 = two steps), walk and run in step
+        self.t_idle = 0.0
         self.h = None
         self.sp = 0.0
         self.ctl = {}                       # joints we're posing by hand (kicks, headers), while we do
@@ -270,22 +279,26 @@ class AnimPlayer:
             hd = math.radians(self.h)
             fwd = (vel[0] * -math.sin(hd) + vel[1] * math.cos(hd)) / max(0.1, math.hypot(*vel))
             back = fwd < -0.35
-        steps = 1.8 + 0.3 * s          # (steps a second: ~2.3 walking, ~2.9 jogging, ~4.2 sprinting at 8 m/s)
-        rate = steps / self.cfg["run_steps"]
+        # Steps a second, from real players: ~1.75 walking at 1 m/s, ~2.4 jogging at 2.5 m/s, ~4 sprinting at 8 m/s.
+        steps = 1.3 + 0.45 * s if s < 2.5 else 1.65 + 0.3 * s
+        self.phase = (self.phase + steps / 2.0 * dt * (-1 if back else 1)) % 1.0
+        self.t_idle = (self.t_idle + dt * 30) % self.nf["idle"]
+        w_run = min(1.0, max(0.0, (s - 1.8) / 2.7)) ** 0.9                    # (a jog: walk and run blended)
+        if back:
+            w_run *= 0.7                                                      # (backing off: shorter steps)
         if self.cfg["walk"]:
-            w_idle = max(0.0, 1 - s / 1.0)
-            w_run = min(1.0, max(0.0, (s - 2.0) / 2.0))
-            w_walk = max(0.0, 1 - w_idle - w_run)
-            self.a.setControlEffect(self.cfg["walk"], w_walk)
-            self.a.setPlayRate(max(0.6, min(2.2, s / 1.5)) * (-1 if back else 1), self.cfg["walk"])
-        else:                                                                 # (a jog: the run, made smaller)
-            w_run = min(1.0, max(0.0, (s - 0.3) / 6.0)) ** 0.85
-            if back:
-                w_run *= 0.7                                                  # (backing off: shorter steps)
-            w_idle = 1 - w_run
+            w_walk = (1 - w_run) * min(1.0, s / 0.6)
+        else:
+            w_walk = 0.0
+        w_idle = max(0.0, 1 - w_run - w_walk)
         self.a.setControlEffect("idle", w_idle)
         self.a.setControlEffect("run", w_run)
-        self.a.setPlayRate(max(0.35, min(1.7, rate)) * (-1 if back else 1), "run")
+        self.a.pose("idle", self.t_idle)
+        r0, r1 = self.cfg["run_range"]                                        # (the frames that make one stride)
+        self.a.pose("run", r0 + (self.phase * (r1 - r0) + self.cfg["run_offset"]) % (r1 - r0))
+        if self.cfg["walk"]:
+            self.a.setControlEffect(self.cfg["walk"], w_walk)
+            self.a.pose(self.cfg["walk"], self.phase * self.nf[self.cfg["walk"]])
         if ball is not None:
             self._watch(ball, x, y, dt)
 
