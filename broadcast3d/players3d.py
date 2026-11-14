@@ -16,13 +16,15 @@ MODELS = {
     "mannequin": {"file": os.path.join(HERE, "models", "mannequin.glb"), "walk": None, "scale": 1.02,
                   "joints": {"thigh_r": ("thigh.r", 2, -1), "knee_r": ("calf.r", 1, 1),
                              "thigh_l": ("thigh.l", 2, 1), "knee_l": ("calf.l", 1, 1),
-                             "spine": ("spine_01", 1, 1), "neck": ("neck_01", 1, 1)},
-                  "number_joint": "spine_02"},
+                             "spine": ("spine_01", 1, 1), "neck": ("neck_01", 1, 1),
+                             "head_turn": ("head", 0, -1)},
+                  "number_joint": "spine_02", "run_steps": 2 / 0.633},
     "xbot": {"file": os.path.join(HERE, "models", "Xbot.glb"), "walk": "walk", "scale": 1.08,
              "joints": {"thigh_r": ("mixamorig:RightUpLeg", 1, -1), "knee_r": ("mixamorig:RightLeg", 1, 1),
                         "thigh_l": ("mixamorig:LeftUpLeg", 1, -1), "knee_l": ("mixamorig:LeftLeg", 1, 1),
-                        "spine": ("mixamorig:Spine", 1, 1), "neck": ("mixamorig:Neck", 1, 1)},
-             "number_joint": "mixamorig:Spine2"},
+                        "spine": ("mixamorig:Spine", 1, 1), "neck": ("mixamorig:Neck", 1, 1),
+                        "head_turn": ("mixamorig:Head", 0, 1)},
+             "number_joint": "mixamorig:Spine2", "run_steps": 3.0},
 }
 MODEL = "mannequin"
 
@@ -137,6 +139,9 @@ class AnimPlayer:
         self.sp = 0.0
         self.ctl = {}                       # joints we're posing by hand (kicks, headers), while we do
         self.lift = 0.0
+        self.keeper = keeper
+        self.head = None                    # (the head, turned to watch the ball)
+        self.look = 0.0
 
     # --- kicks, headers, tackles: posed by hand on top of the running animation -------------------------
     # Degrees: thigh + = swung forward, knee + = bent, spine / neck + = leaning forward.  Each pose is a list of
@@ -165,7 +170,9 @@ class AnimPlayer:
                    (0.15, {"thigh_l": 60, "knee_l": 10, "spine": 14}),
                    (0.45, {"thigh_l": 0, "knee_l": 0, "spine": 0})],
     }
-    JUMP = {"header": (0.30, 0.30), "tackle": (-0.18, 0.40)}      # (height m, how long either side of the moment)
+    POSES["ready"] = [(-1.0, {"thigh_r": 22, "knee_r": 42, "thigh_l": 22, "knee_l": 42, "spine": 22}),
+                      (1.0, {"thigh_r": 22, "knee_r": 42, "thigh_l": 22, "knee_l": 42, "spine": 22})]
+    JUMP = {"header": (0.30, 0.30), "tackle": (-0.18, 0.40), "ready": (-0.16, 99.0)}      # (height m, how long either side of the moment)
 
     def _joint(self, key):
         if key not in self.ctl:
@@ -178,6 +185,10 @@ class AnimPlayer:
         """Pose an action: kind = "kick" / "shot" / "touch" / "header" / "tackle", t = seconds from the moment
         the ball is struck (negative = the wind-up).  kind None: back to the plain animation."""
         keys = self.POSES.get(kind)
+        if kind == "ready":                                                 # (a keeper's set position: eases in)
+            self.ready = min(1.0, getattr(self, "ready", 0.0) + 0.08)
+        else:
+            self.ready = 0.0
         if keys is None or t < keys[0][0] or t > keys[-1][0]:
             for key in list(self.ctl):
                 self.a.releaseJoint("modelRoot", self.cfg["joints"][key][0])
@@ -188,17 +199,24 @@ class AnimPlayer:
             if t0 <= t <= t1:
                 k = (t - t0) / max(1e-6, t1 - t0)
                 k = k * k * (3 - 2 * k)                                         # (ease in and out)
+                amt = self.ready if kind == "ready" else 1.0
                 for j in a:
                     c, base = self._joint(j)
                     _, axis, sign = self.cfg["joints"][j]
                     hpr = [base[0], base[1], base[2]]
-                    hpr[axis] += sign * (a[j] + (b[j] - a[j]) * k)
+                    hpr[axis] += sign * (a[j] + (b[j] - a[j]) * k) * amt
                     c.setHpr(*hpr)
                 break
         h, w = self.JUMP.get(kind, (0.0, 1.0))
         self.lift = h * max(0.0, math.cos(min(1.0, abs(t) / w) * math.pi / 2)) if h > 0 else h * max(0.0, 1 - abs(t) / w)
+        if kind == "ready":
+            self.lift *= self.ready
 
-    def update(self, x, y, fx, fy, speed, dt, active=True):
+    def update(self, x, y, fx, fy, speed, dt, active=True, vel=None, ball=None):
+        """Place him, face him the way he's facing, and pick his gait from how fast (and which way) he's moving:
+        standing, walking, jogging, sprinting - blending the standing and running animations, at a stride rate
+        that suits the speed (real players: about 2 steps a second walking, 3 jogging, 4.5-5 sprinting) - and
+        running backwards when he's backing off.  ball: (x, y) - he turns his head to watch it."""
         if not active:
             self.root.hide(); return
         self.root.show()
@@ -212,15 +230,48 @@ class AnimPlayer:
         sp = speed / 10.0                                                     # m/s
         self.sp += (sp - self.sp) * min(1.0, dt * 6)
         s = self.sp
+        back = False
+        if vel is not None and s > 0.8:                                       # (moving against the way he faces?)
+            hd = math.radians(self.h)
+            fwd = (vel[0] * -math.sin(hd) + vel[1] * math.cos(hd)) / max(0.1, math.hypot(*vel))
+            back = fwd < -0.35
+        steps = 1.6 + 0.42 * s                                                # (steps a second at this speed)
+        rate = steps / self.cfg["run_steps"]
         if self.cfg["walk"]:
             w_idle = max(0.0, 1 - s / 1.0)
             w_run = min(1.0, max(0.0, (s - 2.0) / 2.0))
             w_walk = max(0.0, 1 - w_idle - w_run)
             self.a.setControlEffect(self.cfg["walk"], w_walk)
-            self.a.setPlayRate(max(0.6, min(2.2, s / 1.5)), self.cfg["walk"])
-        else:                                                                 # (no walk: a slow run is a jog)
-            w_idle = max(0.0, 1 - s / 1.2)
-            w_run = 1 - w_idle
+            self.a.setPlayRate(max(0.6, min(2.2, s / 1.5)) * (-1 if back else 1), self.cfg["walk"])
+        else:                                                                 # (a jog: the run, made smaller)
+            w_run = min(1.0, max(0.0, (s - 0.3) / 6.0)) ** 0.85
+            if back:
+                w_run *= 0.7                                                  # (backing off: shorter steps)
+            w_idle = 1 - w_run
         self.a.setControlEffect("idle", w_idle)
         self.a.setControlEffect("run", w_run)
-        self.a.setPlayRate(max(0.45, min(1.3, s / 6.5)), "run")
+        self.a.setPlayRate(max(0.35, min(1.7, rate)) * (-1 if back else 1), "run")
+        if ball is not None:
+            self._watch(ball, x, y, dt)
+
+    def _watch(self, ball, x, y, dt):
+        """Turn his head towards the ball (as far as a neck goes)."""
+        key = "head_turn"
+        if key not in self.cfg["joints"]:
+            return
+        if self.head is None:
+            name = self.cfg["joints"][key][0]
+            c = self.a.controlJoint(None, "modelRoot", name)
+            self.head = (c, c.getHpr())
+        dx, dy = ball[0] - x, ball[1] - y
+        if dx * dx + dy * dy < 0.5:
+            want = 0.0
+        else:
+            want = (math.degrees(math.atan2(-dx, dy)) - self.h + 180) % 360 - 180
+            want = max(-70.0, min(70.0, want))
+        self.look += (want - self.look) * min(1.0, dt * 5)
+        c, base = self.head
+        _, axis, sign = self.cfg["joints"][key]
+        hpr = [base[0], base[1], base[2]]
+        hpr[axis] += sign * self.look
+        c.setHpr(*hpr)

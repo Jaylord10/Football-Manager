@@ -270,7 +270,7 @@ class Player:
         self.phase = 0.0
         self.h = None
 
-    def update(self, x, y, fx, fy, speed, dt, active=True):
+    def update(self, x, y, fx, fy, speed, dt, active=True, **kw):
         if not active:
             self.root.hide(); return
         self.root.show()
@@ -403,13 +403,23 @@ class Viewer(ShowBase):
 
     def show(self, fr, dt):
         k = fr.get("k", 0)
+        rbx, rby = to_world(fr["b"][0], fr["b"][1])
+        prev = getattr(self, "_prev_pos", {})
         for i, (p, (x, y, fx, fy, sp, state, act)) in enumerate(zip(self.players, fr["p"])):
             wx, wy = to_world(x, y)
-            p.update(wx, wy, fx, -fy, sp, dt, act)
+            px, py = prev.get(i, (wx, wy))
+            vel = ((wx - px) / max(dt, 1e-3), (wy - py) / max(dt, 1e-3))
+            prev[i] = (wx, wy)
+            p.update(wx, wy, fx, -fy, sp, dt, act, vel=vel, ball=(rbx, rby))
             kind, t = self.events.action(i, k)
             if kind is None and fr["o"] == i:
                 kind, t = self._dribble_touch(i, p, dt)
+            if kind is None and getattr(p, "keeper", False) and sp < 25:          # (a keeper, set for a shot)
+                gx = -HX if wx < 0 else HX
+                if math.hypot(rbx - gx, rby) < 30 and fr["o"] not in (range(0, 11) if i < 11 else range(11, 22)):
+                    kind, t = "ready", 0.0
             p.act(kind, t)
+        self._prev_pos = prev
         bx, by, bz = self._ball(fr, dt)
         self.ball.setPos(bx, by, bz)
         self.bsh.setPos(bx, by, 0.02)
