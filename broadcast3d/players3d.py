@@ -87,9 +87,13 @@ def paint(actor, kit, skin, hair):
                 vd = geom.modifyVertexData()
             rd = GeomVertexReader(vd, "vertex")
             cw = GeomVertexWriter(vd, "color")
+            uw0 = GeomVertexWriter(vd, "texcoord.0")                       # (where each point is on the standing
+            uw1 = GeomVertexWriter(vd, "texcoord.1")                       #  body: the shader draws the kit from it)
             while not rd.isAtEnd():
                 v = mat.xformPoint(rd.getData3())
                 x, y, z = v[0], v[1], v[2] / 1.0
+                uw0.setData2(x, z)
+                uw1.setData2(y, 0.0)
                 ax = abs(x)
                 if z < 0.075:
                     c = boot
@@ -116,11 +120,52 @@ def paint(actor, kit, skin, hair):
                 cw.setData4(*c)
         np.setAttrib(ColorAttrib.makeVertex(), 1)
         np.setMaterialOff(1)
-        np.setTextureOff(1)
+        np.clearTexture()
+
+
+PATTERNS = {None: 0, "hoops": 1, "stripes": 2, "pinstripe": 3, "band": 4, "halves": 5, "sash": 6, "sleeves": 7}
+
+
+def shader_defaults(render):
+    """The kit inputs the lighting shader needs everywhere (off, except on the players)."""
+    render.setShaderInput("kit_on", 0.0)
+    for k in ("shirt", "trim", "shorts", "socks", "socktop", "skin", "hair", "gloves"):
+        render.setShaderInput("kit_" + k, (1.0, 1.0, 1.0, 1.0))
+    render.setShaderInput("kit_info", (0.0, 0.0, 0.0, 0.0))
+
+
+def _back_texture(name, number, colour, outline):
+    """His name and number, as printed on the back of his shirt (a texture, read by the shader)."""
+    from PIL import Image, ImageDraw, ImageFont
+    from panda3d.core import Texture, PNMImage, StringStream
+    import io
+    W, H = 256, 290
+    im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    fdir = os.path.join(HERE, "fonts")
+    def font(sz, bold=True):
+        for f in ("DejaVuSansCondensed-Bold.ttf", "DejaVuSans-Bold.ttf"):
+            for root in (fdir, "/usr/share/fonts/truetype/dejavu"):
+                p = os.path.join(root, f)
+                if os.path.exists(p):
+                    return ImageFont.truetype(p, sz)
+        return ImageFont.load_default()
+    col = tuple(int(c) for c in colour) + (255,)
+    if name:
+        sur = name.split()[-1].upper()
+        f = font(44)
+        while d.textlength(sur, font=f) > W - 20 and f.size > 20:
+            f = font(f.size - 2)
+        d.text((W / 2, 30), sur, font=f, fill=col, anchor="mm")
+    f = font(200)
+    d.text((W / 2, 175), str(number), font=f, fill=col, anchor="mm")
+    buf = io.BytesIO(); im.save(buf, "PNG")
+    t = Texture("back"); pi = PNMImage(); pi.read(StringStream(buf.getvalue()), "back.png"); t.load(pi)
+    return t
 
 
 class AnimPlayer:
-    def __init__(self, parent, kit, number, skin, hair, keeper=False, model=MODEL):
+    def __init__(self, parent, kit, number, skin, hair, keeper=False, model=MODEL, name=None, crest=None):
         self.cfg = MODELS[model]
         self.root = parent.attachNewNode("player")
         self.a = Actor(self.cfg["file"])
@@ -128,13 +173,30 @@ class AnimPlayer:
         self.a.setScale(self.cfg["scale"])
         self.a.setH(180)                    # (the model faces -Y; the root faces the way he's running, +Y)
         paint(self.a, kit, skin, hair)
-        tn = TextNode("num"); tn.setText(str(number)); tn.setAlign(TextNode.ACenter)
-        tn.setTextColor(*C(kit.get("number", (255, 255, 255))))
-        spine = self.a.exposeJoint(None, "modelRoot", self.cfg["number_joint"])     # (still in the bind pose)
-        t = self.a.attachNewNode(tn); t.setScale(0.28); t.setH(180)               # (on his back...)
-        t.setPos(0, spine.getY(self.a) + 0.135, spine.getZ(self.a) - 0.1)
-        t.wrtReparentTo(spine)                              # (...and it leans and twists with his back)
-        self.num = t
+        # The kit is drawn by the lighting shader, pixel by pixel (crisp stripes, hoops, sock tops), with his
+        # name and number on his back and the club crest on his chest.
+        r = self.root
+        r.setShaderInput("kit_on", 1.0)
+        for k, c in (("shirt", kit["shirt"]), ("trim", kit.get("trim", kit["shirt"])), ("shorts", kit["shorts"]),
+                     ("socks", kit["socks"]), ("socktop", kit.get("socktop") or kit["socks"]), ("skin", skin),
+                     ("hair", hair), ("gloves", (235, 235, 235) if sum(kit["shirt"]) < 600 else (40, 40, 44))):
+            r.setShaderInput("kit_" + k, C(c))
+        from panda3d.core import TextureStage, Texture
+        st0 = TextureStage("back"); st0.setTexcoordName("0")              # (the shader reads the body positions
+        self.a.setTexture(st0, _back_texture(name, number, kit.get("number", (255, 255, 255)),
+                                                              None), 2)
+        ct = None
+        if crest and os.path.exists(crest):
+            from panda3d.core import Filename
+            ct = Texture("crest"); ct.read(Filename.fromOsSpecific(crest))
+        if ct is None:
+            ct = Texture("none"); ct.setup2dTexture(1, 1, Texture.T_unsigned_byte, Texture.F_rgba)
+            ct.setRamImage(b"\x00\x00\x00\x00")
+        st1 = TextureStage("crest"); st1.setSort(1); st1.setTexcoordName("1")   #  through these two stages)
+        self.a.setTexture(st1, ct, 2)
+        r.setShaderInput("kit_info", (PATTERNS.get(kit.get("pattern"), 0), 1.0 if kit.get("keeper") else 0.0,
+                                      1.0 if crest else 0.0, 0.0))
+        self.num = None
         self.action_names = []
         if self.cfg.get("make_walk"):
             import gait

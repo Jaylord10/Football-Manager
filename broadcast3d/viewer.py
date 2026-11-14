@@ -326,7 +326,9 @@ class Viewer(ShowBase):
             skin = rnd.choice(Player.SKINS)
             hair = rnd.choice([(40, 28, 20), (25, 20, 18), (120, 80, 40), (200, 170, 110), (15, 12, 10)])
             if ANIM:
-                self.players.append(AnimPlayer(self.render, kit, (i % 11) + 1, skin, hair, keeper))
+                info = self.home_info if team == 0 else self.away_info
+                self.players.append(AnimPlayer(self.render, kit, num or (i % 11) + 1, skin, hair, keeper, name=name,
+                                               crest=info.get("crest")))
             else:
                 self.players.append(Player(self.render, kit, (i % 11) + 1, skin, hair, keeper))
         cm = CardMaker("shadow"); cm.setFrame(-0.45, 0.45, -0.3, 0.3)          # soft blob shadows
@@ -390,6 +392,9 @@ class Viewer(ShowBase):
         self.render.setShaderInput("shadow_bias", 0.0004)
         self.render.setShaderInput("shadow_texel", 1.0 / SHADOW_MAP)
         self.render.setShaderInput("detail_amt", 0.0)
+        if ANIM:
+            from players3d import shader_defaults
+            shader_defaults(self.render)
         self.render.setShaderInput("detail_scale", 1.0, 1.0)
         if not self.render.hasFog():
             f = Fog("none"); f.setExpDensity(0.0); self.render.setFog(f)

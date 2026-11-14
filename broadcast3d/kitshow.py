@@ -31,18 +31,27 @@ b.render.setShader(Shader.load(Shader.SL_GLSL, os.path.join(HERE, "shaders", "li
                                os.path.join(HERE, "shaders", "lit.frag")))
 b.render.setShaderInput("shadow_bias", 0.0005)
 b.render.setShaderInput("shadow_texel", 1.0 / 2048)
+b.render.setShaderInput("detail_amt", 0.0)
+b.render.setShaderInput("detail_scale", 1.0, 1.0)
+players3d.shader_defaults(b.render)
 f = Fog("none"); f.setExpDensity(0.0); b.render.setFog(f)
 cm = CardMaker("grass"); cm.setFrame(-30, 30, -30, 30)
 g = b.render.attachNewNode(cm.generate()); g.setP(-90); g.setColor(0.25, 0.55, 0.22, 1)
 
 hk, ak, g0, g1, hi, ai = kits.choose(home_name, away_name)
+ps = []
 row = [(hk, 10, 0), (hk, 7, 180), (g0, 1, 20), (ak, 9, 0), (ak, 4, 180), (g1, 1, -20)]
 for i, (kit, num, turn) in enumerate(row):
-    p = players3d.AnimPlayer(b.render, kit, num, (214, 168, 134), (40, 28, 20))
+    info = hi if i < 3 else ai
+    p = players3d.AnimPlayer(b.render, kit, num, (214, 168, 134), (40, 28, 20), name="Player Smith",
+                             crest=info.get("crest"))
     x = -5.6 + i * 2.25 + (0.6 if i >= 3 else 0)
     p.update(x, 0, 0, -1, 0, 0.5)                                       # (facing the camera...)
     p.h = 180 + turn; p.root.setH(p.h)                                  # (...or turned to show his back)
-    p.a.disableBlend(); p.a.stop(); p.a.pose("idle", 20)
+    ps.append(p)
+for p in ps:                                                            # (just standing - once they're all made)
+    p.loco = {n: 0.0 for n in p.loco_names}; p.loco["idle"] = 1.0
+    p.cur = (None, 0.0, 0.0); p._mix(); p.a.pose("idle", 20)
 for name, info, x in ((home_name, hi, -3.3), (away_name, ai, 3.9)):
     tn = TextNode("t"); tn.setText(name); tn.setAlign(TextNode.ACenter); tn.setTextColor(1, 1, 1, 1)
     t = b.render.attachNewNode(tn); t.setPos(x, 0, 2.35); t.setScale(0.32); t.setShaderOff(1); t.setLightOff(1)
