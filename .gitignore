@@ -13,3 +13,6 @@ faces/photos/
 # Python
 __pycache__/
 *.pyc
+broadcast3d/frames/
+broadcast3d/match.json
+broadcast3d/__pycache__/
