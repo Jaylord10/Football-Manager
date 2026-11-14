@@ -165,12 +165,23 @@ def _back_texture(name, number, colour, outline):
 
 
 class AnimPlayer:
-    def __init__(self, parent, kit, number, skin, hair, keeper=False, model=MODEL, name=None, crest=None):
+    def __init__(self, parent, kit, number, skin, hair, keeper=False, model=MODEL, name=None, crest=None,
+                 height=None):
         self.cfg = MODELS[model]
         self.root = parent.attachNewNode("player")
         self.a = Actor(self.cfg["file"])
         self.a.reparentTo(self.root)
-        self.a.setScale(self.cfg["scale"])
+        # His height (the model stands ~1.82 m) and build: real squads average ~1.81 m (outfield, s.d. ~6.5 cm),
+        # keepers ~1.90 m (CIES Football Observatory, Big-5 league squads).  Given, or picked from his name.
+        import zlib
+        seed = zlib.crc32(f"{name}-{number}".encode())
+        if height is None:
+            z = ((seed % 1000) / 1000.0 + ((seed // 1000) % 1000) / 1000.0 + ((seed // 10 ** 6) % 1000) / 1000.0 - 1.5) * 2.0
+            height = (1.90 + 0.04 * z) if keeper else (1.81 + 0.065 * z)
+        build = 0.96 + 0.08 * (((seed // 7) % 100) / 100.0)
+        k = self.cfg["scale"] * height / 1.82
+        self.a.setScale(k * build, k * build, k)
+        self.height = height
         self.a.setH(180)                    # (the model faces -Y; the root faces the way he's running, +Y)
         paint(self.a, kit, skin, hair)
         # The kit is drawn by the lighting shader, pixel by pixel (crisp stripes, hoops, sock tops), with his
@@ -306,9 +317,20 @@ class AnimPlayer:
         if self.h is None:
             self.h = h
         dh = (h - self.h + 180) % 360 - 180
-        self.h += dh * min(1.0, dt * 9)
-        self.root.setHpr(self.h, 0, self.roll * self.roll_side)               # (tipped over: a keeper's dive)
+        turn = dh * min(1.0, dt * 9)
+        self.h += turn
         sp = speed / 10.0                                                     # m/s
+        # Leaning: into a turn (as a cyclist does: tan(lean) = speed x turning rate / g) and forward as he
+        # speeds up, back as he brakes.  Eased, and kept to what players actually do (~15-20 deg at most).
+        w = math.radians(turn) / max(dt, 1e-3)
+        lean_r = -math.degrees(math.atan(self.sp * w / 9.81))
+        acc = (sp - self.sp) / max(dt, 1e-3) * min(1.0, dt * 6)
+        lean_p = -max(-6.0, min(8.0, acc * 2.2))
+        self.lean_r = getattr(self, "lean_r", 0.0) + (max(-18.0, min(18.0, lean_r)) - getattr(self, "lean_r", 0.0)) * min(1.0, dt * 6)
+        self.lean_p = getattr(self, "lean_p", 0.0) + (lean_p - getattr(self, "lean_p", 0.0)) * min(1.0, dt * 5)
+        if self.roll > 1:                                                     # (a dive: that tips him over instead)
+            self.lean_r = self.lean_p = 0.0
+        self.root.setHpr(self.h, self.lean_p, self.roll * self.roll_side + self.lean_r)
         self.sp += (sp - self.sp) * min(1.0, dt * 6)
         s = self.sp
         if self.roll > 5:
