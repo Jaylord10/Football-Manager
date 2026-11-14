@@ -139,16 +139,23 @@ class AnimPlayer:
         if self.cfg.get("make_walk"):
             import gait
             made = gait.add_all(self.a)                     # (the walk and every action: built from real figures)
-            self.action_names = [n for n in made if n != "walk"]
+            self.action_names = [n for n in made if n != "walk" and n not in gait.LOOPS]
+        self.loco_names = [n for n in ["idle", "run"] + ([self.cfg["walk"]] if self.cfg["walk"] else [])]
+        if self.cfg.get("make_walk"):
+            import gait
+            self.loco_names += list(gait.LOOPS)
+        self.mood = None                    # (after a goal: "scorer", "joy" or "sad")
+        self.still_t = 0.0                  # (how long he's been standing still)
+        self.sad_pose = "hips" if number % 2 else "knees"
         self.a.enableBlend()
         self.loops = ["idle", "run"] + ([self.cfg["walk"]] if self.cfg["walk"] else [])
-        for n in self.loops + self.action_names:
+        for n in self.loco_names + self.action_names:
             self.a.pose(n, 0)
             self.a.setControlEffect(n, 0.0)
         self.loco = {"idle": 1.0}
         self.cur = (None, 0.0, 0.0)
         self.ready = 0.0
-        self.nf = {n: self.a.getNumFrames(n) for n in self.loops}
+        self.nf = {n: self.a.getNumFrames(n) for n in self.loco_names}
         self.phase = 0.0                    # where he is in his stride (0..1 = two steps), walk and run in step
         self.t_idle = 0.0
         self.h = None
@@ -252,7 +259,8 @@ class AnimPlayer:
         # Steps a second, from real players: ~1.75 walking at 1 m/s, ~2.4 jogging at 2.5 m/s, ~4 sprinting at 8 m/s.
         steps = 1.3 + 0.45 * s if s < 2.5 else 1.65 + 0.3 * s
         self.phase = (self.phase + steps / 2.0 * dt * (-1 if back else 1)) % 1.0
-        self.t_idle = (self.t_idle + dt * 30) % self.nf["idle"]
+        self.t_idle = (self.t_idle + dt * 30) % 1800.0
+        self.still_t = self.still_t + dt if s < 1.0 else 0.0
         w_run = min(1.0, max(0.0, (s - 1.8) / 2.7)) ** 0.9                    # (a jog: walk and run blended)
         if back:
             w_run *= 0.7                                                      # (backing off: shorter steps)
@@ -261,16 +269,35 @@ class AnimPlayer:
         else:
             w_walk = 0.0
         w_idle = max(0.0, 1 - w_run - w_walk)
-        self.loco = {"idle": w_idle, "run": w_run}
-        self.a.pose("idle", self.t_idle)
         r0, r1 = self.cfg["run_range"]                                        # (the frames that make one stride)
-        self.a.pose("run", r0 + (self.phase * (r1 - r0) + self.cfg["run_offset"]) % (r1 - r0))
-        if self.cfg["walk"]:
-            self.loco[self.cfg["walk"]] = w_walk
-            self.a.pose(self.cfg["walk"], self.phase * self.nf[self.cfg["walk"]])
+        run_f = (self.phase * (r1 - r0) + self.cfg["run_offset"]) % (r1 - r0)
+        stand, walk, run = "idle", self.cfg["walk"], "run"
+        if self.mood and self.cfg.get("make_walk"):                           # (after a goal: celebrating, or not)
+            happy = "cheer" if self.still_t < 3.5 else "clap"                 # (then he applauds the fans)
+            stand = {"scorer": happy, "joy": happy, "sad": self.sad_pose}.get(self.mood, "idle")
+            walk = "walk_sad" if self.mood == "sad" else walk
+            run = "run_arms" if self.mood == "scorer" else run
+        self.loco = {n: 0.0 for n in self.loco_names}
+        self.loco[stand] = w_idle
+        self.loco[run] = w_run
+        self.a.pose(stand, self.t_idle % self.nf[stand])
+        self.a.pose(run, (r0 + run_f) if run == "run" else run_f)
+        if walk:
+            self.loco[walk] = w_walk
+            self.a.pose(walk, self.phase * self.nf[walk])
         self._mix()
         if ball is not None:
             self._watch(ball, x, y, dt)
+
+    def hands(self):
+        """Where the ball sits when he holds it in both hands: between his palms (in the world)."""
+        if not hasattr(self, "_hj"):
+            self._hj = (self.a.exposeJoint(None, "modelRoot", "hand.r"), self.a.exposeJoint(None, "modelRoot", "hand.l"))
+        r = self.root.getParent()
+        a, b = self._hj[0].getPos(r), self._hj[1].getPos(r)
+        hd = math.radians(self.h or 0.0)
+        mid = (a + b) * 0.5
+        return mid[0] - math.sin(hd) * 0.06, mid[1] + math.cos(hd) * 0.06, mid[2] + 0.04
 
     def _watch(self, ball, x, y, dt):
         """Turn his head towards the ball (as far as a neck goes)."""

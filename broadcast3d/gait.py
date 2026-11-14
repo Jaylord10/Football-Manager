@@ -44,6 +44,7 @@ MOVES = {
     "arm_r": ("upperarm.r", "x", -1), "arm_l": ("upperarm.l", "x", -1),
     "out_r": ("upperarm.r", "y", 1), "out_l": ("upperarm.l", "y", -1),
     "elbow_r": ("lowerarm.r", "x", -1), "elbow_l": ("lowerarm.l", "x", -1),
+    "across_r": ("upperarm.r", "z", 1), "across_l": ("upperarm.l", "z", -1),
     "turn": ("pelvis", "z", 1), "tilt": ("pelvis", "y", 1),
     "lean": ("spine_01", "x", 1), "chest": ("spine_02", "x", 1), "twist": ("spine_01", "z", 1),
     "side": ("spine_01", "y", 1),
@@ -159,9 +160,89 @@ ACTIONS = {
                 (0.85, {"hip_r": 30, "knee_r": 45, "hip_l": 15, "knee_l": 30, "lean": 18, "arm_r": 25, "arm_l": 25,
                         "out_r": 15, "out_l": 15, "elbow_r": 40, "elbow_l": 40}),
                 (1.20, N)],
+    # --- the keeper with the ball (the match engine has him release it straight away, so these run on) ---------
+    # A punt: the ball taken in his hands, dropped, and volleyed upfield.
+    "punt": [(-0.30, N),
+             (-0.06, {"arm_r": 40, "arm_l": 40, "across_r": 28, "across_l": 28, "elbow_r": 75, "elbow_l": 75, "lean": 12,
+                      "hip_r": -20, "knee_r": 70, "knee_l": 25}),
+             (0.06, {"hip_r": 45, "knee_r": 30, "ankle_r": -30, "knee_l": 20, "arm_r": 45, "arm_l": 30, "out_r": 40,
+                     "out_l": 55, "elbow_r": 30, "elbow_l": 30, "lean": -6, "turn": 10}),
+             (0.26, {"hip_r": 85, "knee_r": 8, "ankle_r": -25, "knee_l": 15, "arm_r": 30, "arm_l": 20, "out_r": 45,
+                     "out_l": 60, "elbow_r": 25, "elbow_l": 25, "lean": -14, "turn": 16, "air": 0.10}),
+             (0.50, {"hip_r": 30, "knee_r": 30, "knee_l": 10, "arm_r": 10, "out_r": 20, "out_l": 25, "lean": -4}),
+             (0.80, N)],
+    # A roll / short throw out: down low, the arm swinging through underneath.
+    "bowl": [(-0.30, N),
+             (-0.06, {"arm_r": 40, "arm_l": 40, "across_r": 28, "across_l": 28, "elbow_r": 75, "elbow_l": 75, "lean": 12}),
+             (0.00, {"arm_r": -45, "out_r": 15, "elbow_r": 10, "arm_l": 40, "out_l": 30, "elbow_l": 30, "lean": 25,
+                     "hip_l": 35, "knee_l": 55, "knee_r": 30, "twist": -14, "turn": -8}),
+             (0.18, {"arm_r": 60, "out_r": 10, "elbow_r": 10, "arm_l": 20, "out_l": 35, "elbow_l": 30, "lean": 32,
+                     "hip_l": 40, "knee_l": 60, "knee_r": 35, "twist": 14, "turn": 6}),
+             (0.45, {"arm_r": 40, "elbow_r": 20, "lean": 18, "hip_l": 15, "knee_l": 25, "knee_r": 10}),
+             (0.80, N)],
+    # A throw-in: ball held in both hands, taken back behind the head, then thrown from over it - both feet on
+    # the ground, as the laws say.  (t = the moment it's thrown.)
+    "throwin": [(-1.60, {"arm_r": 30, "arm_l": 30, "across_r": 28, "across_l": 28, "elbow_r": 85, "elbow_l": 85}),
+                (-0.70, {"arm_r": 30, "arm_l": 30, "across_r": 28, "across_l": 28, "elbow_r": 85, "elbow_l": 85}),
+                (-0.25, {"arm_r": 170, "arm_l": 170, "out_r": 22, "out_l": 22, "elbow_r": 110, "elbow_l": 110,
+                         "lean": -16, "chest": -8, "nod": -8, "hip_l": 22, "knee_l": 25, "knee_r": 20}),
+                (0.00, {"arm_r": 150, "arm_l": 150, "out_r": 16, "out_l": 16, "elbow_r": 15, "elbow_l": 15,
+                        "lean": 8, "hip_l": 22, "knee_l": 20, "knee_r": 15}),
+                (0.25, {"arm_r": 100, "arm_l": 100, "across_r": 15, "across_l": 15, "elbow_r": 10, "elbow_l": 10,
+                        "lean": 18, "hip_l": 20, "knee_l": 18, "knee_r": 12}),
+                (0.70, N)],
 }
-# How strongly each blends over the running (a dribbling touch stays light), and whether it's grounded.
+# How strongly each blends over the running (a dribbling touch stays light).
 WEIGHT = {"touch": 0.55}
+
+
+# --- moods: other ways of standing, walking and running (goal celebrations) -----------------------------------
+def cheer(u):
+    """Arms up, punching the air, little hops - the scorer and his team-mates when they get together."""
+    c = math.cos(2 * math.pi * u)
+    return ({"out_r": 150 + 18 * c, "out_l": 150 - 18 * c, "arm_r": 25, "arm_l": 25, "elbow_r": 35 - 25 * c,
+             "elbow_l": 35 + 25 * c, "lean": -10, "chest": -6, "nod": -18, "knee_r": 12, "knee_l": 12},
+            {"air": 0.07 * abs(math.sin(2 * math.pi * u))})
+
+
+def clap(u):
+    """Applauding the fans (two claps a second)."""
+    c = math.cos(4 * math.pi * u)
+    return ({"arm_r": 45, "arm_l": 45, "across_r": 27 + 10 * c, "across_l": 27 + 10 * c, "elbow_r": 70,
+             "elbow_l": 70, "nod": -8}, {})
+
+
+def hips(u):
+    """Hands on hips, head down (the other side, after a goal)."""
+    b = math.sin(2 * math.pi * u)
+    return ({"out_r": 38, "out_l": 38, "arm_r": -18, "arm_l": -18, "elbow_r": 105, "elbow_l": 105, "nod": 22,
+             "lean": 4 + 2 * b, "knee_r": 4, "knee_l": 4}, {})
+
+
+def knees(u):
+    """Bent over, hands on knees."""
+    b = math.sin(2 * math.pi * u)
+    return ({"hip_r": 35, "hip_l": 35, "knee_r": 28, "knee_l": 28, "ankle_r": 8, "ankle_l": 8, "lean": 45 + 3 * b,
+             "chest": 8, "arm_r": 55, "arm_l": 55, "out_r": 12, "out_l": 12, "elbow_r": 15, "elbow_l": 15,
+             "nod": -5}, {})
+
+
+def walk_sad(u):
+    m, extra = walk_pose(u)
+    for k in ("arm_r", "arm_l", "elbow_r", "elbow_l", "twist"):
+        m[k] *= 0.4
+    m.update(nod=26, lean=8, chest=6)
+    return m, extra
+
+
+def run_arms(u):
+    """Running away with his arms out wide - the scorer's celebration."""
+    return ({"out_r": 80, "out_l": 80, "arm_r": -10, "arm_l": -10, "elbow_r": -20, "elbow_l": -20, "nod": -12,
+             "lean": -6}, {})
+
+
+LOOPS = {"cheer": (cheer, 30, "idle"), "clap": (clap, 30, "idle"), "hips": (hips, 60, "idle"), "knees": (knees, 60, "idle"),
+         "walk_sad": (walk_sad, 30, "idle"), "run_arms": (run_arms, 15, "run")}
 
 
 def action_pose(keys):
@@ -219,19 +300,16 @@ FEET = ("foot.r", "foot.l", "ball.r", "ball.l")
 
 
 def build(actor, name, pose_fn, frames, ground=True, base_anim="idle", base_frame=0):
-    """A new animation: each frame, the base pose (one frame of the base animation) with pose_fn(i / frames)
-    (-> ({move: degrees}, {"sway": m, "air": m})) turned on top, grounded.  Returns a NodePath holding it."""
+    """A new animation: each frame, the base pose (a frame of the base animation - base_frame can be a function
+    of the time 0..1, to follow a moving base such as the run) with pose_fn(i / frames) (-> ({move: degrees},
+    {"sway": m, "air": m})) turned on top, grounded.  Returns a NodePath holding it."""
     base = actor.getAnimControl(base_anim).getAnim()
-    mats, parent, order = _local_mats(base, base_frame)
-    base_ts = {j: TransformState.makeMat(mats[j][1]) for j in order}
-    net = {}
+    idle = actor.getAnimControl("idle").getAnim()
+    _, parent, order = _local_mats(base, 0)
 
-    def net_q(j):
-        if j is None:
-            return LQuaternionf.identQuat()
-        if j not in net:
-            net[j] = base_ts[j].getQuat() * net_q(parent[j])
-        return net[j]
+    def pose_at(bundle, fr):
+        mats, _, _ = _local_mats(bundle, fr)
+        return {j: TransformState.makeMat(mats[j][1]) for j in order}
 
     def nets(local):
         nm = {}
@@ -240,7 +318,7 @@ def build(actor, name, pose_fn, frames, ground=True, base_anim="idle", base_fram
             nm[j] = m * nm[parent[j]] if parent[j] else m
         return nm
     # Points under each foot: the heel (a little behind the ankle, at the sole) and the ball of the foot.
-    nm0 = nets(base_ts)
+    nm0 = nets(pose_at(idle, 0))
     soles = []
     for sd in ("r", "l"):
         a = nm0["foot." + sd].xformPoint(LPoint3f(0, 0, 0))
@@ -254,10 +332,21 @@ def build(actor, name, pose_fn, frames, ground=True, base_anim="idle", base_fram
         """The lowest point of the soles, in the model, for these local transforms."""
         nm = nets(local)
         return min(nm[j].xformPoint(pt)[2] for j, pt in soles)
-    rest = feet_z(base_ts)
+    rest = feet_z(pose_at(idle, 0))
     tables = {j: {k: [] for k in "hprxyz"} for j in order}
+    fixed = None if callable(base_frame) else pose_at(base, base_frame)
     for f in range(frames):
-        moves, extra = pose_fn(f / float(frames))
+        u = f / float(frames)
+        base_ts = fixed or pose_at(base, int(round(base_frame(u))))
+        net = {}
+
+        def net_q(j):
+            if j is None:
+                return LQuaternionf.identQuat()
+            if j not in net:
+                net[j] = base_ts[j].getQuat() * net_q(parent[j])
+            return net[j]
+        moves, extra = pose_fn(u)
         turns = {}
         for m, deg in moves.items():
             if m in MOVES and deg:
@@ -283,6 +372,7 @@ def build(actor, name, pose_fn, frames, ground=True, base_anim="idle", base_fram
                 t[k].append(v)
             for k, v in zip("xyz", local[j].getPos()):
                 t[k].append(v)
+    base_frame = 0 if callable(base_frame) else base_frame
     nb = AnimBundle(name, FPS, frames)
 
     def copy(src, dst):
@@ -317,9 +407,14 @@ SPANS = {}          # action -> (first second, last second)
 
 def _make(actor):
     _CACHE["walk"] = build(actor, "walk", walk_pose, 30)
+    for name, (fn, n, base) in LOOPS.items():
+        if base == "run":                                               # (on top of the run: its stride, frames 2-17)
+            _CACHE[name] = build(actor, name, fn, n, ground=False, base_anim="run", base_frame=lambda u: 2 + u * 15)
+        else:
+            _CACHE[name] = build(actor, name, fn, n)
     for name, keys in ACTIONS.items():
         variants = [(name, keys)]
-        if name in ("dive", "recover", "kick", "shot", "touch", "tackle"):
+        if name in ("dive", "recover", "kick", "shot", "touch", "tackle", "punt"):
             variants.append((name + "_m", [(t, mirror(p) if isinstance(p, dict) else p) for t, p in keys]))
         for vn, vk in variants:
             fn, t0, t1 = action_pose(vk)

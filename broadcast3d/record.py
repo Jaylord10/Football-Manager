@@ -1,5 +1,6 @@
-"""Record a real match from the engine: every 2nd frame (30 fps) - positions, facing, speed, state, ball, and
-the keepers' dives.  usage: python record.py SECONDS [SEED]  (FM_SAVE = the save to use, FM_REC_OUT = where)"""
+"""Record a real match from the engine: every 2nd frame (30 fps) - positions, facing, speed, state, ball, the
+keepers' dives, dead balls (throw-ins, goal kicks, corners, free kicks, kick-offs: "r" = [kind, taker]) and goal
+celebrations ("c" = [team, scorer]).  usage: python record.py SECONDS [SEED]  (FM_SAVE = the save to use, FM_REC_OUT = where)"""
 import os, sys, io, contextlib, json, random
 HERE = os.path.dirname(os.path.abspath(__file__))
 W = os.path.dirname(HERE)                # (the game folder)
@@ -34,6 +35,13 @@ with contextlib.redirect_stdout(io.StringIO()):
               "p": [[round(p.pos.x, 1), round(p.pos.y, 1), round(p.facing.x, 3), round(p.facing.y, 3),
                      round(p.vel.length(), 1), p.state, int(getattr(p, "is_active", True)),
                      getattr(p, "dive_state", "") if p.role == "GK" else ""] for p in e.team0 + e.team1]}
+        everyone = e.team0 + e.team1
+        if getattr(b, "is_dead", False) and getattr(b, "restart_type", None):        # (a dead ball: who takes it)
+            tk = getattr(b, "restart_taker", None)
+            fr["r"] = [b.restart_type, everyone.index(tk) if tk in everyone else -1]
+        cel = getattr(b, "_celebration", None)
+        if cel and e.time_elapsed < cel.get("until", 0) and cel.get("scorer") in everyone:   # (a goal celebration)
+            fr["c"] = [cel["team"], everyone.index(cel["scorer"])]
         frames.append(fr)
 names = [[p.name, p.role, getattr(p, "number", i + 1)] for i, p in enumerate(e.team0 + e.team1)]
 json.dump({"home": c["clubs"][home]["name"], "away": c["clubs"][away]["name"], "names": names, "frames": frames},

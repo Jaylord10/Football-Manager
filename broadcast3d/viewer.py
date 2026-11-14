@@ -349,7 +349,8 @@ class Viewer(ShowBase):
         self.camLens.setFov(36)
         self.camLens.setNearFar(1, 3000)
         self.cx, self.cy = 0.0, 0.0
-        self.events = find_events(match["frames"])
+        gks = tuple(i for i, nm in enumerate(match.get("names", [])) if len(nm) > 1 and nm[1] == "GK") or (0, 11)
+        self.events = find_events(match["frames"], gks)
         self.dives = {}
         self.ball_off = Vec3(0, 0, 0)
         self.ball_mode = None
@@ -408,13 +409,21 @@ class Viewer(ShowBase):
         k = fr.get("k", 0)
         rbx, rby = to_world(fr["b"][0], fr["b"][1])
         prev = getattr(self, "_prev_pos", {})
+        cel = fr.get("c")                                                   # (a goal celebration: who scored)
         for i, (p, (x, y, fx, fy, sp, state, act, *_)) in enumerate(zip(self.players, fr["p"])):
+            if cel:
+                mine = (i < 11) == (cel[0] == 0)
+                p.mood = "scorer" if i == cel[1] else ("joy" if mine else "sad") if not getattr(p, "keeper", False) else None
+            else:
+                p.mood = None
             wx, wy = to_world(x, y)
             px, py = prev.get(i, (wx, wy))
             vel = ((wx - px) / max(dt, 1e-3), (wy - py) / max(dt, 1e-3))
             prev[i] = (wx, wy)
-            p.update(wx, wy, fx, -fy, sp, dt, act, vel=vel, ball=(rbx, rby))
             kind, t = self.events.action(i, k)
+            if kind == "throwin":                                           # (facing the way he throws it)
+                fx, fy = self._throw_dir(i, k, t, fx, fy)
+            p.update(wx, wy, fx, -fy, sp, dt, act, vel=vel, ball=(rbx, rby))
             dv = fr["p"][i][7] if len(fr["p"][i]) > 7 else ""
             if dv in ("diving", "recover") and getattr(p, "keeper", False):    # (a keeper's dive)
                 self._keeper_dive(i, p, dv, k)
@@ -483,13 +492,25 @@ def _viewer_ball(self, fr, dt):
             dist = 0.38 + (dist - 0.38) * min(1.0, -t / 0.3)
         px, py = p.root.getX(), p.root.getY()
         bx, by, bz = px + fx * dist + fy * 0.09, py + fy * dist - fx * 0.09, BALL_R
-        if getattr(p, "keeper", False):                                     # (a keeper holds it to his chest)
-            bx, by, bz = px + fx * 0.32, py + fy * 0.32, 1.05
+        if getattr(p, "keeper", False):                                     # (a keeper: in his hands)
+            bx, by, bz = p.hands()
+    r = fr.get("r")
+    if r and r[0] == "throw_in" and r[1] >= 0:                              # (a throw-in: in his hands)
+        p = self.players[r[1]]
+        kind, t = self.events.action(r[1], fr.get("k", 0))
+        px, py = p.root.getX(), p.root.getY()
+        if kind == "throwin" and t >= -1.5 and _m.hypot(px - bx, py - by) < 2.5:
+            bx, by, bz = p.hands()                                          # (between his hands, wherever they are)
+            mode = ("throw", r[1])
     if mode != self.ball_mode:
         if self.last_ball is not None:
             self.ball_off = Vec3(*self.last_ball) - Vec3(bx, by, bz)        # (ease from where it was drawn)
+        # (out of someone's hands - a throw-in, a keeper's throw - it comes down over a longer flight)
+        held = isinstance(self.ball_mode, tuple) or (self.ball_mode is not None and
+                                                     getattr(self.players[self.ball_mode], "keeper", False))
+        self.ball_tau = 0.28 if held else 0.09
         self.ball_mode = mode
-    self.ball_off *= _m.exp(-dt / 0.09)
+    self.ball_off *= _m.exp(-dt / getattr(self, "ball_tau", 0.09))
     out = (bx + self.ball_off.x, by + self.ball_off.y, max(BALL_R, bz + self.ball_off.z))
     self.last_ball = out
     return out
@@ -546,6 +567,17 @@ def _viewer_left_foot(self, i, p, kind, t, k):
     return side < -0.12 or (lefty and side < 0.12)
 
 
+def _viewer_throw_dir(self, i, k, t, fx, fy):
+    """A throw-in: he faces the way the ball goes (engine directions)."""
+    F = self.m["frames"]
+    ke = int(round(k - t * 30))
+    a, b = F[max(0, min(len(F) - 1, ke))]["b"], F[max(0, min(len(F) - 1, ke + 6))]["b"]
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    d = math.hypot(dx, dy)
+    return (dx / d, dy / d) if d > 1e-3 else (fx, fy)
+
+
+Viewer._throw_dir = _viewer_throw_dir
 Viewer._left_foot = _viewer_left_foot
 Viewer._keeper_dive = _viewer_keeper_dive
 Viewer._ball = _viewer_ball
@@ -561,7 +593,7 @@ class Events:
         self.by_player = {}
         self.fps = 30.0
 
-    RANK = {"shot": 4, "header": 3, "tackle": 3, "kick": 2, "touch": 1}
+    RANK = {"throwin": 6, "punt": 5, "bowl": 5, "shot": 4, "header": 3, "tackle": 3, "kick": 2, "touch": 1}
 
     def add(self, i, k, kind):
         l = self.by_player.setdefault(i, [])
@@ -573,25 +605,34 @@ class Events:
         l.append((k, kind))
 
     def action(self, i, k):
+        import gait
         best = None
         for (ke, kind) in self.by_player.get(i, ()):
             t = (k - ke) / self.fps
-            if -self.WINDOW <= t <= self.WINDOW and (best is None or abs(t) < abs(best[1])):
+            lo, hi = gait.SPANS.get(kind, (-self.WINDOW, self.WINDOW))
+            if lo <= t <= hi and (best is None or abs(t) < abs(best[1])):
                 best = (kind, t)
         return best if best else (None, 0.0)
 
 
-def find_events(F):
+def find_events(F, keepers=(0, 11)):
     import math as _m
     ev = Events(F)
     for k, fr in enumerate(F):
         fr["k"] = k
     sp = lambda a, b: _m.dist(a[:2], b[:2]) / 10.0 * 30.0                  # m/s, from two frames
+    gained = {}
     for k in range(2, len(F) - 4):
         a, b = F[k - 1]["o"], F[k]["o"]
+        if b >= 0 and a != b:
+            gained[b] = (k, "r" in F[k - 1] or "r" in F[k - 2])            # (when he got it - from a dead ball?)
         if a >= 0 and b < 0:                                                # he's played it
             v = sp(F[k]["b"], F[k + 3]["b"]) / 3.0
             z = F[k - 1]["b"][2] / 10.0
+            gk, dead = gained.get(a, (-99, False))
+            if a in keepers and k - gk <= 15 and not dead and z < 2.5:      # (a keeper, ball just caught: out of his hands)
+                ev.add(a, k, "punt" if v > 17 else "bowl")
+                continue
             ev.add(a, k, "header" if z > 1.3 else "shot" if v > 21 else "kick")
         elif a < 0 and b >= 0:
             z = F[k]["b"][2] / 10.0
@@ -609,6 +650,14 @@ def find_events(F):
                 if near[0] < 2.0:
                     z = F[k]["b"][2] / 10.0
                     ev.add(near[1], k, "header" if z > 1.3 else "kick")
+    for k in range(1, len(F) - 4):                                           # dead balls: who took it, and how
+        r = F[k - 1].get("r")
+        if r and "r" not in F[k] and r[1] >= 0:
+            v = sp(F[k]["b"], F[k + 3]["b"]) / 3.0
+            kind = {"throw_in": "throwin", "kick_off": "touch", "penalty": "shot"}.get(r[0], "shot" if v > 21 else "kick")
+            l = ev.by_player.setdefault(r[1], [])
+            l[:] = [(k2, kd) for (k2, kd) in l if abs(k2 - k) > 8]
+            l.append((k, kind))
     return ev
 
 
@@ -636,7 +685,7 @@ def main():
         from players3d import AnimPlayer
         from panda3d.core import ClockObject
         c = ClockObject.getGlobalClock(); c.setMode(ClockObject.MNonRealTime); c.setFrameRate(30)
-    mj = os.path.join(HERE, "match.json")
+    mj = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--match=")), os.path.join(HERE, "match.json"))
     if os.path.exists(mj):
         d = json.load(open(mj))
     else:                                                 # (the sample match that comes with it)
