@@ -7,13 +7,16 @@ import sys, json, math, os
 from panda3d.core import loadPrcFileData
 OFF = "--live" not in sys.argv
 CLOSE = "--close" in sys.argv
+OVERCAST = "--overcast" in sys.argv
+SUN_AZ, SUN_EL = 200.0, 22.0               # the sun: degrees round from behind the Main Stand, and up
+SHADOW_MAP = 4096
 ANIM = "--boxes" not in sys.argv          # (animated figures unless --boxes: the old block players)
 loadPrcFileData("", ("window-type offscreen\n" if OFF else "") + "win-size 1280 720\naudio-library-name null\n"
                 "framebuffer-multisample 1\nmultisamples 4\ntextures-power-2 none\nsync-video 0")
 from direct.showbase.ShowBase import ShowBase
 from direct.gui.OnscreenText import OnscreenText
 from direct.gui.OnscreenImage import OnscreenImage
-from panda3d.core import (AmbientLight, DirectionalLight, Vec4, Vec3, Point3, CardMaker, TextNode, PNMImage,
+from panda3d.core import (AmbientLight, DirectionalLight, Vec4, Vec3, Point3, CardMaker, TextNode, PNMImage, Shader, BitMask32,
                           Filename, Texture, SamplerState, TransparencyAttrib, AntialiasAttrib, Fog)
 from geom import Mesh, box, box_into, sphere, prism
 
@@ -23,6 +26,17 @@ T = os.path.join(HERE, "tex") + os.sep
 CLUBS = os.path.join(GAME, "data", "world", "clubs") + os.sep
 L, WD = 110.0, 70.0
 HX, HY = L / 2, WD / 2
+
+
+NO_SHADOW_BIT = BitMask32.bit(5)           # what the sun's shadow camera sees (hide() a node from it: it casts none)
+
+
+def no_shadow(np, lit=True):
+    """This node casts no shadow (the pitch, the sky...); lit=False: and isn't lit at all (drawn as it is)."""
+    np.hide(NO_SHADOW_BIT)
+    if not lit:
+        np.setShaderOff(1)
+    return np
 
 
 def C(rgb, a=1.0):
@@ -102,11 +116,11 @@ class Stadium:
         b = self.b
         # the pitch and its surround
         cm = CardMaker("pitch"); cm.setFrame(-HX - 8, HX + 8, -HY - 8, HY + 8)
-        p = self.root.attachNewNode(cm.generate()); p.setP(-90); p.setTexture(self.T("pitch.png", False))
+        p = self.root.attachNewNode(cm.generate()); p.setP(-90); p.setTexture(self.T("pitch.png", False)); no_shadow(p)
         cm2 = CardMaker("apron"); cm2.setFrame(-HX - 40, HX + 40, -HY - 40, HY + 40)
-        ap = self.root.attachNewNode(cm2.generate()); ap.setP(-90); ap.setZ(-0.02); ap.setColor(C((96, 98, 100)))
+        ap = self.root.attachNewNode(cm2.generate()); ap.setP(-90); ap.setZ(-0.02); ap.setColor(C((96, 98, 100))); no_shadow(ap)
         cm3 = CardMaker("outer"); cm3.setFrame(-400, 400, -400, 400)
-        ou = self.root.attachNewNode(cm3.generate()); ou.setP(-90); ou.setZ(-0.5); ou.setColor(C((70, 82, 64)))
+        ou = self.root.attachNewNode(cm3.generate()); ou.setP(-90); ou.setZ(-0.5); ou.setColor(C((70, 82, 64))); no_shadow(ou)
         # Haworth Stand (far side): two tiers, flat roof on columns
         f = self.side("far")
         self.tier(f, -48, 48, 9, 1.4, 25, 11, "crowd_home.png", (200, 40, 45))
@@ -148,9 +162,9 @@ class Stadium:
         # moors and sky
         cm = CardMaker("moors"); cm.setFrame(-900, 900, 0, 150)
         mo = self.root.attachNewNode(cm.generate()); mo.setPos(0, 650, -10); mo.setTexture(self.T("moors.png", False))
-        mo.setTransparency(TransparencyAttrib.MAlpha); mo.setLightOff()
+        mo.setTransparency(TransparencyAttrib.MAlpha); mo.setLightOff(); no_shadow(mo, lit=False)
         cm = CardMaker("sky"); cm.setFrame(-2000, 2000, -100, 700)
-        sk = self.root.attachNewNode(cm.generate()); sk.setPos(0, 1200, -50); sk.setTexture(self.T("sky.png", False)); sk.setLightOff()
+        sk = self.root.attachNewNode(cm.generate()); sk.setPos(0, 1200, -50); sk.setTexture(self.T("sky.png", False)); sk.setLightOff(); no_shadow(sk, lit=False)
 
     def _brick_block(self, x0, y0, x1, y1, h):
         m = Mesh("brick"); box_into(m, x0, y0, 0, x1, y1, h, (1, 1, 1, 1), uvs=4)
@@ -200,7 +214,7 @@ class Stadium:
             reps = half * 2 / (8.0 * len(brands))           # (each board 8m wide)
             m.quad((-half, dist, 0), (half, dist, 0), (half, dist, 0.95), (-half, dist, 0.95), (1, 1, 1, 1),
                    ((0, 0), (reps, 0), (reps, 1), (0, 1)))
-            n = s.attachNewNode(m.node()); n.setTexture(tex); n.setLightOff()
+            n = s.attachNewNode(m.node()); n.setTexture(tex); n.setLightOff(); n.setShaderOff(1)
             box(s, -half, dist + 0.02, 0, half, dist + 0.12, 0.95, C((40, 42, 48)))      # (the back of the boards)
 
     def goals(self):
@@ -285,12 +299,7 @@ class Viewer(ShowBase):
         self.render.setAntialias(AntialiasAttrib.MMultisample)
         self.m = match
         st = Stadium(self); st.build_kiln_lane(); st.goals()
-        # light: a grey Lancashire afternoon, plus the floodlights
-        al = AmbientLight("amb"); al.setColor(Vec4(0.52, 0.53, 0.56, 1))
-        self.render.setLight(self.render.attachNewNode(al))
-        dl = DirectionalLight("sun"); dl.setColor(Vec4(0.62, 0.6, 0.56, 1))
-        sun = self.render.attachNewNode(dl); sun.setPos(-40, -60, 120); sun.lookAt(0, 0, 0)
-        self.render.setLight(sun)
+        self.light_up()
         fog = Fog("haze"); fog.setColor(0.62, 0.66, 0.7); fog.setExpDensity(0.0012); self.render.setFog(fog)
         # kits (Ashvale home v Northwick home)
         home = {"shirt": (200, 40, 45), "shorts": (245, 245, 245), "socks": (200, 40, 45)}
@@ -319,10 +328,16 @@ class Viewer(ShowBase):
         for p in self.players:
             n = p.root.attachNewNode(cm.generate()); n.setP(-90); n.setPos(0.25, 0.25, 0.02); n.setTexture(stex)
             n.setTransparency(TransparencyAttrib.MAlpha); n.setLightOff(); n.setDepthWrite(False); n.setBin("fixed", 0)
+            no_shadow(n, lit=False)
+            if not OVERCAST:
+                n.hide()                                    # (the sun casts real shadows now)
         self.ball = sphere(self.render, BALL_R, (0.98, 0.98, 0.98, 1), seg=20, ring=14)
         cm = CardMaker("bshadow"); cm.setFrame(-0.22, 0.22, -0.22, 0.22)          # (a soft round shadow)
         self.bsh = self.render.attachNewNode(cm.generate()); self.bsh.setP(-90); self.bsh.setTexture(stex)
         self.bsh.setTransparency(TransparencyAttrib.MAlpha); self.bsh.setLightOff(); self.bsh.setDepthWrite(False)
+        no_shadow(self.bsh, lit=False)
+        if not OVERCAST:
+            self.bsh.hide()
         self.bsh.setBin("fixed", 0)
         # camera: the TV gantry in the Main Stand
         self.camLens.setFov(36)
@@ -334,6 +349,36 @@ class Viewer(ShowBase):
         self.last_ball = None
         self.dribble = {}
         self.hud(match)
+
+    def light_up(self):
+        """The light.  Default: a bright autumn afternoon - a low sun from behind the Main Stand (the camera's side),
+        real shadows (each player's, the ball's, the stands' and the goal frames') stretching away up the pitch.
+        --overcast: the old grey Lancashire afternoon, no sun shadows."""
+        if OVERCAST:
+            al = AmbientLight("amb"); al.setColor(Vec4(0.52, 0.53, 0.56, 1))
+            self.render.setLight(self.render.attachNewNode(al))
+            dl = DirectionalLight("sun"); dl.setColor(Vec4(0.62, 0.6, 0.56, 1))
+            sun = self.render.attachNewNode(dl); sun.setPos(-40, -60, 120); sun.lookAt(0, 0, 0)
+            self.render.setLight(sun)
+            return
+        al = AmbientLight("amb"); al.setColor(Vec4(0.50, 0.53, 0.60, 1))               # (blue-ish sky fill)
+        self.render.setLight(self.render.attachNewNode(al))
+        dl = DirectionalLight("sun"); dl.setColor(Vec4(1.25, 1.12, 0.92, 1))             # (warm low sun)
+        dl.setShadowCaster(True, SHADOW_MAP, SHADOW_MAP)
+        lens = dl.getLens(); lens.setFilmSize(250, 170); lens.setNearFar(10, 600)
+        sun = self.render.attachNewNode(dl)
+        az, el = math.radians(SUN_AZ), math.radians(SUN_EL)
+        sun.setPos(-math.sin(az) * math.cos(el) * 300, -math.cos(az) * math.cos(el) * 300, math.sin(el) * 300)
+        sun.lookAt(0, 0, 0)
+        self.render.setLight(sun)
+        self.sun = sun
+        dl.setCameraMask(NO_SHADOW_BIT)                    # (the sun's shadow camera: see no_shadow())
+        sh = Shader.load(Shader.SL_GLSL, os.path.join(HERE, "shaders", "lit.vert"), os.path.join(HERE, "shaders", "lit.frag"))
+        self.render.setShader(sh)
+        self.render.setShaderInput("shadow_bias", 0.0004)
+        self.render.setShaderInput("shadow_texel", 1.0 / SHADOW_MAP)
+        if not self.render.hasFog():
+            f = Fog("none"); f.setExpDensity(0.0); self.render.setFog(f)
 
     def hud(self, match):
         from direct.gui.DirectGui import DirectFrame
@@ -493,7 +538,7 @@ def intro(v, F, first, n, out, start_idx):
         v.show(F[first], 1 / 30.0); tick()
         v.cam.setPos(150 * math.sin(a) + 20, -150 * math.cos(a), 70 - 25 * i / n)
         v.cam.lookAt(0, 8, 0)
-        v.graphicsEngine.renderFrame()
+        v.taskMgr.step()   # (runs the lighting tasks, then draws)
         img = PNMImage(); v.win.getScreenshot(img); img.write(Filename(f"{out}/f{start_idx + i:05d}.png"))
     return n
 
@@ -530,7 +575,7 @@ def main():
         v.show(F[first], 1 / 30.0)
     for i in range(n):
         v.show(F[first + i], 1 / 30.0); tick()
-        v.graphicsEngine.renderFrame()
+        v.taskMgr.step()   # (runs the lighting tasks, then draws)
         img = PNMImage(); v.win.getScreenshot(img); img.write(Filename(f"{out}/f{k + i:05d}.png"))
     print("rendered", n)
 
