@@ -122,6 +122,10 @@ class Stadium:
         # the pitch and its surround
         cm = CardMaker("pitch"); cm.setFrame(-HX - 8, HX + 8, -HY - 8, HY + 8)
         p = self.root.attachNewNode(cm.generate()); p.setP(-90); p.setTexture(self.T("pitch.png", False)); no_shadow(p)
+        from panda3d.core import TextureStage
+        p.setTexture(TextureStage("detail"), self.T("grass_detail.png"))    # (close up: blades of grass, not a flat colour)
+        p.setShaderInput("detail_amt", 0.7)
+        p.setShaderInput("detail_scale", (2 * (HX + 8)) / 1.4, (2 * (HY + 8)) / 1.4)
         cm2 = CardMaker("apron"); cm2.setFrame(-HX - 40, HX + 40, -HY - 40, HY + 40)
         ap = self.root.attachNewNode(cm2.generate()); ap.setP(-90); ap.setZ(-0.02); ap.setColor(C((96, 98, 100))); no_shadow(ap)
         cm3 = CardMaker("outer"); cm3.setFrame(-400, 400, -400, 400)
@@ -335,9 +339,9 @@ class Viewer(ShowBase):
             n = p.root.attachNewNode(cm.generate()); n.setP(-90); n.setPos(0.25, 0.25, 0.02); n.setTexture(stex)
             n.setTransparency(TransparencyAttrib.MAlpha); n.setLightOff(); n.setDepthWrite(False); n.setBin("fixed", 0)
             no_shadow(n, lit=False)
-            if not OVERCAST:
-                n.hide()                                    # (the sun casts real shadows now)
-        self.ball = sphere(self.render, BALL_R, (0.98, 0.98, 0.98, 1), seg=20, ring=14)
+            if not OVERCAST:                                # (sunshine: the sun casts the real shadow - this is just
+                n.setPos(0, 0, 0.02); n.setScale(0.75, 1, 0.9); n.setAlphaScale(0.55)    # the darkening under his feet)
+        self.ball = football(self.render, BALL_R)
         cm = CardMaker("bshadow"); cm.setFrame(-0.22, 0.22, -0.22, 0.22)          # (a soft round shadow)
         self.bsh = self.render.attachNewNode(cm.generate()); self.bsh.setP(-90); self.bsh.setTexture(stex)
         self.bsh.setTransparency(TransparencyAttrib.MAlpha); self.bsh.setLightOff(); self.bsh.setDepthWrite(False)
@@ -385,6 +389,8 @@ class Viewer(ShowBase):
         self.render.setShader(sh)
         self.render.setShaderInput("shadow_bias", 0.0004)
         self.render.setShaderInput("shadow_texel", 1.0 / SHADOW_MAP)
+        self.render.setShaderInput("detail_amt", 0.0)
+        self.render.setShaderInput("detail_scale", 1.0, 1.0)
         if not self.render.hasFog():
             f = Fog("none"); f.setExpDensity(0.0); self.render.setFog(f)
 
@@ -437,6 +443,7 @@ class Viewer(ShowBase):
             p.act(kind, t, self._left_foot(i, p, kind, t, k))
         self._prev_pos = prev
         bx, by, bz = self._ball(fr, dt)
+        self._spin_ball(bx, by, bz, dt)
         self.ball.setPos(bx, by, bz)
         self.bsh.setPos(bx, by, 0.02)
         # the camera pans with the ball (smoothly), a little zoom when it's near the far side
@@ -577,6 +584,52 @@ def _viewer_throw_dir(self, i, k, t, fx, fy):
     return (dx / d, dy / d) if d > 1e-3 else (fx, fy)
 
 
+def football(parent, r):
+    """The ball: white with the classic twelve dark pentagons (so you can see it roll)."""
+    from geom import Mesh
+    m = Mesh("ball")
+    t = (1 + 5 ** 0.5) / 2                                                  # (an icosahedron's corners = the
+    ico = [(0, 1, t), (0, -1, t), (0, 1, -t), (0, -1, -t), (1, t, 0), (-1, t, 0), (1, -t, 0), (-1, -t, 0),
+           (t, 0, 1), (-t, 0, 1), (t, 0, -1), (-t, 0, -1)]                  #  pentagons' middles)
+    ico = [Vec3(*v).normalized() for v in ico]
+    seg, ring = 36, 24
+
+    def P(i, j):
+        th = math.pi * j / ring; ph = 2 * math.pi * i / seg
+        return (math.sin(th) * math.cos(ph), math.sin(th) * math.sin(ph), math.cos(th))
+    for j in range(ring):
+        for i in range(seg):
+            a, b, c, d = P(i, j), P(i + 1, j), P(i + 1, j + 1), P(i, j + 1)
+            mid = Vec3(*[(a[k] + b[k] + c[k] + d[k]) / 4 for k in range(3)]).normalized()
+            dark = max(mid.dot(v) for v in ico) > 0.945                    # (~19 degrees round each)
+            col = (0.12, 0.12, 0.14, 1) if dark else (0.97, 0.97, 0.97, 1)
+            m.quad(*[(x * r, y * r, z * r) for (x, y, z) in (d, c, b, a)], col)
+    return parent.attachNewNode(m.node())
+
+
+def _viewer_spin_ball(self, bx, by, bz, dt):
+    """Roll the ball the distance it's moved (on the ground); in the air it keeps the spin it had."""
+    from panda3d.core import LQuaternionf
+    last = getattr(self, "_ball_last", None)
+    self._ball_last = (bx, by)
+    if last is None:
+        return
+    dx, dy = bx - last[0], by - last[1]
+    d = math.hypot(dx, dy)
+    if d > 3.0:                                                             # (a jump: a new scene)
+        return
+    if bz < BALL_R + 0.05 and d > 1e-4:
+        axis, ang = Vec3(-dy / d, dx / d, 0), math.degrees(d / BALL_R)
+        self._ball_spin = (axis, ang / max(dt, 1e-3))
+    else:
+        axis, rate = getattr(self, "_ball_spin", (Vec3(1, 0, 0), 0.0))
+        self._ball_spin = (axis, rate * math.exp(-dt / 2.0))
+        ang = rate * dt
+    q = LQuaternionf(); q.setFromAxisAngle(ang, axis)
+    self.ball.setQuat(self.ball.getQuat() * q)
+
+
+Viewer._spin_ball = _viewer_spin_ball
 Viewer._throw_dir = _viewer_throw_dir
 Viewer._left_foot = _viewer_left_foot
 Viewer._keeper_dive = _viewer_keeper_dive
