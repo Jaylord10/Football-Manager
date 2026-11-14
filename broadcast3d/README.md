@@ -23,3 +23,6 @@ Needs: `pip install panda3d`.
 Next (from the to-do list): proper player models in kits, football animations (Mixamo), the engine telling the
 view about kicks / tackles / headers, the ball at players' feet, real lighting, each club's own ground from its
 profile.
+
+Credits: the player figure is "Mannequiny" by GDQuest and contributors (https://www.gdquest.com/,
+github.com/GDQuest/godot-3d-mannequin), CC-BY 4.0. Xbot is from the three.js examples.

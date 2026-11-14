@@ -1,11 +1,30 @@
-"""Animated players: a Mixamo-rigged figure (idle / walk / run), painted in the club's kit by height."""
+"""Animated players: a rigged figure (idle / run, and walk where the model has it), painted in the club's kit
+by height, with kicks, shots, touches, headers and tackles posed by hand on top.
+
+The figure is the GDQuest "Mannequiny" (CC-BY 4.0, GDQuest and contributors - github.com/GDQuest/godot-3d-mannequin),
+a male mannequin.  (The older Xbot, from the three.js examples, is still here as MODELS["xbot"].)"""
 import math
 from direct.actor.Actor import Actor
 from panda3d.core import (GeomVertexFormat, GeomVertexArrayFormat, GeomVertexWriter, GeomVertexReader, Geom,
                           InternalName, ColorAttrib, TextNode)
 
 import os
-MODEL = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models", "Xbot.glb")
+HERE = os.path.dirname(os.path.abspath(__file__))
+# Each model: its file, how tall it is, and for each joint we pose: (its name, which of H/P/R to turn, which way
+# is "forward" / "bends").  Both models face -Y in their own frame.
+MODELS = {
+    "mannequin": {"file": os.path.join(HERE, "models", "mannequin.glb"), "walk": None, "scale": 1.02,
+                  "joints": {"thigh_r": ("thigh.r", 2, -1), "knee_r": ("calf.r", 1, 1),
+                             "thigh_l": ("thigh.l", 2, 1), "knee_l": ("calf.l", 1, 1),
+                             "spine": ("spine_01", 1, 1), "neck": ("neck_01", 1, 1)},
+                  "number_joint": "spine_02"},
+    "xbot": {"file": os.path.join(HERE, "models", "Xbot.glb"), "walk": "walk", "scale": 1.08,
+             "joints": {"thigh_r": ("mixamorig:RightUpLeg", 1, -1), "knee_r": ("mixamorig:RightLeg", 1, 1),
+                        "thigh_l": ("mixamorig:LeftUpLeg", 1, -1), "knee_l": ("mixamorig:LeftLeg", 1, 1),
+                        "spine": ("mixamorig:Spine", 1, 1), "neck": ("mixamorig:Neck", 1, 1)},
+             "number_joint": "mixamorig:Spine2"},
+}
+MODEL = "mannequin"
 
 
 def C(rgb):
@@ -61,66 +80,71 @@ def paint(actor, kit, skin, hair):
 
 class AnimPlayer:
     def __init__(self, parent, kit, number, skin, hair, keeper=False, model=MODEL):
+        self.cfg = MODELS[model]
         self.root = parent.attachNewNode("player")
-        self.a = Actor(model)
+        self.a = Actor(self.cfg["file"])
         self.a.reparentTo(self.root)
-        self.a.setScale(1.08)
+        self.a.setScale(self.cfg["scale"])
+        self.a.setH(180)                    # (the model faces -Y; the root faces the way he's running, +Y)
         paint(self.a, kit, skin, hair)
         self.a.enableBlend()
-        for n in ("idle", "walk", "run"):
+        self.loops = ["idle", "run"] + ([self.cfg["walk"]] if self.cfg["walk"] else [])
+        for n in self.loops:
             self.a.loop(n)
-        self.a.setPlayRate(1.0, "idle")
         tn = TextNode("num"); tn.setText(str(number)); tn.setAlign(TextNode.ACenter)
         tn.setTextColor(*C(kit.get("number", (255, 255, 255))))
-        n = self.a.exposeJoint(None, "modelRoot", "mixamorig:Spine2")
-        t = n.attachNewNode(tn); t.setScale(0.22); t.setPos(0, -0.16, 0.0); t.setTwoSided(True)
+        t = self.a.attachNewNode(tn); t.setScale(0.3); t.setPos(0, 0.16, 1.17); t.setH(180)   # (on his back)
+        t.setDepthOffset(1)
+        self.num = t
         self.h = None
         self.sp = 0.0
         self.ctl = {}                       # joints we're posing by hand (kicks, headers), while we do
         self.lift = 0.0
 
     # --- kicks, headers, tackles: posed by hand on top of the running animation -------------------------
-    # Angles in degrees (the figure faces +Y: thigh P + = forward, knee P - = bends, spine P - = leans in).
-    # Each pose is a list of (seconds from the moment the ball is struck, {joint: P}); in between we ease.
+    # Degrees: thigh + = swung forward, knee + = bent, spine / neck + = leaning forward.  Each pose is a list of
+    # (seconds from the moment the ball is struck, {joint: angle}); in between we ease.
     POSES = {
-        "kick":   [(-0.30, {"RightUpLeg": 0, "RightLeg": 0, "Spine": 0}),
-                   (-0.12, {"RightUpLeg": -28, "RightLeg": -95, "Spine": -4}),
-                   (0.00, {"RightUpLeg": 38, "RightLeg": -12, "Spine": -10}),
-                   (0.13, {"RightUpLeg": 48, "RightLeg": -8, "Spine": -5}),
-                   (0.36, {"RightUpLeg": 0, "RightLeg": 0, "Spine": 0})],
-        "shot":   [(-0.32, {"RightUpLeg": 0, "RightLeg": 0, "Spine": 0}),
-                   (-0.13, {"RightUpLeg": -35, "RightLeg": -110, "Spine": -6}),
-                   (0.00, {"RightUpLeg": 42, "RightLeg": -10, "Spine": -10}),
-                   (0.15, {"RightUpLeg": 55, "RightLeg": -6, "Spine": -6}),
-                   (0.42, {"RightUpLeg": 0, "RightLeg": 0, "Spine": 0})],
-        "touch":  [(-0.16, {"RightUpLeg": 0, "RightLeg": 0}),
-                   (-0.06, {"RightUpLeg": -6, "RightLeg": -40}),
-                   (0.00, {"RightUpLeg": 18, "RightLeg": -18}),
-                   (0.16, {"RightUpLeg": 0, "RightLeg": 0})],
-        "header": [(-0.28, {"Spine": 0, "Neck": 0}),
-                   (-0.10, {"Spine": 16, "Neck": 12}),
-                   (0.00, {"Spine": -18, "Neck": -22}),
-                   (0.28, {"Spine": 0, "Neck": 0})],
-        "tackle": [(-0.30, {"LeftUpLeg": 0, "LeftLeg": 0, "Spine": 0}),
-                   (-0.05, {"LeftUpLeg": 55, "LeftLeg": -15, "Spine": -12}),
-                   (0.15, {"LeftUpLeg": 60, "LeftLeg": -10, "Spine": -14}),
-                   (0.45, {"LeftUpLeg": 0, "LeftLeg": 0, "Spine": 0})],
+        "kick":   [(-0.30, {"thigh_r": 0, "knee_r": 0, "spine": 0}),
+                   (-0.12, {"thigh_r": -28, "knee_r": 95, "spine": 4}),
+                   (0.00, {"thigh_r": 38, "knee_r": 12, "spine": 6}),
+                   (0.13, {"thigh_r": 48, "knee_r": 8, "spine": 4}),
+                   (0.36, {"thigh_r": 0, "knee_r": 0, "spine": 0})],
+        "shot":   [(-0.32, {"thigh_r": 0, "knee_r": 0, "spine": 0}),
+                   (-0.13, {"thigh_r": -35, "knee_r": 110, "spine": 6}),
+                   (0.00, {"thigh_r": 42, "knee_r": 10, "spine": 8}),
+                   (0.15, {"thigh_r": 55, "knee_r": 6, "spine": 5}),
+                   (0.42, {"thigh_r": 0, "knee_r": 0, "spine": 0})],
+        "touch":  [(-0.16, {"thigh_r": 0, "knee_r": 0}),
+                   (-0.06, {"thigh_r": -6, "knee_r": 40}),
+                   (0.00, {"thigh_r": 18, "knee_r": 18}),
+                   (0.16, {"thigh_r": 0, "knee_r": 0})],
+        "header": [(-0.28, {"spine": 0, "neck": 0}),
+                   (-0.10, {"spine": -16, "neck": -12}),
+                   (0.00, {"spine": 18, "neck": 22}),
+                   (0.28, {"spine": 0, "neck": 0})],
+        "tackle": [(-0.30, {"thigh_l": 0, "knee_l": 0, "spine": 0}),
+                   (-0.05, {"thigh_l": 55, "knee_l": 15, "spine": 12}),
+                   (0.15, {"thigh_l": 60, "knee_l": 10, "spine": 14}),
+                   (0.45, {"thigh_l": 0, "knee_l": 0, "spine": 0})],
     }
     JUMP = {"header": (0.30, 0.30), "tackle": (-0.18, 0.40)}      # (height m, how long either side of the moment)
 
-    def _joint(self, name):
-        if name not in self.ctl:
-            self.ctl[name] = self.a.controlJoint(None, "modelRoot", "mixamorig:" + name)
-        return self.ctl[name]
+    def _joint(self, key):
+        if key not in self.ctl:
+            name = self.cfg["joints"][key][0]
+            c = self.a.controlJoint(None, "modelRoot", name)
+            self.ctl[key] = (c, c.getHpr())                              # (its resting turn: we add to it)
+        return self.ctl[key]
 
     def act(self, kind, t):
         """Pose an action: kind = "kick" / "shot" / "touch" / "header" / "tackle", t = seconds from the moment
         the ball is struck (negative = the wind-up).  kind None: back to the plain animation."""
         keys = self.POSES.get(kind)
         if keys is None or t < keys[0][0] or t > keys[-1][0]:
-            for name in list(self.ctl):
-                self.a.releaseJoint("modelRoot", "mixamorig:" + name)
-                self.ctl.pop(name).removeNode()
+            for key in list(self.ctl):
+                self.a.releaseJoint("modelRoot", self.cfg["joints"][key][0])
+                self.ctl.pop(key)[0].removeNode()
             self.lift = 0.0
             return
         for (t0, a), (t1, b) in zip(keys, keys[1:]):
@@ -128,7 +152,11 @@ class AnimPlayer:
                 k = (t - t0) / max(1e-6, t1 - t0)
                 k = k * k * (3 - 2 * k)                                         # (ease in and out)
                 for j in a:
-                    self._joint(j).setHpr(0, a[j] + (b[j] - a[j]) * k, 0)
+                    c, base = self._joint(j)
+                    _, axis, sign = self.cfg["joints"][j]
+                    hpr = [base[0], base[1], base[2]]
+                    hpr[axis] += sign * (a[j] + (b[j] - a[j]) * k)
+                    c.setHpr(*hpr)
                 break
         h, w = self.JUMP.get(kind, (0.0, 1.0))
         self.lift = h * max(0.0, math.cos(min(1.0, abs(t) / w) * math.pi / 2)) if h > 0 else h * max(0.0, 1 - abs(t) / w)
@@ -147,11 +175,15 @@ class AnimPlayer:
         sp = speed / 10.0                                                     # m/s
         self.sp += (sp - self.sp) * min(1.0, dt * 6)
         s = self.sp
-        w_idle = max(0.0, 1 - s / 1.0)
-        w_run = min(1.0, max(0.0, (s - 2.0) / 2.0))
-        w_walk = max(0.0, 1 - w_idle - w_run)
+        if self.cfg["walk"]:
+            w_idle = max(0.0, 1 - s / 1.0)
+            w_run = min(1.0, max(0.0, (s - 2.0) / 2.0))
+            w_walk = max(0.0, 1 - w_idle - w_run)
+            self.a.setControlEffect(self.cfg["walk"], w_walk)
+            self.a.setPlayRate(max(0.6, min(2.2, s / 1.5)), self.cfg["walk"])
+        else:                                                                 # (no walk: a slow run is a jog)
+            w_idle = max(0.0, 1 - s / 1.2)
+            w_run = 1 - w_idle
         self.a.setControlEffect("idle", w_idle)
-        self.a.setControlEffect("walk", w_walk)
         self.a.setControlEffect("run", w_run)
-        self.a.setPlayRate(max(0.6, min(2.2, s / 1.5)), "walk")
-        self.a.setPlayRate(max(0.7, min(1.9, s / 4.8)), "run")
+        self.a.setPlayRate(max(0.45, min(1.3, s / 6.5)), "run")

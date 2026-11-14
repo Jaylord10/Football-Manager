@@ -319,10 +319,11 @@ class Viewer(ShowBase):
         for p in self.players:
             n = p.root.attachNewNode(cm.generate()); n.setP(-90); n.setPos(0.25, 0.25, 0.02); n.setTexture(stex)
             n.setTransparency(TransparencyAttrib.MAlpha); n.setLightOff(); n.setDepthWrite(False); n.setBin("fixed", 0)
-        self.ball = sphere(self.render, 0.2, (0.98, 0.98, 0.98, 1), seg=12, ring=8)
-        cm = CardMaker("bshadow"); cm.setFrame(-0.25, 0.25, -0.25, 0.25)
-        self.bsh = self.render.attachNewNode(cm.generate()); self.bsh.setP(-90); self.bsh.setColor(0, 0, 0, 0.45)
-        self.bsh.setTransparency(TransparencyAttrib.MAlpha); self.bsh.setLightOff()
+        self.ball = sphere(self.render, BALL_R, (0.98, 0.98, 0.98, 1), seg=20, ring=14)
+        cm = CardMaker("bshadow"); cm.setFrame(-0.22, 0.22, -0.22, 0.22)          # (a soft round shadow)
+        self.bsh = self.render.attachNewNode(cm.generate()); self.bsh.setP(-90); self.bsh.setTexture(stex)
+        self.bsh.setTransparency(TransparencyAttrib.MAlpha); self.bsh.setLightOff(); self.bsh.setDepthWrite(False)
+        self.bsh.setBin("fixed", 0)
         # camera: the TV gantry in the Main Stand
         self.camLens.setFov(36)
         self.camLens.setNearFar(1, 3000)
@@ -376,7 +377,7 @@ class Viewer(ShowBase):
 
 # --- The ball at the players' feet, and what each player is doing with it ------------------------------------
 DRIBBLE_TOUCH = 0.7          # seconds between touches when running with the ball
-BALL_R = 0.2                 # (the ball is drawn a touch big, as TV games do)
+BALL_R = 0.15                # (a real ball is 0.11 m across the middle: drawn a touch big, as TV games do)
 
 
 def _viewer_ball(self, fr, dt):
