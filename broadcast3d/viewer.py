@@ -7,6 +7,8 @@ import sys, json, math, os
 from panda3d.core import loadPrcFileData
 OFF = "--live" not in sys.argv
 CLOSE = "--close" in sys.argv
+FOLLOW = next((int(a.split("=", 1)[1]) for a in sys.argv if a.startswith("--follow=")), None)
+                                            # (--follow=0: a close camera on one player, e.g. a keeper)
 TEAMS = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--teams=")), None)
                                             # (--teams=Penrith,Fernley: show other clubs' kits)
 OVERCAST = "--overcast" in sys.argv
@@ -348,6 +350,7 @@ class Viewer(ShowBase):
         self.camLens.setNearFar(1, 3000)
         self.cx, self.cy = 0.0, 0.0
         self.events = find_events(match["frames"])
+        self.dives = {}
         self.ball_off = Vec3(0, 0, 0)
         self.ball_mode = None
         self.last_ball = None
@@ -405,13 +408,17 @@ class Viewer(ShowBase):
         k = fr.get("k", 0)
         rbx, rby = to_world(fr["b"][0], fr["b"][1])
         prev = getattr(self, "_prev_pos", {})
-        for i, (p, (x, y, fx, fy, sp, state, act)) in enumerate(zip(self.players, fr["p"])):
+        for i, (p, (x, y, fx, fy, sp, state, act, *_)) in enumerate(zip(self.players, fr["p"])):
             wx, wy = to_world(x, y)
             px, py = prev.get(i, (wx, wy))
             vel = ((wx - px) / max(dt, 1e-3), (wy - py) / max(dt, 1e-3))
             prev[i] = (wx, wy)
             p.update(wx, wy, fx, -fy, sp, dt, act, vel=vel, ball=(rbx, rby))
             kind, t = self.events.action(i, k)
+            dv = fr["p"][i][7] if len(fr["p"][i]) > 7 else ""
+            if dv in ("diving", "recover") and getattr(p, "keeper", False):    # (a keeper's dive)
+                self._keeper_dive(i, p, dv, k)
+                continue
             if kind is None and fr["o"] == i:
                 kind, t = self._dribble_touch(i, p, dt)
             if kind is None and getattr(p, "keeper", False) and sp < 25:          # (a keeper, set for a shot)
@@ -427,7 +434,12 @@ class Viewer(ShowBase):
         k = min(1.0, dt * 2.2)
         self.cx += (max(-34, min(34, bx)) - self.cx) * k
         self.cy += (by - self.cy) * k
-        if CLOSE:                                                           # (a close camera, for checking)
+        if FOLLOW is not None:                                              # (a close camera on one player)
+            fx_, fy_ = to_world(fr["p"][FOLLOW][0], fr["p"][FOLLOW][1])
+            sx = 1 if fx_ < 0 else -1                                       # (from out on the pitch, looking at him)
+            self.cam.setPos(fx_ + sx * 9, fy_ - 7, 3.2)
+            self.cam.lookAt(fx_, fy_, 0.8)
+        elif CLOSE:                                                         # (a close camera, for checking)
             self.cam.setPos(bx - 6, by - 14, 4.5)
             self.cam.lookAt(bx, by, 0.9)
         else:
@@ -464,6 +476,8 @@ def _viewer_ball(self, fr, dt):
             dist = 0.38 + (dist - 0.38) * min(1.0, -t / 0.3)
         px, py = p.root.getX(), p.root.getY()
         bx, by, bz = px + fx * dist + fy * 0.09, py + fy * dist - fx * 0.09, BALL_R
+        if getattr(p, "keeper", False):                                     # (a keeper holds it to his chest)
+            bx, by, bz = px + fx * 0.32, py + fy * 0.32, 1.05
     if mode != self.ball_mode:
         if self.last_ball is not None:
             self.ball_off = Vec3(*self.last_ball) - Vec3(bx, by, bz)        # (ease from where it was drawn)
@@ -486,6 +500,28 @@ def _viewer_dribble(self, i, p, dt):
     return "touch", t
 
 
+def _viewer_keeper_dive(self, i, p, stage, k):
+    """Which way he's diving (from where the engine moves him next), and how far into it he is."""
+    import math as _m
+    F = self.m["frames"]
+    st = self.dives.setdefault(i, {})
+    if st.get("stage") != stage:
+        st.update(stage=stage, start=k)
+        if stage == "diving" or "h" not in st:
+            st["h"] = p.h or 0.0                                            # (he keeps facing the shot through it)
+            a, b = F[k]["p"][i], F[min(len(F) - 1, k + 8)]["p"][i]
+            mx, my = to_world(b[0], b[1])
+            ox, oy = to_world(a[0], a[1])
+            hd = _m.radians(st["h"])
+            right = (_m.cos(hd), _m.sin(hd))                               # (his right, facing +Y at h = 0)
+            st["side"] = 1 if (mx - ox) * right[0] + (my - oy) * right[1] >= 0 else -1
+    p.dive(stage, (k - st["start"]) / 30.0, st.get("side", 1))
+    p.h = st["h"]
+    p.root.setPos(p.root.getX(), p.root.getY(), p.lift)
+    p.root.setHpr(p.h, 0, p.roll * p.roll_side)
+
+
+Viewer._keeper_dive = _viewer_keeper_dive
 Viewer._ball = _viewer_ball
 Viewer._dribble_touch = _viewer_dribble
 

@@ -17,7 +17,8 @@ MODELS = {
                   "joints": {"thigh_r": ("thigh.r", 2, -1), "knee_r": ("calf.r", 1, 1),
                              "thigh_l": ("thigh.l", 2, 1), "knee_l": ("calf.l", 1, 1),
                              "spine": ("spine_01", 1, 1), "neck": ("neck_01", 1, 1),
-                             "head_turn": ("head", 0, -1)},
+                             "head_turn": ("head", 0, -1),
+                             "arm_r": ("upperarm.r", 2, 1), "arm_l": ("upperarm.l", 2, -1)},
                   "number_joint": "spine_02", "run_steps": 2 / 0.633},
     "xbot": {"file": os.path.join(HERE, "models", "Xbot.glb"), "walk": "walk", "scale": 1.08,
              "joints": {"thigh_r": ("mixamorig:RightUpLeg", 1, -1), "knee_r": ("mixamorig:RightLeg", 1, 1),
@@ -142,6 +143,8 @@ class AnimPlayer:
         self.keeper = keeper
         self.head = None                    # (the head, turned to watch the ball)
         self.look = 0.0
+        self.roll = 0.0                     # (a keeper's dive: tipped over sideways...)
+        self.roll_side = 1
 
     # --- kicks, headers, tackles: posed by hand on top of the running animation -------------------------
     # Degrees: thigh + = swung forward, knee + = bent, spine / neck + = leaning forward.  Each pose is a list of
@@ -170,6 +173,35 @@ class AnimPlayer:
                    (0.15, {"thigh_l": 60, "knee_l": 10, "spine": 14}),
                    (0.45, {"thigh_l": 0, "knee_l": 0, "spine": 0})],
     }
+    # A keeper's dive (gameplay: ai/goalkeeper.py - "preparing", "diving", "recover"): t from the start of each.
+    # roll = degrees tipped over towards the side he dives to; lift = metres off the ground.
+    DIVE = [(0.00, 0, 0.00, {"arm_r": 0, "arm_l": 0, "thigh_r": 0, "knee_r": 0, "thigh_l": 0, "knee_l": 0}),
+            (0.15, 30, 0.35, {"arm_r": 110, "arm_l": 110, "thigh_r": 10, "knee_r": 30, "thigh_l": 25, "knee_l": 50}),
+            (0.35, 72, 0.50, {"arm_r": 160, "arm_l": 160, "thigh_r": 5, "knee_r": 15, "thigh_l": 10, "knee_l": 20}),
+            (0.67, 84, 0.08, {"arm_r": 165, "arm_l": 165, "thigh_r": 5, "knee_r": 20, "thigh_l": 10, "knee_l": 25})]
+    RECOVER = [(0.00, 84, 0.08, {"arm_r": 165, "arm_l": 165, "thigh_r": 5, "knee_r": 20, "thigh_l": 10, "knee_l": 25}),
+               (0.35, 45, 0.0, {"arm_r": 70, "arm_l": 70, "thigh_r": 40, "knee_r": 80, "thigh_l": 30, "knee_l": 70}),
+               (0.80, 0, 0.0, {"arm_r": 0, "arm_l": 0, "thigh_r": 0, "knee_r": 0, "thigh_l": 0, "knee_l": 0})]
+
+    def dive(self, stage, t, side):
+        """A keeper's dive: stage "diving" / "recover", t seconds into it, side +1 = to his right, -1 = left."""
+        keys = self.DIVE if stage == "diving" else self.RECOVER
+        t = max(keys[0][0], min(keys[-1][0], t))
+        for (t0, r0, l0, a), (t1, r1, l1, b) in zip(keys, keys[1:]):
+            if t0 <= t <= t1:
+                k = (t - t0) / max(1e-6, t1 - t0)
+                k = k * k * (3 - 2 * k)
+                self.roll = r0 + (r1 - r0) * k
+                self.lift = l0 + (l1 - l0) * k
+                self.roll_side = side
+                for j in a:
+                    c, base = self._joint(j)
+                    _, axis, sign = self.cfg["joints"][j]
+                    hpr = [base[0], base[1], base[2]]
+                    hpr[axis] += sign * (a[j] + (b[j] - a[j]) * k)
+                    c.setHpr(*hpr)
+                break
+
     POSES["ready"] = [(-1.0, {"thigh_r": 22, "knee_r": 42, "thigh_l": 22, "knee_l": 42, "spine": 22}),
                       (1.0, {"thigh_r": 22, "knee_r": 42, "thigh_l": 22, "knee_l": 42, "spine": 22})]
     JUMP = {"header": (0.30, 0.30), "tackle": (-0.18, 0.40), "ready": (-0.16, 99.0)}      # (height m, how long either side of the moment)
@@ -194,6 +226,7 @@ class AnimPlayer:
                 self.a.releaseJoint("modelRoot", self.cfg["joints"][key][0])
                 self.ctl.pop(key)[0].removeNode()
             self.lift = 0.0
+            self.roll = 0.0
             return
         for (t0, a), (t1, b) in zip(keys, keys[1:]):
             if t0 <= t <= t1:
@@ -226,10 +259,12 @@ class AnimPlayer:
             self.h = h
         dh = (h - self.h + 180) % 360 - 180
         self.h += dh * min(1.0, dt * 9)
-        self.root.setH(self.h)
+        self.root.setHpr(self.h, 0, self.roll * self.roll_side)               # (tipped over: a keeper's dive)
         sp = speed / 10.0                                                     # m/s
         self.sp += (sp - self.sp) * min(1.0, dt * 6)
         s = self.sp
+        if self.roll > 5:
+            sp = s = 0.0                                                      # (in the air: no running)
         back = False
         if vel is not None and s > 0.8:                                       # (moving against the way he faces?)
             hd = math.radians(self.h)

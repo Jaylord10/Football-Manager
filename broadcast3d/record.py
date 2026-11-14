@@ -1,4 +1,5 @@
-"""Record a real match from the engine: every 2nd frame (30 fps) - positions, facing, speed, state, ball."""
+"""Record a real match from the engine: every 2nd frame (30 fps) - positions, facing, speed, state, ball, and
+the keepers' dives.  usage: python record.py SECONDS [SEED]  (FM_SAVE = the save to use, FM_REC_OUT = where)"""
 import os, sys, io, contextlib, json, random
 HERE = os.path.dirname(os.path.abspath(__file__))
 W = os.path.dirname(HERE)                # (the game folder)
@@ -31,9 +32,10 @@ with contextlib.redirect_stdout(io.StringIO()):
               "b": [round(b.pos.x, 1), round(b.pos.y, 1), round(getattr(b, "z", 0.0), 1)],
               "o": (e.team0 + e.team1).index(b.owner) if b.owner in e.team0 + e.team1 else -1,
               "p": [[round(p.pos.x, 1), round(p.pos.y, 1), round(p.facing.x, 3), round(p.facing.y, 3),
-                     round(p.vel.length(), 1), p.state, int(getattr(p, "is_active", True))] for p in e.team0 + e.team1]}
+                     round(p.vel.length(), 1), p.state, int(getattr(p, "is_active", True)),
+                     getattr(p, "dive_state", "") if p.role == "GK" else ""] for p in e.team0 + e.team1]}
         frames.append(fr)
 names = [[p.name, p.role, getattr(p, "number", i + 1)] for i, p in enumerate(e.team0 + e.team1)]
 json.dump({"home": c["clubs"][home]["name"], "away": c["clubs"][away]["name"], "names": names, "frames": frames},
-          open(os.path.join(HERE, "match.json"), "w"))
+          open(os.environ.get("FM_REC_OUT", os.path.join(HERE, "match.json")), "w"))
 print("frames", len(frames), "score", e.score, "state", e.match_state)
