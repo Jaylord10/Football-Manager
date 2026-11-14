@@ -554,7 +554,7 @@ def intro(v, F, first, n, out, start_idx):
     """An establishing shot: the camera swings round Kiln Lane from high above the Canal End."""
     for i in range(n):
         a = math.radians(-60 + 70 * i / n)
-        v.show(F[first], 1 / 30.0); tick()
+        v.show(F[first], 1 / 30.0)
         v.cam.setPos(150 * math.sin(a) + 20, -150 * math.cos(a), 70 - 25 * i / n)
         v.cam.lookAt(0, 8, 0)
         v.taskMgr.step()   # (runs the lighting tasks, then draws)
@@ -593,8 +593,8 @@ def main():
     for _ in range(40):
         v.show(F[first], 1 / 30.0)
     for i in range(n):
-        v.show(F[first + i], 1 / 30.0); tick()
-        v.taskMgr.step()   # (runs the lighting tasks, then draws)
+        v.show(F[first + i], 1 / 30.0)
+        v.taskMgr.step()   # (this also moves the clock on one frame - don't tick() as well)   # (runs the lighting tasks, then draws)
         img = PNMImage(); v.win.getScreenshot(img); img.write(Filename(f"{out}/f{k + i:05d}.png"))
     print("rendered", n)
 

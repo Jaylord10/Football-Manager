@@ -215,7 +215,7 @@ class AnimPlayer:
     def update(self, x, y, fx, fy, speed, dt, active=True, vel=None, ball=None):
         """Place him, face him the way he's facing, and pick his gait from how fast (and which way) he's moving:
         standing, walking, jogging, sprinting - blending the standing and running animations, at a stride rate
-        that suits the speed (real players: about 2 steps a second walking, 3 jogging, 4.5-5 sprinting) - and
+        that suits the speed (real players: about 2 steps a second walking, 3 jogging, 4-4.5 sprinting) - and
         running backwards when he's backing off.  ball: (x, y) - he turns his head to watch it."""
         if not active:
             self.root.hide(); return
@@ -235,7 +235,7 @@ class AnimPlayer:
             hd = math.radians(self.h)
             fwd = (vel[0] * -math.sin(hd) + vel[1] * math.cos(hd)) / max(0.1, math.hypot(*vel))
             back = fwd < -0.35
-        steps = 1.6 + 0.42 * s                                                # (steps a second at this speed)
+        steps = 1.8 + 0.3 * s          # (steps a second: ~2.3 walking, ~2.9 jogging, ~4.2 sprinting at 8 m/s)
         rate = steps / self.cfg["run_steps"]
         if self.cfg["walk"]:
             w_idle = max(0.0, 1 - s / 1.0)
