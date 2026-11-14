@@ -94,7 +94,6 @@ class AnimPlayer:
         tn = TextNode("num"); tn.setText(str(number)); tn.setAlign(TextNode.ACenter)
         tn.setTextColor(*C(kit.get("number", (255, 255, 255))))
         t = self.a.attachNewNode(tn); t.setScale(0.3); t.setPos(0, 0.16, 1.17); t.setH(180)   # (on his back)
-        t.setDepthOffset(1)
         self.num = t
         self.h = None
         self.sp = 0.0
