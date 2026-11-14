@@ -17,7 +17,8 @@ allows; leave the 3D view; club photos are mine. Make the game as in depth as po
       European nights (fixed: ties are moved a day or two). Clubs in the Shield play Thursday then Saturday
       (real clubs get moved to Sunday - see "Talk to Jay first").
 - [x] **Club profiles**: Castleford, Millbrook, Kingsmere, Eastvale, Whitcombe, Stonecross, Lydmouth, Westmoor County,
-      Riverton Dynamo, Sandmere Athletic done (the last three on Jay's PC 13 Nov; picture prompts in their JSON).
+      Riverton Dynamo, Sandmere Athletic, Oakhurst United, Brackenfield Town, Darnford Albion, Penrith Forge,
+      Holloway Vale, Fernley Park done (the last six on Jay's PC 14 Nov; picture prompts in their JSON).
       Next: the rest.
 - [x] **The record books** (History tab), new club legends, broken club records, cup final details - done.
 - [x] **Players' career records** (season by season, trophies, awards) - done.
@@ -40,7 +41,11 @@ allows; leave the 3D view; club photos are mine. Make the game as in depth as po
 - [x] **Clubs in debt / FFP** - done 13 Nov (on Jay's PC): a simple version of the 2026-27 squad cost rules
       (85% of income; fine over it; 6 points + 1 per £6.5m over 115%); Division 1 owners put in up to £15m a season.
 
-- [ ] **Extra time and penalty shoot-outs in the match engine** (needed for cups; the play-offs use quick ones now).
+- [x] **Extra time and penalty shoot-outs in the match engine** - done 14 Nov (on Jay's PC): watched cup ties and
+      play-offs that decide a tie go to 2 x 15 minutes (one more sub), then a shoot-out shown kick by kick
+      (gameplay/shootout.py).
+- [x] **Fuller newspapers and everyday social media** - done 14 Nov (on Jay's PC): career/press.py (full match
+      reports, previews, talking points, features, Big Mick's column, daily posts); long articles page.
 - [ ] **The broadcast 3D view** (Panda3D side project): proper player models, football animations
       (Mixamo), the engine telling the view about kicks / tackles / headers, ball at feet, real lighting.
 - [ ] **Bramhall's ground expansion** - which stand could grow, once Jay's seen his pictures.
