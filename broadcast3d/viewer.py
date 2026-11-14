@@ -334,13 +334,16 @@ class Viewer(ShowBase):
                                                crest=info.get("crest")))
             else:
                 self.players.append(Player(self.render, kit, (i % 11) + 1, skin, hair, keeper))
+        self.officials = []
+        if ANIM:
+            self.officials = make_officials(self, (home, away, gk0, gk1))
         cm = CardMaker("shadow"); cm.setFrame(-0.45, 0.45, -0.3, 0.3)          # soft blob shadows
         from PIL import Image, ImageFilter, ImageDraw
         sh = Image.new("RGBA", (64, 64), (0, 0, 0, 0)); ImageDraw.Draw(sh).ellipse([8, 14, 56, 50], fill=(0, 0, 0, 120))
         sh.filter(ImageFilter.GaussianBlur(5)).save(T + "shadow.png")
         stex = self.loader.loadTexture(T + "shadow.png")
         self.shadows = []
-        for p in self.players:
+        for p in self.players + [o["p"] for o in self.officials]:
             n = p.root.attachNewNode(cm.generate()); n.setP(-90); n.setPos(0.25, 0.25, 0.02); n.setTexture(stex)
             n.setTransparency(TransparencyAttrib.MAlpha); n.setLightOff(); n.setDepthWrite(False); n.setBin("fixed", 0)
             no_shadow(n, lit=False)
@@ -460,6 +463,7 @@ class Viewer(ShowBase):
                     kind, t = "ready", 0.0
             p.act(kind, t, self._left_foot(i, p, kind, t, k))
         self._prev_pos = prev
+        self._officiate(fr, dt, rbx, rby)
         bx, by, bz = self._ball(fr, dt)
         self._spin_ball(bx, by, bz, dt)
         self.ball.setPos(bx, by, bz)
@@ -647,6 +651,91 @@ def _viewer_spin_ball(self, bx, by, bz, dt):
     self.ball.setQuat(self.ball.getQuat() * q)
 
 
+# --- the referee and his assistants ------------------------------------------------------------------------
+# Not in the match engine: placed here the way officials work a real match (IFAB Laws of the Game, "Practical
+# Guidelines for Match Officials"): the referee runs the diagonal, keeping play between himself and an
+# assistant, 10-20 m from the ball; each assistant runs one half of a touchline, level with the second-last
+# defender (or the ball, if it's nearer the goal line).  Referees run ~10-12 km a game and sprint like players.
+REF_COLOURS = [(25, 25, 28), (235, 215, 40), (60, 190, 90), (220, 60, 140), (40, 90, 200), (220, 60, 40)]
+
+
+def make_officials(v, kits_in_use):
+    import kits as _k
+    taken = [k["shirt"] for k in kits_in_use] + [k["shorts"] for k in kits_in_use[:2]]
+    c = max(REF_COLOURS, key=lambda g: min(_k._dist(g, t) for t in taken))
+    dark = sum(c) < 200
+    kit = {"shirt": c, "trim": (240, 240, 240) if dark else (25, 25, 28), "shorts": (25, 25, 28),
+           "socks": (25, 25, 28), "socktop": c, "pattern": "sleeves" if not dark else None,
+           "number": (240, 240, 240)}
+    if not dark:
+        kit["trim"] = (25, 25, 28)
+    out = []
+    for role, x, y in (("ref", -8.0, -6.0), ("ar_near", 20.0, -HY - 1.2), ("ar_far", -20.0, HY + 1.2)):
+        p = AnimPlayer(v.render, kit, "", (205, 160, 125) if role != "ar_far" else (150, 105, 75), (40, 30, 25))
+        if role != "ref":                                                   # (an assistant's flag)
+            hand = p.a.exposeJoint(None, "modelRoot", "hand.r")
+            flag = box(hand, -0.01, -0.01, 0.0, 0.01, 0.01, 0.55, (0.15, 0.15, 0.15, 1))
+            cloth = box(hand, -0.005, 0.0, 0.32, 0.005, 0.30, 0.55, (0.95, 0.85, 0.1, 1))
+            for n in (flag, cloth):
+                n.setShaderInput("kit_on", 0.0)
+        out.append({"p": p, "role": role, "pos": [x, y], "vel": [0.0, 0.0]})
+    return out
+
+
+def _viewer_officiate(self, fr, dt, bx, by):
+    if not self.officials:
+        return
+    import math as _m
+    P = fr["p"]
+    # which team defends the left end: the one whose keeper is there
+    k0 = to_world(P[0][0], P[0][1])[0] if P else -1
+    left = range(0, 11) if k0 < 0 else range(11, 22)
+    right = range(11, 22) if k0 < 0 else range(0, 11)
+    xs_l = sorted(to_world(P[i][0], P[i][1])[0] for i in left if P[i][6])
+    xs_r = sorted((to_world(P[i][0], P[i][1])[0] for i in right if P[i][6]), reverse=True)
+    for o in self.officials:
+        x, y = o["pos"]
+        if o["role"] == "ref":
+            # the diagonal (from his left of the near half to the far right), 12-18 m from the ball
+            tx = max(-38.0, min(38.0, bx - 9.0 * (1 if bx > -20 else -1)))
+            ty = tx * (24.0 / 40.0) - 6.0
+            d = _m.hypot(tx - bx, ty - by)
+            if d < 11.0:
+                tx += (tx - bx) / max(d, 0.1) * (11.0 - d); ty += (ty - by) / max(d, 0.1) * (11.0 - d)
+        elif o["role"] == "ar_near":                                         # (the right half, near side)
+            line = xs_r[1] if len(xs_r) > 1 else HX - 16
+            tx, ty = max(0.0, min(HX, max(line, bx))), -HY - 1.2
+        else:                                                                # (the left half, far side)
+            line = xs_l[1] if len(xs_l) > 1 else -HX + 16
+            tx, ty = min(0.0, max(-HX, min(line, bx))), HY + 1.2
+        if fr.get("c"):                                                      # (a goal: back to the halfway line)
+            tx = 0.0 if o["role"] != "ref" else -6.0
+            ty = ty if o["role"] != "ref" else 4.0
+        # move like a person: speed up / slow down, no faster than a sprint
+        want = [(tx - x) * 0.9, (ty - y) * 0.9]
+        sp = _m.hypot(*want)
+        top = 7.0 if o["role"] == "ref" else 6.5
+        if sp > top:
+            want = [want[0] / sp * top, want[1] / sp * top]
+        vx, vy = o["vel"]
+        ax, ay = want[0] - vx, want[1] - vy
+        a = _m.hypot(ax, ay)
+        lim = 4.0 * dt
+        if a > lim:
+            ax, ay = ax / a * lim, ay / a * lim
+        vx, vy = vx + ax, vy + ay
+        x, y = x + vx * dt, y + vy * dt
+        o["pos"], o["vel"] = [x, y], [vx, vy]
+        speed = _m.hypot(vx, vy)
+        fx, fy = (bx - x, by - y)                                           # (watching the ball)
+        fl = _m.hypot(fx, fy) or 1.0
+        if o["role"] != "ref" and speed > 3.0:                               # (an assistant sprinting: along the line)
+            fx, fy = vx, vy; fl = speed
+        o["p"].update(x, y, fx / fl, fy / fl, speed * 10.0, dt, True, vel=(vx, vy), ball=(bx, by))
+        o["p"].act(None, 0.0)
+
+
+Viewer._officiate = _viewer_officiate
 Viewer._spin_ball = _viewer_spin_ball
 Viewer._throw_dir = _viewer_throw_dir
 Viewer._left_foot = _viewer_left_foot
@@ -774,6 +863,8 @@ def main():
     k = intro(v, F, first, 120, out, 0) if "--intro" in sys.argv else 0
     for _ in range(40):
         v.show(F[first], 1 / 30.0)
+    for _ in range(2):
+        v.taskMgr.step()                                  # (draw twice first: the sun's shadow map is a frame behind)
     for i in range(n):
         v.show(F[first + i], 1 / 30.0)
         v.taskMgr.step()   # (this also moves the clock on one frame - don't tick() as well)   # (runs the lighting tasks, then draws)

@@ -208,7 +208,7 @@ class AnimPlayer:
             self.loco_names += list(gait.LOOPS)
         self.mood = None                    # (after a goal: "scorer", "joy" or "sad")
         self.still_t = 0.0                  # (how long he's been standing still)
-        self.sad_pose = "hips" if number % 2 else "knees"
+        self.sad_pose = "hips" if sum(map(ord, str(number))) % 2 else "knees"
         self.a.enableBlend()
         self.loops = ["idle", "run"] + ([self.cfg["walk"]] if self.cfg["walk"] else [])
         for n in self.loco_names + self.action_names:
