@@ -31,6 +31,7 @@ uniform float crowd_amt;                // (the crowd: how much they're bobbing 
 uniform float osg_FrameTime;
 uniform float kit_on;
 uniform vec4 kit_shirt, kit_trim, kit_shorts, kit_socks, kit_socktop, kit_skin, kit_hair, kit_gloves;
+uniform vec4 kit_extra;                 // (collar: 0 round, 1 V-neck, 2 grandad, 3 polo)
 uniform vec4 kit_info;                  // (pattern 0 none 1 hoops 2 stripes 3 pinstripe 4 band 5 halves 6 sash
                                         //  7 sleeves, keeper, has crest, -)
 
@@ -79,9 +80,13 @@ vec4 kit_colour() {
         return (ax > 0.205 && z > 0.70) ? kit_trim : kit_shorts;
     }
     if (z < 1.49 && ax < 0.36) {
-        if (z > 1.465 && ax < 0.085) return kit_trim;                               // the collar
-        if (y < 0.0 && z > 1.40 && ax < 0.05 - (1.465 - z) * 0.6 && ax > 0.032 - (1.465 - z) * 0.6)
+        int col = int(kit_extra.x + 0.5);
+        float cz = col == 3 ? 1.445 : (col == 2 ? 1.455 : 1.465);                   // the collar (a polo's is deeper)
+        if (z > cz && ax < (col == 3 ? 0.10 : 0.085)) return kit_trim;
+        if (col == 1 && y < 0.0 && z > 1.40 && ax < 0.05 - (1.465 - z) * 0.6 && ax > 0.032 - (1.465 - z) * 0.6)
             return kit_trim;                                                        // (a V-neck's trim)
+        if (col == 2 && y < 0.0 && z > 1.39 && ax < 0.005) return kit_trim;          // (a grandad's button opening)
+        if (col == 3 && y < 0.0 && z > 1.40 && ax < 0.022 && ax > 0.012) return kit_trim;  // (a polo's placket)
         if (y > 0.0 && ax < 0.15 && z > 1.10 && z < 1.44) {                         // name and number on the back
             vec4 n = texture(p3d_Texture0, vec2((0.15 - x) / 0.30, (z - 1.10) / 0.34));
             if (n.a > 0.5) return vec4(n.rgb, 1.0);

@@ -54,6 +54,21 @@ def pattern(words):
     return None
 
 
+def collar(words):
+    """The collar, from the profile's words: 0 a plain round neck, 1 a V-neck, 2 a grandad collar (a band with
+    a short button opening), 3 a polo-style collar."""
+    w = words.lower()
+    if "v-neck" in w or "v neck" in w:
+        return 1
+    if "grandad" in w:
+        return 2
+    if "crew" in w:
+        return 0
+    if "collar" in w:
+        return 3
+    return 0
+
+
 def profile(name):
     for f in os.listdir(CLUBS):
         if f.endswith(".json"):
@@ -91,7 +106,7 @@ def club_kits(name):
             socktop = rgb["trim"] if "tops" in kd.get("socks", "") else None
             out.append({"shirt": tuple(rgb["shirt"]), "trim": tuple(rgb.get("trim", rgb["shirt"])),
                         "shorts": tuple(rgb["shorts"]), "socks": tuple(rgb["socks"]), "socktop": socktop,
-                        "pattern": pattern(kd.get("shirt", "")), "words": words})
+                        "pattern": pattern(kd.get("shirt", "")), "words": words, "collar": collar(kd.get("shirt", ""))})
         crest = os.path.join(CLUBS, slug, "crest.png")
         info = {"short": d.get("short", name), "crest": crest if os.path.exists(crest) else None}
     else:

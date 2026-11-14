@@ -132,6 +132,7 @@ def shader_defaults(render):
     for k in ("shirt", "trim", "shorts", "socks", "socktop", "skin", "hair", "gloves"):
         render.setShaderInput("kit_" + k, (1.0, 1.0, 1.0, 1.0))
     render.setShaderInput("kit_info", (0.0, 0.0, 0.0, 0.0))
+    render.setShaderInput("kit_extra", (0.0, 0.0, 0.0, 0.0))
 
 
 def _back_texture(name, number, colour, outline):
@@ -209,6 +210,7 @@ class AnimPlayer:
         style = (0 if hs % 10 < 6 else 1 if hs % 10 < 8 else 2) + (4 if (hs // 10) % 10 < 3 else 0)  # (~30% beards)
         r.setShaderInput("kit_info", (PATTERNS.get(kit.get("pattern"), 0), 1.0 if kit.get("keeper") else 0.0,
                                       1.0 if crest else 0.0, float(style)))
+        r.setShaderInput("kit_extra", (float(kit.get("collar", 0)), 0.0, 0.0, 0.0))
         self.num = None
         self.action_names = []
         if self.cfg.get("make_walk"):
