@@ -236,14 +236,75 @@ class Stadium:
             box(n, -0.06, -w - 0.06, 0, 0.06, -w + 0.06, h, white)
             box(n, -0.06, w - 0.06, 0, 0.06, w + 0.06, h, white)
             box(n, -0.06, -w - 0.06, h - 0.06, 0.06, w + 0.06, h + 0.06, white)
-            m = Mesh("net")
-            x = sx * dpt
-            netc = (1, 1, 1, 0.35)
-            m.quad((0, -w, h), (0, w, h), (x, w, h * 0.7), (x, -w, h * 0.7), netc)
-            m.quad((x, -w, 0), (x, w, 0), (x, w, h * 0.7), (x, -w, h * 0.7), netc)
-            m.quad((0, -w, 0), (x, -w, 0), (x, -w, h * 0.7), (0, -w, h), netc)
-            m.quad((0, w, 0), (x, w, 0), (x, w, h * 0.7), (0, w, h), netc)
-            nn = n.attachNewNode(m.node()); nn.setTwoSided(True); nn.setTransparency(TransparencyAttrib.MAlpha)
+            self.b.nets.append(Net(n, sx, w, h, dpt, self.T("net.png")))
+
+
+class Net:
+    """A goal net: a real mesh (~12 cm squares, as nets are made), that bulges where the ball hits it and
+    swings back - pegged at the posts, the bar and the ground."""
+    CELL = 0.25                                             # (the shape's grid; the mesh pattern is its texture)
+
+    def __init__(self, parent, sx, w, h, dpt, tex):
+        from panda3d.core import GeomVertexFormat, GeomVertexData, GeomVertexWriter, GeomTriangles, Geom, GeomNode
+        self.sx, self.w, self.h, self.dpt = sx, w, h, dpt
+        x = sx * dpt
+        # the four panels: (corner, edge u, edge v, which edges are tied: u0 u1 v0 v1) - back, roof, sides
+        panels = [((x, -w, 0), (0, 2 * w, 0), (0, 0, h * 0.7), (1, 1, 1, 0)),
+                  ((0, -w, h), (0, 2 * w, 0), (x, 0, -h * 0.3), (1, 1, 1, 0)),
+                  ((0, -w, 0), (x, 0, 0), (0, 0, h), (1, 0, 1, 0)),
+                  ((0, w, 0), (x, 0, 0), (0, 0, h), (1, 0, 1, 0))]
+        self.vd = GeomVertexData("net", GeomVertexFormat.getV3n3c4t2(), Geom.UHDynamic)
+        vw, nw, cw, tw = (GeomVertexWriter(self.vd, c) for c in ("vertex", "normal", "color", "texcoord"))
+        tri = GeomTriangles(Geom.UHStatic)
+        self.rest, self.pin = [], []
+        base = 0
+        for (o, eu, ev, tied) in panels:
+            o, eu, ev = Vec3(*o), Vec3(*eu), Vec3(*ev)
+            nu, nv = max(2, int(round(eu.length() / self.CELL))), max(2, int(round(ev.length() / self.CELL)))
+            nrm = eu.cross(ev); nrm.normalize()
+            for j in range(nv + 1):
+                for i in range(nu + 1):
+                    p = o + eu * (i / nu) + ev * (j / nv)
+                    vw.addData3(p); nw.addData3(nrm); cw.addData4(1, 1, 1, 0.9)
+                    tw.addData2(eu.length() * i / nu / 0.12, ev.length() * j / nv / 0.12)
+                    self.rest.append(Vec3(p))
+                    # how free this point is to move: not at all where it's tied (posts, bar, ground)
+                    e = [i if tied[0] else 99, nu - i if tied[1] else 99, j if tied[2] else 99, nv - j if tied[3] else 99]
+                    self.pin.append(min(1.0, min(e) / 2.0))
+            for j in range(nv):
+                for i in range(nu):
+                    a = base + j * (nu + 1) + i
+                    tri.addVertices(a, a + 1, a + nu + 2); tri.addVertices(a, a + nu + 2, a + nu + 1)
+            base += (nu + 1) * (nv + 1)
+        g = Geom(self.vd); g.addPrimitive(tri)
+        gn = GeomNode("net"); gn.addGeom(g)
+        self.np = parent.attachNewNode(gn)
+        self.np.setTwoSided(True); self.np.setTransparency(TransparencyAttrib.MAlpha); self.np.setTexture(tex)
+        self.np.setDepthWrite(False); self.np.setBin("transparent", 10)
+        no_shadow(self.np)
+        self.hits = []                                      # (where the ball hit it, which way, when)
+        self.t = 0.0
+        self._moved = False
+
+    def hit(self, local_pt, direction, strength):
+        self.hits.append((Vec3(local_pt), Vec3(direction), strength, self.t))
+
+    def step(self, dt):
+        from panda3d.core import GeomVertexWriter
+        self.t += dt
+        self.hits = [hh for hh in self.hits if self.t - hh[3] < 3.0]
+        if not self.hits and not self._moved:
+            return
+        vw = GeomVertexWriter(self.vd, "vertex")
+        for p, k in zip(self.rest, self.pin):
+            off = Vec3(0, 0, 0)
+            for c, d, st, t0 in self.hits:
+                age = self.t - t0
+                a = st * math.exp(-age / 0.45) * math.cos(2 * math.pi * 1.6 * age)
+                r2 = (p - c).lengthSquared()
+                off += d * (a * math.exp(-r2 / (2 * 0.75 ** 2)))
+            vw.setData3(p + off * k)
+        self._moved = bool(self.hits)
 
 
 class Player:
@@ -309,6 +370,7 @@ class Viewer(ShowBase):
         self.setBackgroundColor(0.62, 0.66, 0.70, 1)
         self.render.setAntialias(AntialiasAttrib.MMultisample)
         self.m = match
+        self.nets = []
         self.crowds = []                                    # (the crowd in each stand, to liven up after a goal)
         st = Stadium(self); st.build_kiln_lane(); st.goals()
         self.light_up()
@@ -464,6 +526,8 @@ class Viewer(ShowBase):
             p.act(kind, t, self._left_foot(i, p, kind, t, k))
         self._prev_pos = prev
         self._officiate(fr, dt, rbx, rby)
+        for net in self.nets:
+            net.step(dt)
         bx, by, bz = self._ball(fr, dt)
         self._spin_ball(bx, by, bz, dt)
         self.ball.setPos(bx, by, bz)
@@ -501,10 +565,69 @@ DRIBBLE_TOUCH = 0.7          # seconds between touches when running with the bal
 BALL_R = 0.15                # (a real ball is 0.11 m across the middle: drawn a touch big, as TV games do)
 
 
+def _viewer_goal_ball(self, fr, dt):
+    """A goal: the match engine puts the ball straight back on the centre spot, so here it carries on into the
+    net - which bulges - drops, and lies there while they celebrate.  None when there's no goal going on."""
+    F = self.m["frames"]
+    k = fr.get("k", 0)
+    g = getattr(self, "gball", None)
+    if g is None:
+        if k >= 3 and fr["s"] != F[k - 1]["s"] and self.last_ball is not None and abs(self.last_ball[0]) > HX - 4:
+            a, b = F[k - 2]["b"], F[k - 1]["b"]
+            (ax, ay), (bx, by) = to_world(a[0], a[1]), to_world(b[0], b[1])
+            vel = Vec3((bx - ax) * 30, (by - ay) * 30, (b[2] - a[2]) / 10.0 * 30)
+            if vel.length() < 4:
+                vel = Vec3(8 * (1 if self.last_ball[0] > 0 else -1), 0, 0)
+            g = self.gball = {"pos": Vec3(*self.last_ball), "vel": vel, "start": k,
+                              "sx": 1 if self.last_ball[0] > 0 else -1}
+        else:
+            return None
+    if "c" not in fr and k - g["start"] > 45:                               # (the celebration's over)
+        self.gball = None
+        return None
+    pos, vel, sx = g["pos"], g["vel"], g["sx"]
+    net = next((n for n in self.nets if n.sx == sx), None)
+    w, h, dpt = 7.32 / 2, 2.44, 2.0
+    for _ in range(3):                                                      # (three small steps a frame)
+        st = dt / 3
+        if pos.z > BALL_R + 1e-3 or vel.z > 0:
+            vel.z -= 9.81 * st
+        pos += vel * st
+        if pos.z < BALL_R:
+            pos.z = BALL_R; vel.z = -vel.z * 0.35
+            vel.x *= 0.92; vel.y *= 0.92
+        lx = (pos.x - sx * HX) * sx                                         # (how far behind the goal line)
+        if lx > 0 and net is not None:
+            roof = h - 0.3 * h * min(1.0, lx / dpt)
+            speed = vel.length()
+            if lx > dpt - BALL_R and pos.z < 0.7 * h:                       # (the back of the net)
+                if vel.x * sx > 0:
+                    net.hit((sx * dpt, pos.y, pos.z), Vec3(sx, 0, 0), min(0.7, 0.045 * speed))
+                    vel.x = -vel.x * 0.12; vel.y *= 0.4
+                pos.x = sx * (HX + dpt - BALL_R)
+            if abs(pos.y) > w - BALL_R:                                      # (a side netting)
+                side = 1 if pos.y > 0 else -1
+                if vel.y * side > 0:
+                    net.hit((sx * lx, side * w, pos.z), Vec3(0, side, 0), min(0.5, 0.04 * speed))
+                    vel.y = -vel.y * 0.15
+                pos.y = side * (w - BALL_R)
+            if pos.z > roof - BALL_R:                                       # (the roof of the net)
+                if vel.z > 0:
+                    net.hit((sx * lx, pos.y, roof), Vec3(0, 0, 1), min(0.5, 0.04 * speed))
+                    vel.z = -vel.z * 0.2
+                pos.z = roof - BALL_R
+    g["pos"], g["vel"] = pos, vel
+    return (pos.x, pos.y, pos.z)
+
+
 def _viewer_ball(self, fr, dt):
     """Where to draw the ball.  Loose: where the engine has it.  At a player's feet: just in front of him,
     pushed ahead with each touch when he's running with it.  Switching between the two eases over ~0.1 s."""
     import math as _m
+    gb = self._goal_ball(fr, dt)
+    if gb is not None:
+        self.ball_mode = "goal"; self.ball_off = Vec3(0, 0, 0); self.last_ball = gb
+        return gb
     o = fr["o"]
     bx, by = to_world(fr["b"][0], fr["b"][1])
     bz = fr["b"][2] / 10.0 + BALL_R
@@ -736,6 +859,7 @@ def _viewer_officiate(self, fr, dt, bx, by):
 
 
 Viewer._officiate = _viewer_officiate
+Viewer._goal_ball = _viewer_goal_ball
 Viewer._spin_ball = _viewer_spin_ball
 Viewer._throw_dir = _viewer_throw_dir
 Viewer._left_foot = _viewer_left_foot
