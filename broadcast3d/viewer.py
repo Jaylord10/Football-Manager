@@ -80,6 +80,8 @@ class Stadium:
         m.quad((x0, d0, z0), (x1, d0, z0), (x1, d1, z1), (x0, d1, z1), (1, 1, 1, 1),
                ((0, 0), (rep, 0), (rep, 1), (0, 1)))
         cn = parent.attachNewNode(m.node()); cn.setTexture(self.T(crowd)); cn.setTwoSided(True)
+        cn.setShaderInput("crowd_amt", 1.0)
+        self.b.crowds.append((cn, crowd))
         s = Mesh("struct")
         s.quad((x0, d0 - 0.05, z0 - 1.2), (x1, d0 - 0.05, z0 - 1.2), (x1, d0 - 0.05, z0 + 0.15), (x0, d0 - 0.05, z0 + 0.15), C(fascia))
         s.quad((x0, d0, z0 - 1.2), (x0, d1, z1), (x0, d1 + 0.01, z0 - 1.2), (x0, d0, z0 - 1.2), C(wall))
@@ -307,6 +309,7 @@ class Viewer(ShowBase):
         self.setBackgroundColor(0.62, 0.66, 0.70, 1)
         self.render.setAntialias(AntialiasAttrib.MMultisample)
         self.m = match
+        self.crowds = []                                    # (the crowd in each stand, to liven up after a goal)
         st = Stadium(self); st.build_kiln_lane(); st.goals()
         self.light_up()
         fog = Fog("haze"); fog.setColor(0.62, 0.66, 0.7); fog.setExpDensity(0.0012); self.render.setFog(fog)
@@ -392,6 +395,7 @@ class Viewer(ShowBase):
         self.render.setShaderInput("shadow_bias", 0.0004)
         self.render.setShaderInput("shadow_texel", 1.0 / SHADOW_MAP)
         self.render.setShaderInput("detail_amt", 0.0)
+        self.render.setShaderInput("crowd_amt", 0.0)
         if ANIM:
             from players3d import shader_defaults
             shader_defaults(self.render)
@@ -421,6 +425,15 @@ class Viewer(ShowBase):
         rbx, rby = to_world(fr["b"][0], fr["b"][1])
         prev = getattr(self, "_prev_pos", {})
         cel = fr.get("c")                                                   # (a goal celebration: who scored)
+        amts = getattr(self, "_crowd_amts", {})
+        for n, (cn, kind) in enumerate(self.crowds):                        # (their fans go up; the others sit)
+            fans = {"crowd_home.png": 0, "crowd_away.png": 1}.get(kind, -1)
+            want = 1.0 if not cel else (7.0 if fans == cel[0] else 0.4 if fans >= 0 else 3.0)
+            cur = amts.get(n, 1.0)
+            cur += (want - cur) * min(1.0, dt * 2.0)
+            amts[n] = cur
+            cn.setShaderInput("crowd_amt", cur)
+        self._crowd_amts = amts
         for i, (p, (x, y, fx, fy, sp, state, act, *_)) in enumerate(zip(self.players, fr["p"])):
             if cel:
                 mine = (i < 11) == (cel[0] == 0)

@@ -27,6 +27,8 @@ out vec4 o_color;
 // The players' kits, worked out for every pixel from where it is on the body (broadcast3d/players3d.py: the
 // body's standing position is in the texture coordinates - v_uv = (x, z), v_uv1.x = y; he faces -y, his right
 // is -x).  kit_on 0: not a player.
+uniform float crowd_amt;                // (the crowd: how much they're bobbing about - lots after a goal)
+uniform float osg_FrameTime;
 uniform float kit_on;
 uniform vec4 kit_shirt, kit_trim, kit_shorts, kit_socks, kit_socktop, kit_skin, kit_hair, kit_gloves;
 uniform vec4 kit_info;                  // (pattern 0 none 1 hoops 2 stripes 3 pinstripe 4 band 5 halves 6 sash
@@ -89,8 +91,15 @@ float sun_visible() {
 }
 
 void main() {
+    vec2 uv = v_uv;
+    if (crowd_amt > 0.0) {                  // each person (a cell of the crowd picture) bobs on his own
+        vec2 cell = floor(v_uv * vec2(46.0, 22.0));
+        float h = fract(sin(dot(cell, vec2(12.9898, 78.233))) * 43758.5453);
+        float jump = max(0.0, sin(osg_FrameTime * (5.0 + 4.0 * h) + h * 6.283));
+        uv.y -= crowd_amt * 0.0035 * (crowd_amt > 2.0 ? jump : sin(osg_FrameTime * (1.0 + h) + h * 6.283));
+    }
     vec4 base = kit_on > 0.5 ? kit_colour() * p3d_ColorScale
-                             : (texture(p3d_Texture0, v_uv) + p3d_TexAlphaOnly) * v_color * p3d_ColorScale;
+                             : (texture(p3d_Texture0, uv) + p3d_TexAlphaOnly) * v_color * p3d_ColorScale;
     float nl = length(v_normal);
     float lambert = 1.0;
     if (nl > 0.01) {
