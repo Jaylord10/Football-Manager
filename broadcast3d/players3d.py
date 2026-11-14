@@ -87,14 +87,17 @@ class AnimPlayer:
         self.a.setScale(self.cfg["scale"])
         self.a.setH(180)                    # (the model faces -Y; the root faces the way he's running, +Y)
         paint(self.a, kit, skin, hair)
+        tn = TextNode("num"); tn.setText(str(number)); tn.setAlign(TextNode.ACenter)
+        tn.setTextColor(*C(kit.get("number", (255, 255, 255))))
+        spine = self.a.exposeJoint(None, "modelRoot", self.cfg["number_joint"])     # (still in the bind pose)
+        t = self.a.attachNewNode(tn); t.setScale(0.28); t.setH(180)               # (on his back...)
+        t.setPos(0, spine.getY(self.a) + 0.135, spine.getZ(self.a) - 0.1)
+        t.wrtReparentTo(spine)                              # (...and it leans and twists with his back)
+        self.num = t
         self.a.enableBlend()
         self.loops = ["idle", "run"] + ([self.cfg["walk"]] if self.cfg["walk"] else [])
         for n in self.loops:
             self.a.loop(n)
-        tn = TextNode("num"); tn.setText(str(number)); tn.setAlign(TextNode.ACenter)
-        tn.setTextColor(*C(kit.get("number", (255, 255, 255))))
-        t = self.a.attachNewNode(tn); t.setScale(0.3); t.setPos(0, 0.16, 1.17); t.setH(180)   # (on his back)
-        self.num = t
         self.h = None
         self.sp = 0.0
         self.ctl = {}                       # joints we're posing by hand (kicks, headers), while we do
