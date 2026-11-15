@@ -383,7 +383,7 @@ def paint_map(pos):
         y2 = y * (1 - h) + (OLD["eye_y"] + (y - FACE["eye_y"]) * ky) * h
         z2 = np.interp(z, zm, zo)
         # the shorts come up higher at the back, over his glutes (painted lower there: the shorts' top is 0.927)
-        sy = np.clip((y + 0.01) / 0.06, 0, 1)
+        sy = np.clip((y + 0.01) / 0.03, 0, 1)
         sy = sy * sy * (3 - 2 * sy)
         hat = np.clip((z2 - 0.80) / 0.08, 0, 1) * np.clip((1.06 - z2) / 0.10, 0, 1)
         z2 = z2 - 0.045 * sy * hat * (np.abs(x) < 0.25)
@@ -521,6 +521,43 @@ def dress(V, paint, pos):
     return V
 
 
+def cover_cleft(V, F):
+    """The shirt (and the top of the shorts) don't go into the cleft of his backside: across the middle the cloth
+    spans from one side to the other, smoothed."""
+    V = V.copy()
+    x, y, z = V[:, 0], V[:, 1], V[:, 2]
+    zone = (z > 0.80) & (z < 1.06) & (np.abs(x) < 0.10)
+    span = np.zeros(len(V), bool)
+    for zc in np.arange(0.80, 1.06, 0.01):
+        sl = zone & (np.abs(z - zc) < 0.006)
+        for side in (1,):                                    # (the back)
+            near = sl & (side * y > 0) & (np.abs(x) > 0.035) & (np.abs(x) < 0.10)
+            if not near.any():
+                continue
+            peak = (side * y[near]).max()
+            fade = np.clip((zc - 0.80) / 0.06, 0, 1) * np.clip((1.06 - zc) / 0.05, 0, 1)
+            mid = sl & (side * y > 0) & (np.abs(x) < 0.07)
+            want = side * (peak - 0.006 - 0.004 * (np.abs(x[mid]) / 0.07) ** 2)
+            low = side * y[mid] < side * want
+            idx = np.where(mid)[0][low]
+            y[idx] = y[idx] + (want[low] - y[idx]) * fade
+            span[idx] = True
+    V[:, 1] = y
+    # a few rounds of smoothing over what was moved (and round it), so the cloth is even
+    nb = [[] for _ in range(len(V))]
+    for a, b, c in F:
+        nb[a] += [b, c]; nb[b] += [a, c]; nb[c] += [a, b]
+    grow = span.copy()
+    for a, b, c in F:
+        if span[a] or span[b] or span[c]:
+            grow[[a, b, c]] = True
+    idx = np.where(grow)[0]
+    for _ in range(6):
+        avg = np.array([V[nb[i]].mean(0) for i in idx])
+        V[idx] = V[idx] * 0.5 + avg * 0.5
+    return V
+
+
 def main():
     P, V, faces, groups, Wt, names, pos, glb = build()
     write_glb(*glb, pos)
@@ -539,6 +576,7 @@ def main():
     n0 /= np.maximum(np.linalg.norm(n0, axis=1, keepdims=True), 1e-12)
     Vb = define_legs(Vb, n0, pos)
     Vb = dress(Vb, paint, pos)
+    Vb = cover_cleft(Vb, Fb)
     nrm = np.zeros_like(Vb)
     fn = np.cross(Vb[Fb[:, 1]] - Vb[Fb[:, 0]], Vb[Fb[:, 2]] - Vb[Fb[:, 0]])
     for k in range(3):
