@@ -57,5 +57,5 @@ In the view (no engine change needed):
 Things the match engine does that the view has to cover for (to talk about - these change the engine):
 - A keeper releases the ball the moment he catches it (real keepers hold it a few seconds).
 - After a goal the ball goes straight back to the centre spot (the view now carries it on into the net).
-- Few throw-ins (2-6 a match against ~40 in a real one) and few goals in the recorded matches
-  (1 goal in 9 recordings - real English football averages ~2.7 a game).
+- Few throw-ins (1-6 a match in the recordings against ~35 in a Premier League game - Hudl / Opta, 2023/24) and
+  few goals (1 goal in 9 recorded matches; the 2024/25 Premier League had ~2.9 a game - premierleague.com).
