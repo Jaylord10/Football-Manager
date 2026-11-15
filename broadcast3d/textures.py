@@ -24,6 +24,7 @@ def pitch():
         r, g, b = px[x, y]; k = rnd.randint(-9, 9)
         px[x, y] = (max(0, r + k), max(0, g + k), max(0, b + k))
     im = im.filter(ImageFilter.GaussianBlur(0.6))
+    im = wear(im)
     d = ImageDraw.Draw(im)
     o = SUR * PX
     def P(xm, ym): return (o + xm * PX, o + ym * PX)
@@ -53,6 +54,43 @@ def pitch():
     for cx, cy, a0 in ((0, 0, 0), (L, 0, 90), (L, Wd, 180), (0, Wd, 270)):
         circ(cx, cy, 1, a0, a0 + 90)
     im.save(OUT + "pitch.png")
+
+
+def wear(im):
+    """A November pitch at a lower-league ground: the goalmouths worn to mud (worst on the keeper's line and the
+    six-yard box), the penalty spots, a thinner strip down the middle where most of the game is played, the
+    assistants' runs along the touchlines, the centre circle - with the edges broken up, as real wear is."""
+    import numpy as np
+    a = np.asarray(im).astype(np.float32)
+    h, w = a.shape[:2]
+    ys, xs = np.mgrid[0:h, 0:w]
+    mx, my = xs / PX - SUR, ys / PX - SUR                       # (metres from the corner of the lines)
+    rng = np.random.default_rng(5)
+
+    def noise(scale):
+        small = rng.random((h // scale + 2, w // scale + 2)).astype(np.float32)
+        img = Image.fromarray((small * 255).astype(np.uint8)).resize((w, h), Image.BICUBIC)
+        return np.asarray(img).astype(np.float32) / 255.0
+    n = 0.55 * noise(40) + 0.3 * noise(12) + 0.15 * noise(4)
+    m = np.zeros((h, w), np.float32)
+    for x0 in (0.0, float(L)):
+        dx = np.abs(mx - x0)
+        gm = np.exp(-(dx / 5.0) ** 2 - ((my - Wd / 2) / 5.5) ** 2)              # (the goalmouth)
+        line = np.exp(-(dx / 1.3) ** 2 - ((my - Wd / 2) / 3.8) ** 2)            # (the keeper's line)
+        spot = np.exp(-((dx - 11) / 1.2) ** 2 - ((my - Wd / 2) / 1.2) ** 2)     # (the penalty spot)
+        m = np.maximum(m, np.maximum(0.9 * gm, np.maximum(line, 0.75 * spot)))
+    mid = np.exp(-((my - Wd / 2) / 9.0) ** 2) * (1 - np.exp(-((mx - L / 2) / 40.0) ** 2) * 0.2) * 0.42
+    centre = np.exp(-((np.hypot(mx - L / 2, my - Wd / 2)) / 4.0) ** 2) * 0.4
+    runs = (np.exp(-((my + 1.5) / 0.8) ** 2) + np.exp(-((my - Wd - 1.5) / 0.8) ** 2)) * 0.45
+    m = np.maximum(m, np.maximum(mid, np.maximum(centre, runs)))
+    m = np.clip((m - 0.3 * n + 0.08) * 1.4, 0, 1)                    # (broken up)
+    mud = np.array([96, 82, 58], np.float32)
+    worn = np.array([92, 118, 60], np.float32)                   # (thin, yellowing grass on the way to mud)
+    k1 = np.clip(m * 2.0, 0, 1)[..., None]
+    k2 = np.clip(m * 2.0 - 1.0, 0, 1)[..., None]
+    out = a * (1 - k1) + (a * 0.5 + worn * 0.5) * k1
+    out = out * (1 - k2) + (mud * (0.85 + 0.3 * n[..., None])) * k2
+    return Image.fromarray(np.clip(out, 0, 255).astype(np.uint8))
 
 
 def sorted_rect(a, b):
