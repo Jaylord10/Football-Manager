@@ -253,6 +253,26 @@ ACTIONS = {
                (0.15, {"hip_l": 62, "knee_l": 8, "ankle_l": 10, "hipout_l": 22, "hip_r": 32, "knee_r": 60, "ankle_r": 22,
                        "lean": 20, "turn": -16, "out_l": 50, "out_r": 55, "arm_r": 25, "elbow_l": 30, "elbow_r": 30}),
                (0.45, N)],
+    # A sharp cut to his left at speed: the right (outside) foot planted wide, knee bent to take the load, body
+    # leaning into the new direction and low, then the push-off (e.g. Besier et al. 2001 on sidestep cutting:
+    # the plant foot ~0.3-0.5 m out to the side, knee ~40-60 deg; trunk leaning into the cut).
+    "cut": [(-0.16, N),
+            (0.00, {"hip_r": 22, "knee_r": 52, "ankle_r": 12, "hipout_r": 22, "hip_l": 40, "knee_l": 75,
+                    "ankle_l": 10, "lean": 16, "side": -10, "twist": 14, "turn": 8, "out_r": 30, "out_l": 10,
+                    "arm_l": 25, "elbow_l": 70, "arm_r": -20, "elbow_r": 60}),
+            (0.12, {"hip_r": -8, "knee_r": 28, "ankle_r": -18, "hipout_r": 14, "hip_l": 48, "knee_l": 70,
+                    "lean": 14, "side": -6, "twist": 10, "turn": 10, "out_r": 20, "arm_l": 30, "elbow_l": 70,
+                    "arm_r": -25, "elbow_r": 60}),
+            (0.30, N)],
+    # Stopping dead from a run: the right foot planted out in front, heel first, knees bending to soak it up,
+    # body upright to leaning back, arms out forward for balance - then the left comes through and he settles.
+    "brake": [(-0.08, N),
+              (0.10, {"hip_r": 42, "knee_r": 28, "ankle_r": 16, "hip_l": 6, "knee_l": 52, "ankle_l": -6,
+                      "lean": -6, "chest": -4, "arm_r": 32, "arm_l": 26, "out_r": 22, "out_l": 22, "elbow_r": 55,
+                      "elbow_l": 55}),
+              (0.32, {"hip_r": 30, "knee_r": 46, "ankle_r": 14, "hip_l": 34, "knee_l": 58, "ankle_l": 12,
+                      "lean": 6, "arm_r": 18, "arm_l": 18, "out_r": 18, "out_l": 18, "elbow_r": 45, "elbow_l": 45}),
+              (0.62, N)],
     # A keeper's set position: weight forward on bent knees, hands out in front at waist height.
     "ready": [(0.0, {"hip_r": 28, "knee_r": 50, "ankle_r": 18, "hip_l": 28, "knee_l": 50, "ankle_l": 18,
                      "hipout_r": 6, "hipout_l": 6, "lean": 18, "chest": 6, "nod": -14, "abs": 1, "arm_r": 22, "arm_l": 22,
@@ -350,7 +370,7 @@ for _keys in ACTIONS.values():
                     if _m in _p:
                         _p[_m] += OUT_SHIFT
 # How strongly each blends over the running (a dribbling touch stays light).
-WEIGHT = {"touch": 0.55}
+WEIGHT = {"touch": 0.55, "cut": 0.7, "brake": 0.75}
 
 
 # --- moods: other ways of standing, walking and running (goal celebrations) -----------------------------------
@@ -467,13 +487,24 @@ def backpedal(u):
     return m, {"sway": 0.008 * (l_l - l_r)}
 
 
+def turnstep(u):
+    """Turning on the spot: little steps, one foot then the other, instead of spinning on the spot."""
+    m = {}
+    for sd, off in (("r", 0.0), ("l", 0.5)):
+        l = max(0.0, math.sin(2 * math.pi * (u + off)))
+        m["hip_" + sd], m["knee_" + sd], m["ankle_" + sd] = 4 + 14 * l, 8 + 30 * l, 4 + 8 * l
+    m["knee_r"] += 4
+    m["knee_l"] += 4
+    return m, {"sway": 0.012 * math.sin(2 * math.pi * u)}
+
+
 def run_call(u):
     """Running and calling for the ball: right arm up."""
     return ({"arm_r": 150, "out_r": 20, "elbow_r": 15, "nod": -8}, {})
 
 
 LOOPS = {"run_call": (run_call, 15, "run"), "shuffle": (shuffle, 30, "idle"), "shuffle_m": (shuffle_m, 30, "idle"),
-         "backpedal": (backpedal, 30, "idle"), "sit": (sit, 90, "idle"), "cheer": (cheer, 30, "idle"), "clap": (clap, 30, "idle"), "hips": (hips, 60, "idle"), "knees": (knees, 60, "idle"),
+         "backpedal": (backpedal, 30, "idle"), "turnstep": (turnstep, 30, "idle"), "sit": (sit, 90, "idle"), "cheer": (cheer, 30, "idle"), "clap": (clap, 30, "idle"), "hips": (hips, 60, "idle"), "knees": (knees, 60, "idle"),
          "walk_sad": (walk_sad, 30, "idle"), "run_arms": (run_arms, 15, "run")}
 
 
@@ -730,7 +761,7 @@ def _make(actor):
             _CACHE[name] = build(actor, name, fn, n)
     for name, keys in ACTIONS.items():
         variants = [(name, keys)]
-        if name in ("dive", "recover", "kick", "shot", "touch", "tackle", "punt"):
+        if name in ("dive", "recover", "kick", "shot", "touch", "tackle", "punt", "cut", "brake"):
             variants.append((name + "_m", [(t, mirror(p) if isinstance(p, dict) else p) for t, p in keys]))
         for vn, vk in variants:
             fn, t0, t1 = action_pose(vk)

@@ -374,6 +374,34 @@ class AnimPlayer:
         self.cur = (name, 1.0, max(0.0, min(t1 - t0, t - t0)) * 30.0)
         self._mix()
 
+    def _moves(self, vel, sp, dt):
+        """Sharp cuts and stopping dead, seen from how he's moving (the last ~0.3 s): played as short actions
+        (gait "cut" / "brake") over his running, when nothing else is happening."""
+        self.clock = getattr(self, "clock", 0.0) + dt
+        hist = getattr(self, "_hist", None)
+        if hist is None:
+            hist = self._hist = []
+        hd = math.atan2(vel[1], vel[0]) if vel is not None and sp > 0.5 else None
+        hist.append((self.clock, sp, hd))
+        while hist and hist[0][0] < self.clock - 0.45:
+            hist.pop(0)
+        auto = getattr(self, "auto", None)
+        if auto and self.clock - auto[1] > 0.9:
+            self.auto = auto = None
+        if auto or len(hist) < 4 or not self.cfg.get("make_walk"):
+            return
+        old = [h for h in hist if h[0] <= self.clock - 0.25]
+        if not old:
+            return
+        _, sp0, hd0 = old[-1]
+        if hd is not None and hd0 is not None and sp > 3.0 and sp0 > 3.0:
+            turn = (math.degrees(hd - hd0) + 180) % 360 - 180
+            if abs(turn) > 40:                                                # (a cut: the outside foot plants)
+                self.auto = ("cut" if turn > 0 else "cut_m", self.clock)
+                return
+        if sp0 > 4.0 and (sp0 - sp) / 0.25 > 6.0:                            # (stopping dead: braking hard)
+            self.auto = ("brake" if int(self.clock * 7) % 2 else "brake_m", self.clock)
+
     def act(self, kind, t, left=False):
         """Pose an action: kind = "kick" / "shot" / "touch" / "header" / "tackle" / "ready", t = seconds from the
         moment the ball is struck (negative = the wind-up); left = with his left foot.  None: just running."""
@@ -394,6 +422,16 @@ class AnimPlayer:
             h, wd = self.JUMP.get(kind, (0.0, 1.0))
             if h > 0:
                 self.lift = h * max(0.0, math.cos(min(1.0, abs(t) / wd) * math.pi / 2))
+        elif kind is None and getattr(self, "auto", None) and self.auto[0] in gait.SPANS:
+            nm, t_start = self.auto                                         # (a cut or a stop he's making)
+            t0, t1 = gait.SPANS[nm]
+            ta = t0 + 0.08 + (self.clock - t_start)
+            if ta > t1:
+                self.auto = None
+                self.cur = (None, 0.0, 0.0)
+            else:
+                w = max(0.0, min(1.0, (ta - t0) / 0.08, (t1 - ta) / 0.15)) * gait.WEIGHT.get(nm.split("_")[0], 1.0)
+                self.cur = (nm, w, (ta - t0) * 30.0)
         else:
             self.cur = (None, 0.0, 0.0)
         self._mix()
@@ -420,7 +458,7 @@ class AnimPlayer:
         w = math.radians(turn) / max(dt, 1e-3)
         lean_r = -math.degrees(math.atan(self.sp * w / 9.81))
         acc = (sp - self.sp) / max(dt, 1e-3) * min(1.0, dt * 6)
-        lean_p = -max(-6.0, min(8.0, acc * 2.2))
+        lean_p = -max(-8.0, min(13.0, acc * 2.4))                          # (driving away: low; braking: back)
         self.lean_r = getattr(self, "lean_r", 0.0) + (max(-18.0, min(18.0, lean_r)) - getattr(self, "lean_r", 0.0)) * min(1.0, dt * 6)
         self.lean_p = getattr(self, "lean_p", 0.0) + (lean_p - getattr(self, "lean_p", 0.0)) * min(1.0, dt * 5)
         if self.roll > 1:                                                     # (a dive: that tips him over instead)
@@ -428,6 +466,7 @@ class AnimPlayer:
         self.root.setHpr(self.h, self.lean_p, self.roll * self.roll_side + self.lean_r)
         self.sp += (sp - self.sp) * min(1.0, dt * 6)
         s = self.sp
+        self._moves(vel, sp, dt)
         if self.roll > 5:
             sp = s = 0.0                                                      # (in the air: no running)
         # Which way he's moving against the way he faces: forwards (walk / run), sideways (side-steps), or
@@ -487,6 +526,15 @@ class AnimPlayer:
             cyc = (1.3 + 0.45 * s if s < 2.5 else 1.65 + 0.3 * s) / 2.0
         self.phase = (self.phase + cyc * dt) % 1.0
         w_idle = max(0.0, 1 - w_move)
+        # turning on the spot (or nearly): little steps round, not a spin on the spot
+        rate = abs(turn) / max(dt, 1e-3)
+        w_turn = 0.0
+        if self.cfg.get("make_walk"):
+            want_t = min(1.0, max(0.0, (rate - 35.0) / 110.0)) * max(0.0, 1.0 - s / 1.2)
+            self.w_turn = getattr(self, "w_turn", 0.0) + (want_t - getattr(self, "w_turn", 0.0)) * min(1.0, dt * 8)
+            w_turn = self.w_turn * w_idle
+            w_idle -= w_turn
+            self.ph_turn = (getattr(self, "ph_turn", 0.0) + dt * 1.7) % 1.0
         r0, r1 = self.cfg["run_range"]                                        # (the frames that make one stride)
         run_f = (self.phase * (r1 - r0) + self.cfg["run_offset"]) % (r1 - r0)
         stand, walk, run = getattr(self, "force_stand", None) or "idle", self.cfg["walk"], "run"
@@ -505,6 +553,9 @@ class AnimPlayer:
             w_runs = {k: 0.0 for k in w_runs}
         self.loco = {n: 0.0 for n in self.loco_names}
         self.loco[stand] = w_idle
+        if w_turn > 0.0:
+            self.loco["turnstep"] = w_turn
+            self.a.pose("turnstep", self.ph_turn * self.nf["turnstep"])
         self.loco[run] = w_run * w_fwd
         self.a.pose(stand, self.t_idle % self.nf[stand])
         self.a.pose(run, (r0 + run_f) if run == "run" else run_f)
