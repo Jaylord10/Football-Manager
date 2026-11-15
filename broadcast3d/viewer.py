@@ -12,6 +12,7 @@ FOLLOW = next((int(a.split("=", 1)[1]) for a in sys.argv if a.startswith("--foll
 TEAMS = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--teams=")), None)
                                             # (--teams=Penrith,Fernley: show other clubs' kits)
 OVERCAST = "--overcast" in sys.argv
+NIGHT = "--night" in sys.argv               # (an evening kick-off under the floodlights)
 SUN_AZ, SUN_EL = 200.0, 22.0               # the sun: degrees round from behind the Main Stand, and up
 SHADOW_MAP = 4096
 ANIM = "--boxes" not in sys.argv          # (animated figures unless --boxes: the old block players)
@@ -183,6 +184,13 @@ class Stadium:
         mo.setTransparency(TransparencyAttrib.MAlpha); mo.setLightOff(); no_shadow(mo, lit=False)
         cm = CardMaker("sky"); cm.setFrame(-2000, 2000, -100, 700)
         sk = self.root.attachNewNode(cm.generate()); sk.setPos(0, 1200, -50); sk.setTexture(self.T("sky.png", False)); sk.setLightOff(); no_shadow(sk, lit=False)
+        if NIGHT:                                           # (a dark sky; the floodlights lit)
+            sk.setColorScale(0.05, 0.06, 0.11, 1); mo.setColorScale(0.04, 0.04, 0.06, 1)
+            lamp = (2.2, 2.2, 2.1, 1)
+            for side, x0, x1, d, z in (("far", -45, 45, 16.0, 28.6), ("left", -28, 28, 9.0, 23.4),
+                                       ("right", -30, 30, 8.0, 9.2)):
+                strip = box(self.side(side), x0, d - 0.3, z - 0.4, x1, d, z, lamp)
+                strip.setShaderOff(1); strip.setLightOff(1); no_shadow(strip, lit=False)
 
     def _brick_block(self, x0, y0, x1, y1, h):
         m = Mesh("brick"); box_into(m, x0, y0, 0, x1, y1, h, (1, 1, 1, 1), uvs=4)
@@ -204,6 +212,9 @@ class Stadium:
             for a, bb in (((-w, -w), (w, -w)), ((w, -w), (w, w)), ((w, w), (-w, w)), ((-w, w), (-w, -w))):
                 box(n, min(a[0], bb[0]) - 0.06, min(a[1], bb[1]) - 0.06, z, max(a[0], bb[0]) + 0.06, max(a[1], bb[1]) + 0.06, z + 0.12, col)
         head = box(n, -4, -0.5, H, 4, 0.5, H + 5, C((90, 92, 98)))
+        if NIGHT:                                           # (the lamps, lit)
+            gl = box(n, -3.8, -0.62, H + 0.2, 3.8, -0.5, H + 4.8, (2.4, 2.4, 2.3, 1))
+            gl.setShaderOff(1); gl.setLightOff(1)
         for i in range(4):
             for j in range(3):
                 box(n, -3.5 + i * 1.9, -0.75, H + 0.5 + j * 1.5, -2.3 + i * 1.9, -0.5, H + 1.6 + j * 1.5, C((255, 250, 225)))
@@ -374,14 +385,15 @@ class Viewer(ShowBase):
     def __init__(self, match):
         ShowBase.__init__(self)
         self.disableMouse()
-        self.setBackgroundColor(0.62, 0.66, 0.70, 1)
+        self.setBackgroundColor(*((0.62, 0.66, 0.70, 1) if not NIGHT else (0.03, 0.035, 0.06, 1)))
         self.render.setAntialias(AntialiasAttrib.MMultisample)
         self.m = match
         self.nets = []
         self.crowds = []                                    # (the crowd in each stand, to liven up after a goal)
         st = Stadium(self); st.build_kiln_lane(); st.goals()
         self.light_up()
-        fog = Fog("haze"); fog.setColor(0.62, 0.66, 0.7); fog.setExpDensity(0.0012); self.render.setFog(fog)
+        fog = Fog("haze"); fog.setColor(*((0.62, 0.66, 0.7) if not NIGHT else (0.04, 0.045, 0.07)))
+        fog.setExpDensity(0.0012); self.render.setFog(fog)
         # kits (Ashvale home v Northwick home)
         import kits                                                       # (the clubs' own kits, from their profiles)
         self.home_name = TEAMS[0] if TEAMS else match.get("home", "Ashvale Rovers")
@@ -418,6 +430,15 @@ class Viewer(ShowBase):
             no_shadow(n, lit=False)
             if not OVERCAST:                                # (sunshine: the sun casts the real shadow - this is just
                 n.setPos(0, 0, 0.02); n.setScale(0.75, 1, 0.9); n.setAlphaScale(0.55)    # the darkening under his feet)
+            if NIGHT:                                       # (floodlights: four faint shadows, one to each corner)
+                fl = self.render.attachNewNode("floodshadows")
+                for a in (45, 135, 225, 315):
+                    s4 = fl.attachNewNode(cm.generate()); s4.setP(-90); s4.setTexture(stex)
+                    s4.setH(a); s4.setScale(0.55, 1, 2.2); s4.setPos(fl, math.cos(math.radians(a + 90)) * -0.6,
+                                                                     math.sin(math.radians(a + 90)) * -0.6, 0.015)
+                    s4.setTransparency(TransparencyAttrib.MAlpha); s4.setAlphaScale(0.35)
+                fl.setLightOff(1); fl.setDepthWrite(False); fl.setBin("fixed", 0); no_shadow(fl, lit=False)
+                p.flood = fl
         self.ball = football(self.render, BALL_R)
         cm = CardMaker("bshadow"); cm.setFrame(-0.22, 0.22, -0.22, 0.22)          # (a soft round shadow)
         self.bsh = self.render.attachNewNode(cm.generate()); self.bsh.setP(-90); self.bsh.setTexture(stex)
@@ -443,6 +464,9 @@ class Viewer(ShowBase):
         """The light.  Default: a bright autumn afternoon - a low sun from behind the Main Stand (the camera's side),
         real shadows (each player's, the ball's, the stands' and the goal frames') stretching away up the pitch.
         --overcast: the old grey Lancashire afternoon, no sun shadows."""
+        if NIGHT:                                           # (floodlights: from high up, white, a darker fill)
+            global SUN_AZ, SUN_EL
+            SUN_AZ, SUN_EL = 200.0, 60.0
         if OVERCAST:
             al = AmbientLight("amb"); al.setColor(Vec4(0.52, 0.53, 0.56, 1))
             self.render.setLight(self.render.attachNewNode(al))
@@ -450,9 +474,9 @@ class Viewer(ShowBase):
             sun = self.render.attachNewNode(dl); sun.setPos(-40, -60, 120); sun.lookAt(0, 0, 0)
             self.render.setLight(sun)
             return
-        al = AmbientLight("amb"); al.setColor(Vec4(0.50, 0.53, 0.60, 1))               # (blue-ish sky fill)
+        al = AmbientLight("amb"); al.setColor(Vec4(0.50, 0.53, 0.60, 1) if not NIGHT else Vec4(0.30, 0.32, 0.38, 1))
         self.render.setLight(self.render.attachNewNode(al))
-        dl = DirectionalLight("sun"); dl.setColor(Vec4(1.25, 1.12, 0.92, 1))             # (warm low sun)
+        dl = DirectionalLight("sun"); dl.setColor(Vec4(1.25, 1.12, 0.92, 1) if not NIGHT else Vec4(1.0, 1.0, 1.05, 1))
         dl.setShadowCaster(True, SHADOW_MAP, SHADOW_MAP)
         lens = dl.getLens(); lens.setFilmSize(250, 170); lens.setNearFar(10, 600)
         sun = self.render.attachNewNode(dl)
@@ -468,6 +492,7 @@ class Viewer(ShowBase):
         self.render.setShaderInput("shadow_texel", 1.0 / SHADOW_MAP)
         self.render.setShaderInput("detail_amt", 0.0)
         self.render.setShaderInput("crowd_amt", 0.0)
+        self.render.setShaderInput("night_on", 1.0 if NIGHT else 0.0)
         if ANIM:
             from players3d import shader_defaults
             shader_defaults(self.render)
@@ -570,6 +595,14 @@ class Viewer(ShowBase):
             p.act(kind, t, self._left_foot(i, p, kind, t, k))
         self._prev_pos = prev
         self._officiate(fr, dt, rbx, rby)
+        if NIGHT:
+            for p in self.players + [o["p"] for o in self.officials]:
+                if hasattr(p, "flood"):
+                    p.flood.setPos(p.root.getX(), p.root.getY(), 0)
+                    if p.root.isHidden():
+                        p.flood.hide()
+                    else:
+                        p.flood.show()
         for net in self.nets:
             net.step(dt)
         bx, by, bz = self._ball(fr, dt)

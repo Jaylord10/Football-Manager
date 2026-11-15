@@ -22,11 +22,13 @@ in vec4 v_color;
 in vec2 v_uv;
 in vec2 v_uv1;
 in vec3 v_view;
+in vec3 v_world;
 out vec4 o_color;
 
 // The players' kits, worked out for every pixel from where it is on the body (broadcast3d/players3d.py: the
 // body's standing position is in the texture coordinates - v_uv = (x, z), v_uv1.x = y; he faces -y, his right
 // is -x).  kit_on 0: not a player.
+uniform float night_on;                 // (floodlights: bright over the pitch, falling away beyond it)
 uniform float crowd_amt;                // (the crowd: how much they're bobbing about - lots after a goal)
 uniform float osg_FrameTime;
 uniform float kit_on;
@@ -142,7 +144,13 @@ void main() {
         if (!gl_FrontFacing) n2 = -n2;
         sky = 0.85 + 0.15 * dot(n2, up);
     }
-    vec3 light = p3d_LightModel.ambient.rgb * sky + p3d_LightSource[0].diffuse.rgb * lambert * sun_visible();
+    float flood = 1.0;
+    if (night_on > 0.5) {
+        vec2 out_by = max(abs(v_world.xy) - vec2(62.0, 42.0), vec2(0.0));
+        flood = clamp(1.0 - length(out_by) / 14.0, 0.12, 1.0) * clamp(1.0 - (v_world.z - 4.0) / 30.0, 0.35, 1.0);
+        sky *= mix(0.45, 1.0, flood);
+    }
+    vec3 light = p3d_LightModel.ambient.rgb * sky + p3d_LightSource[0].diffuse.rgb * lambert * sun_visible() * flood;
     if (detail_amt > 0.0)
         base.rgb *= mix(vec3(1.0), texture(p3d_Texture1, v_uv * detail_scale).rgb * 2.0, detail_amt);
     vec3 col = base.rgb * light;
