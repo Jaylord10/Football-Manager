@@ -613,6 +613,10 @@ class Viewer(ShowBase):
             vel = ((wx - px) / max(dt, 1e-3), (wy - py) / max(dt, 1e-3))
             prev[i] = (wx, wy)
             kind, t = self.events.action(i, k)
+            if cel and i == cel[1]:
+                kind, t = self._scorer_slide(i, sp, k, kind, t)
+            if kind == "despair" and sp > 30:                               # (not while he's still running hard)
+                kind = None
             if kind == "throwin":                                           # (facing the way he throws it)
                 fx, fy = self._throw_dir(i, k, t, fx, fy)
             p.update(wx, wy, fx, -fy, sp, dt, act, vel=vel, ball=(rbx, rby))
@@ -1082,6 +1086,21 @@ def _viewer_restart_id(self, k):
     return j
 
 
+def _viewer_scorer_slide(self, i, sp, k, kind, t):
+    """Half of scorers finish their run with a knee slide (the other half jump about): when he slows from a
+    sprint, down he goes."""
+    st = self.__dict__.setdefault("_slide", {})
+    rid = self._restart_id(k)
+    s = st.setdefault(rid, {"top": 0.0, "at": None, "yes": (rid // 2 + i) % 2 == 0})
+    s["top"] = max(s["top"], sp)
+    if s["at"] is None and s["yes"] and s["top"] > 50 and sp < 38:
+        s["at"] = k
+    if s["at"] is not None and 0 <= (k - s["at"]) / 30.0 <= 1.9:
+        return "kneeslide", (k - s["at"]) / 30.0
+    return kind, t
+
+
+Viewer._scorer_slide = _viewer_scorer_slide
 Viewer._restart_id = _viewer_restart_id
 Viewer._manage = _viewer_manage
 Viewer._officiate = _viewer_officiate
@@ -1103,7 +1122,7 @@ class Events:
         self.by_player = {}
         self.fps = 30.0
 
-    RANK = {"throwin": 6, "punt": 5, "bowl": 5, "shot": 4, "header": 3, "tackle": 3, "kick": 2, "touch": 1}
+    RANK = {"despair": 0, "kneeslide": 7, "throwin": 6, "punt": 5, "bowl": 5, "shot": 4, "header": 3, "tackle": 3, "kick": 2, "touch": 1}
 
     def add(self, i, k, kind):
         l = self.by_player.setdefault(i, [])
@@ -1160,6 +1179,10 @@ def find_events(F, keepers=(0, 11)):
                 if near[0] < 2.0:
                     z = F[k]["b"][2] / 10.0
                     ev.add(near[1], k, "header" if z > 1.3 else "kick")
+    for i, l in list(ev.by_player.items()):                                  # a shot that didn't go in: hands
+        for (ke, kind) in list(l):                                           # on head a moment later
+            if kind == "shot" and ke + 75 < len(F) and F[ke + 75]["s"] == F[ke]["s"]:
+                l.append((ke + 24, "despair"))
     for k in range(1, len(F) - 4):                                           # dead balls: who took it, and how
         r = F[k - 1].get("r")
         if r and "r" not in F[k] and r[1] >= 0:

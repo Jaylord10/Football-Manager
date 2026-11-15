@@ -196,6 +196,21 @@ ACTIONS = {
              (2.9, N)],
     "signal": [(-0.3, N), (0.0, {"arm_r": 172, "out_r": 5, "elbow_r": 0, "nod": -8}),
                (2.5, {"arm_r": 172, "out_r": 5, "nod": -8}), (2.9, N)],
+    # So close: hands on his head after a shot that didn't go in.
+    "despair": [(-0.3, N),
+                (0.1, {"arm_r": 150, "arm_l": 150, "out_r": 30, "out_l": 30, "elbow_r": 125, "elbow_l": 125,
+                       "lean": -6, "nod": -12}),
+                (1.6, {"arm_r": 145, "arm_l": 145, "out_r": 32, "out_l": 32, "elbow_r": 125, "elbow_l": 125,
+                       "lean": 4, "nod": 14}),
+                (2.1, N)],
+    # The scorer's knee slide: down on both knees, leaning back, arms out wide - then up again.
+    "kneeslide": [(-0.2, N),
+                  (0.15, {"hip_r": 10, "hip_l": 10, "knee_r": 110, "knee_l": 110, "ankle_r": -30, "ankle_l": -30,
+                          "lean": -20, "chest": -8, "out_r": 95, "out_l": 95, "arm_r": 10, "arm_l": 10, "nod": -25}),
+                  (1.3, {"hip_r": 5, "hip_l": 5, "knee_r": 115, "knee_l": 115, "ankle_r": -30, "ankle_l": -30,
+                         "lean": -28, "chest": -10, "out_r": 120, "out_l": 120, "arm_r": 15, "arm_l": 15,
+                         "elbow_r": 20, "elbow_l": 20, "nod": -30}),
+                  (1.9, N)],
     # In the wall at a free kick: shoulder to shoulder, hands crossed in front of them.
     "wall": [(0.0, {"arm_r": 22, "arm_l": 22, "across_r": 34, "across_l": 34, "elbow_r": 25, "elbow_l": 25,
                     "lean": 4, "nod": -4, "knee_r": 6, "knee_l": 6}), (1.0, "same")],
