@@ -64,6 +64,31 @@ def ellipsoid(q, c, r):
     return k0 * (k0 - 1.0) / np.maximum(k1, 1e-6)
 
 
+def cylinder(q, a, b, ra, rb):
+    """A tube from a to b with flat ends (radius ra at a, rb at b) - for loose clothes with a hem."""
+    a, b = P(a), P(b)
+    ba = b - a
+    L = float(np.linalg.norm(ba))
+    t = ((q - a) @ ba) / (L * L)
+    r = ra + (rb - ra) * np.clip(t, 0.0, 1.0)
+    radial = np.linalg.norm(q - (a + t[..., None] * ba), axis=-1) - r
+    axial = (np.abs(t - 0.5) - 0.5) * L
+    out = np.sqrt(np.maximum(radial, 0) ** 2 + np.maximum(axial, 0) ** 2)
+    return out + np.minimum(np.maximum(radial, axial), 0.0)
+
+
+def shirt_tube(q, z0, z1, rx0, ry0, rx1, ry1, cy=0.0):
+    """The shirt hanging loose from the chest: an oval tube, straight down, with a flat hem at z0."""
+    z = q[..., 2]
+    t = np.clip((z - z0) / (z1 - z0), 0.0, 1.0)
+    rx, ry = rx0 + (rx1 - rx0) * t, ry0 + (ry1 - ry0) * t
+    k = np.sqrt((q[..., 0] / rx) ** 2 + ((q[..., 1] - cy) / ry) ** 2)
+    radial = (k - 1.0) * np.minimum(rx, ry)
+    axial = np.maximum(z0 - z, z - z1)
+    out = np.sqrt(np.maximum(radial, 0) ** 2 + np.maximum(axial, 0) ** 2)
+    return out + np.minimum(np.maximum(radial, axial), 0.0)
+
+
 def smin(a, b, k):
     h = np.clip(0.5 + 0.5 * (b - a) / k, 0.0, 1.0)
     return b * (1 - h) + a * h - k * h * (1 - h)
@@ -74,16 +99,16 @@ def shapes():
     out = []
     add = lambda f, k=0.03, mode="add": out.append((f, k, mode))
     # trunk: a V from broad shoulders to a narrower waist, flat across the front
-    add(lambda q: ellipsoid(q, (0.0, 0.005, 0.95), (0.148, 0.105, 0.115)))                    # hips
-    add(lambda q: ellipsoid(q, (0.0, -0.005, 1.11), (0.135, 0.092, 0.16)), 0.08)               # waist
-    add(lambda q: ellipsoid(q, (0.0, 0.0, 1.30), (0.172, 0.096, 0.165)), 0.08)                 # chest
-    add(lambda q: ellipsoid(q, (0.0, -0.035, 1.305), (0.13, 0.07, 0.085)), 0.04)               # pecs (flat)
-    add(lambda q: ellipsoid(q, (0.0, 0.025, 1.30), (0.165, 0.09, 0.14)), 0.06)                 # back (lats)
+    add(lambda q: ellipsoid(q, (0.0, 0.005, 0.95), (0.128, 0.098, 0.11)))                     # hips
+    add(lambda q: ellipsoid(q, (0.0, -0.005, 1.11), (0.128, 0.088, 0.16)), 0.08)               # waist
+    add(lambda q: ellipsoid(q, (0.0, 0.0, 1.30), (0.162, 0.094, 0.165)), 0.08)                 # chest
+    add(lambda q: ellipsoid(q, (0.0, -0.035, 1.305), (0.125, 0.068, 0.085)), 0.04)             # pecs (flat)
+    add(lambda q: ellipsoid(q, (0.0, 0.022, 1.30), (0.146, 0.08, 0.13)), 0.06)                 # back (lats)
     add(lambda q: capsule(q, (-0.15, 0.01, 1.41), (0.15, 0.01, 1.41), 0.06, 0.06), 0.06)       # shoulder line
     add(lambda q: capsule(q, (0.0, 0.012, 1.38), (0.0, 0.0, 1.57), 0.057, 0.052), 0.04)       # neck
     for sx in (-1, 1):
         # glutes
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.068, 0.05, 0.895), (0.075, 0.058, 0.085)), 0.05)
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.062, 0.045, 0.895), (0.065, 0.055, 0.08)), 0.05)
         # shoulders (deltoids) and arms
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.19, 0.008, 1.415), (0.07, 0.062, 0.062)), 0.05)
         add(lambda q, sx=sx: capsule(q, (sx * 0.19, 0.015, 1.425), (sx * 0.436, 0.011, 1.43), 0.052, 0.040), 0.03)
@@ -100,11 +125,12 @@ def shapes():
         add(lambda q, sx=sx: capsule(q, (sx * 0.662, -0.022, 1.427), (sx * 0.698, -0.055, 1.421), 0.013, 0.010), 0.012)
         add(lambda q, sx=sx: capsule(q, (sx * 0.698, -0.055, 1.421), (sx * 0.722, -0.074, 1.414), 0.010, 0.0085), 0.006)
         # legs
-        add(lambda q, sx=sx: capsule(q, (sx * 0.095, -0.006, 0.90), (sx * 0.136, 0.0, 0.533), 0.083, 0.055), 0.05)
+        add(lambda q, sx=sx: capsule(q, (sx * 0.092, -0.006, 0.90), (sx * 0.136, 0.0, 0.533), 0.076, 0.053), 0.05)
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.112, -0.03, 0.75), (0.072, 0.07, 0.16)), 0.035)   # quads
         add(lambda q, sx=sx: capsule(q, (sx * 0.136, 0.0, 0.533), (sx * 0.178, 0.036, 0.115), 0.052, 0.034), 0.03)
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.145, 0.028, 0.40), (0.05, 0.052, 0.105)), 0.03)   # calf
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.19, -0.04, 0.052), (0.048, 0.135, 0.052)), 0.03)   # boot
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.184, 0.035, 0.05), (0.04, 0.055, 0.05)), 0.02)    # boot: heel
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.192, -0.06, 0.03), (0.043, 0.085, 0.03)), 0.03)    # and toe
     # the head: skull, face, cheekbones, brow, jaw and chin, eye sockets with eyes in, nose, lips, ears
     add(lambda q: ellipsoid(q, (0.0, 0.002, 1.688), (0.077, 0.095, 0.092)), 0.03)              # skull
     add(lambda q: ellipsoid(q, (0.0, -0.035, 1.628), (0.067, 0.084, 0.082)), 0.03)            # face
@@ -121,6 +147,12 @@ def shapes():
     add(lambda q: capsule(q, (0.0, -0.113, 1.664), (0.0, -0.129, 1.617), 0.006, 0.0095), 0.008)   # nose
     add(lambda q: ellipsoid(q, (0.0, -0.119, 1.612), (0.016, 0.011, 0.008)), 0.008)           # (its end)
     add(lambda q: ellipsoid(q, (0.0, -0.111, 1.588), (0.022, 0.009, 0.008)), 0.006)           # lips
+    # the kit, hanging loose: the shirt straight down from the chest (untucked, over the top of the shorts),
+    # short sleeves standing off the arm, and wide shorts down to a hand above the knee
+    add(lambda q: shirt_tube(q, 0.928, 1.30, 0.172, 0.114, 0.166, 0.104, cy=-0.004), 0.012)
+    for sx in (-1, 1):
+        add(lambda q, sx=sx: cylinder(q, (sx * 0.17, 0.012, 1.428), (sx * 0.372, 0.011, 1.43), 0.069, 0.058), 0.02)
+        add(lambda q, sx=sx: cylinder(q, (sx * 0.084, 0.0, 0.955), (sx * 0.112, -0.004, 0.622), 0.092, 0.087), 0.01)
     return out
 
 
@@ -197,6 +229,19 @@ def weights(verts, keep=3):
             w[:, j] *= np.where(z > 1.25, (1.0 - arm) ** 2 + 0.02, 1.0)
         elif nm.startswith("clavicle"):
             w[:, j] *= 0.6
+    # the shorts: each leg of them goes with its thigh (blending into the hips at the top), so a kick swings
+    # the leg of the shorts with it instead of the leg poking through
+    y = verts[:, 1]
+    legs = (z > 0.60) & (z < 0.97) & (ax > 0.012)
+    for side, sg in (("l", 1), ("r", -1)):
+        m = legs & (np.sign(verts[:, 0]) == sg)
+        if not m.any():
+            continue
+        jt, jp = names.index("thigh." + side), names.index("pelvis")
+        f = np.clip((0.95 - z[m]) / 0.16, 0.0, 1.0)
+        w[m] = 0.0
+        w[m, jt] = 0.05 + f
+        w[m, jp] = (1.0 - f) * 0.6 + 1e-4
     order = np.argsort(-w, axis=1)[:, :keep]
     ww = np.take_along_axis(w, order, 1)
     ww /= ww.sum(1, keepdims=True)

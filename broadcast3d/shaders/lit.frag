@@ -99,7 +99,7 @@ vec4 kit_colour() {
     float x = v_uv.x, z = v_uv.y, y = v_uv1.x, ax = abs(x);
     bool keeper = kit_info.y > 0.5;
     if (z < 0.10 || (z < 0.13 && v_uv1.x < -0.03)) return vec4(0.09, 0.09, 0.10, 1.0);   // boots
-    if (kit_extra.y > 0.5 && z < 0.97 && ax < 0.24) return kit_shorts;              // (trousers: the managers)
+    if (kit_extra.y > 0.5 && z < 0.927 && ax < 0.25) return kit_shorts;             // (trousers: the managers)
     if (kit_extra.w > 0.5 && z < 1.49 && ax >= 0.66) return kit_gloves;             // (gloves on a cold day)
     if (kit_extra.z > 0.5 && z < 1.49 && ax > 0.24 && ax < 0.66 && !(z > 1.43 && ax < 0.09)) {
         if (kit_extra.y > 0.5) return kit_shirt;                                    // (a coat / training top)
@@ -107,11 +107,14 @@ vec4 kit_colour() {
     }
     if (z < 0.40) return kit_socks;
     if (z < 0.46) return kit_socktop;
-    if (z < 0.66) return kit_skin;
-    if (z < 0.97 && ax < 0.24) {                                                    // shorts, a stripe down the side
-        return (ax > 0.205 && z > 0.70) ? kit_trim : kit_shorts;
+    if (z < 0.619) return kit_skin;
+    if (z < 0.927 && ax < 0.25) {                                                   // shorts, a stripe down the side
+        float c = 0.084 + (0.955 - z) / 0.333 * 0.028;
+        float dx = ax - c;
+        return (dx / max(length(vec2(dx, y)), 1e-4) > 0.975 && dx > 0.0) ? kit_trim : kit_shorts;
     }
-    if (z < 1.49 && ax < 0.36) {
+    float top = 1.49 + 0.045 * smoothstep(0.1, 0.2, ax);                            // (the shoulders)
+    if (z < top && ax < 0.355) {
         int col = int(kit_extra.x + 0.5);
         float cz = col == 3 ? 1.445 : (col == 2 ? 1.455 : 1.465);                   // the collar (a polo's is deeper)
         if (z > cz && ax < (col == 3 ? 0.10 : 0.085)) return kit_trim;
@@ -131,7 +134,7 @@ vec4 kit_colour() {
     }
     if (keeper && z < 1.49 && ax < 0.70) return vec4(shirt_at(x, y, z, false), 1.0);   // a keeper's long sleeves
     if (keeper && z < 1.49) return kit_gloves;                                       // and gloves
-    if (z < 1.49 && ax < 0.40) return kit_trim;                                    // the sleeve's hem
+    if (z < top && ax < 0.3735) return kit_trim;                                   // the sleeve's hem
     return head_colour(x, y, z, ax);
 }
 
