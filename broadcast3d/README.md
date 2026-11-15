@@ -25,13 +25,14 @@ both sides' kits.
 ## What's in it
 
 - `record.py` - plays a match in the engine and saves every player's position, facing, speed and state, the
-  ball, the keepers' dives, dead balls (who takes them) and goal celebrations, 30 times a second
+  ball, the keepers' dives, dead balls (who takes them), goal celebrations and bookings, 30 times a second
   (`python broadcast3d/record.py 120 [seed]` = two minutes; uses `saves/career.json`, or `FM_SAVE`).
-- `viewer.py` - the ground (stands, a crowd that moves and goes up after a goal, adverts, dugouts, floodlights),
-  the pitch (grass you can see close up, nets that bulge), the players, the referee and his assistants
-  (placed the way officials work a game), the managers and the subs, the ball (rolling), the TV camera on the
-  gantry, the scoreboard.  Works out from the recording who kicks, shoots, heads, tackles, takes a throw-in,
-  and with which foot.
+- `viewer.py` - the ground (stands, a crowd that moves and goes up after a goal, adverts, dugouts, floodlights,
+  corner flags), the pitch (grass you can see close up, worn goalmouths, nets that bulge), the players, the
+  referee and his assistants (placed the way officials work a game: the diagonal, flags for offside, cards),
+  the managers, subs on the bench and warming up, stewards and ball boys, the ball (rolling), the TV camera on
+  the gantry, the scoreboard and captions (goals, bookings).  Works out from the recording who kicks, shoots,
+  heads, tackles, takes a throw-in, and with which foot.
 - `players3d.py` - the players: the mannequin figure, its kit drawn pixel by pixel by the shader (patterns,
   collars, names and numbers on the back, crests), faces and haircuts, heights, leaning into turns.
 - `gait.py` - the movements built from real figures: the walk (normal gait data), kicks and shots (kicking
