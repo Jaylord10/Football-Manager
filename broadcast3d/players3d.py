@@ -257,12 +257,17 @@ class AnimPlayer:
     def _mix(self):
         """Set the blend: the action (if any) at its weight, the walk / run / stand sharing the rest."""
         name, w, frame = self.cur
-        for n in self.action_names:
-            self.a.setControlEffect(n, w if n == name else 0.0)
+        want = {n: 0.0 for n in self.action_names}
         if name:
+            want[name] = w
             self.a.pose(name, frame)
         for n, lw in self.loco.items():
-            self.a.setControlEffect(n, lw * (1.0 - w))
+            want[n] = lw * (1.0 - w)
+        last = getattr(self, "_weights", {})
+        for n, wt in want.items():                                            # (only tell Panda what's changed)
+            if abs(last.get(n, -1.0) - wt) > 1e-4:
+                self.a.setControlEffect(n, wt)
+        self._weights = want
 
     def _curve(self, keys, t):
         t = max(keys[0][0], min(keys[-1][0], t))
