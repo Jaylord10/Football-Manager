@@ -558,6 +558,11 @@ class Viewer(ShowBase):
                 continue
             if kind is None and fr["o"] == i:
                 kind, t = self._dribble_touch(i, p, dt)
+            r = fr.get("r")
+            if kind is None and r and r[0] == "free_kick" and 0 <= r[1] < len(fr["p"]) and sp < 15 \
+                    and (i < 11) != (r[1] < 11) and not getattr(p, "keeper", False):
+                if 8.0 < math.hypot(wx - rbx, wy - rby) < 11.5:                 # (in the wall)
+                    kind, t = "wall", 0.5
             if kind is None and getattr(p, "keeper", False) and sp < 25:          # (a keeper, set for a shot)
                 gx = -HX if wx < 0 else HX
                 if math.hypot(rbx - gx, rby) < 30 and fr["o"] not in (range(0, 11) if i < 11 else range(11, 22)):

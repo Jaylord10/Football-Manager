@@ -196,6 +196,9 @@ ACTIONS = {
              (2.9, N)],
     "signal": [(-0.3, N), (0.0, {"arm_r": 172, "out_r": 5, "elbow_r": 0, "nod": -8}),
                (2.5, {"arm_r": 172, "out_r": 5, "nod": -8}), (2.9, N)],
+    # In the wall at a free kick: shoulder to shoulder, hands crossed in front of them.
+    "wall": [(0.0, {"arm_r": 22, "arm_l": 22, "across_r": 34, "across_l": 34, "elbow_r": 25, "elbow_l": 25,
+                    "lean": 4, "nod": -4, "knee_r": 6, "knee_l": 6}), (1.0, "same")],
     # A manager on the touchline, arm out, telling them where to go.
     "point": [(-0.4, N),
               (0.0, {"arm_r": 75, "out_r": 30, "elbow_r": 10, "twist": 12, "lean": 4, "nod": -6}),
