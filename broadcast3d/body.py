@@ -445,47 +445,60 @@ def _load(which=None):
 
 
 def _skinned(char, name, V, N, F, BI, BW, names, paint=None):
-    """A mesh that moves with the skeleton: each point follows its bones (BI: which, BW: how much)."""
-    from panda3d.core import (GeomVertexArrayFormat, GeomVertexFormat, GeomVertexData, GeomVertexWriter, Geom,
-                              GeomTriangles, GeomNode, InternalName, GeomVertexAnimationSpec, TransformBlendTable,
-                              TransformBlend, JointVertexTransform, SparseArray)
+    """A mesh that moves with the skeleton: each point follows its bones (BI: which, BW: how much).  Filled
+    from whole arrays at once (quick: every player gets his own copy)."""
+    from panda3d.core import (GeomVertexArrayFormat, GeomVertexFormat, GeomVertexData, Geom, GeomTriangles,
+                              GeomNode, InternalName, GeomVertexAnimationSpec, TransformBlendTable, TransformBlend,
+                              JointVertexTransform, SparseArray)
     joints = {nm: JointVertexTransform(char.findJoint(nm)) for nm in set(names[int(k)] for k in np.unique(BI))}
     arr = GeomVertexArrayFormat()
     arr.addColumn(InternalName.getVertex(), 3, Geom.NT_float32, Geom.C_point)
     arr.addColumn(InternalName.getNormal(), 3, Geom.NT_float32, Geom.C_normal)
     arr.addColumn(InternalName.make("texcoord.0"), 2, Geom.NT_float32, Geom.C_texcoord)
     arr.addColumn(InternalName.make("texcoord.1"), 2, Geom.NT_float32, Geom.C_texcoord)
-    arr.addColumn(InternalName.getTransformBlend(), 1, Geom.NT_uint16, Geom.C_index)
+    arr2 = GeomVertexArrayFormat()
+    arr2.addColumn(InternalName.getTransformBlend(), 1, Geom.NT_uint16, Geom.C_index)
     fmt = GeomVertexFormat()
     fmt.addArray(arr)
+    fmt.addArray(arr2)
     spec = GeomVertexAnimationSpec(); spec.setPanda()
     fmt.setAnimation(spec)
     fmt = GeomVertexFormat.registerFormat(fmt)
     vd = GeomVertexData(name, fmt, Geom.UHDynamic)
+    n = len(V)
+    vd.uncleanSetNumRows(n)
+    # each point's blend of bones: the distinct ones made once each
+    bi = np.where(BW > 0, BI, -1).astype(np.int32)
+    bw = np.where(BW > 0, BW, 0.0).astype(np.float32)
+    key = np.concatenate([bi.view(np.uint8).reshape(n, -1), bw.view(np.uint8).reshape(n, -1)], 1)
+    uniq, first, inv = np.unique(key, axis=0, return_index=True, return_inverse=True)
     table = TransformBlendTable()
-    cache = {}
-    vd.uncleanSetNumRows(len(V))
-    vw, nw, t0, t1, bw = (GeomVertexWriter(vd, c) for c in ("vertex", "normal", "texcoord.0", "texcoord.1",
-                                                             InternalName.getTransformBlend()))
-    for i in range(len(V)):
-        key = tuple((int(BI[i, k]), float(BW[i, k])) for k in range(BI.shape[1]) if BW[i, k] > 0)
-        bi = cache.get(key)
-        if bi is None:
-            tb = TransformBlend()
-            for j, wgt in key:
-                tb.addTransform(joints[names[j]], wgt)
-            bi = cache[key] = table.addBlend(tb)
-        x, y, z = V[i]
-        vw.setData3(x, y, z); nw.setData3(*N[i]); bw.setData1i(bi)
-        if paint is not None:                           # (where it's painted, if not where it is)
-            x, y, z = paint[i]
-        t0.setData2(x, z); t1.setData2(y, 0.0)
-    table.setRows(SparseArray.lowerOn(vd.getNumRows()))
+    idx = np.zeros(len(uniq), np.uint16)
+    for u, i in enumerate(first):
+        tb = TransformBlend()
+        for k in range(bi.shape[1]):
+            if bi[i, k] >= 0:
+                tb.addTransform(joints[names[bi[i, k]]], float(bw[i, k]))
+        idx[u] = table.addBlend(tb)
+    P = V if paint is None else paint
+    data = np.empty((n, 10), np.float32)
+    data[:, 0:3] = V
+    data[:, 3:6] = N
+    data[:, 6] = P[:, 0]
+    data[:, 7] = P[:, 2]
+    data[:, 8] = P[:, 1]
+    data[:, 9] = 0.0
+    vd.modifyArray(0).modifyHandle().setData(data.tobytes())
+    bl = np.zeros((n, vd.getArray(1).getArrayFormat().getStride() // 2), np.uint16)
+    bl[:, 0] = idx[np.asarray(inv).reshape(-1)]
+    vd.modifyArray(1).modifyHandle().setData(bl.tobytes())
+    table.setRows(SparseArray.lowerOn(n))
     vd.setTransformBlendTable(table)
     tri = GeomTriangles(Geom.UHStatic)
     tri.setIndexType(Geom.NT_uint32)
-    for a, b, c in F:
-        tri.addVertices(int(a), int(b), int(c))
+    ta = tri.modifyVertices()
+    ta.uncleanSetNumRows(F.size)
+    ta.modifyHandle().setData(np.ascontiguousarray(F, np.uint32).tobytes())
     g = Geom(vd); g.addPrimitive(tri)
     gn = GeomNode(name); gn.addGeom(g)
     return gn

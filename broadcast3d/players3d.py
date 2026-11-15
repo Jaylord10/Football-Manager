@@ -226,6 +226,7 @@ class AnimPlayer:
         # keepers ~1.90 m (CIES Football Observatory, Big-5 league squads).  Given, or picked from his name.
         import zlib
         seed = zlib.crc32(f"{name}-{number}".encode())
+        self.seed = seed
         if height is None:
             z = ((seed % 1000) / 1000.0 + ((seed // 1000) % 1000) / 1000.0 + ((seed // 10 ** 6) % 1000) / 1000.0 - 1.5) * 2.0
             height = (1.90 + 0.04 * z) if keeper else (1.81 + 0.065 * z)
@@ -553,6 +554,19 @@ class AnimPlayer:
             w_runs = {k: 0.0 for k in w_runs}
         self.loco = {n: 0.0 for n in self.loco_names}
         self.loco[stand] = w_idle
+        if stand == "idle" and self.cfg.get("make_walk") and w_idle > 0.0:
+            # standing about: shifting his weight now and then; and with play far off and nothing to do for a
+            # while, some players put their hands on their hips
+            far = ball is not None and math.hypot(ball[0] - x, ball[1] - y) > 35.0
+            rester = (self.seed % 3) == 0
+            want_r = 1.0 if (far and rester and self.still_t > 4.0) else 0.0
+            self.w_rest = getattr(self, "w_rest", 0.0) + (want_r - getattr(self, "w_rest", 0.0)) * min(1.0, dt * 1.5)
+            t_sh = (self.t_idle + (self.seed % 240)) % 240
+            self.loco["shift"] = w_idle * 0.65 * (1 - self.w_rest)
+            self.loco["rest"] = w_idle * self.w_rest
+            self.loco[stand] = w_idle * 0.35 * (1 - self.w_rest)
+            self.a.pose("shift", t_sh)
+            self.a.pose("rest", t_sh)
         if w_turn > 0.0:
             self.loco["turnstep"] = w_turn
             self.a.pose("turnstep", self.ph_turn * self.nf["turnstep"])

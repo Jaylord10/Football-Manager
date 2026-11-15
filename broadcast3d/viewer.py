@@ -1358,8 +1358,16 @@ def play(v, F, first):
     v.taskMgr.add(tick_task, "play")
     if "--test" in sys.argv:                              # (a check without a screen: 60 frames, then a picture)
         c = ClockObject.getGlobalClock(); c.setMode(ClockObject.MNonRealTime); c.setFrameRate(30)
-        for _ in range(60):
+        import time
+        n = 240 if "--time" in sys.argv else 60           # (--time: how long each frame takes)
+        t0 = time.perf_counter()
+        for i in range(n):
+            if i == 30:
+                t0 = time.perf_counter()
             v.taskMgr.step()
+        if "--time" in sys.argv:
+            ms = (time.perf_counter() - t0) / (n - 30) * 1000
+            print(f"frame time {ms:.1f} ms ({1000 / ms:.0f} frames a second, offscreen, software drawing)")
         img = PNMImage(); v.win.getScreenshot(img); img.write(Filename(os.path.join(HERE, "frames", "live_test.png")))
         print("live test ok, frame", int(st["t"]))
         return

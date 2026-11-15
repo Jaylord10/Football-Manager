@@ -397,6 +397,25 @@ def hips(u):
              "lean": 4 + 2 * b, "knee_r": 4, "knee_l": 4}, {})
 
 
+def shift(u):
+    """Standing about: the weight on one leg (the other knee eased, that hip dropping a touch), then shifted
+    over to the other - every few seconds, as people stand."""
+    w = math.sin(2 * math.pi * u)
+    k = max(-1.0, min(1.0, 1.6 * w))                               # (mostly on one side or the other)
+    return ({"knee_l": 4 + 9 * max(0.0, k), "knee_r": 4 + 9 * max(0.0, -k), "ankle_l": 2 + 4 * max(0.0, k),
+             "ankle_r": 2 + 4 * max(0.0, -k), "tilt": -3 * k, "side": 2.5 * k, "hipout_r": 1.5 * k,
+             "hipout_l": -1.5 * k, "head": 2 * math.sin(4 * math.pi * u)}, {"sway": -0.025 * k})
+
+
+def rest(u):
+    """Hands on hips, getting his breath back while play's at the other end - head up, watching."""
+    b = math.sin(2 * math.pi * u)
+    m, e = shift(u * 0.5)
+    m.update({"out_r": 30, "out_l": 30, "arm_r": -45, "arm_l": -45, "across_r": -45, "across_l": -45,
+              "elbow_r": 60, "elbow_l": 60, "nod": -2, "lean": 3 + 1.5 * b})
+    return m, e
+
+
 def knees(u):
     """Bent over, hands on knees."""
     b = math.sin(2 * math.pi * u)
@@ -504,7 +523,8 @@ def run_call(u):
 
 
 LOOPS = {"run_call": (run_call, 15, "run"), "shuffle": (shuffle, 30, "idle"), "shuffle_m": (shuffle_m, 30, "idle"),
-         "backpedal": (backpedal, 30, "idle"), "turnstep": (turnstep, 30, "idle"), "sit": (sit, 90, "idle"), "cheer": (cheer, 30, "idle"), "clap": (clap, 30, "idle"), "hips": (hips, 60, "idle"), "knees": (knees, 60, "idle"),
+         "backpedal": (backpedal, 30, "idle"), "turnstep": (turnstep, 30, "idle"),
+         "shift": (shift, 240, "idle"), "rest": (rest, 240, "idle"), "sit": (sit, 90, "idle"), "cheer": (cheer, 30, "idle"), "clap": (clap, 30, "idle"), "hips": (hips, 60, "idle"), "knees": (knees, 60, "idle"),
          "walk_sad": (walk_sad, 30, "idle"), "run_arms": (run_arms, 15, "run")}
 
 
