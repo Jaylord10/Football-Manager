@@ -243,7 +243,7 @@ class Stadium:
                   ("THE NATIONAL CHRONICLE", (25, 30, 60), (255, 255, 255)), ("KILN LANE MOTORS", (240, 240, 240), (200, 40, 45)),
                   ("ASHVALE EVENING POST", (30, 30, 30), (255, 200, 40)), ("WEAVERS BUILDING SOC.", (10, 90, 160), (255, 255, 255))]
         try:
-            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 34)
+            font = ImageFont.truetype(os.path.join(HERE, "fonts", "DejaVuSans-Bold.ttf"), 34)
         except OSError:
             font = ImageFont.load_default()
         im = Image.new("RGB", (512 * len(brands), 64))
