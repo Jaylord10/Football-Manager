@@ -20,7 +20,8 @@ Keys: **space** pause, **left / right** back / on 10 seconds, **[ / ]** slower /
 Making pictures / clips instead: `python broadcast3d/viewer.py 5600 300 out` renders 300 frames into `out/`
 (`--close` a close camera on the ball, `--follow=N --side` a camera on one player: 0-21 the players, then the
 referee, the two assistants, the two managers and the subs).  `kitshow.py "Home" "Away" out.png` - a picture of
-both sides' kits.
+both sides' kits.  `check.py` - a quick check that every mode still works (day, night, rain, other grounds,
+the live window).
 
 ## What's in it
 
