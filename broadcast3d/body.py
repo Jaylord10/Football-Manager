@@ -104,7 +104,8 @@ def shapes():
     add(lambda q: ellipsoid(q, (0.0, 0.0, 1.30), (0.162, 0.094, 0.165)), 0.08)                 # chest
     add(lambda q: ellipsoid(q, (0.0, -0.035, 1.305), (0.125, 0.068, 0.085)), 0.04)             # pecs (flat)
     add(lambda q: ellipsoid(q, (0.0, 0.022, 1.30), (0.146, 0.08, 0.13)), 0.06)                 # back (lats)
-    add(lambda q: capsule(q, (-0.15, 0.01, 1.41), (0.15, 0.01, 1.41), 0.06, 0.06), 0.06)       # shoulder line
+    for sx in (-1, 1):                                                                          # shoulders,
+        add(lambda q, sx=sx: capsule(q, (sx * 0.03, 0.012, 1.43), (sx * 0.16, 0.01, 1.395), 0.058, 0.056), 0.06)  # sloping
     add(lambda q: capsule(q, (0.0, 0.012, 1.38), (0.0, 0.0, 1.57), 0.057, 0.052), 0.04)       # neck
     for sx in (-1, 1):
         # glutes
@@ -126,9 +127,19 @@ def shapes():
         add(lambda q, sx=sx: capsule(q, (sx * 0.698, -0.055, 1.421), (sx * 0.722, -0.074, 1.414), 0.010, 0.0085), 0.006)
         # legs
         add(lambda q, sx=sx: capsule(q, (sx * 0.092, -0.006, 0.90), (sx * 0.136, 0.0, 0.533), 0.076, 0.053), 0.05)
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.112, -0.03, 0.75), (0.072, 0.07, 0.16)), 0.035)   # quads
-        add(lambda q, sx=sx: capsule(q, (sx * 0.136, 0.0, 0.533), (sx * 0.178, 0.036, 0.115), 0.052, 0.034), 0.03)
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.145, 0.028, 0.40), (0.05, 0.052, 0.105)), 0.03)   # calf
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.112, -0.03, 0.75), (0.07, 0.068, 0.16)), 0.035)    # quads
+        # above the knee: the inner "teardrop" (vastus medialis) and the outer quad, the kneecap, the hamstring
+        # tendons behind the knee
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.106, -0.028, 0.605), (0.038, 0.04, 0.062)), 0.02)
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.166, -0.012, 0.655), (0.032, 0.042, 0.09)), 0.02)
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.137, -0.05, 0.532), (0.024, 0.016, 0.03)), 0.012)
+        for tx in (0.118, 0.16):
+            add(lambda q, sx=sx, tx=tx: capsule(q, (sx * tx, 0.035, 0.63), (sx * (tx - 0.002), 0.03, 0.50), 0.013, 0.011), 0.012)
+        # the lower leg: a slim shin and ankle, the calf's two heads (the inner one bigger and lower)
+        add(lambda q, sx=sx: capsule(q, (sx * 0.136, 0.0, 0.533), (sx * 0.178, 0.036, 0.115), 0.046, 0.03), 0.03)
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.128, 0.032, 0.405), (0.036, 0.042, 0.085)), 0.025)
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.163, 0.03, 0.425), (0.031, 0.038, 0.072)), 0.025)
+        add(lambda q, sx=sx: capsule(q, (sx * 0.155, 0.045, 0.33), (sx * 0.178, 0.068, 0.13), 0.016, 0.011), 0.02)  # Achilles
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.184, 0.035, 0.05), (0.04, 0.055, 0.05)), 0.02)    # boot: heel
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.192, -0.06, 0.03), (0.043, 0.085, 0.03)), 0.03)    # and toe
     # the head: skull, face, cheekbones, brow, jaw and chin, eye sockets with eyes in, nose, lips, ears
@@ -138,7 +149,7 @@ def shapes():
     add(lambda q: ellipsoid(q, (0.0, -0.098, 1.562), (0.026, 0.02, 0.024)), 0.02)             # chin
     add(lambda q: capsule(q, (-0.044, -0.104, 1.674), (0.044, -0.104, 1.674), 0.011, 0.011), 0.014)  # brow
     for sx in (-1, 1):
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.046, -0.084, 1.634), (0.02, 0.016, 0.013)), 0.018)  # cheekbone
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.044, -0.076, 1.636), (0.016, 0.012, 0.011)), 0.02)   # cheekbone
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.077, -0.005, 1.643), (0.009, 0.021, 0.029)), 0.008)  # ear
     for sx in (-1, 1):                                                                          # eye sockets
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.033, -0.118, 1.655), (0.019, 0.016, 0.013)), 0.008, "cut")
@@ -151,7 +162,7 @@ def shapes():
     # short sleeves standing off the arm, and wide shorts down to a hand above the knee
     add(lambda q: shirt_tube(q, 0.928, 1.30, 0.172, 0.114, 0.166, 0.104, cy=-0.004), 0.012)
     for sx in (-1, 1):
-        add(lambda q, sx=sx: cylinder(q, (sx * 0.17, 0.012, 1.428), (sx * 0.372, 0.011, 1.43), 0.069, 0.058), 0.02)
+        add(lambda q, sx=sx: cylinder(q, (sx * 0.20, 0.012, 1.418), (sx * 0.372, 0.011, 1.428), 0.064, 0.057), 0.045)
         add(lambda q, sx=sx: cylinder(q, (sx * 0.084, 0.0, 0.955), (sx * 0.112, -0.004, 0.622), 0.092, 0.087), 0.01)
     return out
 

@@ -405,6 +405,10 @@ def build(actor, name, pose_fn, frames, ground=True, base_anim="idle", base_fram
                 net[j] = base_ts[j].getQuat() * net_q(parent[j])
             return net[j]
         moves, extra = pose_fn(u)
+        if ARM_DOWN:                                    # (the mannequin holds its arms out: bring them in)
+            moves = dict(moves)
+            for m in ("out_r", "out_l"):
+                moves[m] = moves.get(m, 0.0) - ARM_DOWN
         turns = {}
         for m, deg in moves.items():
             if m in MOVES and deg:
@@ -463,6 +467,11 @@ _CACHE = {}
 SPANS = {}          # action -> (first second, last second)
 
 
+# The mannequin's own standing and running animations hold the arms ~15 degrees further out from the body
+# than a footballer does (it makes the shoulders look hunched up); every movement here brings them in.
+ARM_DOWN = 11.0
+
+
 def _make(actor):
     _CACHE["walk"] = build(actor, "walk", walk_pose, 30)
     for name, (fn, n, base) in LOOPS.items():
@@ -479,6 +488,13 @@ def _make(actor):
             n = max(2, int(round((t1 - t0) * FPS)) + 1)
             _CACHE[vn] = build(actor, vn, lambda u, fn=fn, t0=t0, t1=t1, n=n: fn(t0 + u * n / FPS), n)
             SPANS[vn] = (t0, t1)
+    # last (the others are built from them): the standing and running, arms brought in
+    ni, nr = actor.getNumFrames("idle"), actor.getNumFrames("run")
+    _CACHE["idle"] = build(actor, "idle", lambda u: ({"arm_r": -3, "arm_l": -3, "elbow_r": -26, "elbow_l": -26,
+                                                      "out_r": 4, "out_l": 4}, {}), ni, ground=False, base_anim="idle",
+                           base_frame=lambda u: u * ni)
+    _CACHE["run"] = build(actor, "run", lambda u: ({}, {}), nr, ground=False, base_anim="run",
+                          base_frame=lambda u: u * nr)
 
 
 def add_all(actor):

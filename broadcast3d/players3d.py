@@ -234,7 +234,7 @@ class AnimPlayer:
         if self.cfg.get("make_walk"):
             import gait
             made = gait.add_all(self.a)                     # (the walk and every action: built from real figures)
-            self.action_names = [n for n in made if n != "walk" and n not in gait.LOOPS]
+            self.action_names = [n for n in made if n not in ("walk", "idle", "run") and n not in gait.LOOPS]
         self.loco_names = [n for n in ["idle", "run"] + ([self.cfg["walk"]] if self.cfg["walk"] else [])]
         if self.cfg.get("make_walk"):
             import gait
