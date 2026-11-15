@@ -554,7 +554,7 @@ def cover_cleft(V, F):
     for a, b, c in F:
         if span[a] or span[b] or span[c]:
             grow[[a, b, c]] = True
-    idx = np.where(grow)[0]
+    idx = np.where(grow & ((V[:, 2] > 0.965) | (V[:, 2] < 0.90)))[0]     # (not across the shirt's hem)
     for _ in range(6):
         avg = np.array([V[nb[i]].mean(0) for i in idx])
         V[idx] = V[idx] * 0.5 + avg * 0.5
@@ -647,6 +647,14 @@ def main():
     Vb = define_legs(Vb, n0, pos)
     Vb = dress(Vb, paint, pos)
     Vb = cover_cleft(Vb, Fb)
+    # (where the shirt meets the shorts across the middle of his back, the line between them evened out)
+    seam = np.where((np.abs(Vb[:, 0]) < 0.06) & (Vb[:, 1] > 0) & (Vb[:, 2] > 0.85) & (Vb[:, 2] < 1.02))[0]
+    nb = {}
+    for a, b, c in Fb:
+        for i, j, k in ((a, b, c), (b, a, c), (c, a, b)):
+            nb.setdefault(i, []).extend((j, k))
+    for _ in range(12):
+        paint[seam, 2] = 0.5 * paint[seam, 2] + 0.5 * np.array([paint[nb[i], 2].mean() for i in seam])
     nrm = np.zeros_like(Vb)
     fn = np.cross(Vb[Fb[:, 1]] - Vb[Fb[:, 0]], Vb[Fb[:, 2]] - Vb[Fb[:, 0]])
     for k in range(3):
