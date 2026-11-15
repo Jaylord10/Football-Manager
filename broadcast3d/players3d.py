@@ -17,6 +17,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 # is "forward" / "bends").  Both models face -Y in their own frame.
 MODELS = {
     "mannequin": {"file": os.path.join(HERE, "models", "mannequin.glb"), "walk": "walk", "make_walk": True,
+                  "smooth_file": os.path.join(HERE, "models", "footballer.glb"),
                   "smooth": True,
                   "run_range": (2, 17), "run_offset": 10.5, "scale": 1.02,
                   "joints": {"thigh_r": ("thigh.r", 2, -1), "knee_r": ("calf.r", 1, 1),
@@ -176,7 +177,7 @@ class AnimPlayer:
                  height=None):
         self.cfg = MODELS[model]
         self.root = parent.attachNewNode("player")
-        self.a = Actor(self.cfg["file"])
+        self.a = Actor(self.cfg["file"] if not (self.cfg.get("smooth") and SMOOTH) else self.cfg["smooth_file"])
         self.a.reparentTo(self.root)
         # His height (the model stands ~1.82 m) and build: real squads average ~1.81 m (outfield, s.d. ~6.5 cm),
         # keepers ~1.90 m (CIES Football Observatory, Big-5 league squads).  Given, or picked from his name.
@@ -233,6 +234,9 @@ class AnimPlayer:
         self.action_names = []
         if self.cfg.get("make_walk"):
             import gait
+            if self.cfg.get("smooth") and SMOOTH:            # (the footballer's longer arms, in every movement)
+                from skeleton import LIMB_SCALE
+                gait.LIMB_SCALE = LIMB_SCALE
             made = gait.add_all(self.a)                     # (the walk and every action: built from real figures)
             self.action_names = [n for n in made if n not in ("walk", "idle", "run") and n not in gait.LOOPS]
         self.loco_names = [n for n in ["idle", "run"] + ([self.cfg["walk"]] if self.cfg["walk"] else [])]

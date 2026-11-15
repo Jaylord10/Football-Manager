@@ -45,12 +45,17 @@ MOVES = {
     "out_r": ("upperarm.r", "y", 1), "out_l": ("upperarm.l", "y", -1),
     "elbow_r": ("lowerarm.r", "x", -1), "elbow_l": ("lowerarm.l", "x", -1),
     "across_r": ("upperarm.r", "z", 1), "across_l": ("upperarm.l", "z", -1),
+    "wristy_r": ("hand.r", "y", 1), "wristy_l": ("hand.l", "y", -1),
+    "wristz_r": ("hand.r", "z", 1), "wristz_l": ("hand.l", "z", -1),
     "turn": ("pelvis", "z", 1), "tilt": ("pelvis", "y", 1),
     "lean": ("spine_01", "x", 1), "chest": ("spine_02", "x", 1), "twist": ("spine_01", "z", 1),
     "side": ("spine_01", "y", 1),
     "nod": ("neck_01", "x", 1),
 }
 AXES = {"x": Vec3(1, 0, 0), "y": Vec3(0, 1, 0), "z": Vec3(0, 0, 1)}
+# The order the turns are made in at each joint: forward / back first, then across the body, then out.
+ORDER = sorted(MOVES, key=lambda m: (m.startswith("out_"), m.startswith("across_")) and
+               (2 if m.startswith("out_") else 1))
 
 
 def _cyc(keys, ph):
@@ -140,12 +145,12 @@ ACTIONS = {
                (0.45, N)],
     # A keeper's set position: weight forward on bent knees, hands out in front at waist height.
     "ready": [(0.0, {"hip_r": 28, "knee_r": 50, "ankle_r": 18, "hip_l": 28, "knee_l": 50, "ankle_l": 18,
-                     "hipout_r": 6, "hipout_l": 6, "lean": 18, "chest": 6, "nod": -14, "arm_r": 35, "arm_l": 35,
-                     "out_r": 22, "out_l": 22, "elbow_r": 55, "elbow_l": 55}),
+                     "hipout_r": 6, "hipout_l": 6, "lean": 18, "chest": 6, "nod": -14, "abs": 1, "arm_r": 22, "arm_l": 22,
+                     "out_r": 0, "out_l": 0, "elbow_r": 30, "elbow_l": 30, "across_r": 0, "across_l": 0}),
               (1.0, "same")],
     # A keeper's dive to his right (to his left: mirrored).  0 = he springs.
     "dive": [(0.00, {"hip_r": 28, "knee_r": 50, "ankle_r": 18, "hip_l": 28, "knee_l": 50, "ankle_l": 18,
-                     "lean": 18, "arm_r": 35, "arm_l": 35, "out_r": 22, "out_l": 22, "elbow_r": 55, "elbow_l": 55}),
+                     "lean": 18, "abs": 1, "arm_r": 22, "arm_l": 22, "out_r": 0, "out_l": 0, "elbow_r": 30, "elbow_l": 30}),
              (0.12, {"hip_r": 15, "knee_r": 25, "hip_l": 5, "knee_l": 10, "ankle_l": -30, "lean": 5, "side": 10,
                      "out_r": 120, "out_l": 150, "arm_r": 20, "arm_l": 20, "elbow_r": 15, "elbow_l": 15, "nod": -10}),
              (0.32, {"hip_r": 15, "knee_r": 30, "hip_l": 20, "knee_l": 45, "lean": 0, "side": 12,
@@ -163,7 +168,7 @@ ACTIONS = {
     # --- the keeper with the ball (the match engine has him release it straight away, so these run on) ---------
     # A punt: the ball taken in his hands, dropped, and volleyed upfield.
     "punt": [(-0.30, N),
-             (-0.06, {"arm_r": 40, "arm_l": 40, "across_r": 28, "across_l": 28, "elbow_r": 75, "elbow_l": 75, "lean": 12,
+             (-0.06, {"arm_r": 0, "arm_l": 0, "across_r": 30, "across_l": 30, "elbow_r": 80, "elbow_l": 80, "out_r": -10, "out_l": -10, "abs": 1, "lean": 12,
                       "hip_r": -20, "knee_r": 70, "knee_l": 25}),
              (0.06, {"hip_r": 45, "knee_r": 30, "ankle_r": -30, "knee_l": 20, "arm_r": 45, "arm_l": 30, "out_r": 40,
                      "out_l": 55, "elbow_r": 30, "elbow_l": 30, "lean": -6, "turn": 10}),
@@ -173,7 +178,7 @@ ACTIONS = {
              (0.80, N)],
     # A roll / short throw out: down low, the arm swinging through underneath.
     "bowl": [(-0.30, N),
-             (-0.06, {"arm_r": 40, "arm_l": 40, "across_r": 28, "across_l": 28, "elbow_r": 75, "elbow_l": 75, "lean": 12}),
+             (-0.06, {"arm_r": 0, "arm_l": 0, "across_r": 30, "across_l": 30, "elbow_r": 80, "elbow_l": 80, "out_r": -10, "out_l": -10, "abs": 1, "lean": 12}),
              (0.00, {"arm_r": -45, "out_r": 15, "elbow_r": 10, "arm_l": 40, "out_l": 30, "elbow_l": 30, "lean": 25,
                      "hip_l": 35, "knee_l": 55, "knee_r": 30, "twist": -14, "turn": -8}),
              (0.18, {"arm_r": 60, "out_r": 10, "elbow_r": 10, "arm_l": 20, "out_l": 35, "elbow_l": 30, "lean": 32,
@@ -182,25 +187,25 @@ ACTIONS = {
              (0.80, N)],
     # A throw-in: ball held in both hands, taken back behind the head, then thrown from over it - both feet on
     # the ground, as the laws say.  (t = the moment it's thrown.)
-    "throwin": [(-1.60, {"arm_r": 30, "arm_l": 30, "across_r": 28, "across_l": 28, "elbow_r": 85, "elbow_l": 85}),
-                (-0.70, {"arm_r": 30, "arm_l": 30, "across_r": 28, "across_l": 28, "elbow_r": 85, "elbow_l": 85}),
-                (-0.25, {"arm_r": 170, "arm_l": 170, "out_r": 22, "out_l": 22, "elbow_r": 110, "elbow_l": 110,
+    "throwin": [(-1.60, {"arm_r": 0, "arm_l": 0, "across_r": 30, "across_l": 30, "elbow_r": 80, "elbow_l": 80, "out_r": -10, "out_l": -10, "abs": 1}),
+                (-0.70, {"arm_r": 0, "arm_l": 0, "across_r": 30, "across_l": 30, "elbow_r": 80, "elbow_l": 80, "out_r": -10, "out_l": -10, "abs": 1}),
+                (-0.25, {"arm_r": 135, "arm_l": 135, "across_r": 0, "across_l": 0, "elbow_r": 100, "elbow_l": 100, "out_r": 18, "out_l": 18, "abs": 1,
                          "lean": -16, "chest": -8, "nod": -8, "hip_l": 22, "knee_l": 25, "knee_r": 20}),
-                (0.00, {"arm_r": 150, "arm_l": 150, "out_r": 16, "out_l": 16, "elbow_r": 15, "elbow_l": 15,
+                (0.00, {"arm_r": 120, "arm_l": 120, "across_r": -15, "across_l": -15, "elbow_r": 40, "elbow_l": 40, "out_r": 30, "out_l": 30, "abs": 1,
                         "lean": 8, "hip_l": 22, "knee_l": 20, "knee_r": 15}),
-                (0.25, {"arm_r": 100, "arm_l": 100, "across_r": 15, "across_l": 15, "elbow_r": 10, "elbow_l": 10,
+                (0.25, {"arm_r": 90, "arm_l": 90, "across_r": 10, "across_l": 10, "elbow_r": 10, "elbow_l": 10, "out_r": 5, "out_l": 5, "abs": 1,
                         "lean": 18, "hip_l": 20, "knee_l": 18, "knee_r": 12}),
                 (0.70, N)],
     # An assistant referee's flag straight up (offside); the referee's arm up for an indirect free kick.
-    "flag": [(-0.3, N), (0.0, {"arm_r": 170, "out_r": 8, "elbow_r": 0}), (2.5, {"arm_r": 170, "out_r": 8}),
+    "flag": [(-0.3, N), (0.0, {"arm_r": 170, "out_r": 0, "elbow_r": 0, "abs": 1}), (2.5, {"arm_r": 170, "out_r": 0, "abs": 1}),
              (2.9, N)],
-    "signal": [(-0.3, N), (0.0, {"arm_r": 172, "out_r": 5, "elbow_r": 0, "nod": -8}),
-               (2.5, {"arm_r": 172, "out_r": 5, "nod": -8}), (2.9, N)],
+    "signal": [(-0.3, N), (0.0, {"arm_r": 172, "out_r": 0, "elbow_r": 0, "nod": -8, "abs": 1}),
+               (2.5, {"arm_r": 172, "out_r": 0, "nod": -8, "abs": 1}), (2.9, N)],
     # So close: hands on his head after a shot that didn't go in.
     "despair": [(-0.3, N),
-                (0.1, {"arm_r": 150, "arm_l": 150, "out_r": 30, "out_l": 30, "elbow_r": 125, "elbow_l": 125,
+                (0.1, {"arm_r": 120, "arm_l": 120, "across_r": -15, "across_l": -15, "elbow_r": 100, "elbow_l": 100, "out_r": 46, "out_l": 46, "abs": 1,
                        "lean": -6, "nod": -12}),
-                (1.6, {"arm_r": 145, "arm_l": 145, "out_r": 32, "out_l": 32, "elbow_r": 125, "elbow_l": 125,
+                (1.6, {"arm_r": 118, "arm_l": 118, "across_r": -15, "across_l": -15, "elbow_r": 105, "elbow_l": 105, "out_r": 46, "out_l": 46, "abs": 1,
                        "lean": 4, "nod": 14}),
                 (2.1, N)],
     # The scorer's knee slide: down on both knees, leaning back, arms out wide - then up again.
@@ -212,11 +217,11 @@ ACTIONS = {
                          "elbow_r": 20, "elbow_l": 20, "nod": -30}),
                   (1.9, N)],
     # The referee holding up a card; the player booked, arms out ("what was that for?").
-    "card": [(0.0, {"arm_r": 172, "out_r": 4, "elbow_r": 0, "nod": -4}), (1.0, "same")],
+    "card": [(0.0, {"arm_r": 172, "out_r": 0, "elbow_r": 0, "nod": -4, "abs": 1}), (1.0, "same")],
     "protest": [(0.0, {"out_r": 45, "out_l": 45, "arm_r": 35, "arm_l": 35, "elbow_r": 35, "elbow_l": 35,
                        "lean": -4, "nod": -6}), (1.0, "same")],
     # In the wall at a free kick: shoulder to shoulder, hands crossed in front of them.
-    "wall": [(0.0, {"arm_r": 22, "arm_l": 22, "across_r": 34, "across_l": 34, "elbow_r": 25, "elbow_l": 25,
+    "wall": [(0.0, {"arm_r": 0, "arm_l": 0, "across_r": 58, "across_l": 58, "elbow_r": 5, "elbow_l": 5, "out_r": -10, "out_l": -10, "abs": 1,
                     "lean": 4, "nod": -4, "knee_r": 6, "knee_l": 6}), (1.0, "same")],
     # A manager on the touchline, arm out, telling them where to go.
     "point": [(-0.4, N),
@@ -224,6 +229,16 @@ ACTIONS = {
               (1.2, {"arm_r": 70, "out_r": 35, "elbow_r": 15, "twist": 10, "lean": 4, "nod": -6}),
               (1.6, N)],
 }
+# The poses above (except those marked "abs") were written on the mannequin's own standing pose, which held
+# the arms ~25 degrees further out than our hanging arms: their "out" values are moved up to match.
+OUT_SHIFT = 25
+for _keys in ACTIONS.values():
+    for _t, _p in _keys:
+        if isinstance(_p, dict):
+            if not _p.pop("abs", 0):
+                for _m in ("out_r", "out_l"):
+                    if _m in _p:
+                        _p[_m] += OUT_SHIFT
 # How strongly each blends over the running (a dribbling touch stays light).
 WEIGHT = {"touch": 0.55}
 
@@ -240,14 +255,15 @@ def cheer(u):
 def clap(u):
     """Applauding the fans (two claps a second)."""
     c = math.cos(4 * math.pi * u)
-    return ({"arm_r": 45, "arm_l": 45, "across_r": 27 + 10 * c, "across_l": 27 + 10 * c, "elbow_r": 70,
-             "elbow_l": 70, "nod": -8}, {})
+    return ({"arm_r": 0, "arm_l": 0, "across_r": 52 + 9 * c, "across_l": 52 + 9 * c, "elbow_r": 82,
+             "elbow_l": 82, "out_r": -10, "out_l": -10, "nod": -8}, {})
 
 
 def hips(u):
     """Hands on hips, head down (the other side, after a goal)."""
     b = math.sin(2 * math.pi * u)
-    return ({"out_r": 38, "out_l": 38, "arm_r": -18, "arm_l": -18, "elbow_r": 105, "elbow_l": 105, "nod": 22,
+    return ({"out_r": 30, "out_l": 30, "arm_r": -45, "arm_l": -45, "across_r": -45, "across_l": -45,
+             "elbow_r": 60, "elbow_l": 60, "nod": 22,
              "lean": 4 + 2 * b, "knee_r": 4, "knee_l": 4}, {})
 
 
@@ -255,7 +271,7 @@ def knees(u):
     """Bent over, hands on knees."""
     b = math.sin(2 * math.pi * u)
     return ({"hip_r": 35, "hip_l": 35, "knee_r": 28, "knee_l": 28, "ankle_r": 8, "ankle_l": 8, "lean": 45 + 3 * b,
-             "chest": 8, "arm_r": 55, "arm_l": 55, "out_r": 12, "out_l": 12, "elbow_r": 15, "elbow_l": 15,
+             "chest": 8, "arm_r": 22, "arm_l": 22, "out_r": 0, "out_l": 0, "elbow_r": 10, "elbow_l": 10,
              "nod": -5}, {})
 
 
@@ -285,7 +301,7 @@ def shuffle(u):
     sn, c = math.sin(2 * math.pi * u), math.cos(2 * math.pi * u)
     return ({"hipout_r": 4 + 13 * sn, "hipout_l": 4 - 13 * sn, "hip_r": 22, "hip_l": 22,
              "knee_r": 38 + 14 * max(0.0, c), "knee_l": 38 + 14 * max(0.0, -c), "ankle_r": 10, "ankle_l": 10,
-             "lean": 16, "out_r": 22, "out_l": 22, "arm_r": 15, "arm_l": 15, "elbow_r": 45, "elbow_l": 45,
+             "lean": 16, "out_r": 40, "out_l": 40, "arm_r": 15, "arm_l": 15, "elbow_r": 45, "elbow_l": 45,
              "tilt": 3 * sn}, {})
 
 
@@ -393,25 +409,33 @@ def build(actor, name, pose_fn, frames, ground=True, base_anim="idle", base_fram
     rest = feet_z(pose_at(idle, 0))
     tables = {j: {k: [] for k in "hprxyz"} for j in order}
     fixed = None if callable(base_frame) else pose_at(base, base_frame)
+    # On the standing pose, the arms start from the skeleton's rest (straight out) and are hung by our sides
+    # (HANG) - the mannequin's own standing pose holds them out, shoulders hunched.
+    hang = base_anim == "idle"
+    char = actor.find("**/+Character").node()
+    bind = {j: TransformState.makeMat(char.findJoint(j).getDefaultValue()) for j in ARM_CHAIN if char.findJoint(j)}
     for f in range(frames):
         u = f / float(frames)
-        base_ts = fixed or pose_at(base, int(round(base_frame(u))))
-        net = {}
+        base_ts = dict(fixed or pose_at(base, int(round(base_frame(u)))))
+        if hang:
+            base_ts.update(bind)
+        net = {}                                         # (each joint's whole turn, after the turns above it)
 
         def net_q(j):
-            if j is None:
-                return LQuaternionf.identQuat()
-            if j not in net:
-                net[j] = base_ts[j].getQuat() * net_q(parent[j])
-            return net[j]
+            return LQuaternionf.identQuat() if j is None else net[j]
         moves, extra = pose_fn(u)
-        if ARM_DOWN:                                    # (the mannequin holds its arms out: bring them in)
-            moves = dict(moves)
+        moves = dict(moves)
+        turns = {}
+        if hang:                                        # (the arms hung first; the movement's turns after)
+            for m, deg in HANG.items():
+                j, ax, sign = MOVES[m]
+                turns.setdefault(j, []).append((ax, deg * sign))
+        elif ARM_DOWN:                                  # (the mannequin's running arms are out a bit: bring them in)
             for m in ("out_r", "out_l"):
                 moves[m] = moves.get(m, 0.0) - ARM_DOWN
-        turns = {}
-        for m, deg in moves.items():
-            if m in MOVES and deg:
+        for m in ORDER:                                 # (always in the same order: turns don't commute)
+            deg = moves.get(m, 0.0)
+            if deg:
                 j, ax, sign = MOVES[m]
                 turns.setdefault(j, []).append((ax, deg * sign))
         local = {}
@@ -424,10 +448,14 @@ def build(actor, name, pose_fn, frames, ground=True, base_anim="idle", base_fram
                 pq = net_q(parent[j])
                 q = q * (pq * r * pq.conjugate())
             local[j] = TransformState.makePosQuatScale(ts.getPos(), q, ts.getScale())
+            net[j] = q * net_q(parent[j])
         shift = LVecBase3f(extra.get("sway", 0.0), 0, 0)
         if ground:
             shift[2] = rest - feet_z(local) + extra.get("air", 0.0)
         local["pelvis"] = local["pelvis"].setPos(local["pelvis"].getPos() + shift)
+        for j, k in LIMB_SCALE.items():                 # (longer bones: the footballer's arms)
+            if j in local and not (hang and j in bind):
+                local[j] = local[j].setPos(local[j].getPos() * k)
         for j in order:
             t = tables[j]
             for k, v in zip("hpr", local[j].getHpr()):
@@ -470,6 +498,11 @@ SPANS = {}          # action -> (first second, last second)
 # The mannequin's own standing and running animations hold the arms ~15 degrees further out from the body
 # than a footballer does (it makes the shoulders look hunched up); every movement here brings them in.
 ARM_DOWN = 11.0
+LIMB_SCALE = {}         # (bones made longer than the mannequin's - set by players3d from skeleton.py)
+ARM_CHAIN = ("clavicle.l", "upperarm.l", "lowerarm.l", "hand.l", "clavicle.r", "upperarm.r", "lowerarm.r", "hand.r")
+# Arms hanging naturally from the rest pose (straight out sideways): down by the sides, a little out and
+# forward, elbows slightly bent, so the fingertips reach about halfway down the thigh.
+HANG = {"out_r": -80, "out_l": -80, "arm_r": 5, "arm_l": 5, "elbow_r": 12, "elbow_l": 12}
 
 
 def _make(actor):
@@ -490,8 +523,7 @@ def _make(actor):
             SPANS[vn] = (t0, t1)
     # last (the others are built from them): the standing and running, arms brought in
     ni, nr = actor.getNumFrames("idle"), actor.getNumFrames("run")
-    _CACHE["idle"] = build(actor, "idle", lambda u: ({"arm_r": -3, "arm_l": -3, "elbow_r": -26, "elbow_l": -26,
-                                                      "out_r": 4, "out_l": 4}, {}), ni, ground=False, base_anim="idle",
+    _CACHE["idle"] = build(actor, "idle", lambda u: ({}, {}), ni, ground=False, base_anim="idle",
                            base_frame=lambda u: u * ni)
     _CACHE["run"] = build(actor, "run", lambda u: ({}, {}), nr, ground=False, base_anim="run",
                           base_frame=lambda u: u * nr)

@@ -29,6 +29,38 @@ J = {"pelvis": (0.0, -0.01, 0.948), "spine_01": (0.0, -0.035, 1.066), "spine_02"
      "ball.l": (0.195, -0.049, 0.02), "clavicle.l": (0.044, -0.018, 1.433), "upperarm.l": (0.174, 0.017, 1.433),
      "lowerarm.l": (0.436, 0.011, 1.43), "hand.l": (0.644, 0.009, 1.43), "thumb_01.l": (0.695, -0.039, 1.427),
      "middle_01.l": (0.73, 0.008, 1.434)}
+# The arms are lengthened to real proportions (skeleton.py): x along the arm, from the shoulder out, is
+# stretched part by part.  The shapes below are drawn on the mannequin's short arm and stretched with it.
+OLD_X = (0.174, 0.436, 0.644)          # shoulder, elbow, wrist on the mannequin's arm
+from skeleton import LIMB_SCALE as _LS
+NEW_X = (0.174, 0.174 + 0.262 * _LS["lowerarm.l"], 0.174 + 0.262 * _LS["lowerarm.l"] + 0.208 * _LS["hand.l"])
+K_HAND = _LS["index_01.l"]
+
+
+def arm_x(x):
+    """Where a point x along the mannequin's arm is on the footballer's (either side)."""
+    a, s = np.abs(x), np.sign(x)
+    out = np.where(a <= OLD_X[0], a,
+          np.where(a <= OLD_X[1], NEW_X[0] + (a - OLD_X[0]) * (NEW_X[1] - NEW_X[0]) / (OLD_X[1] - OLD_X[0]),
+          np.where(a <= OLD_X[2], NEW_X[1] + (a - OLD_X[1]) * (NEW_X[2] - NEW_X[1]) / (OLD_X[2] - OLD_X[1]),
+                   NEW_X[2] + (a - OLD_X[2]) * K_HAND)))
+    return out * s
+
+
+def arm_x_back(x):
+    """The reverse: a point on the footballer's arm -> where it was on the mannequin's."""
+    a, s = np.abs(x), np.sign(x)
+    out = np.where(a <= NEW_X[0], a,
+          np.where(a <= NEW_X[1], OLD_X[0] + (a - NEW_X[0]) * (OLD_X[1] - OLD_X[0]) / (NEW_X[1] - NEW_X[0]),
+          np.where(a <= NEW_X[2], OLD_X[1] + (a - NEW_X[1]) * (OLD_X[2] - OLD_X[1]) / (NEW_X[2] - NEW_X[1]),
+                   OLD_X[2] + (a - NEW_X[2]) / K_HAND)))
+    return out * s
+
+
+for k in list(J):
+    if k.split(".")[0] in ("lowerarm", "hand", "thumb_01", "middle_01"):
+        x, y, z = J[k]
+        J[k] = (float(arm_x(np.array(x))), y, z)
 for k, v in list(J.items()):
     if k.endswith(".l"):
         J[k[:-2] + ".r"] = (-v[0], v[1], v[2])
@@ -39,7 +71,7 @@ BONES = [("pelvis", "pelvis", "spine_01"), ("spine_01", "spine_01", "spine_02"),
 for s in ("l", "r"):
     sx = 1 if s == "l" else -1
     BONES += [("clavicle." + s, "clavicle." + s, "upperarm." + s), ("upperarm." + s, "upperarm." + s, "lowerarm." + s),
-              ("lowerarm." + s, "lowerarm." + s, "hand." + s), ("hand." + s, "hand." + s, (sx * 0.77, 0.005, 1.432)),
+              ("lowerarm." + s, "lowerarm." + s, "hand." + s), ("hand." + s, "hand." + s, (sx * float(arm_x(np.array(0.77))), 0.005, 1.432)),
               ("thigh." + s, "thigh." + s, "calf." + s), ("calf." + s, "calf." + s, "foot." + s),
               ("foot." + s, "foot." + s, "ball." + s), ("ball." + s, "ball." + s, (sx * 0.199, -0.15, 0.02))]
 
@@ -162,7 +194,8 @@ def shapes():
     # short sleeves standing off the arm, and wide shorts down to a hand above the knee
     add(lambda q: shirt_tube(q, 0.928, 1.30, 0.172, 0.114, 0.166, 0.104, cy=-0.004), 0.012)
     for sx in (-1, 1):
-        add(lambda q, sx=sx: cylinder(q, (sx * 0.20, 0.012, 1.418), (sx * 0.372, 0.011, 1.428), 0.064, 0.057), 0.045)
+        add(lambda q, sx=sx: cylinder(q, (sx * 0.20, 0.012, 1.418), (sx * 0.372, 0.011, 1.428), 0.064, 0.057), 0.045,
+            "nowarp")
         add(lambda q, sx=sx: cylinder(q, (sx * 0.084, 0.0, 0.955), (sx * 0.112, -0.004, 0.622), 0.092, 0.087), 0.01)
     return out
 
@@ -174,8 +207,12 @@ def smax(a, b, k):
 
 def field(q):
     d = None
+    qa = q.copy()                                                  # (the arms: drawn on the short arm, stretched)
+    arm = (q[..., 2] > 1.3) & (np.abs(q[..., 0]) > OLD_X[0])
+    qa[..., 0] = np.where(arm, arm_x_back(q[..., 0]), q[..., 0])
     for f, k, mode in shapes():
-        v = f(q)
+        v = f(q if mode == "nowarp" else qa)
+        mode = "add" if mode == "nowarp" else mode
         if mode == "cut":
             d = smax(d, -v, k)
         else:
@@ -235,7 +272,7 @@ def weights(verts, keep=3):
         if nm.startswith("upperarm"):
             w[:, j] *= np.where(z > 1.25, arm ** 2, 0.0)
         elif nm.startswith(("lowerarm", "hand")):
-            w[:, j] *= np.where(ax > 0.3, 1.0, 0.0)
+            w[:, j] *= np.where(ax > float(arm_x(np.array(0.3))), 1.0, 0.0)
         elif nm.startswith(("spine", "neck", "pelvis")):
             w[:, j] *= np.where(z > 1.25, (1.0 - arm) ** 2 + 0.02, 1.0)
         elif nm.startswith("clavicle"):

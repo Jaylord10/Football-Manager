@@ -36,6 +36,8 @@ the live window).
   heads, tackles, takes a throw-in, and with which foot.
 - `body.py` - a smooth footballer's body (one continuous skin, bending smoothly at the joints) for the
   mannequin's skeleton; `python broadcast3d/body.py` rebuilds `models/body.npz`.  `--pieces` shows the old one.
+- `skeleton.py` - the footballer's skeleton: the mannequin's with arms of real length (fingertips halfway down
+  the thigh); writes `models/footballer.glb`.
 - `players3d.py` - the players: the mannequin's skeleton with the smooth body, its kit drawn pixel by pixel by the shader (patterns,
   collars, names and numbers on the back, crests), faces and haircuts, heights, leaning into turns.
 - `gait.py` - the movements built from real figures: the walk (normal gait data), kicks and shots (kicking
