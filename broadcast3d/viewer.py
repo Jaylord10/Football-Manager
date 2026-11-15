@@ -473,6 +473,7 @@ class Viewer(ShowBase):
             dl = DirectionalLight("sun"); dl.setColor(Vec4(0.62, 0.6, 0.56, 1))
             sun = self.render.attachNewNode(dl); sun.setPos(-40, -60, 120); sun.lookAt(0, 0, 0)
             self.render.setLight(sun)
+            self._shader_inputs()
             return
         al = AmbientLight("amb"); al.setColor(Vec4(0.50, 0.53, 0.60, 1) if not NIGHT else Vec4(0.30, 0.32, 0.38, 1))
         self.render.setLight(self.render.attachNewNode(al))
@@ -486,6 +487,9 @@ class Viewer(ShowBase):
         self.render.setLight(sun)
         self.sun = sun
         dl.setCameraMask(NO_SHADOW_BIT)                    # (the sun's shadow camera: see no_shadow())
+        self._shader_inputs()
+
+    def _shader_inputs(self):
         sh = Shader.load(Shader.SL_GLSL, os.path.join(HERE, "shaders", "lit.vert"), os.path.join(HERE, "shaders", "lit.frag"))
         self.render.setShader(sh)
         self.render.setShaderInput("shadow_bias", 0.0004)
