@@ -526,7 +526,7 @@ LIMB_SCALE = {}         # (bones made longer than the mannequin's - set by playe
 # With MakeHuman's body the skeleton's joints are moved to his (mhbody.py): every bone takes its length from the
 # skeleton itself, and the hips go up or down by as much as his are higher or lower than the mannequin's.
 BIND_POS = False
-HANG_MH = {"out_r": -6.0, "out_l": -6.0}   # (his shoulders are broader: the arms in a little more, by his sides)
+HANG_MH = {"out_r": -6.0, "out_l": -6.0, "arm_r": -9.0, "arm_l": -9.0, "elbow_r": -4.0, "elbow_l": -4.0}   # (his shoulders are broader: the arms in a little more, by his sides)
 RELAX_GRIP = 22.0       # (MakeHuman's hand rests open, fingers spread: curled in a little, as a hand hangs)
 MANNEQUIN_PELVIS = (0.0, -0.0104, 0.9477)
 # The mannequin stands and runs with its neck craned forward (and sprints bent over like a sprinter leaving

@@ -466,22 +466,25 @@ def dress(V, paint, pos):
     # the shirt: an oval tube hanging straight down from the chest (untucked), a little off the skin all over
     w = ss(0.915, 0.928, pz) * (1 - ss(1.30, 1.36, z)) * (1 - ss(0.15, 0.19, px))
     cy = -0.038
-    rx, ry = 0.168, 0.112
+    hang = 1 - ss(0.93, 1.25, pz)                       # (fuller towards the hem, as a shirt hangs over the hips)
+    rx, ry = 0.168 + 0.006 * hang, 0.112 + 0.012 * hang
     rho = np.sqrt((x / rx) ** 2 + ((y - cy) / ry) ** 2)
     k = np.where(rho < 1, 1 / np.maximum(rho, 1e-6), 1.0)
     V[:, 0] += w * (x * k - x)
     V[:, 1] += w * ((y - cy) * k + cy - y)
     # the shorts: wide legs down to a hand above the knee
     for sd, sg in (("l", 1), ("r", -1)):
-        a, b = pos["thigh." + sd], pos["calf." + sd]
+        a, b = pos["thigh." + sd].copy(), pos["calf." + sd].copy()
+        a[0] -= sg * 0.035                              # (the legs of the shorts hang from under the hips, closer
+        b[0] -= sg * 0.032                              #  together - loose down the middle, no gap between)
         m = (np.sign(x) == sg) | (np.abs(x) < 0.01)
         w = ss(0.612, 0.622, pz) * (1 - ss(0.95, 0.99, pz)) * m          # (a sharp hem: the leg of the shorts)
         ab = b - a
         t = ((V - a) @ ab) / (ab @ ab)
         c = a + t[:, None] * ab
-        r = 0.098 - 0.004 * np.clip(t, 0, 1)
+        r = 0.098 + 0.004 * np.clip(t, 0, 1)
         d = V - c
-        dl = np.linalg.norm(d, axis=1)
+        dl = np.linalg.norm(d * np.array([1.0, 1.12, 1.0]), axis=1)        # (a little flatter front to back)
         tube = 1 - ss(0.86, 0.93, pz)                   # (lower down: the tube itself, like a real pair -
         k = np.where(dl < r, r / np.maximum(dl, 1e-6), 1.0)    #  over the thigh's muscles; higher: over the hips)
         k = k * (1 - tube) + (r / np.maximum(dl, 1e-6)) * tube
