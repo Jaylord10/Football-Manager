@@ -14,7 +14,7 @@ and even then the 2D view stays as an option.
 opens a window and plays the sample match from frame 5600 (30 frames a second, so 5600 = about 3 minutes in;
 13300 = just before the goal).
 Keys: **space** pause, **left / right** back / on 10 seconds, **[ / ]** slower / faster, **1** TV camera,
-**2** close camera, **Esc** quit.  `--teams=Penrith,Fernley` shows other clubs' kits; `--overcast` a grey day; `--night` an evening game under the floodlights;
+**2** close camera, **Esc** quit.  `--teams=Penrith,Fernley` shows other clubs' kits; `--overcast` a grey day; `--night` an evening game under the floodlights; `--rain` Lancashire drizzle;
 `--match=file.json` another recording.
 
 Making pictures / clips instead: `python broadcast3d/viewer.py 5600 300 out` renders 300 frames into `out/`

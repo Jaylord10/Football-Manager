@@ -13,6 +13,9 @@ TEAMS = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("-
                                             # (--teams=Penrith,Fernley: show other clubs' kits)
 OVERCAST = "--overcast" in sys.argv
 NIGHT = "--night" in sys.argv               # (an evening kick-off under the floodlights)
+RAIN = "--rain" in sys.argv                 # (Lancashire drizzle: grey light, rain falling, a wet pitch)
+if RAIN:
+    OVERCAST = True
 SUN_AZ, SUN_EL = 200.0, 22.0               # the sun: degrees round from behind the Main Stand, and up
 SHADOW_MAP = 4096
 ANIM = "--boxes" not in sys.argv          # (animated figures unless --boxes: the old block players)
@@ -407,7 +410,9 @@ class Viewer(ShowBase):
         st = Stadium(self); st.build_kiln_lane(); st.goals()
         self.light_up()
         fog = Fog("haze"); fog.setColor(*((0.62, 0.66, 0.7) if not NIGHT else (0.04, 0.045, 0.07)))
-        fog.setExpDensity(0.0012); self.render.setFog(fog)
+        fog.setExpDensity(0.0012 if not RAIN else 0.0035); self.render.setFog(fog)
+        if RAIN:
+            self.setBackgroundColor(0.55, 0.58, 0.62, 1)
         # kits (Ashvale home v Northwick home)
         import kits                                                       # (the clubs' own kits, from their profiles)
         self.home_name = TEAMS[0] if TEAMS else match.get("home", "Ashvale Rovers")
@@ -473,6 +478,8 @@ class Viewer(ShowBase):
         self.last_ball = None
         self.dribble = {}
         self.hud(match)
+        if RAIN:
+            self.make_rain()
 
     def light_up(self):
         """The light.  Default: a bright autumn afternoon - a low sun from behind the Main Stand (the camera's side),
@@ -482,9 +489,9 @@ class Viewer(ShowBase):
             global SUN_AZ, SUN_EL
             SUN_AZ, SUN_EL = 200.0, 60.0
         if OVERCAST:
-            al = AmbientLight("amb"); al.setColor(Vec4(0.52, 0.53, 0.56, 1))
+            al = AmbientLight("amb"); al.setColor(Vec4(0.52, 0.53, 0.56, 1) if not RAIN else Vec4(0.46, 0.48, 0.52, 1))
             self.render.setLight(self.render.attachNewNode(al))
-            dl = DirectionalLight("sun"); dl.setColor(Vec4(0.62, 0.6, 0.56, 1))
+            dl = DirectionalLight("sun"); dl.setColor(Vec4(0.62, 0.6, 0.56, 1) if not RAIN else Vec4(0.42, 0.42, 0.42, 1))
             sun = self.render.attachNewNode(dl); sun.setPos(-40, -60, 120); sun.lookAt(0, 0, 0)
             self.render.setLight(sun)
             self._shader_inputs()
@@ -534,6 +541,20 @@ class Viewer(ShowBase):
         self.clock_t = OnscreenText(text="", pos=(-0.88, 0.87), scale=0.05, fg=(0.85, 0.9, 0.85, 1), align=TextNode.ACenter,
                                     mayChange=True)
         DirectFrame(frameColor=(0.06, 0.07, 0.09, 0.0), frameSize=(0, 0.1, -0.1, 0), pos=(-1.7, 0, 0.94))
+
+    def make_rain(self):
+        """Rain over the picture: two layers of streaks drifting down at different speeds (near and far)."""
+        from panda3d.core import TextureStage
+        tex = self.loader.loadTexture(T + "rain.png")
+        tex.setWrapU(Texture.WM_repeat); tex.setWrapV(Texture.WM_repeat)
+        self.rain = []
+        for scale, alpha, speed in ((1.0, 0.55, 1.9), (2.2, 0.35, 1.1)):
+            cm = CardMaker("rain"); cm.setFrame(-1.9, 1.9, -1, 1); cm.setUvRange((0, 0), (3.8 / scale, 2 / scale))
+            n = self.render2d.attachNewNode(cm.generate()) if False else self.aspect2d.attachNewNode(cm.generate())
+            n.setTexture(tex); n.setTransparency(TransparencyAttrib.MAlpha); n.setAlphaScale(alpha)
+            n.setBin("fixed", 5); n.setDepthTest(False); n.setDepthWrite(False)
+            self.rain.append((n, speed))
+        self.rain_t = 0.0
 
     def _goal_caption(self, fr):
         """After a goal, the TV caption along the bottom: GOAL, the minute, the scorer and his club."""
@@ -655,6 +676,11 @@ class Viewer(ShowBase):
         s = fr["s"]
         self.score_t.setText(f"{self.labels[0]}  {s[0]} - {s[1]}  {self.labels[1]}")
         self._goal_caption(fr)
+        if RAIN:
+            self.rain_t += dt
+            from panda3d.core import TextureStage
+            for n, speed in self.rain:
+                n.setTexOffset(TextureStage.getDefault(), 0.06 * self.rain_t * speed, self.rain_t * speed)
         mins = int(fr["t"] / 600.0 * 45)
         self.clock_t.setText(f"{mins:02d}:{int((fr['t'] / 600.0 * 45 * 60) % 60):02d}")
 
