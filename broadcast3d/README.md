@@ -44,7 +44,8 @@ the live window).
   the thigh); writes `models/footballer.glb`.
 - `players3d.py` - the players: the mannequin's skeleton with the smooth body, its kit drawn pixel by pixel by the shader (patterns,
   collars, names and numbers on the back, crests), faces and haircuts, heights, leaning into turns.
-- `gait.py` - the movements built from real figures (side-steps and backpedalling with the feet planted: each
+- `gait.py` - the movements built from real figures (our own jog, run and sprint - feet planted while down, the
+  hip and knee angles worked out from the leg's own lengths - blended by speed; `--oldrun` the mannequin's run; side-steps and backpedalling with the feet planted: each
   foot stays put on the grass while it's down, the step cycle run at his speed; faster across or backwards, he
   turns his hips and runs): the walk (normal gait data), kicks and shots (kicking
   studies), headers, tackles, the keeper's set position, dives and getting up, throws and punts, throw-ins,

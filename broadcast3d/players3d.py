@@ -199,6 +199,22 @@ def _face(name, number, skin):
 WALK_CYCLE, RUN_CYCLE = 1.05, 3.6
 
 
+OWN_RUNS = "--oldrun" not in sys.argv          # (--oldrun: the mannequin's own run, to compare)
+SPEEDS = [("walk", 1.4), ("jog", 3.0), ("run2", 5.5), ("sprint", 8.0)]
+
+
+def _speed_weights(s):
+    """How much of each gait at this speed (m/s): all walk up to 1.4, all jog at 3, ... blended between."""
+    if s <= SPEEDS[0][1]:
+        return {"walk": 1.0}
+    for (a, sa), (b, sb) in zip(SPEEDS, SPEEDS[1:]):
+        if s <= sb:
+            t = (s - sa) / (sb - sa)
+            t = t * t * (3 - 2 * t)
+            return {a: 1 - t, b: t}
+    return {SPEEDS[-1][0]: 1.0}
+
+
 class AnimPlayer:
     def __init__(self, parent, kit, number, skin, hair, keeper=False, model=MODEL, name=None, crest=None,
                  height=None):
@@ -286,11 +302,11 @@ class AnimPlayer:
                 from skeleton import LIMB_SCALE
                 gait.LIMB_SCALE = LIMB_SCALE
             made = gait.add_all(self.a)                     # (the walk and every action: built from real figures)
-            self.action_names = [n for n in made if n not in ("walk", "idle", "run") and n not in gait.LOOPS]
+            self.action_names = [n for n in made if n not in ("walk", "idle", "run") and n not in gait.LOOPS and n not in gait.RUNS]
         self.loco_names = [n for n in ["idle", "run"] + ([self.cfg["walk"]] if self.cfg["walk"] else [])]
         if self.cfg.get("make_walk"):
             import gait
-            self.loco_names += list(gait.LOOPS)
+            self.loco_names += list(gait.LOOPS) + list(gait.RUNS)
         self.mood = None                    # (after a goal: "scorer", "joy" or "sad")
         self.still_t = 0.0                  # (how long he's been standing still)
         self.sad_pose = "hips" if sum(map(ord, str(number))) % 2 else "knees"
@@ -447,19 +463,26 @@ class AnimPlayer:
         self.ph_back = (getattr(self, "ph_back", 0.0) + dt * s / _g.CYCLE_BACK) % 1.0      #  cycles at his speed)
         self.t_idle = (self.t_idle + dt * 30) % 1800.0
         self.still_t = self.still_t + dt if s < 1.0 else 0.0
-        w_run = min(1.0, max(0.0, (s - 1.8) / 2.7)) ** 0.9                    # (a jog: walk and run blended)
-        if self.cfg["walk"]:
-            w_walk = (1 - w_run) * min(1.0, s / 0.6)
+        own_runs = self.cfg.get("make_walk") and OWN_RUNS
+        if own_runs:
+            # walking, jogging, running, sprinting (gait.RUNS - our own, feet planted), each blended into the
+            # next by speed, and the standing pose below a slow walk
+            ws = _speed_weights(s)
+            w_walk = ws.get("walk", 0.0) * min(1.0, s / 0.6)
+            w_run = 0.0
         else:
-            w_walk = 0.0
-        w_move = w_walk + w_run
+            ws = {}
+            w_run = min(1.0, max(0.0, (s - 1.8) / 2.7)) ** 0.9                # (a jog: walk and run blended)
+            w_walk = (1 - w_run) * min(1.0, s / 0.6) if self.cfg["walk"] else 0.0
+        w_runs = {k: ws.get(k, 0.0) for k in ("jog", "run2", "sprint")}
+        w_move = w_walk + w_run + sum(w_runs.values())
         # The stride cycle (two steps) run at his speed over the length of a stride, so the foot on the ground
-        # stays put: measured on the animations, a walking cycle covers 1.05 m, a running one 3.0 m (blended
-        # by how much of each he's doing).  Real cadences come out of that - ~1.9 steps a second walking at
-        # 1 m/s, ~3 jogging at 3 m/s, ~3.3 running at 5 m/s; capped at a sprinter's ~4.6 steps a second.
+        # stays put (each gait's cycle length measured on him, blended by how much of each he's doing).
         if self.cfg.get("make_walk"):
-            stride = self.stride_k * (w_walk * WALK_CYCLE + w_run * RUN_CYCLE)
-            cyc = min(2.3, s / stride) if stride > 0.05 else 0.6
+            import gait as _g
+            stride = self.stride_k * (w_walk * WALK_CYCLE + w_run * RUN_CYCLE +
+                                      sum(w * _g.RUN_CYCLES.get(k, 3.0) for k, w in w_runs.items()))
+            cyc = min(2.4, s / stride) if stride > 0.05 else 0.6
         else:
             cyc = (1.3 + 0.45 * s if s < 2.5 else 1.65 + 0.3 * s) / 2.0
         self.phase = (self.phase + cyc * dt) % 1.0
@@ -467,19 +490,28 @@ class AnimPlayer:
         r0, r1 = self.cfg["run_range"]                                        # (the frames that make one stride)
         run_f = (self.phase * (r1 - r0) + self.cfg["run_offset"]) % (r1 - r0)
         stand, walk, run = getattr(self, "force_stand", None) or "idle", self.cfg["walk"], "run"
+        special = None
         if self.mood and self.cfg.get("make_walk"):                           # (after a goal: celebrating, or not)
             happy = "cheer" if self.still_t < 3.5 else "clap"                 # (then he applauds the fans)
             stand = {"scorer": happy, "joy": happy, "sad": self.sad_pose}.get(self.mood, "idle")
             walk = "walk_sad" if self.mood == "sad" else walk
-            run = "run_arms" if self.mood == "scorer" else run
+            special = "run_arms" if self.mood == "scorer" else None
             w_fwd, w_side, w_back = 1.0, 0.0, 0.0
         if getattr(self, "calling", False) and self.cfg.get("make_walk"):
-            run = "run_call"
+            special = "run_call"
+        if special:                                                           # (the mannequin's run, arms busy)
+            run = special
+            w_run += sum(w_runs.values())
+            w_runs = {k: 0.0 for k in w_runs}
         self.loco = {n: 0.0 for n in self.loco_names}
         self.loco[stand] = w_idle
         self.loco[run] = w_run * w_fwd
         self.a.pose(stand, self.t_idle % self.nf[stand])
         self.a.pose(run, (r0 + run_f) if run == "run" else run_f)
+        for k, w in w_runs.items():
+            if w > 0.0:
+                self.loco[k] = w * w_fwd
+                self.a.pose(k, self.phase * self.nf[k])
         if walk:
             self.loco[walk] = w_walk * w_fwd
             self.a.pose(walk, self.phase * self.nf[walk])

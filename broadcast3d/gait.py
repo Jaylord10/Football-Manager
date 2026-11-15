@@ -107,6 +107,108 @@ def walk_pose(ph):
     return m, {"sway": -0.008 * s}                                # (over the right foot in the first half)
 
 
+# --- the run: our own, from running studies, with the foot on the ground planted ------------------------------
+# One cycle = two steps, right foot down at phase 0, left at 0.5.  While a foot is down (the "stance", ~38% of the
+# cycle jogging, ~30% running, ~24% sprinting) it stays put on the grass: the hip and knee angles that keep it
+# there are worked out from the leg's lengths as the body passes over it (the leg's own geometry, two bones);
+# the hips dip a little mid-stance (the knee bending ~35-45 deg to take the landing).  In the air the leg
+# swings through: the heel tucks up (knee ~95 deg jogging, ~125 sprinting), the thigh drives forward (~45-65
+# deg) and reaches out again for the next landing.  Arms swing against the legs, elbows ~80-90 deg.  Figures:
+# Novacheck 1998 (Gait & Posture 7, "The biomechanics of running"); Mann & Hagy 1980; Weyand et al. 2000
+# (sprinting: contact ~0.1 s, ~4.5 steps a second); cadence ~2.7 steps/s jogging at 3 m/s, ~3.2 at 5.5 m/s.
+# (name: speed m/s, steps a second, stance share, thigh's drive, heel tuck, forward lean, arm swing)
+RUNS = {"jog": (3.0, 2.7, 0.38, 42, 95, 9, 20), "run2": (5.5, 3.2, 0.30, 55, 112, 12, 32),
+        "sprint": (8.0, 4.4, 0.24, 66, 126, 16, 46)}
+LEGS = {"thigh": 0.45, "shin": 0.45, "hip_h": 0.90}     # (set from the skeleton when the runs are built)
+RUN_REACH = {"run2": 1.14, "sprint": 1.16}    # (the two-bone sum is a little short at the faster runs: measured)
+RUN_SWEEP = 0.5                               # (measured: the planted foot stays put sideways - see WALK_SWEEP)
+
+
+def _curve(keys, t):
+    """A smooth curve through (t, value) keys, t 0..1 (not wrapping)."""
+    t = max(keys[0][0], min(keys[-1][0], t))
+    for i in range(len(keys) - 1):
+        t0, v0 = keys[i]
+        t1, v1 = keys[i + 1]
+        if t <= t1:
+            vm = keys[i - 1][1] if i > 0 else v0 - (v1 - v0)
+            vp = keys[i + 2][1] if i + 2 < len(keys) else v1 + (v1 - v0)
+            m0, m1 = (v1 - vm) / 2.0, (vp - v0) / 2.0
+            u = (t - t0) / max(t1 - t0, 1e-6)
+            u2, u3 = u * u, u * u * u
+            return (2 * u3 - 3 * u2 + 1) * v0 + (u3 - 2 * u2 + u) * m0 + (-2 * u3 + 3 * u2) * v1 + (u3 - u2) * m1
+    return keys[-1][1]
+
+
+def _leg_ik(x, h):
+    """Hip and knee angles (degrees: hip + = thigh forward, knee + = bent) putting the ankle x ahead of the hip
+    and h below it."""
+    L1, L2 = LEGS["thigh"], LEGS["shin"]
+    D = min(L1 + L2 - 1e-4, math.hypot(x, h))
+    knee = math.pi - math.acos(max(-1.0, min(1.0, (L1 * L1 + L2 * L2 - D * D) / (2 * L1 * L2))))
+    hip = math.atan2(x, h) + math.acos(max(-1.0, min(1.0, (L1 * L1 + D * D - L2 * L2) / (2 * L1 * D))))
+    return math.degrees(hip), math.degrees(knee)
+
+
+def run_cycle(name):
+    """(the pose function for this run, the metres one cycle covers, the stance share)."""
+    v, steps, beta, drive, tuck, lean, arms = RUNS[name]
+    T = 2.0 / steps                         # (seconds a cycle)
+    C = v * T                               # (metres a cycle)
+    d = C * beta / 2.0 * RUN_REACH.get(name, 1.0)   # (the foot: from d ahead of the hip to d behind, while down)
+    H = LEGS["hip_h"]
+    sink = 0.035 + 0.01 * (v - 3.0) / 5.0   # (the hips dip mid-stance)
+    flight = max(0.0, 0.5 - beta) * T       # (seconds in the air each step)
+    rise = 9.81 * flight * flight / 8.0     # (how high he goes: up and down in that time)
+
+    def stance(t):                          # (t 0..1 through the stance)
+        x = d - 2 * d * t
+        h = H - sink * math.sin(math.pi * t) - 0.02 * (1 - t)       # (a little bent at landing too)
+        return _leg_ik(x, h)
+
+    hip_c, knee_c = stance(0.0)
+    hip_o, knee_o = stance(1.0)
+
+    def leg(ph):
+        ph %= 1.0
+        if ph < beta:
+            t = ph / beta
+            hip, knee = stance(t)
+            ankle = _curve([(0, 4), (0.45, 18), (1.0, -22)], t)
+            return hip, knee, ankle, 0.0
+        s_ = (ph - beta) / (1 - beta)
+        hip = _curve([(0, hip_o), (0.35, (hip_o + drive) / 2 + 4), (0.72, drive), (1.0, hip_c)], s_)
+        knee = _curve([(0, knee_o), (0.38, tuck), (0.75, 40), (1.0, knee_c)], s_)
+        ankle = _curve([(0, -22), (0.4, 8), (0.8, 4), (1.0, 4)], s_)
+        return hip, knee, ankle, s_
+
+    def pose(u):
+        m = {}
+        for sd, off in (("r", 0.0), ("l", 0.5)):
+            hip, knee, ankle, _ = leg(u + off)
+            m["hip_" + sd], m["knee_" + sd], m["ankle_" + sd] = hip, knee, ankle
+        c = math.cos(2 * math.pi * u)
+        m["arm_r"], m["arm_l"] = -arms * c - 2, arms * c - 2          # (each arm with the other leg)
+        m["elbow_r"], m["elbow_l"] = 82 - 12 * c, 82 + 12 * c
+        m["out_r"] = m["out_l"] = 10
+        m["across_r"] = m["across_l"] = 6
+        m["turn"] = 6 * c                                             # (hips turn with the legs...)
+        m["toein_r"], m["toein_l"] = -6 * c, 6 * c                    # (...the legs turning back under them)
+        for sd in ("r", "l"):                                         # (legs swung straight back - see WALK_SWEEP)
+            m["hipout_" + sd] = RUN_SWEEP * (m["hip_" + sd] - 8)
+        m["twist"] = -10 * c                                          # (shoulders against them)
+        m["lean"] = lean
+        m["nod"] = -lean * 0.6                                        # (head up, eyes on the game)
+        # in the air between steps: the body up and down (ballistic)
+        ph = u % 0.5
+        air = 0.0
+        if ph >= beta and flight > 0:
+            s_ = (ph - beta) / (0.5 - beta)
+            air = 4 * rise * s_ * (1 - s_)
+        return m, {"air": air}
+    return pose, C, beta
+
+
 # --- actions: key poses at seconds from the moment (the ball struck, the dive's start...) ---------------------------
 # "air": metres he is off the ground (no grounding then).  "hold": the pose stays put (a held stance).
 N = {}
@@ -600,8 +702,27 @@ ARM_CHAIN = ("clavicle.l", "upperarm.l", "lowerarm.l", "hand.l", "clavicle.r", "
 HANG = {"out_r": -80, "out_l": -80, "arm_r": 5, "arm_l": 5, "elbow_r": 12, "elbow_l": 12}
 
 
+RUN_CYCLES = {}          # (name -> metres a cycle covers, at the skeleton's own size)
+
+
+def _measure_legs(actor):
+    char = actor.find("**/+Character").node()
+    nm = {}
+    for j in ("thigh.l", "calf.l", "foot.l"):
+        jn = char.findJoint(j)
+        nm[j] = actor.exposeJoint(None, "modelRoot", j).getPos(actor)
+    LEGS["thigh"] = (nm["thigh.l"] - nm["calf.l"]).length()
+    LEGS["shin"] = (nm["calf.l"] - nm["foot.l"]).length()
+    LEGS["hip_h"] = 0.985 * (LEGS["thigh"] + LEGS["shin"])
+
+
 def _make(actor):
     _CACHE["walk"] = build(actor, "walk", walk_pose, 30)
+    _measure_legs(actor)
+    for name in RUNS:
+        fn, C, beta = run_cycle(name)
+        RUN_CYCLES[name] = C
+        _CACHE[name] = build(actor, name, fn, 24)
     for name, (fn, n, base) in LOOPS.items():
         if base == "run":                                               # (on top of the run: its stride, frames 2-17)
             _CACHE[name] = build(actor, name, fn, n, ground=False, base_anim="run", base_frame=lambda u: 2 + u * 15)
