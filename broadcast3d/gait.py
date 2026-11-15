@@ -52,7 +52,6 @@ MOVES = {
     "side": ("spine_01", "y", 1),
     "nod": ("neck_01", "x", 1), "head": ("head", "x", 1),
     "toein_r": ("thigh.r", "z", 1), "toein_l": ("thigh.l", "z", -1),
-    "shrug_r": ("clavicle.r", "y", 1), "shrug_l": ("clavicle.l", "y", -1),
 }
 AXES = {"x": Vec3(1, 0, 0), "y": Vec3(0, 1, 0), "z": Vec3(0, 0, 1)}
 # The order the turns are made in at each joint: forward / back first, then across the body, then out.
@@ -430,9 +429,6 @@ def build(actor, name, pose_fn, frames, ground=True, base_anim="idle", base_fram
         moves = dict(moves)
         for m, v in POSTURE.get(base_anim, {}).items():     # (the mannequin's posture put right)
             moves[m] = moves.get(m, 0.0) + v
-        for sd in ("r", "l"):                                # (shoulders down, arms kept hanging as they were)
-            moves["shrug_" + sd] = moves.get("shrug_" + sd, 0.0) - SHRUG
-            moves["out_" + sd] = moves.get("out_" + sd, 0.0) + SHRUG
         turns = {}
         if hang:                                        # (the arms hung first; the movement's turns after)
             for m, deg in HANG.items():
@@ -527,10 +523,6 @@ ARM_CHAIN = ("clavicle.l", "upperarm.l", "lowerarm.l", "hand.l", "clavicle.r", "
 # Arms hanging naturally from the rest pose (straight out sideways): down by the sides, a little out and
 # forward, elbows slightly bent, so the fingertips reach about halfway down the thigh.
 HANG = {"out_r": -80, "out_l": -80, "arm_r": 5, "arm_l": 5, "elbow_r": 12, "elbow_l": 12}
-# The mannequin's shoulders sit ~2.5 cm too high: a man's shoulder point (acromion) is ~0.82 of his height up,
-# his chin ~0.87 (ANSUR II, 2012: acromion 1440 mm, chin 1530 mm for 1756 mm stature) - so ~9 cm from chin to
-# shoulder, where ours had ~6.  The collarbones are dropped (and the arms turned back out by as much).
-SHRUG = 11.0
 
 
 def _make(actor):
