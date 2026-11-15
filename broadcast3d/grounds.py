@@ -105,6 +105,7 @@ def build(st, prof, kit):
                   (f"{town.upper()} BUILDING SOC.", (10, 90, 160), (255, 255, 255)),
                   (f"{prof.get('short', town).upper()} FOUNDATION", (240, 240, 240), tuple(shirt) if not dark else (30, 30, 34)),
                   (f"{town.upper()} MOTORS", (20, 60, 40), (240, 210, 120))])
+    st.b.led_ads = (g.get("capacity") or 0) >= 40000                  # (the bigger grounds have LED boards)
     near = st.side("near")
     st.dugouts(near)
     # the outside: a wall round the ground, a few streets of houses, hills beyond

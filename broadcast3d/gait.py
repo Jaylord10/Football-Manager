@@ -211,6 +211,10 @@ ACTIONS = {
                          "lean": -28, "chest": -10, "out_r": 120, "out_l": 120, "arm_r": 15, "arm_l": 15,
                          "elbow_r": 20, "elbow_l": 20, "nod": -30}),
                   (1.9, N)],
+    # The referee holding up a card; the player booked, arms out ("what was that for?").
+    "card": [(0.0, {"arm_r": 172, "out_r": 4, "elbow_r": 0, "nod": -4}), (1.0, "same")],
+    "protest": [(0.0, {"out_r": 45, "out_l": 45, "arm_r": 35, "arm_l": 35, "elbow_r": 35, "elbow_l": 35,
+                       "lean": -4, "nod": -6}), (1.0, "same")],
     # In the wall at a free kick: shoulder to shoulder, hands crossed in front of them.
     "wall": [(0.0, {"arm_r": 22, "arm_l": 22, "across_r": 34, "across_l": 34, "elbow_r": 25, "elbow_l": 25,
                     "lean": 4, "nod": -4, "knee_r": 6, "knee_l": 6}), (1.0, "same")],

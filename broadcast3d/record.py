@@ -1,6 +1,6 @@
 """Record a real match from the engine: every 2nd frame (30 fps) - positions, facing, speed, state, ball, the
 keepers' dives, dead balls (throw-ins, goal kicks, corners, free kicks, kick-offs: "r" = [kind, taker]) and goal
-celebrations ("c" = [team, scorer]).  usage: python record.py SECONDS [SEED]  (FM_SAVE = the save to use, FM_REC_OUT = where)"""
+celebrations ("c" = [team, scorer]) and bookings ("card" = [yellow / second_yellow / red, player]).  usage: python record.py SECONDS [SEED]  (FM_SAVE = the save to use, FM_REC_OUT = where)"""
 import os, sys, io, contextlib, json, random
 HERE = os.path.dirname(os.path.abspath(__file__))
 W = os.path.dirname(HERE)                # (the game folder)
@@ -39,6 +39,10 @@ with contextlib.redirect_stdout(io.StringIO()):
         if getattr(b, "is_dead", False) and getattr(b, "restart_type", None):        # (a dead ball: who takes it)
             tk = getattr(b, "restart_taker", None)
             fr["r"] = [b.restart_type, everyone.index(tk) if tk in everyone else -1]
+        cd = getattr(e, "_card_display", None)                                        # (a booking: who, which card)
+        if cd and e.time_elapsed < cd.get("until", 0):
+            who = next((j for j, p in enumerate(everyone) if getattr(p, "name", None) == cd.get("name")), -1)
+            fr["card"] = [cd.get("type"), who]
         cel = getattr(b, "_celebration", None)
         if cel and e.time_elapsed < cel.get("until", 0) and cel.get("scorer") in everyone:   # (a goal celebration)
             fr["c"] = [cel["team"], everyone.index(cel["scorer"])]

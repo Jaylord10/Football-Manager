@@ -278,6 +278,7 @@ class Stadium:
             m.quad((-half, dist, 0), (half, dist, 0), (half, dist, 0.95), (-half, dist, 0.95), (1, 1, 1, 1),
                    ((0, 0), (reps, 0), (reps, 1), (0, 1)))
             n = s.attachNewNode(m.node()); n.setTexture(tex); n.setLightOff(); n.setShaderOff(1)
+            self.b.__dict__.setdefault("ad_nodes", []).append((n, len(brands)))
             box(s, -half, dist + 0.02, 0, half, dist + 0.12, 0.95, C((40, 42, 48)))      # (the back of the boards)
 
     def corner_flags(self):
@@ -589,6 +590,7 @@ class Viewer(ShowBase):
     def _goal_caption(self, fr):
         """After a goal, the TV caption along the bottom: GOAL, the minute, the scorer and his club."""
         cel = fr.get("c")
+        card = fr.get("card")
         if not hasattr(self, "cap"):
             from direct.gui.DirectGui import DirectFrame
             self.cap = DirectFrame(frameColor=(0.06, 0.07, 0.09, 0.9), frameSize=(-0.75, 0.75, -0.075, 0.075),
@@ -600,6 +602,17 @@ class Viewer(ShowBase):
                                       align=TextNode.ALeft, mayChange=True)
             self.cap.hide()
         k = fr.get("k", 0)
+        if card and 0 <= card[1] < len(self.m.get("names", [])):
+            nm = self.m["names"][card[1]][0]
+            short = (nm.split()[0][0] + ". " + nm.split()[-1]) if " " in nm else nm
+            team = 0 if card[1] < 11 else 1
+            red = card[0] in ("red", "second_yellow")
+            self.cap_bar["frameColor"] = (0.85, 0.1, 0.1, 1) if red else (0.98, 0.85, 0.1, 1)
+            self.cap_t.setText("")
+            word = "RED CARD" if red else "BOOKED"
+            self.cap_n.setText(f"{word}   {short}   {self.home_name if team == 0 else self.away_name}")
+            self.cap.show()
+            return
         if cel and k - self._restart_id(k) < 30 * 9:                        # (the first 9 seconds of it)
             team, scorer = cel
             names = self.m.get("names", [])
@@ -646,6 +659,9 @@ class Viewer(ShowBase):
             kind, t = self.events.action(i, k)
             if cel and i == cel[1]:
                 kind, t = self._scorer_slide(i, sp, k, kind, t)
+            card = fr.get("card")
+            if card and card[1] == i and kind is None and sp < 25:
+                kind, t = "protest", 0.5
             if kind == "despair" and sp > 30:                               # (not while he's still running hard)
                 kind = None
             if kind == "throwin":                                           # (facing the way he throws it)
@@ -679,6 +695,13 @@ class Viewer(ShowBase):
                         p.flood.show()
         for net in self.nets:
             net.step(dt)
+        if getattr(self, "led_ads", False):                                  # (LED boards: a new advert every
+            from panda3d.core import TextureStage                            #  12 seconds, sliding along)
+            tt = getattr(self, "_flag_t", 0.0)
+            step, frac = divmod(tt, 12.0)
+            slide = step + min(1.0, frac / 0.6)
+            for n, nb in getattr(self, "ad_nodes", []):
+                n.setTexOffset(TextureStage.getDefault(), slide / nb, 0)
         self._flag_t = getattr(self, "_flag_t", 0.0) + dt                     # (the corner flags in the breeze)
         for j, f in enumerate(getattr(self, "flags", [])):
             f.setH(200 + 18 * math.sin(self._flag_t * 2.3 + j) + 8 * math.sin(self._flag_t * 5.1 + j * 2))
@@ -1046,6 +1069,11 @@ def _viewer_officiate(self, fr, dt, bx, by):
         else:                                                                # (the left half, far side)
             line = xs_l[1] if len(xs_l) > 1 else -HX + 16
             tx, ty = min(0.0, max(-HX, min(line, bx))), HY + 1.2
+        card = fr.get("card")
+        if card and o["role"] == "ref" and 0 <= card[1] < len(P):            # (a booking: over to the player)
+            px_, py_ = to_world(P[card[1]][0], P[card[1]][1])
+            dd = math.hypot(px_ - x, py_ - y) or 1.0
+            tx, ty = px_ + (x - px_) / dd * 2.2, py_ + (y - py_) / dd * 2.2
         if fr.get("c"):                                                      # (a goal: back to the halfway line)
             tx = 0.0 if o["role"] != "ref" else -6.0
             ty = ty if o["role"] != "ref" else 4.0
@@ -1083,6 +1111,11 @@ def _viewer_officiate(self, fr, dt, bx, by):
                 kind = "flag" if mine else ("signal" if o["role"] == "ref" else None)
             elif o["role"] == "ref":
                 kind = "point"
+        if card and o["role"] == "ref":
+            kind, t = "card", 0.5
+            self._card_in_hand(o["p"], card[0])
+        elif o["role"] == "ref":
+            self._card_in_hand(o["p"], None)
         o["p"].act(kind, t - 0.3 if kind == "point" else t)
 
 
@@ -1149,6 +1182,20 @@ def _viewer_calling(self, i, fr, wx, wy, sp, k):
     return ((k + i * 37) // 36) % 5 == 0                                    # (about a second in every six)
 
 
+def _viewer_card_in_hand(self, p, kind):
+    """The card in the referee's raised hand (yellow, or red)."""
+    if not hasattr(p, "card_np"):
+        hand = p.a.exposeJoint(None, "modelRoot", "hand.r")
+        p.card_np = box(hand, -0.04, -0.005, 0.05, 0.04, 0.005, 0.17, (1, 1, 1, 1))
+        p.card_np.setShaderInput("kit_on", 0.0)
+    if kind is None:
+        p.card_np.hide()
+        return
+    p.card_np.show()
+    p.card_np.setColor((0.98, 0.85, 0.1, 1) if kind == "yellow" else (0.85, 0.1, 0.1, 1))
+
+
+Viewer._card_in_hand = _viewer_card_in_hand
 Viewer._calling = _viewer_calling
 Viewer._scorer_slide = _viewer_scorer_slide
 Viewer._restart_id = _viewer_restart_id
