@@ -207,7 +207,7 @@ def shapes():
     add(lambda q: ellipsoid(q, (0.0, -0.035, 1.628), (0.067, 0.076, 0.082)), 0.03)            # face
     add(lambda q: ellipsoid(q, (0.0, -0.045, 1.582), (0.058, 0.066, 0.04)), 0.03)            # jaw
     add(lambda q: ellipsoid(q, (0.0, -0.098, 1.562), (0.026, 0.02, 0.024)), 0.02)             # chin
-    add(lambda q: capsule(q, (-0.042, -0.099, 1.675), (0.042, -0.099, 1.675), 0.010, 0.010), 0.016)  # brow
+    add(lambda q: capsule(q, (-0.038, -0.089, 1.676), (0.038, -0.089, 1.676), 0.009, 0.009), 0.022)  # brow
     for sx in (-1, 1):
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.0735, 0.006, 1.643), (0.0075, 0.017, 0.026)), 0.008)  # ear
     for sx in (-1, 1):                                                                          # eye sockets

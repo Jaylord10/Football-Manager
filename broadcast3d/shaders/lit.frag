@@ -72,7 +72,7 @@ vec4 head_colour(float x, float y, float z, float ax) {
         if (fade) amt *= mix(0.4, 1.0, smoothstep(l, l + 0.07, z));
         skin = mix(skin, kit_hair.rgb, smoothstep(l - 0.004, l + 0.007, z) * amt);
     }
-    if (y < -0.08 && z < l) {                                       // the face
+    if (y < -0.06 && z < l) {                                       // the face
         vec2 e = vec2(ax - 0.033, z - 1.6555);
         vec2 lid = vec2(e.x / 0.0098, e.y / 0.0051);
         float in_eye = dot(lid, lid);
