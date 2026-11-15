@@ -690,7 +690,7 @@ class Viewer(ShowBase):
         self.cx += (max(-34, min(34, bx)) - self.cx) * k
         self.cy += (by - self.cy) * k
         if "--top" in sys.argv:                                             # (a check: the whole ground from above)
-            self.cam.setPos(0, -170, 200); self.cam.lookAt(0, 0, 0)
+            self.cam.setPos(0, -330, 230); self.cam.lookAt(0, 40, 0)
         elif FOLLOW is not None:                                            # (a close camera on one player)
             if FOLLOW < len(fr["p"]):
                 fx_, fy_ = to_world(fr["p"][FOLLOW][0], fr["p"][FOLLOW][1])

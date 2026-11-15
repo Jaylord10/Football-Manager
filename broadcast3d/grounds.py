@@ -116,7 +116,148 @@ def build(st, prof, kit):
             hb = st.root.attachNewNode(st._brick_block(side_x * (HX + 56) - 4, -36 + i * 9.5, side_x * (HX + 56) + 4,
                                                         -36 + i * 9.5 + 8.6, 8))
             hb.setTexture(st.T("brick.png"))
+    _scenery(st, g, depth, eng)
     st.sky_and_hills(lamps)
+
+
+# --- what's round the ground: from the profile's "surroundings" (and a big screen from "corners") ----------------
+FEATURES = [("viaduct", "viaduct"), ("chimney", "chimney"), ("headframe", "headframe"), ("winding", "headframe"),
+            ("pit wheel", "headframe"), ("crane", "cranes"), ("lighthouse", "lighthouse"), ("oast", "oasts"),
+            ("cooling tower", "cooling"), ("spire", "spire"), ("cathedral", "spire"), ("skyscraper", "towers"),
+            ("tower blocks", "towers"), ("towers", "towers"), ("river", "water"), ("canal", "water"),
+            ("mere", "water"), ("sea", "water"), ("harbour", "water"), ("docks", "water"), ("thames", "water"),
+            ("brook", "water"), ("mill pond", "water"), ("water tower", "watertower"), ("gasholder", "gasholder")]
+
+
+def _clause_side(clause, g, eng):
+    """Which side of the ground a bit of the description is on (the far side, if it doesn't say)."""
+    c = clause.lower()
+    if "home end" in c:
+        return eng.get("home_end", "north")
+    for s in g.get("stands", []):
+        nm = (s.get("name") or "").lower()
+        if nm and nm in c:
+            return s.get("side", "east")
+    if "main stand" in c:
+        return "west"
+    for word in ("north", "south", "east", "west"):
+        if word in c:
+            return word
+    return "east"
+
+
+def _scenery(st, g, depth, eng):
+    import re
+    from geom import prism
+    text = (g.get("surroundings") or "")
+    clauses = [c.strip() for c in re.split(r"[;,]| - ", text) if c.strip()]
+    placed = {}
+    for clause in clauses:
+        cl = clause.lower()
+        for key, kind in FEATURES:
+            if key in cl:
+                side = _clause_side(clause, g, eng)
+                k = placed.get(side, 0)
+                placed[side] = k + 1
+                _feature(st, kind, side, k, depth.get(side, {}).get("d_back", 30.0), prism)
+                break
+    if "big screen" in (g.get("corners") or "").lower():
+        _big_screen(st)
+
+
+def _side_frame(st, side, dist, along):
+    """A point behind a side of the ground: dist metres out from its touchline / goal line, along it by along."""
+    where = SIDES[side]
+    n = st.side(where)
+    p = n.attachNewNode("feature"); p.setPos(along, dist, 0)
+    return p
+
+
+def _feature(st, kind, side, k, d_back, prism):
+    end = side in ("north", "south")
+    span = 30.0 if end else 55.0
+    along = (-0.55 + 0.45 * (k % 3)) * span * (1 if k % 2 == 0 else -1)
+    dist = d_back + 25 + 18 * (k % 2)
+    brick = st.T("brick.png")
+    if kind == "chimney":
+        p = _side_frame(st, side, dist + 10, along)
+        c = prism(p, 2.4, 52, sides=12, taper=0.62, uv_rep=(4, 12)); c.setTexture(brick)
+    elif kind == "viaduct":
+        p = _side_frame(st, side, dist + 20, 0)
+        for i in range(16):
+            x = -80 + i * 10.6
+            box(p, x - 1.4, -2.5, 0, x + 1.4, 2.5, 26, C((150, 140, 125)))
+        box(p, -82, -3, 26, 90, 3, 30, C((150, 140, 125)))
+    elif kind == "headframe":
+        p = _side_frame(st, side, dist, along)
+        col = C((70, 74, 80))
+        for sx in (-1, 1):
+            leg = box(p, -0.4, -0.4, 0, 0.4, 0.4, 32, col); leg.setPos(sx * 4, 0, 0); leg.setR(-sx * 6)
+            br = box(p, -0.3, -0.3, 0, 0.3, 0.3, 30, col); br.setPos(sx * 4, -9, 0); br.setP(18)
+        for sx in (-1, 1):
+            wh = p.attachNewNode("wheel"); wh.setPos(sx * 2, 0, 31)
+            for a in range(0, 360, 30):
+                sp = box(wh, -0.12, -0.12, 0, 0.12, 0.12, 3.2, col); sp.setR(a)
+    elif kind == "cranes":
+        for j in range(2):
+            p = _side_frame(st, side, dist + 15, along + j * 22)
+            yel = C((215, 170, 40))
+            for sx in (-1, 1):
+                box(p, sx * 5 - 0.5, -0.5, 0, sx * 5 + 0.5, 0.5, 38, yel)
+            box(p, -6, -1, 38, 6, 1, 41, yel)
+            box(p, -1, -30, 40, 1, 30, 42, yel)
+    elif kind == "lighthouse":
+        p = _side_frame(st, side, dist + 40, along)
+        for i in range(6):
+            col = C((240, 240, 240)) if i % 2 == 0 else C((200, 40, 45))
+            t = prism(p, 3.2 - i * 0.25, 5, sides=12, taper=0.93); t.setZ(i * 5); t.setColor(col)
+        box(p, -2, -2, 30, 2, 2, 33, C((250, 240, 180)))
+    elif kind == "oasts":
+        for j in range(3):
+            p = _side_frame(st, side, dist + 5, along + j * 9)
+            r = prism(p, 3.2, 9, sides=12); r.setTexture(brick)
+            cone = prism(p, 3.4, 6, sides=12, taper=0.08); cone.setZ(9); cone.setColor(C((90, 70, 55)))
+            box(p, -0.9, -0.9, 15, 0.9, 0.9, 17.5, C((245, 245, 240)))
+    elif kind == "cooling":
+        for j in range(2):
+            p = _side_frame(st, side, dist + 260, along + j * 70)
+            a = prism(p, 30, 50, sides=16, taper=0.7); a.setColor(C((170, 170, 168)))
+            b = prism(p, 21, 25, sides=16, taper=1.15); b.setZ(50); b.setColor(C((170, 170, 168)))
+    elif kind == "spire":
+        p = _side_frame(st, side, dist + 150, along)
+        tw = box(p, -5, -5, 0, 5, 5, 34, C((150, 140, 120)))
+        sp = prism(p, 5.5, 32, sides=8, taper=0.04); sp.setZ(34); sp.setColor(C((120, 115, 105)))
+    elif kind == "towers":
+        for j in range(4):
+            p = _side_frame(st, side, dist + 320 + j * 40, along - 90 + j * 55)
+            h = 70 + (j * 37) % 60
+            box(p, -9, -9, 0, 9, 9, h, C((150 + j * 8, 160 + j * 6, 170)))
+    elif kind == "water":
+        p = _side_frame(st, side, dist - 6, 0)
+        w = box(p, -140, 0, -0.3, 140, 28, -0.1, (0.32, 0.4, 0.46, 1))
+    elif kind == "watertower":
+        p = _side_frame(st, side, dist + 12, along)
+        for sx in (-1, 1):
+            for sy in (-1, 1):
+                box(p, sx * 3 - 0.3, sy * 3 - 0.3, 0, sx * 3 + 0.3, sy * 3 + 0.3, 22, C((110, 100, 90)))
+        t = prism(p, 5, 7, sides=12); t.setZ(22); t.setTexture(brick)
+    elif kind == "gasholder":
+        p = _side_frame(st, side, dist + 30, along)
+        for a in range(0, 360, 30):
+            x, y = 16 * math.cos(math.radians(a)), 16 * math.sin(math.radians(a))
+            box(p, x - 0.4, y - 0.4, 0, x + 0.4, y + 0.4, 30, C((80, 84, 92)))
+        for z in (10, 20, 30):
+            g = prism(p, 16.3, 0.6, sides=24); g.setZ(z); g.setColor(C((80, 84, 92)))
+
+
+def _big_screen(st):
+    """A big screen in a corner (the far right), showing the club name."""
+    from panda3d.core import TextNode
+    p = st.root.attachNewNode("screen"); p.setPos(HX + 9, HY + 9, 0); p.setH(-135)
+    box(p, -0.5, -0.5, 0, 0.5, 0.5, 9, C((50, 52, 58)))
+    box(p, -7, -0.6, 9, 7, 0.6, 17, C((25, 25, 28)))
+    face = box(p, -6.6, -0.75, 9.4, 6.6, -0.6, 16.6, (0.1, 0.25, 0.4, 1))
+    face.setShaderOff(1); face.setLightOff(1)
 
 
 def _stand(st, where, s, hosts, visitors, away, shirt, trim, dark):
