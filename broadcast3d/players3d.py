@@ -554,6 +554,9 @@ class AnimPlayer:
             cyc = min(2.4, s / stride) if stride > 0.05 else 0.6
         else:
             cyc = (1.3 + 0.45 * s if s < 2.5 else 1.65 + 0.3 * s) / 2.0
+        self.cyc = cyc
+        if self.phase + cyc * dt >= 1.0:
+            self.strides = getattr(self, "strides", 0) + 1
         self.phase = (self.phase + cyc * dt) % 1.0
         w_idle = max(0.0, 1 - w_move)
         # turning on the spot (or nearly): little steps round, not a spin on the spot

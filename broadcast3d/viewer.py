@@ -863,6 +863,19 @@ def _viewer_dribble(self, i, p, dt):
     """Running with the ball: a touch every DRIBBLE_TOUCH seconds - the pose either side of it."""
     if p.sp < 1.2:
         return None, 0.0
+    cyc = getattr(p, "cyc", 0.0)
+    if cyc > 0.3 and getattr(p, "phase", None) is not None:
+        # in step with his stride: the right foot reaching the ball as it comes through (phase 0), every
+        # second stride at speed (a touch every ~4 steps, as players push it on), every stride when slower
+        ph = p.phase
+        t = (ph - (1.0 if ph > 0.5 else 0.0)) / cyc
+        n = 2 if p.sp > 4.5 else 1
+        k = int(getattr(p, "strides", 0))
+        if n == 2 and k % 2 and t < 0:                  # (the in-between stride: no touch)
+            return None, 0.0
+        if n == 2 and not k % 2 and t >= 0:
+            return None, 0.0
+        return "touch", t
     ph = (self.dribble.get(i, 0.0) + dt / DRIBBLE_TOUCH) % 1.0
     self.dribble[i] = ph
     t = ph * DRIBBLE_TOUCH
