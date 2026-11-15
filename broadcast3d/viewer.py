@@ -162,7 +162,9 @@ class Stadium:
         tn = w.attachNewNode(txt); tn.setPos(0, 9.4, 5.9); tn.setScale(2.4); tn.setH(180)
         # Canal End (right): small, old, pitched roof
         r = self.side("right")
-        self.tier(r, -32, 32, 7, 1.2, 19, 7.5, self.visitors(), (90, 90, 96))     # (the away end)
+        self.tier(r, -32, 10, 7, 1.2, 19, 7.5, "crowd_mixed.png", (90, 90, 96))
+        self.tier(r, 10, 32, 7, 1.2, 19, 7.5, self.visitors(), (90, 90, 96))      # (away fans: the corner by the
+                                                                                   #  Main Stand, as the profile says)
         self.back_wall(r, -32, 32, 19, 0, 10, tex="brick.png", rep=(14, 2))
         self.roof(r, -33, 33, 8, 21, 9.5, col=(80, 70, 66), pitched=2.5, columns=4)
         # Main Stand (near, under the camera): front rows only
