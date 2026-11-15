@@ -297,18 +297,65 @@ def sit(u):
              "arm_l": 30, "elbow_r": 40, "elbow_l": 40, "across_r": 10, "across_l": 10, "nod": -4}, {})
 
 
+# --- stepping sideways and backwards, with the feet planted -----------------------------------------------
+# Each foot is either on the ground (and, as he moves, goes back under him at exactly his speed - so it stays
+# put on the grass) or stepping (lifted, brought through to where it goes down next).  Laid out on a cycle of
+# two steps; players3d runs the cycle at his speed / CYCLE_* metres, so the planted foot never slides.
+# Real figures: a defender's side-shuffle ~0.4-0.5 m a cycle, about 3 cycles a second at a jockeying 1.5 m/s,
+# feet never crossing, low (knees ~40 deg); backpedalling, short quick steps (e.g. Sheppard & Young 2006 on
+# agility; McGill on athletic stance).
+LEG = 0.80                      # (hip to ankle, knees bent: how far a turn of the hip moves the foot sideways)
+LEG_FWD = 1.0                   # (...and forwards / back, with the knee bent and the foot flat - measured on him)
+SIDE_A, SIDE_DUTY = 0.11, 0.6   # (each foot: half its travel under him, and the part of the cycle it's down)
+BACK_A, BACK_DUTY = 0.13, 0.6
+CYCLE_SIDE = 2 * SIDE_A / SIDE_DUTY
+CYCLE_BACK = 2 * BACK_A / BACK_DUTY
+
+
+def _foot(ph, a, duty):
+    """(where the foot is along the way he moves - +a ahead .. -a behind, lifted 0..1) at this point of its
+    cycle: down (going back under him, evenly) for the first part, then stepping (eased, up and over)."""
+    ph %= 1.0
+    if ph < duty:
+        return a - 2 * a * ph / duty, 0.0
+    t = (ph - duty) / (1 - duty)
+    e = 0.5 - 0.5 * math.cos(math.pi * t)
+    return -a + 2 * a * e, math.sin(math.pi * t)
+
+
 def shuffle(u):
-    """Side-stepping to his right (a defender jockeying): low, legs opening and closing, arms out a little."""
-    sn, c = math.sin(2 * math.pi * u), math.cos(2 * math.pi * u)
-    return ({"hipout_r": 4 + 13 * sn, "hipout_l": 4 - 13 * sn, "hip_r": 22, "hip_l": 22,
-             "knee_r": 38 + 14 * max(0.0, c), "knee_l": 38 + 14 * max(0.0, -c), "ankle_r": 10, "ankle_l": 10,
-             "lean": 16, "out_r": 40, "out_l": 40, "arm_r": 15, "arm_l": 15, "elbow_r": 45, "elbow_l": 45,
-             "tilt": 3 * sn}, {})
+    """Side-stepping to his right (a defender jockeying): low, the right foot leading out, the left closing up
+    behind it - never crossing - each foot planted while it's down; arms a little out for balance."""
+    o_r, l_r = _foot(u, SIDE_A, SIDE_DUTY)
+    o_l, l_l = _foot(u + 0.5, SIDE_A, SIDE_DUTY)
+    deg = lambda o: math.degrees(math.asin(max(-0.9, min(0.9, o / LEG))))
+    m = {"hipout_r": 11 + deg(o_r), "hipout_l": 11 - deg(o_l),
+         "hip_r": 26 + 16 * l_r, "hip_l": 26 + 16 * l_l,
+         "knee_r": 42 + 34 * l_r, "knee_l": 42 + 34 * l_l, "ankle_r": 12 + 6 * l_r, "ankle_l": 12 + 6 * l_l,
+         "lean": 15, "out_r": 32, "out_l": 32, "arm_r": 18, "arm_l": 18, "elbow_r": 50, "elbow_l": 50,
+         "tilt": 2.5 * (l_l - l_r), "nod": -6}
+    return m, {"sway": 0.012 * (l_l - l_r)}
 
 
 def shuffle_m(u):
     m, e = shuffle(u)
-    return mirror(m), e
+    return mirror(m), {"sway": -e["sway"]}
+
+
+def backpedal(u):
+    """Backing off (a defender backpedalling): low, short quick steps backwards, weight forward, each foot
+    planted while it's down."""
+    o_r, l_r = _foot(u, BACK_A, BACK_DUTY)
+    o_l, l_l = _foot(u + 0.5, BACK_A, BACK_DUTY)
+    # (backwards: a planted foot goes from behind him to in front as he moves away from it)
+    deg = lambda o: math.degrees(math.asin(max(-0.9, min(0.9, -o / LEG_FWD))))
+    c = math.cos(2 * math.pi * u)
+    m = {"hip_r": 24 + deg(o_r) + 14 * l_r, "hip_l": 24 + deg(o_l) + 14 * l_l,
+         "knee_r": 36 + 40 * l_r, "knee_l": 36 + 40 * l_l, "ankle_r": 10 + 8 * l_r, "ankle_l": 10 + 8 * l_l,
+         "hipout_r": 7, "hipout_l": 7, "lean": 14, "nod": -6,
+         "arm_r": 10 + 12 * c, "arm_l": 10 - 12 * c, "out_r": 14, "out_l": 14, "elbow_r": 55, "elbow_l": 55,
+         "turn": -3 * c}
+    return m, {"sway": 0.008 * (l_l - l_r)}
 
 
 def run_call(u):
@@ -316,7 +363,8 @@ def run_call(u):
     return ({"arm_r": 150, "out_r": 20, "elbow_r": 15, "nod": -8}, {})
 
 
-LOOPS = {"run_call": (run_call, 15, "run"), "shuffle": (shuffle, 30, "idle"), "shuffle_m": (shuffle_m, 30, "idle"), "sit": (sit, 90, "idle"), "cheer": (cheer, 30, "idle"), "clap": (clap, 30, "idle"), "hips": (hips, 60, "idle"), "knees": (knees, 60, "idle"),
+LOOPS = {"run_call": (run_call, 15, "run"), "shuffle": (shuffle, 30, "idle"), "shuffle_m": (shuffle_m, 30, "idle"),
+         "backpedal": (backpedal, 30, "idle"), "sit": (sit, 90, "idle"), "cheer": (cheer, 30, "idle"), "clap": (clap, 30, "idle"), "hips": (hips, 60, "idle"), "knees": (knees, 60, "idle"),
          "walk_sad": (walk_sad, 30, "idle"), "run_arms": (run_arms, 15, "run")}
 
 

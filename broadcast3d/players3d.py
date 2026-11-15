@@ -408,30 +408,48 @@ class AnimPlayer:
         s = self.sp
         if self.roll > 5:
             sp = s = 0.0                                                      # (in the air: no running)
-        back = False
-        side = 0                                                              # (side-stepping: +1 right, -1 left)
-        if vel is not None and s > 0.8:                                       # (moving against the way he faces?)
+        # Which way he's moving against the way he faces: forwards (walk / run), sideways (side-steps), or
+        # backwards (backpedalling).  Moving fast across or away from the way he faces, a real player turns
+        # his hips and runs (and looks back over his shoulder) - so the body turns towards the way he's going.
+        fwd, rgt = 1.0, 0.0
+        if vel is not None and s > 0.3 and self.cfg.get("make_walk"):
             hd = math.radians(self.h)
             vl = max(0.1, math.hypot(*vel))
             fwd = (vel[0] * -math.sin(hd) + vel[1] * math.cos(hd)) / vl
             rgt = (vel[0] * math.cos(hd) + vel[1] * math.sin(hd)) / vl
-            back = fwd < -0.35
-            if abs(rgt) > 0.75 and s < 4.0 and self.cfg.get("make_walk"):
-                side = 1 if rgt > 0 else -1
-                back = False
+        ang = math.degrees(math.atan2(rgt, fwd))                             # (0 ahead, +90 to his right)
+        lim = 2.0 if abs(ang) > 120 else 2.4                                  # (faster than a backpedal or a
+        self.turned = s > lim - (0.3 if getattr(self, "turned", False) else 0.0)  #  jockey: he turns and runs)
+        want_off = ang if (self.turned and abs(ang) > 30) else 0.0
+        self.off = getattr(self, "off", 0.0)
+        self.off += ((want_off - self.off + 180) % 360 - 180) * min(1.0, dt * 5)
+        if abs(self.off) > 0.5:
+            self.root.setH(self.h - self.off)                                 # (Panda turns anticlockwise)
+        res = math.radians(ang - self.off)                                    # (what's left: stepped)
+        f2, r2 = math.cos(res), math.sin(res)
+        w_side, w_back = r2 * r2, max(0.0, -f2) ** 2
+        w_fwd = max(0.0, 1.0 - w_side - w_back)
+        sm = getattr(self, "_dirw", None) or [w_fwd, w_side, w_back]
+        a_ = min(1.0, dt * 8)
+        sm = [sm[i] + ([w_fwd, w_side, w_back][i] - sm[i]) * a_ for i in range(3)]
+        self._dirw = sm
+        w_fwd, w_side, w_back = sm
+        side = 1 if r2 > 0 else -1
         # Steps a second, from real players: ~1.75 walking at 1 m/s, ~2.4 jogging at 2.5 m/s, ~4 sprinting at 8 m/s.
         steps = 1.3 + 0.45 * s if s < 2.5 else 1.65 + 0.3 * s
-        self.phase = (self.phase + steps / 2.0 * dt * (-1 if back else 1)) % 1.0
+        self.phase = (self.phase + steps / 2.0 * dt) % 1.0
+        import gait as _g
+        self.ph_side = (getattr(self, "ph_side", 0.0) + dt * s / _g.CYCLE_SIDE) % 1.0      # (feet planted:
+        self.ph_back = (getattr(self, "ph_back", 0.0) + dt * s / _g.CYCLE_BACK) % 1.0      #  cycles at his speed)
         self.t_idle = (self.t_idle + dt * 30) % 1800.0
         self.still_t = self.still_t + dt if s < 1.0 else 0.0
         w_run = min(1.0, max(0.0, (s - 1.8) / 2.7)) ** 0.9                    # (a jog: walk and run blended)
-        if back:
-            w_run *= 0.7                                                      # (backing off: shorter steps)
         if self.cfg["walk"]:
             w_walk = (1 - w_run) * min(1.0, s / 0.6)
         else:
             w_walk = 0.0
-        w_idle = max(0.0, 1 - w_run - w_walk)
+        w_move = w_walk + w_run
+        w_idle = max(0.0, 1 - w_move)
         r0, r1 = self.cfg["run_range"]                                        # (the frames that make one stride)
         run_f = (self.phase * (r1 - r0) + self.cfg["run_offset"]) % (r1 - r0)
         stand, walk, run = getattr(self, "force_stand", None) or "idle", self.cfg["walk"], "run"
@@ -440,19 +458,25 @@ class AnimPlayer:
             stand = {"scorer": happy, "joy": happy, "sad": self.sad_pose}.get(self.mood, "idle")
             walk = "walk_sad" if self.mood == "sad" else walk
             run = "run_arms" if self.mood == "scorer" else run
+            w_fwd, w_side, w_back = 1.0, 0.0, 0.0
         if getattr(self, "calling", False) and self.cfg.get("make_walk"):
             run = "run_call"
-        if side:                                                              # (side steps instead of walking)
-            walk = "shuffle" if side > 0 else "shuffle_m"
-            w_walk, w_run = w_walk + w_run, 0.0
         self.loco = {n: 0.0 for n in self.loco_names}
         self.loco[stand] = w_idle
-        self.loco[run] = w_run
+        self.loco[run] = w_run * w_fwd
         self.a.pose(stand, self.t_idle % self.nf[stand])
         self.a.pose(run, (r0 + run_f) if run == "run" else run_f)
         if walk:
-            self.loco[walk] = w_walk
+            self.loco[walk] = w_walk * w_fwd
             self.a.pose(walk, self.phase * self.nf[walk])
+        if self.cfg.get("make_walk"):
+            sh = "shuffle" if side > 0 else "shuffle_m"
+            self.loco[sh] = w_move * w_side
+            self.a.pose(sh, self.ph_side * self.nf[sh])
+            self.loco["backpedal"] = w_move * w_back
+            self.a.pose("backpedal", self.ph_back * self.nf["backpedal"])
+        else:
+            self.loco[run] += w_run * (w_side + w_back)
         self._mix()
         if ball is not None:
             self._watch(ball, x, y, dt)
@@ -480,7 +504,7 @@ class AnimPlayer:
         if dx * dx + dy * dy < 0.5:
             want = 0.0
         else:
-            want = (math.degrees(math.atan2(-dx, dy)) - self.h + 180) % 360 - 180
+            want = (math.degrees(math.atan2(-dx, dy)) - self.h + getattr(self, "off", 0.0) + 180) % 360 - 180
             want = max(-70.0, min(70.0, want))
         self.look += (want - self.look) * min(1.0, dt * 5)
         c, base = self.head
