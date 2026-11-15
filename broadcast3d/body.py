@@ -146,17 +146,24 @@ def shapes():
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.19, 0.008, 1.415), (0.07, 0.062, 0.062)), 0.05)
         add(lambda q, sx=sx: capsule(q, (sx * 0.19, 0.015, 1.425), (sx * 0.436, 0.011, 1.43), 0.052, 0.040), 0.03)
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.31, -0.012, 1.428), (0.075, 0.045, 0.043)), 0.025)   # biceps
-        add(lambda q, sx=sx: capsule(q, (sx * 0.436, 0.011, 1.43), (sx * 0.644, 0.009, 1.43), 0.040, 0.028), 0.025)
+        add(lambda q, sx=sx: capsule(q, (sx * 0.436, 0.011, 1.43), (sx * 0.644, 0.009, 1.43), 0.040, 0.0245), 0.025)
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.50, 0.0, 1.43), (0.06, 0.04, 0.036)), 0.02)       # forearm
-        # the hand: a palm (flat, facing down in the rest pose), four fingers a little curled, a thumb
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.688, 0.006, 1.43), (0.048, 0.046, 0.018)), 0.016)
-        for fy, ln in ((-0.024, 1.0), (0.004, 1.08), (0.031, 1.0), (0.055, 0.8)):
-            k0, k1, k2 = (sx * 0.728, fy, 1.432), (sx * (0.728 + 0.036 * ln), fy, 1.424), \
-                         (sx * (0.728 + 0.054 * ln), fy, 1.400)
-            add(lambda q, a=k0, b=k1: capsule(q, a, b, 0.0108, 0.0102), 0.009)
-            add(lambda q, a=k1, b=k2: capsule(q, a, b, 0.0102, 0.009), 0.007)
-        add(lambda q, sx=sx: capsule(q, (sx * 0.662, -0.022, 1.425), (sx * 0.692, -0.046, 1.412), 0.014, 0.011), 0.012)
-        add(lambda q, sx=sx: capsule(q, (sx * 0.692, -0.046, 1.412), (sx * 0.712, -0.056, 1.398), 0.011, 0.0095), 0.006)
+        # The hand, to real sizes (a man's hand: ~19 cm long, ~8.7 cm across the knuckles, ~2.8 cm thick, the
+        # middle finger ~8.3 cm, fingers ~1.7 cm thick - NASA / US Army ANSUR hand survey figures).  Drawn on the
+        # mannequin's short arm (x is stretched 1.28 times past the wrist).  A palm narrowing to the wrist, the
+        # pad at the base of the thumb, four fingers of different lengths in three parts each, curling a
+        # little more at each joint (a relaxed hand), and a two-part thumb.
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.692, 0.001, 1.43), (0.044, 0.037, 0.0135)), 0.014)
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.662, 0.004, 1.43), (0.03, 0.028, 0.016)), 0.014)
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.668, -0.024, 1.424), (0.022, 0.015, 0.012)), 0.01)   # thumb pad
+        for fy, ln, x0 in ((-0.030, 0.92, 0.726), (-0.010, 1.0, 0.729), (0.011, 0.94, 0.726), (0.030, 0.76, 0.718)):
+            k0, k1 = (sx * x0, fy, 1.431), (sx * (x0 + 0.027 * ln), fy, 1.426)
+            k2, k3 = (sx * (x0 + 0.046 * ln), fy, 1.415), (sx * (x0 + 0.060 * ln), fy, 1.399)
+            add(lambda q, a=k0, b=k1: capsule(q, a, b, 0.0088, 0.0083), 0.007)
+            add(lambda q, a=k1, b=k2: capsule(q, a, b, 0.0083, 0.0076), 0.005)
+            add(lambda q, a=k2, b=k3: capsule(q, a, b, 0.0076, 0.0068), 0.005)
+        add(lambda q, sx=sx: capsule(q, (sx * 0.674, -0.034, 1.422), (sx * 0.700, -0.049, 1.413), 0.0105, 0.0092), 0.008)
+        add(lambda q, sx=sx: capsule(q, (sx * 0.700, -0.049, 1.413), (sx * 0.720, -0.054, 1.402), 0.0092, 0.0078), 0.005)
         # legs
         add(lambda q, sx=sx: capsule(q, (sx * 0.092, -0.006, 0.90), (sx * 0.136, 0.0, 0.533), 0.076, 0.053), 0.05)
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.112, -0.03, 0.75), (0.07, 0.068, 0.16)), 0.035)    # quads
@@ -169,11 +176,11 @@ def shapes():
             add(lambda q, sx=sx, tx=tx: capsule(q, (sx * tx, 0.035, 0.63), (sx * (tx - 0.002), 0.03, 0.50), 0.013, 0.011), 0.012)
         # the lower leg: a slim shin and ankle, the calf's two heads (the inner one bigger and lower)
         add(lambda q, sx=sx: capsule(q, (sx * 0.136, 0.0, 0.533), (sx * 0.178, 0.036, 0.115), 0.046, 0.03), 0.03)
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.128, 0.032, 0.405), (0.036, 0.042, 0.085)), 0.025)
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.163, 0.03, 0.425), (0.031, 0.038, 0.072)), 0.025)
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.128, 0.032, 0.405), (0.040, 0.046, 0.088)), 0.025)
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.163, 0.03, 0.425), (0.034, 0.041, 0.075)), 0.025)
         add(lambda q, sx=sx: capsule(q, (sx * 0.155, 0.045, 0.33), (sx * 0.178, 0.068, 0.13), 0.016, 0.011), 0.02)  # Achilles
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.184, 0.035, 0.05), (0.04, 0.055, 0.05)), 0.02)    # boot: heel
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.192, -0.06, 0.03), (0.043, 0.085, 0.03)), 0.03)    # and toe
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.193, -0.078, 0.032), (0.046, 0.105, 0.032)), 0.03)    # and toe
     # the head: skull, face, cheekbones, brow, jaw and chin, eye sockets with eyes in, nose, lips, ears
     add(lambda q: ellipsoid(q, (0.0, 0.002, 1.688), (0.077, 0.095, 0.092)), 0.03)              # skull
     add(lambda q: ellipsoid(q, (0.0, -0.035, 1.628), (0.067, 0.084, 0.082)), 0.03)            # face
@@ -236,7 +243,7 @@ def build(step=0.0036, target=16000):
     verts += lo
     s = pyfqmr.Simplify()
     s.setMesh(verts, faces)
-    s.simplify_mesh(target_count=target + 1500, aggressiveness=5, preserve_border=True, verbose=0)
+    s.simplify_mesh(target_count=target + 4000, aggressiveness=5, preserve_border=True, verbose=0)
     verts, faces, _ = s.getMesh()
     verts = verts.astype(np.float32)
     faces = faces.astype(np.int32)
