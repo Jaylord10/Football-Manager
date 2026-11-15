@@ -26,9 +26,9 @@ LIMB_SCALE = {}
 for s in ("l", "r"):
     LIMB_SCALE["lowerarm." + s] = 0.186 * HEIGHT / 0.26198       # (the upper arm's length)
     LIMB_SCALE["hand." + s] = 0.146 * HEIGHT / 0.20732           # (the forearm's)
-    for f in ("thumb", "index", "middle", "ring"):
-        for k in ("01", "02", "03"):
-            LIMB_SCALE[f"{f}_{k}.{s}"] = 0.108 * HEIGHT / 0.150      # (the hand's)
+    for f in ("thumb", "index", "middle", "ring"):          # (the hand's: the knuckles moved out; the fingers'
+        LIMB_SCALE[f"{f}_01.{s}"] = 0.108 * HEIGHT / 0.150  #  own joints stay as far apart as they were - the
+                                                            #  mannequin's fingers are long already)
 
 
 def _mat(n):

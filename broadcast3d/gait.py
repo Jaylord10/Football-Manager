@@ -50,7 +50,7 @@ MOVES = {
     "turn": ("pelvis", "z", 1), "tilt": ("pelvis", "y", 1),
     "lean": ("spine_01", "x", 1), "chest": ("spine_02", "x", 1), "twist": ("spine_01", "z", 1),
     "side": ("spine_01", "y", 1),
-    "nod": ("neck_01", "x", 1),
+    "nod": ("neck_01", "x", 1), "head": ("head", "x", 1),
 }
 AXES = {"x": Vec3(1, 0, 0), "y": Vec3(0, 1, 0), "z": Vec3(0, 0, 1)}
 # The order the turns are made in at each joint: forward / back first, then across the body, then out.
@@ -413,7 +413,8 @@ def build(actor, name, pose_fn, frames, ground=True, base_anim="idle", base_fram
     # (HANG) - the mannequin's own standing pose holds them out, shoulders hunched.
     hang = base_anim == "idle"
     char = actor.find("**/+Character").node()
-    bind = {j: TransformState.makeMat(char.findJoint(j).getDefaultValue()) for j in ARM_CHAIN if char.findJoint(j)}
+    bind = {j: TransformState.makeMat(char.findJoint(j).getDefaultValue()) for j in ARM_CHAIN + FINGERS
+            if char.findJoint(j)}                       # (fingers too: relaxed and open, not the mannequin's fists)
     for f in range(frames):
         u = f / float(frames)
         base_ts = dict(fixed or pose_at(base, int(round(base_frame(u)))))
@@ -425,6 +426,8 @@ def build(actor, name, pose_fn, frames, ground=True, base_anim="idle", base_fram
             return LQuaternionf.identQuat() if j is None else net[j]
         moves, extra = pose_fn(u)
         moves = dict(moves)
+        for m, v in POSTURE.get(base_anim, {}).items():     # (the mannequin's posture put right)
+            moves[m] = moves.get(m, 0.0) + v
         turns = {}
         if hang:                                        # (the arms hung first; the movement's turns after)
             for m, deg in HANG.items():
@@ -433,6 +436,12 @@ def build(actor, name, pose_fn, frames, ground=True, base_anim="idle", base_fram
         elif ARM_DOWN:                                  # (the mannequin's running arms are out a bit: bring them in)
             for m in ("out_r", "out_l"):
                 moves[m] = moves.get(m, 0.0) - ARM_DOWN
+        for sd in ("r", "l"):                           # (closing the hand: every finger joint curls)
+            g = moves.pop("grip_" + sd, 0.0)
+            if g:
+                for fg in ("index", "middle", "ring"):
+                    for k, part in (("01", 1.0), ("02", 1.1), ("03", 0.7)):
+                        turns.setdefault(f"{fg}_{k}.{sd}", []).append((GRIP_AXIS[0], g * part * GRIP_AXIS[1][sd]))
         for m in ORDER:                                 # (always in the same order: turns don't commute)
             deg = moves.get(m, 0.0)
             if deg:
@@ -499,6 +508,12 @@ SPANS = {}          # action -> (first second, last second)
 # than a footballer does (it makes the shoulders look hunched up); every movement here brings them in.
 ARM_DOWN = 11.0
 LIMB_SCALE = {}         # (bones made longer than the mannequin's - set by players3d from skeleton.py)
+# The mannequin stands and runs with its neck craned forward (and sprints bent over like a sprinter leaving
+# the blocks).  Footballers run fairly upright - trunk ~10-15 degrees forward at speed, head up to see the game
+# (e.g. Novacheck 1998, "The biomechanics of running", Gait & Posture 7) - so each base pose is corrected.
+POSTURE = {"idle": {"nod": -13.0, "head": 6.0}, "run": {"chest": -18.0, "nod": -14.0, "head": 16.0, "arm_r": -14.0, "arm_l": -14.0}}
+FINGERS = tuple(f"{f}_{k}.{sd}" for f in ("index", "middle", "ring", "thumb") for k in ("01", "02", "03") for sd in "lr")
+GRIP_AXIS = ("y", {"l": 1, "r": -1})        # (which way a finger curls towards the palm)
 ARM_CHAIN = ("clavicle.l", "upperarm.l", "lowerarm.l", "hand.l", "clavicle.r", "upperarm.r", "lowerarm.r", "hand.r")
 # Arms hanging naturally from the rest pose (straight out sideways): down by the sides, a little out and
 # forward, elbows slightly bent, so the fingertips reach about halfway down the thigh.

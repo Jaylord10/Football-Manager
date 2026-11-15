@@ -75,6 +75,20 @@ for s in ("l", "r"):
               ("thigh." + s, "thigh." + s, "calf." + s), ("calf." + s, "calf." + s, "foot." + s),
               ("foot." + s, "foot." + s, "ball." + s), ("ball." + s, "ball." + s, (sx * 0.199, -0.15, 0.02))]
 
+# The fingers (the skeleton has an index, a middle and a ring finger: our ring and little fingers both go with
+# its ring finger).  Where their joints are along the footballer's arm:
+FINGER_X = {}
+for _f, (_a, _b, _c) in (("index", (0.728, 0.758, 0.789)), ("middle", (0.730, 0.758, 0.785)), ("ring", (0.729, 0.751, 0.783))):
+    _j1 = float(arm_x(np.array(_a)))
+    FINGER_X[_f] = (_j1, _j1 + (_b - _a), _j1 + (_c - _a))
+for s in ("l", "r"):
+    sx = 1 if s == "l" else -1
+    for _f, (_x1, _x2, _x3) in FINGER_X.items():
+        _y = {"index": -0.030, "middle": -0.010, "ring": 0.02}[_f]
+        BONES += [(f"{_f}_01.{s}", (sx * _x1, _y, 1.43), (sx * _x2, _y, 1.43)),
+                  (f"{_f}_02.{s}", (sx * _x2, _y, 1.43), (sx * _x3, _y, 1.43)),
+                  (f"{_f}_03.{s}", (sx * _x3, _y, 1.43), (sx * (_x3 + 0.03), _y, 1.43))]
+
 
 def P(p):
     return np.array(J[p] if isinstance(p, str) else p, np.float32)
@@ -138,7 +152,7 @@ def shapes():
     add(lambda q: ellipsoid(q, (0.0, 0.022, 1.30), (0.146, 0.08, 0.13)), 0.06)                 # back (lats)
     for sx in (-1, 1):                                                                          # shoulders,
         add(lambda q, sx=sx: capsule(q, (sx * 0.03, 0.012, 1.43), (sx * 0.16, 0.01, 1.395), 0.058, 0.056), 0.06)  # sloping
-    add(lambda q: capsule(q, (0.0, 0.012, 1.38), (0.0, 0.0, 1.57), 0.057, 0.052), 0.04)       # neck
+    add(lambda q: capsule(q, (0.0, 0.016, 1.38), (0.0, 0.012, 1.58), 0.060, 0.056), 0.04)       # neck
     for sx in (-1, 1):
         # glutes
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.062, 0.045, 0.895), (0.065, 0.055, 0.08)), 0.05)
@@ -182,21 +196,21 @@ def shapes():
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.184, 0.035, 0.05), (0.04, 0.055, 0.05)), 0.02)    # boot: heel
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.193, -0.078, 0.032), (0.046, 0.105, 0.032)), 0.03)    # and toe
     # the head: skull, face, cheekbones, brow, jaw and chin, eye sockets with eyes in, nose, lips, ears
-    add(lambda q: ellipsoid(q, (0.0, 0.002, 1.688), (0.077, 0.095, 0.092)), 0.03)              # skull
-    add(lambda q: ellipsoid(q, (0.0, -0.035, 1.628), (0.067, 0.084, 0.082)), 0.03)            # face
+    add(lambda q: ellipsoid(q, (0.0, 0.006, 1.688), (0.077, 0.098, 0.092)), 0.03)              # skull
+    add(lambda q: ellipsoid(q, (0.0, -0.035, 1.628), (0.067, 0.076, 0.082)), 0.03)            # face
     add(lambda q: ellipsoid(q, (0.0, -0.045, 1.583), (0.056, 0.068, 0.042)), 0.03)            # jaw
     add(lambda q: ellipsoid(q, (0.0, -0.098, 1.562), (0.026, 0.02, 0.024)), 0.02)             # chin
     add(lambda q: capsule(q, (-0.044, -0.104, 1.674), (0.044, -0.104, 1.674), 0.011, 0.011), 0.014)  # brow
     for sx in (-1, 1):
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.044, -0.076, 1.636), (0.016, 0.012, 0.011)), 0.02)   # cheekbone
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.077, -0.005, 1.643), (0.009, 0.021, 0.029)), 0.008)  # ear
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.077, 0.004, 1.643), (0.009, 0.021, 0.029)), 0.008)  # ear
     for sx in (-1, 1):                                                                          # eye sockets
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.033, -0.118, 1.655), (0.019, 0.016, 0.013)), 0.008, "cut")
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.033, -0.113, 1.655), (0.019, 0.016, 0.013)), 0.008, "cut")
     for sx in (-1, 1):                                                                          # eyes
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.033, -0.102, 1.655), (0.0125, 0.011, 0.0105)), 0.003)
-    add(lambda q: capsule(q, (0.0, -0.113, 1.664), (0.0, -0.129, 1.617), 0.006, 0.0095), 0.008)   # nose
-    add(lambda q: ellipsoid(q, (0.0, -0.119, 1.612), (0.016, 0.011, 0.008)), 0.008)           # (its end)
-    add(lambda q: ellipsoid(q, (0.0, -0.111, 1.588), (0.022, 0.009, 0.008)), 0.006)           # lips
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.033, -0.097, 1.655), (0.0125, 0.011, 0.0105)), 0.003)
+    add(lambda q: capsule(q, (0.0, -0.107, 1.666), (0.0, -0.132, 1.619), 0.0065, 0.0098), 0.008)   # nose
+    add(lambda q: ellipsoid(q, (0.0, -0.121, 1.613), (0.017, 0.012, 0.008)), 0.008)           # (its end)
+    add(lambda q: ellipsoid(q, (0.0, -0.107, 1.588), (0.022, 0.009, 0.008)), 0.006)           # lips
     # the kit, hanging loose: the shirt straight down from the chest (untucked, over the top of the shorts),
     # short sleeves standing off the arm, and wide shorts down to a hand above the knee
     add(lambda q: shirt_tube(q, 0.928, 1.30, 0.172, 0.114, 0.166, 0.104, cy=-0.004), 0.012)
@@ -297,6 +311,28 @@ def weights(verts, keep=3):
         w[m] = 0.0
         w[m, jt] = 0.05 + f
         w[m, jp] = (1.0 - f) * 0.6 + 1e-4
+    # the fingers: each goes with its own finger's bones, part by part (blending over each joint), so the hand
+    # can close; the thumb stays with the hand
+    xs_, ys_ = verts[:, 0], verts[:, 1]
+    for j, nm in enumerate(names):
+        if nm.split("_")[0] in ("index", "middle", "ring"):
+            w[:, j] = 0.0
+    for side, sg in (("l", 1), ("r", -1)):
+        for f, lo_y, hi_y in (("index", -9.0, -0.0205), ("middle", -0.0205, 0.0005), ("ring", 0.0005, 9.0)):
+            x1, x2, x3 = FINGER_X[f]
+            m = (np.sign(xs_) == sg) & (z > 1.3) & (ax > x1 - 0.005) & (ys_ >= lo_y) & (ys_ < hi_y) \
+                & ~((ys_ < -0.042) & (ax < x1 + 0.014))
+            if not m.any():
+                continue
+            a_ = ax[m]
+            t1 = np.clip((a_ - (x1 - 0.005)) / 0.010, 0, 1)
+            t2 = np.clip((a_ - (x2 - 0.005)) / 0.010, 0, 1)
+            t3 = np.clip((a_ - (x3 - 0.005)) / 0.010, 0, 1)
+            w[m] = 0.0
+            w[m, names.index("hand." + side)] = 1 - t1
+            w[m, names.index(f"{f}_01.{side}")] = t1 * (1 - t2)
+            w[m, names.index(f"{f}_02.{side}")] = t2 * (1 - t3)
+            w[m, names.index(f"{f}_03.{side}")] = t3
     order = np.argsort(-w, axis=1)[:, :keep]
     ww = np.take_along_axis(w, order, 1)
     ww /= ww.sum(1, keepdims=True)

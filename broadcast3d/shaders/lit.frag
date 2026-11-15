@@ -111,7 +111,7 @@ vec4 kit_colour() {
     if (z < 0.927 && ax < 0.25) {                                                   // shorts, a stripe down the side
         float c = 0.084 + (0.955 - z) / 0.333 * 0.028;
         float dx = ax - c;
-        return (dx / max(length(vec2(dx, y)), 1e-4) > 0.975 && dx > 0.0) ? kit_trim : kit_shorts;
+        return (dx > 0.03 && abs(y + 0.002) < 0.017) ? kit_trim : kit_shorts;      // (3.5 cm wide, at the side)
     }
     float top = 1.49 + 0.045 * smoothstep(0.1, 0.2, ax);                            // (the shoulders)
     if (z < top && ax < 0.355) {
