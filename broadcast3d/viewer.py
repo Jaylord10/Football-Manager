@@ -69,6 +69,18 @@ class Stadium:
             self.tex[name] = t
         return self.tex[name]
 
+    def visitors(self):
+        """The away fans' end: a crowd in the visitors' colours (made for each match)."""
+        try:
+            import kits, textures
+            away = TEAMS[1] if TEAMS else self.b.m.get("away", "Northwick FC")
+            k0 = kits.club_kits(away)[0][0]
+            textures.crowd("crowd_visitors.png", [(k0["shirt"], 5), (k0.get("trim", k0["shirt"]), 2),
+                                                  ((30, 30, 34), 2), ((70, 70, 90), 1)], seed=4)
+            return "crowd_visitors.png"
+        except Exception:
+            return "crowd_mixed.png"
+
     def side(self, where):
         n = self.root.attachNewNode(where)
         pos = {"far": ((0, HY, 0), 0), "near": ((0, -HY, 0), 180), "left": ((-HX, 0, 0), 90), "right": ((HX, 0, 0), -90)}[where]
@@ -150,7 +162,7 @@ class Stadium:
         tn = w.attachNewNode(txt); tn.setPos(0, 9.4, 5.9); tn.setScale(2.4); tn.setH(180)
         # Canal End (right): small, old, pitched roof
         r = self.side("right")
-        self.tier(r, -32, 32, 7, 1.2, 19, 7.5, "crowd_mixed.png", (90, 90, 96))
+        self.tier(r, -32, 32, 7, 1.2, 19, 7.5, self.visitors(), (90, 90, 96))     # (the away end)
         self.back_wall(r, -32, 32, 19, 0, 10, tex="brick.png", rep=(14, 2))
         self.roof(r, -33, 33, 8, 21, 9.5, col=(80, 70, 66), pitched=2.5, columns=4)
         # Main Stand (near, under the camera): front rows only
@@ -560,7 +572,7 @@ class Viewer(ShowBase):
         cel = fr.get("c")                                                   # (a goal celebration: who scored)
         amts = getattr(self, "_crowd_amts", {})
         for n, (cn, kind) in enumerate(self.crowds):                        # (their fans go up; the others sit)
-            fans = {"crowd_home.png": 0, "crowd_away.png": 1}.get(kind, -1)
+            fans = {"crowd_home.png": 0, "crowd_away.png": 1, "crowd_visitors.png": 1}.get(kind, -1)
             want = 1.0 if not cel else (7.0 if fans == cel[0] else 0.4 if fans >= 0 else 3.0)
             cur = amts.get(n, 1.0)
             cur += (want - cur) * min(1.0, dt * 2.0)

@@ -16,3 +16,4 @@ __pycache__/
 broadcast3d/frames/
 broadcast3d/match.json
 broadcast3d/__pycache__/
+broadcast3d/tex/crowd_visitors.png
