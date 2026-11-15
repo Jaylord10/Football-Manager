@@ -199,6 +199,32 @@ def _face(name, number, skin):
 WALK_CYCLE, RUN_CYCLE = 1.05, 3.6
 
 
+# Height and breadth by position: Big-5 league squads average ~1.89 m for keepers, ~1.86 centre-backs, ~1.80
+# full-backs, ~1.80 midfielders, ~1.77 wingers, ~1.83 strikers (CIES Football Observatory, "Player height by
+# position"); centre-backs and target men a little broader, wingers slighter.
+POSITION_BUILD = {"gk": (1.895, 1.03), "cb": (1.86, 1.04), "fb": (1.795, 0.98), "dm": (1.82, 1.02),
+                  "cm": (1.80, 1.0), "am": (1.775, 0.97), "w": (1.765, 0.96), "st": (1.83, 1.02)}
+
+
+def _pos_group(role, keeper):
+    if keeper or role == "GK":
+        return "gk"
+    r = (role or "").upper()
+    if r.endswith("CB") or r == "SW":
+        return "cb"
+    if r in ("LB", "RB", "LWB", "RWB"):
+        return "fb"
+    if r in ("DM", "CDM", "LDM", "RDM"):
+        return "dm"
+    if r in ("AM", "CAM", "LAM", "RAM"):
+        return "am"
+    if r in ("LW", "RW", "LM", "RM"):
+        return "w"
+    if r.rstrip("0123456789") in ("ST", "CF", "LS", "RS", "LF", "RF", "FW"):
+        return "st"
+    return "cm" if r else None
+
+
 OWN_RUNS = "--oldrun" not in sys.argv          # (--oldrun: the mannequin's own run, to compare)
 SPEEDS = [("walk", 1.4), ("jog", 3.0), ("run2", 5.5), ("sprint", 8.0)]
 
@@ -217,7 +243,7 @@ def _speed_weights(s):
 
 class AnimPlayer:
     def __init__(self, parent, kit, number, skin, hair, keeper=False, model=MODEL, name=None, crest=None,
-                 height=None):
+                 height=None, role=None):
         self.cfg = MODELS[model]
         self.root = parent.attachNewNode("player")
         self.a = Actor(self.cfg["file"] if not (self.cfg.get("smooth") and SMOOTH) else self.cfg["smooth_file"])
@@ -229,11 +255,14 @@ class AnimPlayer:
         self.seed = seed
         if height is None:
             z = ((seed % 1000) / 1000.0 + ((seed // 1000) % 1000) / 1000.0 + ((seed // 10 ** 6) % 1000) / 1000.0 - 1.5) * 2.0
-            height = (1.90 + 0.04 * z) if keeper else (1.81 + 0.065 * z)
-        build = 0.96 + 0.08 * (((seed // 7) % 100) / 100.0)
+            mean, broad = POSITION_BUILD.get(_pos_group(role, keeper), (1.81, 1.0))
+            height = mean + (0.04 if keeper else 0.055) * z
+        else:
+            broad = POSITION_BUILD.get(_pos_group(role, keeper), (1.81, 1.0))[1]
+        build = (0.96 + 0.08 * (((seed // 7) % 100) / 100.0)) * broad
         k = self.cfg["scale"] * height / 1.82
         self.a.setScale(k * build, k * build, k)
-        self.stride_k = k * build                   # (his strides are as long as he's scaled)
+        self.stride_k = k                           # (his strides are as long as he's tall)
         self.height = height
         self.a.setH(180)                    # (the model faces -Y; the root faces the way he's running, +Y)
         paint(self.a, kit, skin, hair)

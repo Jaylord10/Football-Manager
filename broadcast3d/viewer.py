@@ -462,7 +462,7 @@ class Viewer(ShowBase):
             if ANIM:
                 info = self.home_info if team == 0 else self.away_info
                 self.players.append(AnimPlayer(self.render, kit, num or (i % 11) + 1, skin, hair, keeper, name=name,
-                                               crest=info.get("crest")))
+                                               crest=info.get("crest"), role=role))
             else:
                 self.players.append(Player(self.render, kit, (i % 11) + 1, skin, hair, keeper))
         self.officials = []
