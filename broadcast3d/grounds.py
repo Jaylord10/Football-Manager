@@ -179,6 +179,8 @@ def _feature(st, kind, side, k, d_back, prism):
     span = 30.0 if end else 55.0
     along = (-0.55 + 0.45 * (k % 3)) * span * (1 if k % 2 == 0 else -1)
     dist = d_back + 25 + 18 * (k % 2)
+    if side == "west":                                            # (the camera's side: well behind the TV gantry,
+        dist = max(dist, 95.0)                                    #  so it never blocks the picture)
     brick = st.T("brick.png")
     if kind == "chimney":
         p = _side_frame(st, side, dist + 10, along)
