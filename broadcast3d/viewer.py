@@ -135,9 +135,17 @@ class Stadium:
         if tex:
             n.setTexture(self.T(tex))
 
-    def build_kiln_lane(self):
-        b = self.b
-        # the pitch and its surround
+    def build(self):
+        """The home club's ground: Kiln Lane by hand; any other club's built from its profile (grounds.py)."""
+        import kits, grounds
+        home = TEAMS[0] if TEAMS else self.b.m.get("home", "Ashvale Rovers")
+        prof, slug = kits.profile(home)
+        if slug == "ashvale" or not prof or not prof.get("ground", {}).get("stands"):
+            self.build_kiln_lane()
+        else:
+            grounds.build(self, prof, kits.club_kits(home)[0][0])
+
+    def pitch_surround(self):
         cm = CardMaker("pitch"); cm.setFrame(-HX - 8, HX + 8, -HY - 8, HY + 8)
         p = self.root.attachNewNode(cm.generate()); p.setP(-90); p.setTexture(self.T("pitch.png", False)); no_shadow(p)
         from panda3d.core import TextureStage
@@ -148,6 +156,34 @@ class Stadium:
         ap = self.root.attachNewNode(cm2.generate()); ap.setP(-90); ap.setZ(-0.02); ap.setColor(C((96, 98, 100))); no_shadow(ap)
         cm3 = CardMaker("outer"); cm3.setFrame(-400, 400, -400, 400)
         ou = self.root.attachNewNode(cm3.generate()); ou.setP(-90); ou.setZ(-0.5); ou.setColor(C((70, 82, 64))); no_shadow(ou)
+
+    def dugouts(self, n):
+        for s, x in ((n, -9), (n, 9)):                                       # dugouts: open at the front,
+            dk, grey = C((40, 42, 48)), C((70, 72, 78))                      # a bench of seats inside
+            box(s, x - 4, 6.6, 0, x + 4, 6.8, 2.2, dk)                       # (the back)
+            box(s, x - 4.1, 4.3, 2.1, x + 4.1, 6.8, 2.3, dk)                 # (the roof)
+            for e in (-1, 1):                                                # (perspex ends)
+                pe = box(s, x + e * 4 - 0.03, 4.4, 0, x + e * 4 + 0.03, 6.8, 2.1, (0.75, 0.82, 0.88, 0.35))
+                pe.setTransparency(TransparencyAttrib.MAlpha); pe.setDepthWrite(False)
+            box(s, x - 3.8, 5.7, 0, x + 3.8, 6.5, 0.45, grey)                 # (the seats)
+            box(s, x - 3.8, 6.35, 0.45, x + 3.8, 6.5, 0.9, grey)
+
+    def sky_and_hills(self, lamps=()):
+        cm = CardMaker("moors"); cm.setFrame(-900, 900, 0, 150)
+        mo = self.root.attachNewNode(cm.generate()); mo.setPos(0, 650, -10); mo.setTexture(self.T("moors.png", False))
+        mo.setTransparency(TransparencyAttrib.MAlpha); mo.setLightOff(); no_shadow(mo, lit=False)
+        cm = CardMaker("sky"); cm.setFrame(-2000, 2000, -100, 700)
+        sk = self.root.attachNewNode(cm.generate()); sk.setPos(0, 1200, -50); sk.setTexture(self.T("sky.png", False)); sk.setLightOff(); no_shadow(sk, lit=False)
+        if NIGHT:                                           # (a dark sky; the floodlights lit)
+            sk.setColorScale(0.05, 0.06, 0.11, 1); mo.setColorScale(0.04, 0.04, 0.06, 1)
+            lamp = (2.2, 2.2, 2.1, 1)
+            for side, x0, x1, d, z in lamps:
+                strip = box(self.side(side), x0, d - 0.3, z - 0.4, x1, d, z, lamp)
+                strip.setShaderOff(1); strip.setLightOff(1); no_shadow(strip, lit=False)
+
+    def build_kiln_lane(self):
+        b = self.b
+        self.pitch_surround()
         # Haworth Stand (far side): two tiers, flat roof on columns
         f = self.side("far")
         self.tier(f, -48, 48, 9, 1.4, 25, 11, "crowd_home.png", (200, 40, 45))
@@ -173,15 +209,7 @@ class Stadium:
         # Main Stand (near, under the camera): front rows only
         n = self.side("near")
         self.tier(n, -50, 50, 8, 1.2, 20, 8, "crowd_home.png", (200, 40, 45))
-        for s, x in ((n, -9), (n, 9)):                                       # dugouts: open at the front,
-            dk, grey = C((40, 42, 48)), C((70, 72, 78))                      # a bench of seats inside
-            box(s, x - 4, 6.6, 0, x + 4, 6.8, 2.2, dk)                       # (the back)
-            box(s, x - 4.1, 4.3, 2.1, x + 4.1, 6.8, 2.3, dk)                 # (the roof)
-            for e in (-1, 1):                                                # (perspex ends)
-                pe = box(s, x + e * 4 - 0.03, 4.4, 0, x + e * 4 + 0.03, 6.8, 2.1, (0.75, 0.82, 0.88, 0.35))
-                pe.setTransparency(TransparencyAttrib.MAlpha); pe.setDepthWrite(False)
-            box(s, x - 3.8, 5.7, 0, x + 3.8, 6.5, 0.45, grey)                 # (the seats)
-            box(s, x - 3.8, 6.35, 0.45, x + 3.8, 6.5, 0.9, grey)
+        self.dugouts(n)
         # ad boards; a brick wall round the outside (the corners are open, old-style)
         self.ad_boards()
         for x0, y0, x1, y1 in ((-HX - 34, HY + 40, HX + 34, HY + 41), (-HX - 34, -HY - 30, HX + 34, -HY - 29),
@@ -196,18 +224,7 @@ class Stadium:
             hb = self.root.attachNewNode(self._brick_block(-HX - 52 - i * 0.1, -40 + i * 8.2, -HX - 44, -40 + i * 8.2 + 7.6, 8))
             hb.setTexture(self.T("brick.png"))
         # moors and sky
-        cm = CardMaker("moors"); cm.setFrame(-900, 900, 0, 150)
-        mo = self.root.attachNewNode(cm.generate()); mo.setPos(0, 650, -10); mo.setTexture(self.T("moors.png", False))
-        mo.setTransparency(TransparencyAttrib.MAlpha); mo.setLightOff(); no_shadow(mo, lit=False)
-        cm = CardMaker("sky"); cm.setFrame(-2000, 2000, -100, 700)
-        sk = self.root.attachNewNode(cm.generate()); sk.setPos(0, 1200, -50); sk.setTexture(self.T("sky.png", False)); sk.setLightOff(); no_shadow(sk, lit=False)
-        if NIGHT:                                           # (a dark sky; the floodlights lit)
-            sk.setColorScale(0.05, 0.06, 0.11, 1); mo.setColorScale(0.04, 0.04, 0.06, 1)
-            lamp = (2.2, 2.2, 2.1, 1)
-            for side, x0, x1, d, z in (("far", -45, 45, 16.0, 28.6), ("left", -28, 28, 9.0, 23.4),
-                                       ("right", -30, 30, 8.0, 9.2)):
-                strip = box(self.side(side), x0, d - 0.3, z - 0.4, x1, d, z, lamp)
-                strip.setShaderOff(1); strip.setLightOff(1); no_shadow(strip, lit=False)
+        self.sky_and_hills((("far", -45, 45, 16.0, 28.6), ("left", -28, 28, 9.0, 23.4), ("right", -30, 30, 8.0, 9.2)))
 
     def _brick_block(self, x0, y0, x1, y1, h):
         m = Mesh("brick"); box_into(m, x0, y0, 0, x1, y1, h, (1, 1, 1, 1), uvs=4)
@@ -237,9 +254,9 @@ class Stadium:
                 box(n, -3.5 + i * 1.9, -0.75, H + 0.5 + j * 1.5, -2.3 + i * 1.9, -0.5, H + 1.6 + j * 1.5, C((255, 250, 225)))
         n.setH(40)
 
-    def ad_boards(self):
+    def ad_boards(self, brands=None):
         from PIL import Image, ImageDraw, ImageFont
-        brands = [("PILLING TEXTILES", (200, 40, 45), (255, 255, 255)), ("ASH VALLEY ALES", (20, 60, 40), (240, 210, 120)),
+        brands = brands or [("PILLING TEXTILES", (200, 40, 45), (255, 255, 255)), ("ASH VALLEY ALES", (20, 60, 40), (240, 210, 120)),
                   ("THE NATIONAL CHRONICLE", (25, 30, 60), (255, 255, 255)), ("KILN LANE MOTORS", (240, 240, 240), (200, 40, 45)),
                   ("ASHVALE EVENING POST", (30, 30, 30), (255, 200, 40)), ("WEAVERS BUILDING SOC.", (10, 90, 160), (255, 255, 255))]
         try:
@@ -420,7 +437,7 @@ class Viewer(ShowBase):
         self.m = match
         self.nets = []
         self.crowds = []                                    # (the crowd in each stand, to liven up after a goal)
-        st = Stadium(self); st.build_kiln_lane(); st.goals()
+        st = Stadium(self); st.build(); st.goals()
         self.light_up()
         fog = Fog("haze"); fog.setColor(*((0.62, 0.66, 0.7) if not NIGHT else (0.04, 0.045, 0.07)))
         fog.setExpDensity(0.0012 if not RAIN else 0.0035); self.render.setFog(fog)
@@ -608,7 +625,7 @@ class Viewer(ShowBase):
         cel = fr.get("c")                                                   # (a goal celebration: who scored)
         amts = getattr(self, "_crowd_amts", {})
         for n, (cn, kind) in enumerate(self.crowds):                        # (their fans go up; the others sit)
-            fans = {"crowd_home.png": 0, "crowd_away.png": 1, "crowd_visitors.png": 1}.get(kind, -1)
+            fans = {"crowd_home.png": 0, "crowd_hosts.png": 0, "crowd_away.png": 1, "crowd_visitors.png": 1}.get(kind, -1)
             want = 1.0 if not cel else (7.0 if fans == cel[0] else 0.4 if fans >= 0 else 3.0)
             cur = amts.get(n, 1.0)
             cur += (want - cur) * min(1.0, dt * 2.0)
@@ -672,7 +689,9 @@ class Viewer(ShowBase):
         k = min(1.0, dt * 2.2)
         self.cx += (max(-34, min(34, bx)) - self.cx) * k
         self.cy += (by - self.cy) * k
-        if FOLLOW is not None:                                              # (a close camera on one player)
+        if "--top" in sys.argv:                                             # (a check: the whole ground from above)
+            self.cam.setPos(0, -170, 200); self.cam.lookAt(0, 0, 0)
+        elif FOLLOW is not None:                                            # (a close camera on one player)
             if FOLLOW < len(fr["p"]):
                 fx_, fy_ = to_world(fr["p"][FOLLOW][0], fr["p"][FOLLOW][1])
             else:                                                           # (22 on: the referee, assistants, managers)

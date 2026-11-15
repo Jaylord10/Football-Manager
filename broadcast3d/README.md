@@ -37,6 +37,9 @@ both sides' kits.
 - `gait.py` - the movements built from real figures: the walk (normal gait data), kicks and shots (kicking
   studies), headers, tackles, the keeper's set position, dives and getting up, throws and punts, throw-ins,
   celebrations, sitting on the bench.  Sources are in the file.
+- `grounds.py` - every other club's ground built from its profile: stands on the right sides, tiers and size from
+  capacity, roof types, filled-in corners or a bowl, the away fans where the profile puts them, the stand names
+  on the roofs, the club's own adverts.  (`--teams=Kingsmere,Penrith` plays at The Mere.)
 - `kits.py` - each club's kits from its profile, the clash rule, keepers' colours.
 - `shaders/` - the lighting (a low sun with soft shadows, sky light) and the kits.
 - `match.json.gz` - a sample recorded match (Ashvale v Northwick, the first 8 minutes of play: free kicks, a goal kick, throw-ins, saves, and a Northwick goal at frame 13506).
@@ -49,7 +52,8 @@ github.com/GDQuest/godot-3d-mannequin), CC-BY 4.0. Xbot is from the three.js exa
 In the view (no engine change needed):
 - The TV camera: follow the scorer during celebrations, a reverse angle / behind-the-goal replay after goals,
   a slower zoom (left alone for now, as asked).
-- Each club's own ground from its profile (only Kiln Lane so far), and the right home end for the away fans.
+- The grounds' special features from their profiles (viaducts, rivers, chimneys, big screens) - only Kiln Lane
+  has its own so far.
 - Proper footballer models (the mannequin's segmented arms and plain head show close up).
 - Slide tackles, shielding the ball, players pointing / calling for it, keepers organising the wall.
 - Rain / mud on kits for winter games; breath in the cold under the floodlights.
