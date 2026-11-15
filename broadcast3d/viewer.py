@@ -988,7 +988,7 @@ def make_officials(v, kits_in_use):
             flag = box(hand, -0.01, -0.01, 0.0, 0.01, 0.01, 0.55, (0.15, 0.15, 0.15, 1))
             cloth = box(hand, -0.005, 0.0, 0.32, 0.005, 0.30, 0.55, (0.95, 0.85, 0.1, 1))
             for n in (flag, cloth):
-                n.setShaderInput("kit_on", 0.0)
+                n.setShaderInput("kit_on", 0.0); n.setTextureOff(3)
         out.append({"p": p, "role": role, "pos": [x, y], "vel": [0.0, 0.0]})
     # The two managers in their technical areas, in front of the dugouts (the near touchline, 9 m either side
     # of halfway): the home one in a dark coat, the visitors' in a club tracksuit top.
@@ -1187,7 +1187,7 @@ def _viewer_card_in_hand(self, p, kind):
     if not hasattr(p, "card_np"):
         hand = p.a.exposeJoint(None, "modelRoot", "hand.r")
         p.card_np = box(hand, -0.04, -0.005, 0.05, 0.04, 0.005, 0.17, (1, 1, 1, 1))
-        p.card_np.setShaderInput("kit_on", 0.0)
+        p.card_np.setShaderInput("kit_on", 0.0); p.card_np.setTextureOff(3)
     if kind is None:
         p.card_np.hide()
         return
