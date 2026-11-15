@@ -153,6 +153,10 @@ def shapes():
     for sx in (-1, 1):                                                                          # shoulders,
         add(lambda q, sx=sx: capsule(q, (sx * 0.03, 0.012, 1.43), (sx * 0.16, 0.01, 1.385), 0.058, 0.054), 0.06)  # sloping
     add(lambda q: capsule(q, (0.0, 0.016, 1.38), (0.0, 0.012, 1.58), 0.060, 0.056), 0.04)       # neck
+    # the trapezius: the slope of muscle from the side of the neck down to the shoulder point, so the neck
+    # flows into the shoulders instead of standing up out of a flat shelf
+    for sx in (-1, 1):
+        add(lambda q, sx=sx: capsule(q, (sx * 0.032, 0.03, 1.495), (sx * 0.13, 0.022, 1.432), 0.044, 0.034), 0.05)
     for sx in (-1, 1):
         # glutes
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.062, 0.045, 0.895), (0.065, 0.055, 0.08)), 0.05)
