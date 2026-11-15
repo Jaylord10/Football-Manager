@@ -11,7 +11,8 @@ and even then the 2D view stays as an option.
     pip install panda3d panda3d-gltf pillow
     python broadcast3d/viewer.py 5600 --live
 
-opens a window and plays the sample match from frame 5600 (30 frames a second, so 5600 = about 3 minutes in).
+opens a window and plays the sample match from frame 5600 (30 frames a second, so 5600 = about 3 minutes in;
+13300 = just before the goal).
 Keys: **space** pause, **left / right** back / on 10 seconds, **[ / ]** slower / faster, **1** TV camera,
 **2** close camera, **Esc** quit.  `--teams=Penrith,Fernley` shows other clubs' kits; `--overcast` a grey day;
 `--match=file.json` another recording.
@@ -38,7 +39,7 @@ both sides' kits.
   celebrations, sitting on the bench.  Sources are in the file.
 - `kits.py` - each club's kits from its profile, the clash rule, keepers' colours.
 - `shaders/` - the lighting (a low sun with soft shadows, sky light) and the kits.
-- `match.json.gz` - a sample recorded match (Ashvale v Northwick).
+- `match.json.gz` - a sample recorded match (Ashvale v Northwick, the first 8 minutes of play: free kicks, a goal kick, throw-ins, saves, and a Northwick goal at frame 13506).
 
 Credits: the player figure is "Mannequiny" by GDQuest and contributors (https://www.gdquest.com/,
 github.com/GDQuest/godot-3d-mannequin), CC-BY 4.0. Xbot is from the three.js examples.
