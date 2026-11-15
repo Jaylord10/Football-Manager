@@ -194,6 +194,11 @@ def _face(name, number, skin):
     return sliders, (af, asn)
 
 
+# Metres a stride cycle (two steps) covers: the walk's measured on him; the run's a compromise - its foot on
+# the ground goes back at a speed that would need ~4.5 m a cycle (far too slow a cadence), so 3.6.
+WALK_CYCLE, RUN_CYCLE = 1.05, 3.6
+
+
 class AnimPlayer:
     def __init__(self, parent, kit, number, skin, hair, keeper=False, model=MODEL, name=None, crest=None,
                  height=None):
@@ -211,6 +216,7 @@ class AnimPlayer:
         build = 0.96 + 0.08 * (((seed // 7) % 100) / 100.0)
         k = self.cfg["scale"] * height / 1.82
         self.a.setScale(k * build, k * build, k)
+        self.stride_k = k * build                   # (his strides are as long as he's scaled)
         self.height = height
         self.a.setH(180)                    # (the model faces -Y; the root faces the way he's running, +Y)
         paint(self.a, kit, skin, hair)
@@ -436,8 +442,6 @@ class AnimPlayer:
         w_fwd, w_side, w_back = sm
         side = 1 if r2 > 0 else -1
         # Steps a second, from real players: ~1.75 walking at 1 m/s, ~2.4 jogging at 2.5 m/s, ~4 sprinting at 8 m/s.
-        steps = 1.3 + 0.45 * s if s < 2.5 else 1.65 + 0.3 * s
-        self.phase = (self.phase + steps / 2.0 * dt) % 1.0
         import gait as _g
         self.ph_side = (getattr(self, "ph_side", 0.0) + dt * s / _g.CYCLE_SIDE) % 1.0      # (feet planted:
         self.ph_back = (getattr(self, "ph_back", 0.0) + dt * s / _g.CYCLE_BACK) % 1.0      #  cycles at his speed)
@@ -449,6 +453,16 @@ class AnimPlayer:
         else:
             w_walk = 0.0
         w_move = w_walk + w_run
+        # The stride cycle (two steps) run at his speed over the length of a stride, so the foot on the ground
+        # stays put: measured on the animations, a walking cycle covers 1.05 m, a running one 3.0 m (blended
+        # by how much of each he's doing).  Real cadences come out of that - ~1.9 steps a second walking at
+        # 1 m/s, ~3 jogging at 3 m/s, ~3.3 running at 5 m/s; capped at a sprinter's ~4.6 steps a second.
+        if self.cfg.get("make_walk"):
+            stride = self.stride_k * (w_walk * WALK_CYCLE + w_run * RUN_CYCLE)
+            cyc = min(2.3, s / stride) if stride > 0.05 else 0.6
+        else:
+            cyc = (1.3 + 0.45 * s if s < 2.5 else 1.65 + 0.3 * s) / 2.0
+        self.phase = (self.phase + cyc * dt) % 1.0
         w_idle = max(0.0, 1 - w_move)
         r0, r1 = self.cfg["run_range"]                                        # (the frames that make one stride)
         run_f = (self.phase * (r1 - r0) + self.cfg["run_offset"]) % (r1 - r0)

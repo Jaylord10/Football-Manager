@@ -85,6 +85,9 @@ KNEE = [(0.00, 4), (0.13, 18), (0.30, 8), (0.42, 5), (0.60, 38), (0.72, 60), (0.
 ANKLE = [(0.00, 0), (0.07, -6), (0.30, 5), (0.45, 10), (0.62, -18), (0.72, -6), (0.85, 0)]
 
 
+WALK_SWEEP = 0.26          # (measured: with this the foot on the ground stays put sideways too)
+
+
 def walk_pose(ph):
     c, s = math.cos(2 * math.pi * ph), math.sin(2 * math.pi * ph)
     m = {}
@@ -95,9 +98,13 @@ def walk_pose(ph):
     m["arm_r"], m["arm_l"] = -17 * c, 17 * c                      # (each arm forward with the other leg)
     m["elbow_r"], m["elbow_l"] = 10 - 8 * c, 10 + 8 * c
     m["turn"] = 4 * c                                             # (the right hip comes forward with the right leg)
+    m["toein_r"], m["toein_l"] = -4 * c, 4 * c                    # (...the legs turning back under it: feet stay put)
     m["twist"] = -7 * c                                           # (the shoulders turn against it)
     m["tilt"] = 2 * s
-    return m, {"sway": -0.018 * s}                                # (over the right foot in the first half)
+    m["hipout_r"], m["hipout_l"] = -2 * s, 2 * s                  # (the hips dip side to side, the legs don't swing)
+    for sd in ("r", "l"):                                         # (the stand's hips are turned a little: the legs
+        m["hipout_" + sd] += WALK_SWEEP * (m["hip_" + sd] - 8)    #  swung straight back, not out to the side)
+    return m, {"sway": -0.008 * s}                                # (over the right foot in the first half)
 
 
 # --- actions: key poses at seconds from the moment (the ball struck, the dive's start...) ---------------------------
