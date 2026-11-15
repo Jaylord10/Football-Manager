@@ -12,7 +12,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 RUNS = [("day", ["5600", "2"]), ("close", ["5600", "2", "--close"]), ("follow", ["6260", "2", "--follow=11"]),
         ("night", ["5600", "2", "--night"]), ("rain", ["5600", "2", "--rain"]), ("overcast", ["5600", "2", "--overcast"]),
         ("goal", ["13500", "3"]), ("other ground", ["5600", "2", "--teams=Kingsmere,Penrith"]),
-        ("bowl", ["5600", "2", "--teams=Northwick FC,Lydmouth"]), ("live", ["5600", "--test"])]
+        ("bowl", ["5600", "2", "--teams=Northwick FC,Lydmouth"]), ("old body", ["5600", "2", "--oldbody"]),
+        ("live", ["5600", "--test"])]
 
 
 def main():

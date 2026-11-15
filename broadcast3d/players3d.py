@@ -127,6 +127,12 @@ def paint(actor, kit, skin, hair):
 
 
 SMOOTH = "--pieces" not in sys.argv              # (--pieces: the old mannequin, to compare)
+# The body: MakeHuman's (mhbody.py: a properly modelled man, on our skeleton moved to his joints), or our own
+# rounded one (body.py) with --oldbody.
+MHBODY = SMOOTH and "--oldbody" not in sys.argv and os.environ.get("FM_BODY", "mh") == "mh" and \
+    os.path.exists(os.path.join(HERE, "models", "mh_body.npz"))
+if MHBODY:
+    MODELS["mannequin"]["smooth_file"] = os.path.join(HERE, "models", "footballer_mh.glb")
 PATTERNS = {None: 0, "hoops": 1, "stripes": 2, "pinstripe": 3, "band": 4, "halves": 5, "sash": 6, "sleeves": 7}
 
 
@@ -195,7 +201,7 @@ class AnimPlayer:
         paint(self.a, kit, skin, hair)
         if self.cfg.get("smooth") and SMOOTH:                # (a smooth body instead of the mannequin's pieces)
             import body
-            body.attach(self.a)
+            body.attach(self.a, "mh" if MHBODY else None)
         # The kit is drawn by the lighting shader, pixel by pixel (crisp stripes, hoops, sock tops), with his
         # name and number on his back and the club crest on his chest.
         r = self.root
@@ -235,7 +241,7 @@ class AnimPlayer:
         style = cut + 8 * (0 if bd < 5 else 1 if bd < 8 else 2)
         if self.cfg.get("smooth") and SMOOTH and cut in (0, 2, 3, 4):
             import body
-            body.attach_hair(self.a, {0: "crop", 2: "long", 3: "quiff", 4: "curls"}[cut])
+            body.attach_hair(self.a, {0: "crop", 2: "long", 3: "quiff", 4: "curls"}[cut], "mh" if MHBODY else None)
         r.setShaderInput("kit_info", (PATTERNS.get(kit.get("pattern"), 0), 1.0 if kit.get("keeper") else 0.0,
                                       1.0 if crest else 0.0, float(style)))
         # A November game: about a third of outfield players in long sleeves, a few in black gloves too.
@@ -252,7 +258,9 @@ class AnimPlayer:
         self.action_names = []
         if self.cfg.get("make_walk"):
             import gait
-            if self.cfg.get("smooth") and SMOOTH:            # (the footballer's longer arms, in every movement)
+            if MHBODY:                                      # (his own bone lengths, in every movement)
+                gait.BIND_POS = True
+            elif self.cfg.get("smooth") and SMOOTH:          # (the footballer's longer arms, in every movement)
                 from skeleton import LIMB_SCALE
                 gait.LIMB_SCALE = LIMB_SCALE
             made = gait.add_all(self.a)                     # (the walk and every action: built from real figures)

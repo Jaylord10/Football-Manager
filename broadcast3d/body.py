@@ -432,17 +432,19 @@ def _closest(q, a, b):
 
 
 # --- putting it on a player -------------------------------------------------------------------------------
-_DATA = None
+_DATA = {}
+MH_OUT = os.path.join(HERE, "models", "mh_body.npz")
 
 
-def _load():
-    global _DATA
-    if _DATA is None and os.path.exists(OUT):
-        _DATA = dict(np.load(OUT))
-    return _DATA
+def _load(which=None):
+    """The body's data: ours (body.npz), or with which="mh" MakeHuman's (mhbody.py)."""
+    path = MH_OUT if which == "mh" else OUT
+    if path not in _DATA and os.path.exists(path):
+        _DATA[path] = dict(np.load(path))
+    return _DATA.get(path)
 
 
-def _skinned(char, name, V, N, F, BI, BW, names):
+def _skinned(char, name, V, N, F, BI, BW, names, paint=None):
     """A mesh that moves with the skeleton: each point follows its bones (BI: which, BW: how much)."""
     from panda3d.core import (GeomVertexArrayFormat, GeomVertexFormat, GeomVertexData, GeomVertexWriter, Geom,
                               GeomTriangles, GeomNode, InternalName, GeomVertexAnimationSpec, TransformBlendTable,
@@ -474,7 +476,10 @@ def _skinned(char, name, V, N, F, BI, BW, names):
                 tb.addTransform(joints[names[j]], wgt)
             bi = cache[key] = table.addBlend(tb)
         x, y, z = V[i]
-        vw.setData3(x, y, z); nw.setData3(*N[i]); t0.setData2(x, z); t1.setData2(y, 0.0); bw.setData1i(bi)
+        vw.setData3(x, y, z); nw.setData3(*N[i]); bw.setData1i(bi)
+        if paint is not None:                           # (where it's painted, if not where it is)
+            x, y, z = paint[i]
+        t0.setData2(x, z); t1.setData2(y, 0.0)
     table.setRows(SparseArray.lowerOn(vd.getNumRows()))
     vd.setTransformBlendTable(table)
     tri = GeomTriangles(Geom.UHStatic)
@@ -486,29 +491,30 @@ def _skinned(char, name, V, N, F, BI, BW, names):
     return gn
 
 
-def attach(actor):
+def attach(actor, which=None):
     """Swap the mannequin's pieces for the smooth body (skinned to this actor's own skeleton).  Returns the new
     node (None if there's no body.npz yet)."""
-    D = _load()
+    D = _load(which)
     if D is None:
         return None
     ch = actor.find("**/+Character")
     gn = _skinned(ch.node(), "smooth_body", D["verts"], D["normals"], D["faces"], D["bone_idx"], D["bone_w"],
-                  [str(b) for b in D["bones"]])
+                  [str(b) for b in D["bones"]], D.get("paint"))
     for old in actor.findAllMatches("**/+GeomNode"):
         old.detachNode()
     return ch.attachNewNode(gn)
 
 
-def attach_hair(actor, name):
+def attach_hair(actor, name, which=None):
     """Put a head of hair on him (name: one of HAIR); it goes with his head."""
-    D = _load()
+    D = _load(which)
     if D is None or f"hair_{name}_verts" not in D:
         return None
     ch = actor.find("**/+Character")
     V = D[f"hair_{name}_verts"]
     gn = _skinned(ch.node(), "hair", V, D[f"hair_{name}_normals"], D[f"hair_{name}_faces"],
-                  np.zeros((len(V), 1), np.int16), np.ones((len(V), 1), np.float32), ["head"])
+                  np.zeros((len(V), 1), np.int16), np.ones((len(V), 1), np.float32), ["head"],
+                  D.get(f"hair_{name}_paint"))
     np_ = ch.attachNewNode(gn)
     np_.setShaderInput("kit_on", 2.0)
     return np_

@@ -382,9 +382,21 @@ def build(actor, name, pose_fn, frames, ground=True, base_anim="idle", base_fram
     idle = actor.getAnimControl("idle").getAnim()
     _, parent, order = _local_mats(base, 0)
 
+    char = actor.find("**/+Character").node()
+    rest_pos = {j: TransformState.makeMat(char.findJoint(j).getDefaultValue()).getPos() for j in order
+                if char.findJoint(j)}
+    pelvis_lift = rest_pos["pelvis"] - LVecBase3f(*MANNEQUIN_PELVIS)
+
     def pose_at(bundle, fr):
         mats, _, _ = _local_mats(bundle, fr)
-        return {j: TransformState.makeMat(mats[j][1]) for j in order}
+        out = {j: TransformState.makeMat(mats[j][1]) for j in order}
+        if BIND_POS:                                    # (his own bones' lengths)
+            for j in order:
+                if j == "pelvis":
+                    out[j] = out[j].setPos(out[j].getPos() + pelvis_lift)
+                elif j in rest_pos:
+                    out[j] = out[j].setPos(rest_pos[j])
+        return out
 
     def nets(local):
         nm = {}
@@ -438,7 +450,7 @@ def build(actor, name, pose_fn, frames, ground=True, base_anim="idle", base_fram
             for m in ("out_r", "out_l"):
                 moves[m] = moves.get(m, 0.0) - ARM_DOWN
         for sd in ("r", "l"):                           # (closing the hand: every finger joint curls)
-            g = moves.pop("grip_" + sd, 0.0)
+            g = moves.pop("grip_" + sd, 0.0) + (RELAX_GRIP if BIND_POS and hang else 0.0)
             if g:
                 for fg in ("index", "middle", "ring"):
                     for k, part in (("01", 1.0), ("02", 1.1), ("03", 0.7)):
@@ -463,9 +475,10 @@ def build(actor, name, pose_fn, frames, ground=True, base_anim="idle", base_fram
         if ground:
             shift[2] = rest - feet_z(local) + extra.get("air", 0.0)
         local["pelvis"] = local["pelvis"].setPos(local["pelvis"].getPos() + shift)
-        for j, k in LIMB_SCALE.items():                 # (longer bones: the footballer's arms)
-            if j in local and not (hang and j in bind):
-                local[j] = local[j].setPos(local[j].getPos() * k)
+        if not BIND_POS:
+            for j, k in LIMB_SCALE.items():             # (longer bones: the footballer's arms)
+                if j in local and not (hang and j in bind):
+                    local[j] = local[j].setPos(local[j].getPos() * k)
         for j in order:
             t = tables[j]
             for k, v in zip("hpr", local[j].getHpr()):
@@ -509,6 +522,11 @@ SPANS = {}          # action -> (first second, last second)
 # than a footballer does (it makes the shoulders look hunched up); every movement here brings them in.
 ARM_DOWN = 11.0
 LIMB_SCALE = {}         # (bones made longer than the mannequin's - set by players3d from skeleton.py)
+# With MakeHuman's body the skeleton's joints are moved to his (mhbody.py): every bone takes its length from the
+# skeleton itself, and the hips go up or down by as much as his are higher or lower than the mannequin's.
+BIND_POS = False
+RELAX_GRIP = 22.0       # (MakeHuman's hand rests open, fingers spread: curled in a little, as a hand hangs)
+MANNEQUIN_PELVIS = (0.0, -0.0104, 0.9477)
 # The mannequin stands and runs with its neck craned forward (and sprints bent over like a sprinter leaving
 # the blocks).  Footballers run fairly upright - trunk ~10-15 degrees forward at speed, head up to see the game
 # (e.g. Novacheck 1998, "The biomechanics of running", Gait & Posture 7) - so each base pose is corrected.

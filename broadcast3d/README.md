@@ -34,8 +34,12 @@ the live window).
   the managers, subs on the bench and warming up, stewards and ball boys, the ball (rolling), the TV camera on
   the gantry, the scoreboard and captions (goals, bookings).  Works out from the recording who kicks, shoots,
   heads, tackles, takes a throw-in, and with which foot.
-- `body.py` - a smooth footballer's body (one continuous skin, bending smoothly at the joints) for the
-  mannequin's skeleton; `python broadcast3d/body.py` rebuilds `models/body.npz`.  `--pieces` shows the old one.
+- `mhbody.py` - the footballer's body now: MakeHuman's (makehuman.org, CC0) - a properly modelled man (lean and
+  muscular, ~1.80 m), his arms turned out to our skeleton's rest pose and our skeleton's joints moved onto his, his
+  shirt and shorts made loose, boots on.  Writes `models/mh_body.npz` and `models/footballer_mh.glb` (needs the
+  MakeHuman data: `git clone https://github.com/makehumancommunity/makehuman`, `MH_DATA=.../makehuman/data`).
+- `body.py` - our own smooth body (rounded shapes melted together), kept as the fallback: `--oldbody` (or
+  `FM_BODY=own`) shows it; `python broadcast3d/body.py` rebuilds `models/body.npz`.  `--pieces` the mannequin's.
 - `skeleton.py` - the footballer's skeleton: the mannequin's with arms of real length (fingertips halfway down
   the thigh); writes `models/footballer.glb`.
 - `players3d.py` - the players: the mannequin's skeleton with the smooth body, its kit drawn pixel by pixel by the shader (patterns,
@@ -50,7 +54,8 @@ the live window).
 - `shaders/` - the lighting (a low sun with soft shadows, sky light) and the kits.
 - `match.json.gz` - a sample recorded match (Ashvale v Northwick, the first 8 minutes of play: free kicks, a goal kick, throw-ins, saves, and a Northwick goal at frame 13506).
 
-Credits: the player figure is "Mannequiny" by GDQuest and contributors (https://www.gdquest.com/,
+Credits: the players' bodies are made from the MakeHuman base mesh, targets and skeleton weights (MakeHuman
+team, CC0 - makehuman/LICENSE.ASSETS.md).  The skeleton is "Mannequiny" by GDQuest and contributors (https://www.gdquest.com/,
 github.com/GDQuest/godot-3d-mannequin), CC-BY 4.0. Xbot is from the three.js examples.
 
 ## Ideas for next (not done yet)
