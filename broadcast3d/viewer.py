@@ -492,6 +492,38 @@ class Viewer(ShowBase):
                                     mayChange=True)
         DirectFrame(frameColor=(0.06, 0.07, 0.09, 0.0), frameSize=(0, 0.1, -0.1, 0), pos=(-1.7, 0, 0.94))
 
+    def _goal_caption(self, fr):
+        """After a goal, the TV caption along the bottom: GOAL, the minute, the scorer and his club."""
+        cel = fr.get("c")
+        if not hasattr(self, "cap"):
+            from direct.gui.DirectGui import DirectFrame
+            self.cap = DirectFrame(frameColor=(0.06, 0.07, 0.09, 0.9), frameSize=(-0.75, 0.75, -0.075, 0.075),
+                                   pos=(0, 0, -0.78))
+            self.cap_bar = DirectFrame(parent=self.cap, frameColor=(1, 1, 1, 1), frameSize=(-0.75, -0.6, -0.075, 0.075))
+            self.cap_t = OnscreenText(parent=self.cap, text="", pos=(-0.675, -0.022), scale=0.055, fg=(0.06, 0.07, 0.09, 1),
+                                      mayChange=True)
+            self.cap_n = OnscreenText(parent=self.cap, text="", pos=(-0.56, -0.02), scale=0.05, fg=(1, 1, 1, 1),
+                                      align=TextNode.ALeft, mayChange=True)
+            self.cap.hide()
+        k = fr.get("k", 0)
+        if cel and k - self._restart_id(k) < 30 * 9:                        # (the first 9 seconds of it)
+            team, scorer = cel
+            names = self.m.get("names", [])
+            nm = names[scorer][0] if scorer < len(names) else ""
+            short = (nm.split()[0][0] + ". " + nm.split()[-1]) if nm and " " in nm else nm
+            club = self.home_name if team == 0 else self.away_name
+            mins = int(fr["t"] / 600.0 * 45) + 1
+            kit = self.kits[team]
+            bar = kit["shirt"] if sum(kit["shirt"]) / 765 > 0.2 else kit.get("trim", (240, 240, 240))
+            self.cap_bar["frameColor"] = C(bar)
+            self.cap_t.setText("GOAL")
+            lum = sum(bar) / 765
+            self.cap_t["fg"] = (0.06, 0.07, 0.09, 1) if lum > 0.5 else (1, 1, 1, 1)
+            self.cap_n.setText(f"{short}  {mins}'      {club}")
+            self.cap.show()
+        else:
+            self.cap.hide()
+
     def show(self, fr, dt):
         k = fr.get("k", 0)
         rbx, rby = to_world(fr["b"][0], fr["b"][1])
@@ -566,6 +598,7 @@ class Viewer(ShowBase):
             self.cam.lookAt(self.cx, self.cy * 0.35 + 9, 0)
         s = fr["s"]
         self.score_t.setText(f"{self.labels[0]}  {s[0]} - {s[1]}  {self.labels[1]}")
+        self._goal_caption(fr)
         mins = int(fr["t"] / 600.0 * 45)
         self.clock_t.setText(f"{mins:02d}:{int((fr['t'] / 600.0 * 45 * 60) % 60):02d}")
 
