@@ -138,6 +138,7 @@ def shader_defaults(render):
     render.setShaderInput("kit_on", 0.0)
     for k in ("shirt", "trim", "shorts", "socks", "socktop", "skin", "hair", "gloves"):
         render.setShaderInput("kit_" + k, (1.0, 1.0, 1.0, 1.0))
+    render.setShaderInput("kit_boots", (0.09, 0.09, 0.10, 0.0))
     render.setShaderInput("kit_info", (0.0, 0.0, 0.0, 0.0))
     render.setShaderInput("kit_extra", (0.0, 0.0, 0.0, 0.0))
 
@@ -217,6 +218,15 @@ class AnimPlayer:
         st1 = TextureStage("crest"); st1.setSort(1); st1.setTexcoordName("1")   #  through these two stages)
         self.a.setTexture(st1, ct, 2)
         hs = zlib.crc32(f"hair{name}{number}".encode())
+        # Boots: about half the players in black, the rest in white or a bright colour (as on any pitch now);
+        # officials, managers and the bench in black.
+        bs = zlib.crc32(f"boots{name}{number}".encode()) % 20
+        bright = [(240, 240, 240), (240, 240, 240), (255, 120, 30), (40, 200, 190), (190, 240, 60), (230, 50, 60),
+                  (60, 120, 240), (250, 220, 50), (245, 90, 170), (240, 240, 240)]
+        if bs < 10 or kit.get("trousers") or not name:
+            r.setShaderInput("kit_boots", (0.09, 0.09, 0.10, 0.0))
+        else:
+            r.setShaderInput("kit_boots", C(bright[bs - 10])[:3] + (1.0,))
         style = (0 if hs % 10 < 6 else 1 if hs % 10 < 8 else 2) + (4 if (hs // 10) % 10 < 3 else 0)  # (~30% beards)
         r.setShaderInput("kit_info", (PATTERNS.get(kit.get("pattern"), 0), 1.0 if kit.get("keeper") else 0.0,
                                       1.0 if crest else 0.0, float(style)))

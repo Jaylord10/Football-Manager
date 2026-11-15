@@ -51,6 +51,7 @@ MOVES = {
     "lean": ("spine_01", "x", 1), "chest": ("spine_02", "x", 1), "twist": ("spine_01", "z", 1),
     "side": ("spine_01", "y", 1),
     "nod": ("neck_01", "x", 1), "head": ("head", "x", 1),
+    "toein_r": ("thigh.r", "z", 1), "toein_l": ("thigh.l", "z", -1),
 }
 AXES = {"x": Vec3(1, 0, 0), "y": Vec3(0, 1, 0), "z": Vec3(0, 0, 1)}
 # The order the turns are made in at each joint: forward / back first, then across the body, then out.
@@ -511,7 +512,11 @@ LIMB_SCALE = {}         # (bones made longer than the mannequin's - set by playe
 # The mannequin stands and runs with its neck craned forward (and sprints bent over like a sprinter leaving
 # the blocks).  Footballers run fairly upright - trunk ~10-15 degrees forward at speed, head up to see the game
 # (e.g. Novacheck 1998, "The biomechanics of running", Gait & Posture 7) - so each base pose is corrected.
-POSTURE = {"idle": {"nod": -13.0, "head": 6.0}, "run": {"chest": -18.0, "nod": -14.0, "head": 16.0, "arm_r": -14.0, "arm_l": -14.0}}
+# It also stands duck-footed, feet 35 cm apart and turned out 30-40 degrees: brought to about hip width and
+# ~10 degrees.  And its running arms come up to face height: lowered, elbows a little more open.
+POSTURE = {"idle": {"nod": -13.0, "head": 6.0, "hipout_r": -4.0, "hipout_l": -4.0, "toein_r": 17.0, "toein_l": 27.0},
+           "run": {"chest": -18.0, "nod": -14.0, "head": 16.0, "arm_r": -18.0, "arm_l": -18.0,
+                   "elbow_r": -16.0, "elbow_l": -16.0}}
 FINGERS = tuple(f"{f}_{k}.{sd}" for f in ("index", "middle", "ring", "thumb") for k in ("01", "02", "03") for sd in "lr")
 GRIP_AXIS = ("y", {"l": 1, "r": -1})        # (which way a finger curls towards the palm)
 ARM_CHAIN = ("clavicle.l", "upperarm.l", "lowerarm.l", "hand.l", "clavicle.r", "upperarm.r", "lowerarm.r", "hand.r")

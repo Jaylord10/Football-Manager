@@ -151,13 +151,13 @@ def shapes():
     add(lambda q: ellipsoid(q, (0.0, -0.035, 1.305), (0.125, 0.068, 0.085)), 0.04)             # pecs (flat)
     add(lambda q: ellipsoid(q, (0.0, 0.022, 1.30), (0.146, 0.08, 0.13)), 0.06)                 # back (lats)
     for sx in (-1, 1):                                                                          # shoulders,
-        add(lambda q, sx=sx: capsule(q, (sx * 0.03, 0.012, 1.43), (sx * 0.16, 0.01, 1.395), 0.058, 0.056), 0.06)  # sloping
+        add(lambda q, sx=sx: capsule(q, (sx * 0.03, 0.012, 1.43), (sx * 0.16, 0.01, 1.385), 0.058, 0.054), 0.06)  # sloping
     add(lambda q: capsule(q, (0.0, 0.016, 1.38), (0.0, 0.012, 1.58), 0.060, 0.056), 0.04)       # neck
     for sx in (-1, 1):
         # glutes
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.062, 0.045, 0.895), (0.065, 0.055, 0.08)), 0.05)
         # shoulders (deltoids) and arms
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.19, 0.008, 1.415), (0.07, 0.062, 0.062)), 0.05)
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.19, 0.008, 1.402), (0.064, 0.06, 0.054)), 0.05)
         add(lambda q, sx=sx: capsule(q, (sx * 0.19, 0.015, 1.425), (sx * 0.436, 0.011, 1.43), 0.052, 0.040), 0.03)
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.31, -0.012, 1.428), (0.075, 0.045, 0.043)), 0.025)   # biceps
         add(lambda q, sx=sx: capsule(q, (sx * 0.436, 0.011, 1.43), (sx * 0.644, 0.009, 1.43), 0.040, 0.0245), 0.025)
@@ -193,8 +193,15 @@ def shapes():
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.128, 0.032, 0.405), (0.040, 0.046, 0.088)), 0.025)
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.163, 0.03, 0.425), (0.034, 0.041, 0.075)), 0.025)
         add(lambda q, sx=sx: capsule(q, (sx * 0.155, 0.045, 0.33), (sx * 0.178, 0.068, 0.13), 0.016, 0.011), 0.02)  # Achilles
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.184, 0.035, 0.05), (0.04, 0.055, 0.05)), 0.02)    # boot: heel
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.193, -0.078, 0.032), (0.046, 0.105, 0.032)), 0.03)    # and toe
+        # shin pads under the socks
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.156, -0.005, 0.33), (0.03, 0.024, 0.10)), 0.02)
+        # A football boot (a UK 9 is ~28 cm long, ~10 cm across the ball of the foot): a snug heel cup, a low
+        # instep, widest at the ball of the foot, a low rounded toe, a flat sole.
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.182, 0.045, 0.048), (0.034, 0.042, 0.046)), 0.02)      # heel
+        add(lambda q, sx=sx: capsule(q, (sx * 0.184, 0.03, 0.05), (sx * 0.192, -0.085, 0.037), 0.04, 0.034), 0.02)
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.193, -0.085, 0.033), (0.047, 0.05, 0.031)), 0.025)     # ball of foot
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.195, -0.127, 0.03), (0.037, 0.04, 0.027)), 0.025)   # toe
+        add(lambda q: q[..., 2] - 0.007, 0.004, "cut")                                                   # flat sole
     # the head: skull, face, cheekbones, brow, jaw and chin, eye sockets with eyes in, nose, lips, ears
     add(lambda q: ellipsoid(q, (0.0, 0.006, 1.688), (0.077, 0.098, 0.092)), 0.03)              # skull
     add(lambda q: ellipsoid(q, (0.0, -0.035, 1.628), (0.067, 0.076, 0.082)), 0.03)            # face
@@ -215,7 +222,7 @@ def shapes():
     # short sleeves standing off the arm, and wide shorts down to a hand above the knee
     add(lambda q: shirt_tube(q, 0.928, 1.30, 0.172, 0.114, 0.166, 0.104, cy=-0.004), 0.012)
     for sx in (-1, 1):
-        add(lambda q, sx=sx: cylinder(q, (sx * 0.20, 0.012, 1.418), (sx * 0.372, 0.011, 1.428), 0.064, 0.057), 0.045,
+        add(lambda q, sx=sx: cylinder(q, (sx * 0.225, 0.012, 1.414), (sx * 0.372, 0.011, 1.428), 0.058, 0.056), 0.05,
             "nowarp")
         add(lambda q, sx=sx: cylinder(q, (sx * 0.084, 0.0, 0.955), (sx * 0.112, -0.004, 0.622), 0.092, 0.087), 0.01)
     return out
@@ -288,7 +295,7 @@ def weights(verts, keep=3):
             d[verts[:, 0] > 0.02, j] = 9.0
     w = 1.0 / np.maximum(d, 0.004) ** 5
     ax, z = np.abs(verts[:, 0]), verts[:, 2]
-    arm = np.clip((ax - 0.15) / 0.09, 0.0, 1.0)                    # (0 on the trunk, 1 out along the arm)
+    arm = np.clip((ax - 0.135) / 0.115, 0.0, 1.0)                    # (0 on the trunk, 1 out along the arm)
     for j, nm in enumerate(names):
         if nm.startswith("upperarm"):
             w[:, j] *= np.where(z > 1.25, arm ** 2, 0.0)

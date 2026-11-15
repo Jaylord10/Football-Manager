@@ -33,6 +33,7 @@ uniform float crowd_amt;                // (the crowd: how much they're bobbing 
 uniform float osg_FrameTime;
 uniform float kit_on;
 uniform vec4 kit_shirt, kit_trim, kit_shorts, kit_socks, kit_socktop, kit_skin, kit_hair, kit_gloves;
+uniform vec4 kit_boots;                 // (rgb, a: 1 = a bright boot with a white sole)
 uniform vec4 kit_extra;                 // (collar: 0 round, 1 V-neck, 2 grandad, 3 polo)
 uniform vec4 kit_info;                  // (pattern 0 none 1 hoops 2 stripes 3 pinstripe 4 band 5 halves 6 sash
                                         //  7 sleeves, keeper, has crest, -)
@@ -98,7 +99,11 @@ vec4 head_colour(float x, float y, float z, float ax) {
 vec4 kit_colour() {
     float x = v_uv.x, z = v_uv.y, y = v_uv1.x, ax = abs(x);
     bool keeper = kit_info.y > 0.5;
-    if (z < 0.10 || (z < 0.13 && v_uv1.x < -0.03)) return vec4(0.09, 0.09, 0.10, 1.0);   // boots
+    if (z < 0.10 || (z < 0.13 && v_uv1.x < -0.03)) {                                // boots: his own colour,
+        if (z < 0.017) return kit_boots.a > 0.5 ? vec4(0.93, 0.93, 0.93, 1.0) : vec4(0.2, 0.2, 0.21, 1.0);   // a sole,
+        if (y < -0.02 && y > -0.12 && abs(ax - 0.19) < 0.012 && z > 0.035) return vec4(kit_boots.rgb * 0.55 + 0.25, 1.0);  // laces
+        return vec4(kit_boots.rgb, 1.0);
+    }
     if (kit_extra.y > 0.5 && z < 0.927 && ax < 0.25) return kit_shorts;             // (trousers: the managers)
     if (kit_extra.w > 0.5 && z < 1.49 && ax >= 0.76) return kit_gloves;             // (gloves on a cold day)
     if (kit_extra.z > 0.5 && z < 1.49 && ax > 0.24 && ax < 0.76 && !(z > 1.43 && ax < 0.09)) {
