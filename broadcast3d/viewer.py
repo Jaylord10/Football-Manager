@@ -263,7 +263,20 @@ class Stadium:
             n = s.attachNewNode(m.node()); n.setTexture(tex); n.setLightOff(); n.setShaderOff(1)
             box(s, -half, dist + 0.02, 0, half, dist + 0.12, 0.95, C((40, 42, 48)))      # (the back of the boards)
 
+    def corner_flags(self):
+        """A flag on a 1.5 m post at each corner (the Laws' minimum height), in the home club's colours."""
+        self.b.flags = []
+        for sx in (-1, 1):
+            for sy in (-1, 1):
+                n = self.root.attachNewNode("cflag"); n.setPos(sx * HX, sy * HY, 0)
+                box(n, -0.02, -0.02, 0, 0.02, 0.02, 1.55, (0.95, 0.95, 0.95, 1))
+                f = n.attachNewNode("cloth"); f.setPos(0, 0, 1.55)
+                box(f, 0.0, -0.004, -0.32, 0.42, 0.004, 0.0, (0.86, 0.18, 0.2, 1))
+                box(f, 0.21, -0.006, -0.32, 0.42, 0.006, -0.16, (0.97, 0.97, 0.97, 1))
+                self.b.flags.append(f)
+
     def goals(self):
+        self.corner_flags()
         for sx in (-1, 1):
             n = self.root.attachNewNode("goal"); n.setPos(sx * HX, 0, 0)
             w = 7.32 / 2; h = 2.44; dpt = 2.0
@@ -648,6 +661,9 @@ class Viewer(ShowBase):
                         p.flood.show()
         for net in self.nets:
             net.step(dt)
+        self._flag_t = getattr(self, "_flag_t", 0.0) + dt                     # (the corner flags in the breeze)
+        for j, f in enumerate(getattr(self, "flags", [])):
+            f.setH(200 + 18 * math.sin(self._flag_t * 2.3 + j) + 8 * math.sin(self._flag_t * 5.1 + j * 2))
         bx, by, bz = self._ball(fr, dt)
         self._spin_ball(bx, by, bz, dt)
         self.ball.setPos(bx, by, bz)
