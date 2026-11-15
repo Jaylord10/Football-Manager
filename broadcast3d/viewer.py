@@ -1016,6 +1016,15 @@ def make_officials(v, kits_in_use):
     for j, (x, y, fx, fy, outfit, ht) in enumerate(spots):
         p = AnimPlayer(v.render, outfit, "", Player.SKINS[(j * 2) % 5], (40, 32, 25), name=f"steward{j}", height=ht)
         out.append({"p": p, "role": "edge", "pos": [x, y], "vel": [0.0, 0.0], "face": (fx, fy)})
+    # Two subs from each side warming up in bibs, jogging up and down behind the boards on the far side.
+    for team, x0, bib in ((0, 24.0, (240, 120, 30)), (1, 41.0, (90, 200, 80))):     # (the half the far
+                                                                                        #  assistant isn't in)
+        for j in range(2):
+            top = {"shirt": bib, "trim": bib, "shorts": (30, 30, 34), "socks": (30, 30, 34), "socktop": (30, 30, 34),
+                   "pattern": None, "number": (240, 240, 240), "trousers": True, "long_sleeves": True}
+            p = AnimPlayer(v.render, top, 20 + j, Player.SKINS[(j * 2 + team + 1) % 5], (30, 25, 20), name=f"warm{team}{j}")
+            out.append({"p": p, "role": "warmup", "team": team, "pos": [x0 + j * 2.0, HY + 2.3 + j * 0.7],
+                        "vel": [0.0, 0.0], "x0": x0, "phase": j * 0.37})
     # Five substitutes on each bench, in training tops.
     for team, x0, kit in ((0, -9.0, kits_in_use[0]), (1, 9.0, kits_in_use[1])):
         for j in range(5):
@@ -1044,6 +1053,18 @@ def _viewer_officiate(self, fr, dt, bx, by):
         x, y = o["pos"]
         if o["role"] == "manager":
             self._manage(o, fr, dt, bx, by)
+            continue
+        if o["role"] == "warmup":                                           # (jogging up and down, ~12 m each way)
+            o["phase"] = o.get("phase", 0.0) + dt / 9.0
+            tx = o["x0"] + 5.0 * math.sin(o["phase"] * 2 * math.pi)
+            vx = (tx - x) / max(dt, 1e-3)
+            vx = max(-3.0, min(3.0, vx))
+            x += vx * dt
+            o["pos"] = [x, y]
+            cel = fr.get("c")
+            o["p"].mood = None if not cel else ("joy" if cel[0] == o["team"] else None)
+            o["p"].update(x, y, 1.0 if vx >= 0 else -1.0, 0.0, abs(vx) * 10, dt, True, vel=(vx, 0.0), ball=(bx, by))
+            o["p"].act(None, 0.0)
             continue
         if o["role"] == "edge":                                             # (stewards, ball boys: stand and watch)
             fx0, fy0 = o["face"]
