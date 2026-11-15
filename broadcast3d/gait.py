@@ -276,7 +276,21 @@ def sit(u):
              "arm_l": 30, "elbow_r": 40, "elbow_l": 40, "across_r": 10, "across_l": 10, "nod": -4}, {})
 
 
-LOOPS = {"sit": (sit, 90, "idle"), "cheer": (cheer, 30, "idle"), "clap": (clap, 30, "idle"), "hips": (hips, 60, "idle"), "knees": (knees, 60, "idle"),
+def shuffle(u):
+    """Side-stepping to his right (a defender jockeying): low, legs opening and closing, arms out a little."""
+    sn, c = math.sin(2 * math.pi * u), math.cos(2 * math.pi * u)
+    return ({"hipout_r": 4 + 13 * sn, "hipout_l": 4 - 13 * sn, "hip_r": 22, "hip_l": 22,
+             "knee_r": 38 + 14 * max(0.0, c), "knee_l": 38 + 14 * max(0.0, -c), "ankle_r": 10, "ankle_l": 10,
+             "lean": 16, "out_r": 22, "out_l": 22, "arm_r": 15, "arm_l": 15, "elbow_r": 45, "elbow_l": 45,
+             "tilt": 3 * sn}, {})
+
+
+def shuffle_m(u):
+    m, e = shuffle(u)
+    return mirror(m), e
+
+
+LOOPS = {"shuffle": (shuffle, 30, "idle"), "shuffle_m": (shuffle_m, 30, "idle"), "sit": (sit, 90, "idle"), "cheer": (cheer, 30, "idle"), "clap": (clap, 30, "idle"), "hips": (hips, 60, "idle"), "knees": (knees, 60, "idle"),
          "walk_sad": (walk_sad, 30, "idle"), "run_arms": (run_arms, 15, "run")}
 
 

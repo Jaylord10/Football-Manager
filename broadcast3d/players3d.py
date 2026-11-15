@@ -357,10 +357,16 @@ class AnimPlayer:
         if self.roll > 5:
             sp = s = 0.0                                                      # (in the air: no running)
         back = False
+        side = 0                                                              # (side-stepping: +1 right, -1 left)
         if vel is not None and s > 0.8:                                       # (moving against the way he faces?)
             hd = math.radians(self.h)
-            fwd = (vel[0] * -math.sin(hd) + vel[1] * math.cos(hd)) / max(0.1, math.hypot(*vel))
+            vl = max(0.1, math.hypot(*vel))
+            fwd = (vel[0] * -math.sin(hd) + vel[1] * math.cos(hd)) / vl
+            rgt = (vel[0] * math.cos(hd) + vel[1] * math.sin(hd)) / vl
             back = fwd < -0.35
+            if abs(rgt) > 0.75 and s < 4.0 and self.cfg.get("make_walk"):
+                side = 1 if rgt > 0 else -1
+                back = False
         # Steps a second, from real players: ~1.75 walking at 1 m/s, ~2.4 jogging at 2.5 m/s, ~4 sprinting at 8 m/s.
         steps = 1.3 + 0.45 * s if s < 2.5 else 1.65 + 0.3 * s
         self.phase = (self.phase + steps / 2.0 * dt * (-1 if back else 1)) % 1.0
@@ -382,6 +388,9 @@ class AnimPlayer:
             stand = {"scorer": happy, "joy": happy, "sad": self.sad_pose}.get(self.mood, "idle")
             walk = "walk_sad" if self.mood == "sad" else walk
             run = "run_arms" if self.mood == "scorer" else run
+        if side:                                                              # (side steps instead of walking)
+            walk = "shuffle" if side > 0 else "shuffle_m"
+            w_walk, w_run = w_walk + w_run, 0.0
         self.loco = {n: 0.0 for n in self.loco_names}
         self.loco[stand] = w_idle
         self.loco[run] = w_run
