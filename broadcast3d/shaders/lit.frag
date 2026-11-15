@@ -32,6 +32,7 @@ uniform float night_on;                 // (floodlights: bright over the pitch, 
 uniform float crowd_amt;                // (the crowd: how much they're bobbing about - lots after a goal)
 uniform float osg_FrameTime;
 uniform float kit_on;
+uniform float mud_amt;                  // (a wet day: mud splashed up the boots, socks and the backs of the legs)
 uniform vec4 kit_shirt, kit_trim, kit_shorts, kit_socks, kit_socktop, kit_skin, kit_hair, kit_gloves;
 uniform vec4 kit_boots;                 // (rgb, a: 1 = a bright boot with a white sole)
 uniform vec4 kit_extra;                 // (collar: 0 round, 1 V-neck, 2 grandad, 3 polo)
@@ -113,6 +114,28 @@ vec4 head_colour(float x, float y, float z, float ax) {
     return vec4(skin, 1.0);
 }
 
+float vnoise(vec3 p) {                  // (smooth value noise, 0..1)
+    vec3 i = floor(p), f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float n = 0.0;
+    for (int k = 0; k < 8; k++) {
+        vec3 o = vec3(float(k & 1), float((k >> 1) & 1), float((k >> 2) & 1));
+        float h = fract(sin(dot(i + o, vec3(127.1, 311.7, 74.7))) * 43758.5453);
+        vec3 w = mix(1.0 - f, f, o);
+        n += h * w.x * w.y * w.z;
+    }
+    return n;
+}
+
+vec3 muddy(vec3 c, float x, float y, float z) {
+    // Splashes: thick on the boots, up the socks and the backs of the calves, a few up the backs of the shorts.
+    float up = smoothstep(0.62, 0.04, z) + 0.45 * smoothstep(0.0, 0.06, y) * smoothstep(0.98, 0.70, z) *
+               step(0.62, z);
+    float n = vnoise(vec3(x, y, z) * 55.0) * 0.6 + vnoise(vec3(x, y, z) * 140.0) * 0.4;
+    float a = smoothstep(0.64, 0.80, n + up * 0.30 - 0.06) * mud_amt;
+    return mix(c * (1.0 - 0.08 * mud_amt), vec3(0.27, 0.21, 0.14), a * 0.85);
+}
+
 vec4 kit_colour() {
     float x = v_uv.x, z = v_uv.y, y = v_uv1.x, ax = abs(x);
     bool keeper = kit_info.y > 0.5;
@@ -180,7 +203,8 @@ void main() {
         uv.y -= crowd_amt * 0.0035 * (crowd_amt > 2.0 ? jump : sin(osg_FrameTime * (1.0 + h) + h * 6.283));
     }
     vec4 base = kit_on > 1.5 ? vec4(kit_hair.rgb * (0.8 + 0.3 * smoothstep(1.68, 1.80, v_uv.y)), 1.0) * p3d_ColorScale
-              : kit_on > 0.5 ? kit_colour() * p3d_ColorScale
+              : kit_on > 0.5 ? vec4(mud_amt > 0.0 && v_uv.y < 1.0 ? muddy(kit_colour().rgb, v_uv.x, v_uv1.x, v_uv.y)
+                                                                    : kit_colour().rgb, 1.0) * p3d_ColorScale
                              : (texture(p3d_Texture0, uv) + p3d_TexAlphaOnly) * v_color * p3d_ColorScale;
     float nl = length(v_normal);
     float lambert = 1.0;

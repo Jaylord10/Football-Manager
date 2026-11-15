@@ -138,7 +138,7 @@ PATTERNS = {None: 0, "hoops": 1, "stripes": 2, "pinstripe": 3, "band": 4, "halve
 
 def shader_defaults(render):
     """The kit inputs the lighting shader needs everywhere (off, except on the players)."""
-    for k in ("detail_amt", "crowd_amt", "night_on"):
+    for k in ("detail_amt", "crowd_amt", "night_on", "mud_amt"):
         render.setShaderInput(k, 0.0)
     render.setShaderInput("detail_scale", 1.0, 1.0)
     render.setShaderInput("kit_on", 0.0)

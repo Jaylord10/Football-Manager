@@ -547,6 +547,8 @@ class Viewer(ShowBase):
         if ANIM:
             from players3d import shader_defaults
             shader_defaults(self.render)
+            if RAIN:
+                self.render.setShaderInput("mud_amt", 1.0)
         self.render.setShaderInput("shadow_bias", 0.0004)
         self.render.setShaderInput("shadow_texel", 1.0 / SHADOW_MAP)
         self.render.setShaderInput("detail_amt", 0.0)
