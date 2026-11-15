@@ -241,7 +241,10 @@ def build(eth=(0.0, 0.0, 1.0), build_=None):
     body_f = [q for q, g in zip(faces, groups) if g == "body"]
     used = np.unique(np.concatenate(body_f))
     P[:, 2] -= P[used, 2].min()
-    P *= CROWN / P[used, 2].max()
+    global SCALE, MACRO
+    SCALE = CROWN / P[used, 2].max()
+    MACRO = tw
+    P *= SCALE
     sk = json.load(open(os.path.join(MH, "rigs", "default.mhskel")))
     jp = {k: P[idx].mean(0) for k, idx in sk["joints"].items()}
     J = {b: jp[d["head"]] for b, d in sk["bones"].items()}
@@ -558,6 +561,73 @@ def cover_cleft(V, F):
     return V
 
 
+# --- every player his own face ------------------------------------------------------------------------------
+# MakeHuman's face sliders (each from its "decrease" to its "increase" target, both sides together), stored as
+# how far each point of the head moves; players3d picks each player's settings from his name (and skin), and
+# the mix of MakeHuman's African / Asian / European face shapes from his skin tone.
+FACE_SLIDERS = [
+    ("nose_width", ["nose/nose-scale-horiz-decr"], ["nose/nose-scale-horiz-incr"]),
+    ("nose_length", ["nose/nose-scale-vert-decr"], ["nose/nose-scale-vert-incr"]),
+    ("nose_hump", ["nose/nose-hump-decr"], ["nose/nose-hump-incr"]),
+    ("nose_tip", ["nose/nose-point-down"], ["nose/nose-point-up"]),
+    ("nostrils", ["nose/nose-flaring-decr"], ["nose/nose-flaring-incr"]),
+    ("chin", ["chin/chin-prominent-decr"], ["chin/chin-prominent-incr"]),
+    ("chin_width", ["chin/chin-width-decr"], ["chin/chin-width-incr"]),
+    ("jaw", ["chin/chin-bones-decr"], ["chin/chin-bones-incr"]),
+    ("mouth_width", ["mouth/mouth-scale-horiz-decr"], ["mouth/mouth-scale-horiz-incr"]),
+    ("lips", ["mouth/mouth-lowerlip-volume-decr", "mouth/mouth-upperlip-volume-decr"],
+     ["mouth/mouth-lowerlip-volume-incr", "mouth/mouth-upperlip-volume-incr"]),
+    ("cheekbones", ["cheek/l-cheek-bones-decr", "cheek/r-cheek-bones-decr"],
+     ["cheek/l-cheek-bones-incr", "cheek/r-cheek-bones-incr"]),
+    ("cheeks", ["cheek/l-cheek-volume-decr", "cheek/r-cheek-volume-decr"],
+     ["cheek/l-cheek-volume-incr", "cheek/r-cheek-volume-incr"]),
+    ("eye_size", ["eyes/l-eye-scale-decr", "eyes/r-eye-scale-decr"], ["eyes/l-eye-scale-incr", "eyes/r-eye-scale-incr"]),
+    ("eye_height", ["eyes/l-eye-trans-down", "eyes/r-eye-trans-down"], ["eyes/l-eye-trans-up", "eyes/r-eye-trans-up"]),
+    ("brows", ["eyebrows/eyebrows-trans-down"], ["eyebrows/eyebrows-trans-up"]),
+    ("brow_angle", ["eyebrows/eyebrows-angle-down"], ["eyebrows/eyebrows-angle-up"]),
+    ("forehead", ["forehead/forehead-trans-backward"], ["forehead/forehead-trans-forward"]),
+    ("ears", ["ears/l-ear-scale-decr", "ears/r-ear-scale-decr"], ["ears/l-ear-scale-incr", "ears/r-ear-scale-incr"]),
+    ("ears_out", ["ears/l-ear-wing-decr", "ears/r-ear-wing-decr"], ["ears/l-ear-wing-incr", "ears/r-ear-wing-incr"]),
+    ("face_shape", ["head/head-oval"], ["head/head-square"]),
+    ("neck", ["neck/neck-scale-horiz-decr"], ["neck/neck-scale-horiz-incr"]),
+]
+
+
+def face_morphs(nbase, used, Vb):
+    """(which points, [slider: (towards -1, towards +1)] point moves, in our space) for the head and neck."""
+    def delta(rels):
+        d = np.zeros((nbase, 3))
+        for rel in rels:
+            i, dd = target(rel + ".target")
+            d[i] += dd
+        return to_ours(d)[used] * SCALE
+    head = Vb[:, 2] > 1.40
+    out = []
+    for nm, neg, pos_ in FACE_SLIDERS:
+        out.append((delta(neg), delta(pos_)))
+    # the face shapes MakeHuman has for African, Asian and European men (the head only, fading out down the neck)
+    def macro_delta(eth):
+        a, b = macro(eth=eth, **BUILD), MACRO
+        d = np.zeros((nbase, 3))
+        for rel in set(a) | set(b):
+            if not rel.startswith("macrodetails/") or "/height/" in rel or "/proportions/" in rel:
+                continue
+            w = a.get(rel, 0.0) - b.get(rel, 0.0)
+            if w:
+                i, dd = target(rel)
+                d[i] += w * dd
+        d = to_ours(d)[used] * SCALE
+        ring = (Vb[:, 2] > 1.50) & (Vb[:, 2] < 1.56) & (np.abs(Vb[:, 0]) < 0.07)
+        return d - d[ring].mean(0)              # (his face's shape, not how much taller or shorter he'd be)
+    fade = np.clip((Vb[:, 2] - 1.47) / 0.06, 0, 1)[:, None]
+    eth = [macro_delta((1.0, 0.0, 0.0)) * fade, macro_delta((0.0, 1.0, 0.0)) * fade]
+    moved = head & (np.abs(np.stack([a for p in out for a in p] + eth)).max((0, 2)) > 1e-5)
+    idx = np.where(moved)[0]
+    M = np.stack([np.stack([p[0][idx], p[1][idx]]) for p in out]).astype(np.float16)
+    E = np.stack([e[idx] for e in eth]).astype(np.float16)
+    return idx, M, E
+
+
 def main():
     P, V, faces, groups, Wt, names, pos, glb = build()
     write_glb(*glb, pos)
@@ -612,6 +682,9 @@ def main():
                 extra[nm + "_paint"] = D[k]
                 extra[nm + "_normals"] = D[nm + "_normals"]
                 extra[nm + "_faces"] = D[nm + "_faces"]
+    fi, fm, fe = face_morphs(len(V), used, Vb[:len(used)])
+    extra.update(face_idx=fi.astype(np.int32), face_morph=fm, face_eth=fe,
+                 face_names=np.array([f[0] for f in FACE_SLIDERS]))
     np.savez_compressed(OUT, verts=Vb.astype(np.float32), normals=nrm.astype(np.float32), faces=Fb.astype(np.int32),
                         bone_idx=order.astype(np.int16), bone_w=ww.astype(np.float32), bones=np.array(names),
                         paint=paint.astype(np.float32), **extra)

@@ -491,14 +491,39 @@ def _skinned(char, name, V, N, F, BI, BW, names, paint=None):
     return gn
 
 
-def attach(actor, which=None):
+def face_shape(D, sliders, eth):
+    """His own face (MakeHuman's body only - mhbody.py FACE_SLIDERS): the body's points and normals with the
+    face sliders (each -1..1) and the African / Asian face shapes (weights 0..1) applied."""
+    V, N = D["verts"].copy(), D["normals"].copy()
+    idx = D["face_idx"]
+    M = D["face_morph"].astype(np.float32)
+    d = np.zeros((len(idx), 3), np.float32)
+    for k, v in enumerate(sliders[:len(M)]):
+        if v:
+            d += M[k, 1 if v > 0 else 0] * abs(v)
+    for k, w in enumerate(eth):
+        if w:
+            d += D["face_eth"][k].astype(np.float32) * w
+    V[idx] += d
+    F = D["faces"]
+    fn = np.cross(V[F[:, 1]] - V[F[:, 0]], V[F[:, 2]] - V[F[:, 0]])
+    acc = np.zeros_like(V)
+    for k in range(3):
+        np.add.at(acc, F[:, k], fn)
+    n = acc[idx]
+    N[idx] = n / np.maximum(np.linalg.norm(n, axis=1, keepdims=True), 1e-12)
+    return V, N
+
+
+def attach(actor, which=None, face=None):
     """Swap the mannequin's pieces for the smooth body (skinned to this actor's own skeleton).  Returns the new
-    node (None if there's no body.npz yet)."""
+    node (None if there's no body.npz yet).  face: (sliders, eth) - his own face (MakeHuman's body)."""
     D = _load(which)
     if D is None:
         return None
     ch = actor.find("**/+Character")
-    gn = _skinned(ch.node(), "smooth_body", D["verts"], D["normals"], D["faces"], D["bone_idx"], D["bone_w"],
+    V, N = (face_shape(D, *face) if face is not None and "face_idx" in D else (D["verts"], D["normals"]))
+    gn = _skinned(ch.node(), "smooth_body", V, N, D["faces"], D["bone_idx"], D["bone_w"],
                   [str(b) for b in D["bones"]], D.get("paint"))
     for old in actor.findAllMatches("**/+GeomNode"):
         old.detachNode()

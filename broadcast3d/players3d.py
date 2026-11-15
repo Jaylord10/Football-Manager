@@ -179,6 +179,21 @@ def _back_texture(name, number, colour, outline):
     return t
 
 
+def _face(name, number, skin):
+    """His own face (MakeHuman's face sliders, mhbody.py FACE_SLIDERS), picked from his name - most features
+    near average, a few strong ones - and how much of MakeHuman's African / Asian face shape, from his skin tone
+    (with some spread: faces and skin tones don't match one to one)."""
+    import random
+    import zlib
+    r = random.Random(zlib.crc32(f"face-{name}-{number}".encode()))
+    sliders = [max(-1.0, min(1.0, r.gauss(0.0, 0.6))) for _ in range(21)]
+    sliders[19] *= 0.6                                  # (head shape: gently - his hair sits on it)
+    lum = (0.30 * skin[0] + 0.59 * skin[1] + 0.11 * skin[2]) / 255.0
+    af = max(0.0, min(1.0, (0.62 - lum) / 0.30)) * (0.65 + 0.3 * r.random())
+    asn = 0.25 * r.random() if 0.45 < lum < 0.75 else 0.0
+    return sliders, (af, asn)
+
+
 class AnimPlayer:
     def __init__(self, parent, kit, number, skin, hair, keeper=False, model=MODEL, name=None, crest=None,
                  height=None):
@@ -201,7 +216,8 @@ class AnimPlayer:
         paint(self.a, kit, skin, hair)
         if self.cfg.get("smooth") and SMOOTH:                # (a smooth body instead of the mannequin's pieces)
             import body
-            body.attach(self.a, "mh" if MHBODY else None)
+            body.attach(self.a, "mh" if MHBODY else None,
+                        _face(name, number, skin) if MHBODY and os.environ.get("FM_FACES") != "0" else None)
         # The kit is drawn by the lighting shader, pixel by pixel (crisp stripes, hoops, sock tops), with his
         # name and number on his back and the club crest on his chest.
         r = self.root
