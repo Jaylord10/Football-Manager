@@ -43,3 +43,19 @@ both sides' kits.
 
 Credits: the player figure is "Mannequiny" by GDQuest and contributors (https://www.gdquest.com/,
 github.com/GDQuest/godot-3d-mannequin), CC-BY 4.0. Xbot is from the three.js examples.
+
+## Ideas for next (not done yet)
+
+In the view (no engine change needed):
+- The TV camera: follow the scorer during celebrations, a reverse angle / behind-the-goal replay after goals,
+  a slower zoom (left alone for now, as asked).
+- Each club's own ground from its profile (only Kiln Lane so far), and the right home end for the away fans.
+- Proper footballer models (the mannequin's segmented arms and plain head show close up).
+- Slide tackles, shielding the ball, players pointing / calling for it, keepers organising the wall.
+- Rain / mud on kits for winter games; breath in the cold under the floodlights.
+
+Things the match engine does that the view has to cover for (to talk about - these change the engine):
+- A keeper releases the ball the moment he catches it (real keepers hold it a few seconds).
+- After a goal the ball goes straight back to the centre spot (the view now carries it on into the net).
+- Few throw-ins (2-6 a match against ~40 in a real one) and few goals in the recorded matches
+  (1 goal in 9 recordings - real English football averages ~2.7 a game).
