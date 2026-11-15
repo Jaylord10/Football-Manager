@@ -31,6 +31,11 @@ CROWN = 1.80            # (the top of his head; players3d scales each player to 
 # His build (MakeHuman's slider values, 0..1): a young professional footballer - lean and muscular (body fat
 # ~10%, e.g. Milanese et al. 2015 on Serie A players), average height, "ideal" proportions.
 BUILD = dict(gender=1.0, age=25, muscle=0.72, weight=0.42, height=0.55, prop=0.75)
+# ...and a footballer's legs: big, defined thighs (~57-60 cm round mid-thigh) and calves (~38-40 cm) - e.g.
+# Hoshikawa et al. 2009 (MRI of soccer players' thigh muscles); MakeHuman's own leg sliders.
+LEGS_EXTRA = {"armslegs/{s}-upperleg-muscle-incr.target": 1.0, "armslegs/{s}-lowerleg-muscle-incr.target": 0.9,
+              "measure/measure-thigh-circ-incr.target": 0.8, "measure/measure-calf-circ-incr.target": 0.3,
+              "measure/measure-knee-circ-incr.target": 0.3, "armslegs/{s}-leg-valgus-decr.target": 1.0}
 
 
 # --- MakeHuman's files ---------------------------------------------------------------------------------------
@@ -228,7 +233,11 @@ LEGS = ["thigh", "calf", "foot", "ball"]
 
 def build(eth=(0.0, 0.0, 1.0), build_=None):
     base, faces, groups = load_obj()
-    P = to_ours(shaped(base, macro(eth=eth, **(build_ or BUILD))))
+    tw = macro(eth=eth, **(build_ or BUILD))
+    for k, w in LEGS_EXTRA.items():
+        for sd in (("l", "r") if "{s}" in k else ("",)):
+            tw[k.format(s=sd)] = w
+    P = to_ours(shaped(base, tw))
     body_f = [q for q, g in zip(faces, groups) if g == "body"]
     used = np.unique(np.concatenate(body_f))
     P[:, 2] -= P[used, 2].min()
@@ -271,6 +280,7 @@ def build(eth=(0.0, 0.0, 1.0), build_=None):
     new = {}
     for sd in ("l", "r"):
         S = sd.upper()
+        sgn = 1 if sd == "l" else -1
         side_mh = J[f"finger2-1.{S}"] - J[f"finger4-1.{S}"]
         side_ou = ours[f"index_01.{sd}"] - ours[f"ring_01.{sd}"]
         for chain in (CHAINS, LEGS):
@@ -307,6 +317,11 @@ def build(eth=(0.0, 0.0, 1.0), build_=None):
                 d_now = Rp @ (B - A)
                 if nm in ("clavicle", "foot", "ball"):
                     Rl = np.eye(3)                       # (his shoulders and feet as MakeHuman made them)
+                elif nm.startswith("thumb"):             # (the thumb lying along the hand, a little forward
+                    td = np.array([sgn * 0.06, -0.026, -0.016])          #  and down - as a hand hangs)
+                    if nm != "thumb_01":
+                        td = np.array([sgn * 0.06, -0.018, -0.022])
+                    Rl = rot_between(d_now, td)
                 elif nm == "hand" or "_0" in nm:
                     Rh = frame(our_tail(b) - ours[b], side_ou) @ frame(d_now, Rp @ side_mh).T
                     Rl = Rh
@@ -342,7 +357,9 @@ OLD = dict(chin=1.538, mouth=1.5883, eye=1.6555, eye_x=0.033, eye_y=-0.098, back
 
 def paint_map(pos):
     """Functions to and from 'painting' space for this skeleton (pos: his joints)."""
-    zs = [(0.0, 0.0), (pos["foot.l"][2], 0.11), (pos["calf.l"][2], 0.5335), (pos["thigh.l"][2], 0.921),
+    kz = pos["calf.l"][2]
+    zs = [(0.0, 0.0), (pos["foot.l"][2], 0.11), (kz - 0.035, 0.5335),           # (socks to below his calf's top,
+          (kz + 0.115, 0.622), (pos["thigh.l"][2], 0.921),                       #  shorts a hand above the knee)
           (pos["upperarm.l"][2], 1.433), (1.515, 1.49), (FACE["chin"], OLD["chin"]), (FACE["mouth"], OLD["mouth"]),
           (FACE["eye"], OLD["eye"]), (CROWN, OLD["crown"]), (CROWN + 1.0, OLD["crown"] + 1.0)]
     zm, zo = np.array([a for a, _ in zs]), np.array([b for _, b in zs])
@@ -414,6 +431,32 @@ def boot_mesh(step=0.003, target=900):
     return v, nrm, fc, paint
 
 
+# A footballer's legs, defined: the kneecap, the inner "teardrop" above the knee (vastus medialis), the outer
+# quad, the calf's two heads (the inner one bigger and lower) - raised a little on MakeHuman's smooth legs.
+# (offset from the knee joint: out, forward(-)/back(+), up; size; height of the bump - metres)
+# (which way from the knee - out, forward(-)/back(+) - and how high; size; height of the bump, metres: each put
+#  on the skin that way)
+LEG_BUMPS = [((0.0, -1.0), 0.012, 0.020, 0.006),            # kneecap
+             ((-0.8, -0.7), 0.075, 0.026, 0.010),           # teardrop
+             ((0.9, -0.5), 0.13, 0.038, 0.007),             # outer quad
+             ((-0.6, 0.8), -0.125, 0.034, 0.009),           # inner calf
+             ((0.6, 0.8), -0.10, 0.030, 0.007)]             # outer calf
+
+
+def define_legs(V, N, pos):
+    V = V.copy()
+    for sd, sg in (("l", 1), ("r", -1)):
+        K = pos["calf." + sd]
+        side = np.sign(V[:, 0]) == sg
+        for (o, f), u, sig, amp in LEG_BUMPS:
+            d = np.array([sg * o, f]) / np.hypot(o, f)
+            ring = side & (np.abs(V[:, 2] - K[2] - u) < 0.008) & (np.hypot(*(V[:, :2] - K[:2]).T) < 0.09)
+            c = V[ring][np.argmax((V[ring, :2] - K[:2]) @ d)]
+            g = np.exp(-((V - c) ** 2).sum(1) / (2 * sig * sig)) * side
+            V += (amp * g)[:, None] * N
+    return V
+
+
 def dress(V, paint, pos):
     """His shirt and shorts hanging loose (as our own body's did), sleeves standing off the arm, boots on."""
     V = V.copy()
@@ -421,7 +464,7 @@ def dress(V, paint, pos):
     x, y, z = V[:, 0], V[:, 1], V[:, 2]
     ss = lambda a, b, t: np.clip((t - a) / (b - a), 0, 1) ** 2 * (3 - 2 * np.clip((t - a) / (b - a), 0, 1))
     # the shirt: an oval tube hanging straight down from the chest (untucked), a little off the skin all over
-    w = ss(0.905, 0.93, pz) * (1 - ss(1.30, 1.36, z)) * (1 - ss(0.15, 0.19, px))
+    w = ss(0.915, 0.928, pz) * (1 - ss(1.30, 1.36, z)) * (1 - ss(0.15, 0.19, px))
     cy = -0.038
     rx, ry = 0.168, 0.112
     rho = np.sqrt((x / rx) ** 2 + ((y - cy) / ry) ** 2)
@@ -432,14 +475,16 @@ def dress(V, paint, pos):
     for sd, sg in (("l", 1), ("r", -1)):
         a, b = pos["thigh." + sd], pos["calf." + sd]
         m = (np.sign(x) == sg) | (np.abs(x) < 0.01)
-        w = ss(0.60, 0.625, pz) * (1 - ss(0.95, 0.99, pz)) * m
+        w = ss(0.612, 0.622, pz) * (1 - ss(0.95, 0.99, pz)) * m          # (a sharp hem: the leg of the shorts)
         ab = b - a
         t = ((V - a) @ ab) / (ab @ ab)
         c = a + t[:, None] * ab
-        r = 0.094 - 0.006 * np.clip(t, 0, 1)
+        r = 0.098 - 0.004 * np.clip(t, 0, 1)
         d = V - c
         dl = np.linalg.norm(d, axis=1)
-        k = np.where(dl < r, r / np.maximum(dl, 1e-6), 1.0)
+        tube = 1 - ss(0.86, 0.93, pz)                   # (lower down: the tube itself, like a real pair -
+        k = np.where(dl < r, r / np.maximum(dl, 1e-6), 1.0)    #  over the thigh's muscles; higher: over the hips)
+        k = k * (1 - tube) + (r / np.maximum(dl, 1e-6)) * tube
         V += (w * (k - 1))[:, None] * d
     # the sleeves: standing off the upper arm, down to half way
     for sd, sg in (("l", 1), ("r", -1)):
@@ -480,6 +525,12 @@ def main():
     Vb, Fb, Wb = V[used], remap[F], Wt[used]
     fwd, back = paint_map(pos)
     paint = fwd(Vb)
+    n0 = np.zeros_like(Vb)
+    fn0 = np.cross(Vb[Fb[:, 1]] - Vb[Fb[:, 0]], Vb[Fb[:, 2]] - Vb[Fb[:, 0]])
+    for k in range(3):
+        np.add.at(n0, Fb[:, k], fn0)
+    n0 /= np.maximum(np.linalg.norm(n0, axis=1, keepdims=True), 1e-12)
+    Vb = define_legs(Vb, n0, pos)
     Vb = dress(Vb, paint, pos)
     nrm = np.zeros_like(Vb)
     fn = np.cross(Vb[Fb[:, 1]] - Vb[Fb[:, 0]], Vb[Fb[:, 2]] - Vb[Fb[:, 0]])
