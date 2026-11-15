@@ -34,7 +34,9 @@ the live window).
   the managers, subs on the bench and warming up, stewards and ball boys, the ball (rolling), the TV camera on
   the gantry, the scoreboard and captions (goals, bookings).  Works out from the recording who kicks, shoots,
   heads, tackles, takes a throw-in, and with which foot.
-- `players3d.py` - the players: the mannequin figure, its kit drawn pixel by pixel by the shader (patterns,
+- `body.py` - a smooth footballer's body (one continuous skin, bending smoothly at the joints) for the
+  mannequin's skeleton; `python broadcast3d/body.py` rebuilds `models/body.npz`.  `--pieces` shows the old one.
+- `players3d.py` - the players: the mannequin's skeleton with the smooth body, its kit drawn pixel by pixel by the shader (patterns,
   collars, names and numbers on the back, crests), faces and haircuts, heights, leaning into turns.
 - `gait.py` - the movements built from real figures: the walk (normal gait data), kicks and shots (kicking
   studies), headers, tackles, the keeper's set position, dives and getting up, throws and punts, throw-ins,
@@ -56,7 +58,6 @@ In the view (no engine change needed):
   a slower zoom (left alone for now, as asked).
 - The grounds' special features from their profiles (viaducts, rivers, chimneys, big screens) - only Kiln Lane
   has its own so far.
-- Proper footballer models (the mannequin's segmented arms and plain head show close up).
 - Slide tackles, shielding the ball, players pointing / calling for it, keepers organising the wall.
 - Rain / mud on kits for winter games; breath in the cold under the floodlights.
 

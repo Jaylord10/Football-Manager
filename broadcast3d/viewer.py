@@ -726,7 +726,8 @@ class Viewer(ShowBase):
                 self._sv = getattr(self, "_sv", (math.cos(hd), math.sin(hd)))
                 k2 = min(1.0, dt * 1.5)
                 self._sv = (self._sv[0] + (math.cos(hd) - self._sv[0]) * k2, self._sv[1] + (math.sin(hd) - self._sv[1]) * k2)
-                self.cam.setPos(fx_ + self._sv[0] * 11, fy_ + self._sv[1] * 11, 2.0)
+                d_ = 11 if "--near" not in sys.argv else 6.5
+                self.cam.setPos(fx_ + self._sv[0] * d_, fy_ + self._sv[1] * d_, 2.0 if d_ > 7 else 1.2)
             else:
                 self.cam.setPos(fx_ + sx * 9, fy_ - 7 if fy_ > -HY + 1 else fy_ + 9, 3.2)
             self.cam.lookAt(fx_, fy_, 0.8)

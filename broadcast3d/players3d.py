@@ -11,11 +11,13 @@ from panda3d.core import (GeomVertexFormat, GeomVertexArrayFormat, GeomVertexWri
                           InternalName, ColorAttrib, TextNode)
 
 import os
+import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 # Each model: its file, how tall it is, and for each joint we pose: (its name, which of H/P/R to turn, which way
 # is "forward" / "bends").  Both models face -Y in their own frame.
 MODELS = {
     "mannequin": {"file": os.path.join(HERE, "models", "mannequin.glb"), "walk": "walk", "make_walk": True,
+                  "smooth": True,
                   "run_range": (2, 17), "run_offset": 10.5, "scale": 1.02,
                   "joints": {"thigh_r": ("thigh.r", 2, -1), "knee_r": ("calf.r", 1, 1),
                              "thigh_l": ("thigh.l", 2, 1), "knee_l": ("calf.l", 1, 1),
@@ -123,6 +125,7 @@ def paint(actor, kit, skin, hair):
         np.clearTexture()
 
 
+SMOOTH = "--pieces" not in sys.argv              # (--pieces: the old mannequin, to compare)
 PATTERNS = {None: 0, "hoops": 1, "stripes": 2, "pinstripe": 3, "band": 4, "halves": 5, "sash": 6, "sleeves": 7}
 
 
@@ -188,6 +191,9 @@ class AnimPlayer:
         self.height = height
         self.a.setH(180)                    # (the model faces -Y; the root faces the way he's running, +Y)
         paint(self.a, kit, skin, hair)
+        if self.cfg.get("smooth") and SMOOTH:                # (a smooth body instead of the mannequin's pieces)
+            import body
+            body.attach(self.a)
         # The kit is drawn by the lighting shader, pixel by pixel (crisp stripes, hoops, sock tops), with his
         # name and number on his back and the club crest on his chest.
         r = self.root

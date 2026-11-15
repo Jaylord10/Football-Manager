@@ -66,7 +66,7 @@ vec4 head_colour(float x, float y, float z, float ax) {
         if (z > 1.572 && z < 1.578 && ax < 0.022) return vec4(kit_skin.rgb * vec3(0.62, 0.45, 0.42), 1.0); // mouth
         if (ax < 0.012 && z > 1.60 && z < 1.645) return vec4(kit_skin.rgb * 0.9, 1.0);         // the nose's shade
     }
-    if (beard && y < -0.02 && z < 1.605 && (ax > 0.028 || z < 1.565 || (z > 1.583 && z < 1.592)))
+    if (beard && y < -0.02 && z > 1.53 && ax < 0.09 && z < 1.605 && (ax > 0.028 || z < 1.565 || (z > 1.583 && z < 1.592)))
         return mix(kit_hair, kit_skin, 0.35);                       // a beard (and moustache)
     return kit_skin;
 }
@@ -74,7 +74,7 @@ vec4 head_colour(float x, float y, float z, float ax) {
 vec4 kit_colour() {
     float x = v_uv.x, z = v_uv.y, y = v_uv1.x, ax = abs(x);
     bool keeper = kit_info.y > 0.5;
-    if (z < 0.075) return vec4(0.09, 0.09, 0.10, 1.0);                               // boots
+    if (z < 0.10 || (z < 0.13 && v_uv1.x < -0.03)) return vec4(0.09, 0.09, 0.10, 1.0);   // boots
     if (kit_extra.y > 0.5 && z < 0.97 && ax < 0.24) return kit_shorts;              // (trousers: the managers)
     if (kit_extra.w > 0.5 && z < 1.49 && ax >= 0.66) return kit_gloves;             // (gloves on a cold day)
     if (kit_extra.z > 0.5 && z < 1.49 && ax > 0.24 && ax < 0.66 && !(z > 1.43 && ax < 0.09)) {
