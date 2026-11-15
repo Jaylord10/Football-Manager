@@ -13,6 +13,7 @@ RUNS = [("day", ["5600", "2"]), ("close", ["5600", "2", "--close"]), ("follow", 
         ("night", ["5600", "2", "--night"]), ("rain", ["5600", "2", "--rain"]), ("overcast", ["5600", "2", "--overcast"]),
         ("goal", ["13500", "3"]), ("other ground", ["5600", "2", "--teams=Kingsmere,Penrith"]),
         ("bowl", ["5600", "2", "--teams=Northwick FC,Lydmouth"]), ("old body", ["5600", "2", "--oldbody"]),
+        ("no lod", ["5600", "2", "--nolod"]), ("old run", ["5600", "2", "--oldrun"]),
         ("live", ["5600", "--test"])]
 
 

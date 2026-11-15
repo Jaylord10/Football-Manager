@@ -433,6 +433,8 @@ def _closest(q, a, b):
 
 # --- putting it on a player -------------------------------------------------------------------------------
 _DATA = {}
+LOD = "--nolod" not in __import__("sys").argv
+LOD_NEAR = 22.0         # (metres from the camera: nearer, the full body; further, the lighter one)
 MH_OUT = os.path.join(HERE, "models", "mh_body.npz")
 
 
@@ -536,8 +538,24 @@ def attach(actor, which=None, face=None):
         return None
     ch = actor.find("**/+Character")
     V, N = (face_shape(D, *face) if face is not None and "face_idx" in D else (D["verts"], D["normals"]))
-    gn = _skinned(ch.node(), "smooth_body", V, N, D["faces"], D["bone_idx"], D["bone_w"],
-                  [str(b) for b in D["bones"]], D.get("paint"))
+    names = [str(b) for b in D["bones"]]
+    gn = _skinned(ch.node(), "smooth_body", V, N, D["faces"], D["bone_idx"], D["bone_w"], names, D.get("paint"))
+    if "lod_idx" in D and LOD:
+        # near the camera the full body, further off the lighter one (only the one drawn is moved each frame)
+        from panda3d.core import LODNode, NodePath
+        li = D["lod_idx"]
+        lo = _skinned(ch.node(), "smooth_body_far", V[li], N[li], D["lod_faces"], D["bone_idx"][li],
+                      D["bone_w"][li], names, D["paint"][li] if "paint" in D else None)
+        lod = LODNode("body_lod")
+        lnp = NodePath(lod)
+        lnp.attachNewNode(gn)
+        lnp.attachNewNode(lo)
+        lod.addSwitch(LOD_NEAR, 0.0)
+        lod.addSwitch(1e6, LOD_NEAR)
+        for old in actor.findAllMatches("**/+GeomNode"):
+            old.detachNode()
+        lnp.reparentTo(ch)
+        return lnp
     for old in actor.findAllMatches("**/+GeomNode"):
         old.detachNode()
     return ch.attachNewNode(gn)
