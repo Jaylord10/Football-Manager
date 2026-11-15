@@ -33,8 +33,8 @@ CROWN = 1.80            # (the top of his head; players3d scales each player to 
 BUILD = dict(gender=1.0, age=25, muscle=0.72, weight=0.42, height=0.55, prop=0.75)
 # ...and a footballer's legs: big, defined thighs (~57-60 cm round mid-thigh) and calves (~38-40 cm) - e.g.
 # Hoshikawa et al. 2009 (MRI of soccer players' thigh muscles); MakeHuman's own leg sliders.
-LEGS_EXTRA = {"armslegs/{s}-upperleg-muscle-incr.target": 1.0, "armslegs/{s}-lowerleg-muscle-incr.target": 0.9,
-              "measure/measure-thigh-circ-incr.target": 0.8, "measure/measure-calf-circ-incr.target": 0.3,
+LEGS_EXTRA = {"armslegs/{s}-upperleg-muscle-incr.target": 1.0,                  # (calves as MakeHuman has them)
+              "measure/measure-thigh-circ-incr.target": 0.8,
               "measure/measure-knee-circ-incr.target": 0.3, "armslegs/{s}-leg-valgus-decr.target": 1.0}
 
 
@@ -381,7 +381,13 @@ def paint_map(pos):
         x2 = x * (1 - arm) + xa * arm
         x2 = x2 * (1 - h) + x * kx * h
         y2 = y * (1 - h) + (OLD["eye_y"] + (y - FACE["eye_y"]) * ky) * h
-        return np.stack([x2, y2, np.interp(z, zm, zo)], 1)
+        z2 = np.interp(z, zm, zo)
+        # the shorts come up higher at the back, over his glutes (painted lower there: the shorts' top is 0.927)
+        sy = np.clip((y + 0.01) / 0.06, 0, 1)
+        sy = sy * sy * (3 - 2 * sy)
+        hat = np.clip((z2 - 0.80) / 0.08, 0, 1) * np.clip((1.06 - z2) / 0.10, 0, 1)
+        z2 = z2 - 0.045 * sy * hat * (np.abs(x) < 0.25)
+        return np.stack([x2, y2, z2], 1)
 
     def back(v):
         """(for things made on our body - the haircuts - put onto his head)"""
@@ -438,9 +444,7 @@ def boot_mesh(step=0.003, target=900):
 #  on the skin that way)
 LEG_BUMPS = [((0.0, -1.0), 0.012, 0.020, 0.006),            # kneecap
              ((-0.8, -0.7), 0.075, 0.026, 0.010),           # teardrop
-             ((0.9, -0.5), 0.13, 0.038, 0.007),             # outer quad
-             ((-0.6, 0.8), -0.125, 0.034, 0.009),           # inner calf
-             ((0.6, 0.8), -0.10, 0.030, 0.007)]             # outer calf
+             ((0.9, -0.5), 0.13, 0.038, 0.007)]             # outer quad
 
 
 def define_legs(V, N, pos):
