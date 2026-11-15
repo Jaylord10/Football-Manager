@@ -210,7 +210,8 @@ class AnimPlayer:
         style = (0 if hs % 10 < 6 else 1 if hs % 10 < 8 else 2) + (4 if (hs // 10) % 10 < 3 else 0)  # (~30% beards)
         r.setShaderInput("kit_info", (PATTERNS.get(kit.get("pattern"), 0), 1.0 if kit.get("keeper") else 0.0,
                                       1.0 if crest else 0.0, float(style)))
-        r.setShaderInput("kit_extra", (float(kit.get("collar", 0)), 0.0, 0.0, 0.0))
+        r.setShaderInput("kit_extra", (float(kit.get("collar", 0)), 1.0 if kit.get("trousers") else 0.0,
+                                       1.0 if kit.get("long_sleeves") else 0.0, 0.0))
         self.num = None
         self.action_names = []
         if self.cfg.get("make_walk"):
@@ -359,7 +360,7 @@ class AnimPlayer:
         w_idle = max(0.0, 1 - w_run - w_walk)
         r0, r1 = self.cfg["run_range"]                                        # (the frames that make one stride)
         run_f = (self.phase * (r1 - r0) + self.cfg["run_offset"]) % (r1 - r0)
-        stand, walk, run = "idle", self.cfg["walk"], "run"
+        stand, walk, run = getattr(self, "force_stand", None) or "idle", self.cfg["walk"], "run"
         if self.mood and self.cfg.get("make_walk"):                           # (after a goal: celebrating, or not)
             happy = "cheer" if self.still_t < 3.5 else "clap"                 # (then he applauds the fans)
             stand = {"scorer": happy, "joy": happy, "sad": self.sad_pose}.get(self.mood, "idle")

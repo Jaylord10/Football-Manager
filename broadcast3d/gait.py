@@ -191,6 +191,11 @@ ACTIONS = {
                 (0.25, {"arm_r": 100, "arm_l": 100, "across_r": 15, "across_l": 15, "elbow_r": 10, "elbow_l": 10,
                         "lean": 18, "hip_l": 20, "knee_l": 18, "knee_r": 12}),
                 (0.70, N)],
+    # A manager on the touchline, arm out, telling them where to go.
+    "point": [(-0.4, N),
+              (0.0, {"arm_r": 75, "out_r": 30, "elbow_r": 10, "twist": 12, "lean": 4, "nod": -6}),
+              (1.2, {"arm_r": 70, "out_r": 35, "elbow_r": 15, "twist": 10, "lean": 4, "nod": -6}),
+              (1.6, N)],
 }
 # How strongly each blends over the running (a dribbling touch stays light).
 WEIGHT = {"touch": 0.55}
@@ -241,7 +246,14 @@ def run_arms(u):
              "lean": -6}, {})
 
 
-LOOPS = {"cheer": (cheer, 30, "idle"), "clap": (clap, 30, "idle"), "hips": (hips, 60, "idle"), "knees": (knees, 60, "idle"),
+def sit(u):
+    """Sitting on the bench (a substitute)."""
+    b = math.sin(2 * math.pi * u)
+    return ({"hip_r": 88, "hip_l": 84, "knee_r": 92, "knee_l": 86, "ankle_r": 5, "lean": 6 + 2 * b, "arm_r": 30,
+             "arm_l": 30, "elbow_r": 40, "elbow_l": 40, "across_r": 10, "across_l": 10, "nod": -4}, {})
+
+
+LOOPS = {"sit": (sit, 90, "idle"), "cheer": (cheer, 30, "idle"), "clap": (clap, 30, "idle"), "hips": (hips, 60, "idle"), "knees": (knees, 60, "idle"),
          "walk_sad": (walk_sad, 30, "idle"), "run_arms": (run_arms, 15, "run")}
 
 

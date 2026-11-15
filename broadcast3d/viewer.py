@@ -155,8 +155,15 @@ class Stadium:
         # Main Stand (near, under the camera): front rows only
         n = self.side("near")
         self.tier(n, -50, 50, 8, 1.2, 20, 8, "crowd_home.png", (200, 40, 45))
-        for s, x in ((n, -9), (n, 9)):                                       # dugouts
-            box(s, x - 4, 3.2, 0, x + 4, 5.5, 2.2, C((40, 42, 48)))
+        for s, x in ((n, -9), (n, 9)):                                       # dugouts: open at the front,
+            dk, grey = C((40, 42, 48)), C((70, 72, 78))                      # a bench of seats inside
+            box(s, x - 4, 6.6, 0, x + 4, 6.8, 2.2, dk)                       # (the back)
+            box(s, x - 4.1, 4.3, 2.1, x + 4.1, 6.8, 2.3, dk)                 # (the roof)
+            for e in (-1, 1):                                                # (perspex ends)
+                pe = box(s, x + e * 4 - 0.03, 4.4, 0, x + e * 4 + 0.03, 6.8, 2.1, (0.75, 0.82, 0.88, 0.35))
+                pe.setTransparency(TransparencyAttrib.MAlpha); pe.setDepthWrite(False)
+            box(s, x - 3.8, 5.7, 0, x + 3.8, 6.5, 0.45, grey)                 # (the seats)
+            box(s, x - 3.8, 6.35, 0.45, x + 3.8, 6.5, 0.9, grey)
         # ad boards; a brick wall round the outside (the corners are open, old-style)
         self.ad_boards()
         for x0, y0, x1, y1 in ((-HX - 34, HY + 40, HX + 34, HY + 41), (-HX - 34, -HY - 30, HX + 34, -HY - 29),
@@ -537,16 +544,19 @@ class Viewer(ShowBase):
         self.cx += (max(-34, min(34, bx)) - self.cx) * k
         self.cy += (by - self.cy) * k
         if FOLLOW is not None:                                              # (a close camera on one player)
-            fx_, fy_ = to_world(fr["p"][FOLLOW][0], fr["p"][FOLLOW][1])
+            if FOLLOW < len(fr["p"]):
+                fx_, fy_ = to_world(fr["p"][FOLLOW][0], fr["p"][FOLLOW][1])
+            else:                                                           # (22 on: the referee, assistants, managers)
+                fx_, fy_ = self.officials[FOLLOW - len(fr["p"])]["pos"]
             sx = 1 if fx_ < 0 else -1                                       # (from out on the pitch, looking at him)
             if "--side" in sys.argv:                                        # (or side-on to him, to check his gait)
-                hd = math.radians(self.players[FOLLOW].h or 0.0)
+                hd = math.radians((self.players + [o["p"] for o in self.officials])[FOLLOW].h or 0.0)
                 self._sv = getattr(self, "_sv", (math.cos(hd), math.sin(hd)))
                 k2 = min(1.0, dt * 1.5)
                 self._sv = (self._sv[0] + (math.cos(hd) - self._sv[0]) * k2, self._sv[1] + (math.sin(hd) - self._sv[1]) * k2)
                 self.cam.setPos(fx_ + self._sv[0] * 11, fy_ + self._sv[1] * 11, 2.0)
             else:
-                self.cam.setPos(fx_ + sx * 9, fy_ - 7, 3.2)
+                self.cam.setPos(fx_ + sx * 9, fy_ - 7 if fy_ > -HY + 1 else fy_ + 9, 3.2)
             self.cam.lookAt(fx_, fy_, 0.8)
         elif CLOSE:                                                         # (a close camera, for checking)
             self.cam.setPos(bx - 6, by - 14, 4.5)
@@ -802,6 +812,28 @@ def make_officials(v, kits_in_use):
             for n in (flag, cloth):
                 n.setShaderInput("kit_on", 0.0)
         out.append({"p": p, "role": role, "pos": [x, y], "vel": [0.0, 0.0]})
+    # The two managers in their technical areas, in front of the dugouts (the near touchline, 9 m either side
+    # of halfway): the home one in a dark coat, the visitors' in a club tracksuit top.
+    for team, x, kit in ((0, -9.0, kits_in_use[0]), (1, 9.0, kits_in_use[1])):
+        suit = {"shirt": (32, 34, 44), "trim": (32, 34, 44), "shorts": (28, 28, 34), "socks": (28, 28, 34),
+                "socktop": (28, 28, 34), "pattern": None, "number": (240, 240, 240), "trousers": True,
+                "long_sleeves": True}
+        if team == 1:
+            suit.update(shirt=kit["shirt"], trim=kit.get("trim", kit["shirt"]), pattern="sleeves" if False else None)
+        p = AnimPlayer(v.render, suit, "", (214, 168, 134) if team == 0 else (176, 124, 92), (60, 55, 50),
+                       height=1.78)
+        out.append({"p": p, "role": "manager", "team": team, "home_x": x, "pos": [x, -HY - 2.2], "vel": [0.0, 0.0],
+                    "next_point": 4.0 + 5 * team, "t": 0.0})
+    # Five substitutes on each bench, in training tops.
+    for team, x0, kit in ((0, -9.0, kits_in_use[0]), (1, 9.0, kits_in_use[1])):
+        for j in range(5):
+            top = {"shirt": tuple(int(c * 0.75) for c in kit["shirt"]), "trim": kit.get("trim", kit["shirt"]),
+                   "shorts": (30, 30, 34), "socks": (30, 30, 34), "socktop": (30, 30, 34), "pattern": None,
+                   "number": (240, 240, 240), "trousers": True, "long_sleeves": True}
+            p = AnimPlayer(v.render, top, 12 + j, Player.SKINS[(j * 3 + team) % 5], (30, 25, 20), name=f"sub{team}{j}")
+            p.force_stand = "sit"
+            out.append({"p": p, "role": "sub", "team": team, "pos": [x0 - 2.6 + j * 1.3, -HY - 5.85],
+                        "vel": [0.0, 0.0]})
     return out
 
 
@@ -818,6 +850,15 @@ def _viewer_officiate(self, fr, dt, bx, by):
     xs_r = sorted((to_world(P[i][0], P[i][1])[0] for i in right if P[i][6]), reverse=True)
     for o in self.officials:
         x, y = o["pos"]
+        if o["role"] == "manager":
+            self._manage(o, fr, dt, bx, by)
+            continue
+        if o["role"] == "sub":                                              # (on the bench - up if they score)
+            cel = fr.get("c")
+            o["p"].force_stand = "cheer" if cel and cel[0] == o["team"] else "sit"
+            o["p"].update(x, y, 0.0, 1.0, 0.0, dt, True, ball=(bx, by))
+            o["p"].act(None, 0.0)
+            continue
         if o["role"] == "ref":
             # the diagonal (from his left of the near half to the far right), 12-18 m from the ball
             tx = max(-38.0, min(38.0, bx - 9.0 * (1 if bx > -20 else -1)))
@@ -858,6 +899,30 @@ def _viewer_officiate(self, fr, dt, bx, by):
         o["p"].act(None, 0.0)
 
 
+def _viewer_manage(self, o, fr, dt, bx, by):
+    """A manager: up and down his technical area following play, pointing now and then; after a goal, one
+    celebrates and the other stands with his hands on his hips."""
+    import math as _m
+    p = o["p"]
+    o["t"] += dt
+    tx = o["home_x"] + max(-2.0, min(2.0, (bx - o["home_x"]) * 0.08))
+    x, y = o["pos"]
+    vx = max(-1.6, min(1.6, (tx - x) * 1.2))
+    x += vx * dt
+    o["pos"] = [x, y]
+    cel = fr.get("c")
+    p.mood = None if not cel else ("joy" if cel[0] == o["team"] else "sad")
+    fx, fy = bx - x, by - y
+    fl = _m.hypot(fx, fy) or 1.0
+    p.update(x, y, fx / fl, fy / fl, abs(vx) * 10.0, dt, True, vel=(vx, 0.0), ball=(bx, by))
+    if o["t"] > o["next_point"] and not cel:
+        o["point_t"] = o["t"]
+        o["next_point"] = o["t"] + 9.0 + 11.0 * ((int(o["t"] * 7) % 10) / 10.0)
+    pt = o["t"] - o.get("point_t", -99)
+    p.act("point" if pt < 1.6 and not cel else None, pt - 0.4)
+
+
+Viewer._manage = _viewer_manage
 Viewer._officiate = _viewer_officiate
 Viewer._goal_ball = _viewer_goal_ball
 Viewer._spin_ball = _viewer_spin_ball

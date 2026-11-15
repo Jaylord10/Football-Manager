@@ -73,6 +73,9 @@ vec4 kit_colour() {
     float x = v_uv.x, z = v_uv.y, y = v_uv1.x, ax = abs(x);
     bool keeper = kit_info.y > 0.5;
     if (z < 0.075) return vec4(0.09, 0.09, 0.10, 1.0);                               // boots
+    if (kit_extra.y > 0.5 && z < 0.97 && ax < 0.24) return kit_shorts;              // (trousers: the managers)
+    if (kit_extra.z > 0.5 && z < 1.49 && ax > 0.24 && ax < 0.66 && !(z > 1.43 && ax < 0.09))
+        return kit_shirt;                                                           // (long sleeves, bare hands)
     if (z < 0.40) return kit_socks;
     if (z < 0.46) return kit_socktop;
     if (z < 0.66) return kit_skin;
