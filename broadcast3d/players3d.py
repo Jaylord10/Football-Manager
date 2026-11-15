@@ -128,6 +128,9 @@ PATTERNS = {None: 0, "hoops": 1, "stripes": 2, "pinstripe": 3, "band": 4, "halve
 
 def shader_defaults(render):
     """The kit inputs the lighting shader needs everywhere (off, except on the players)."""
+    for k in ("detail_amt", "crowd_amt", "night_on"):
+        render.setShaderInput(k, 0.0)
+    render.setShaderInput("detail_scale", 1.0, 1.0)
     render.setShaderInput("kit_on", 0.0)
     for k in ("shirt", "trim", "shorts", "socks", "socktop", "skin", "hair", "gloves"):
         render.setShaderInput("kit_" + k, (1.0, 1.0, 1.0, 1.0))
@@ -210,8 +213,16 @@ class AnimPlayer:
         style = (0 if hs % 10 < 6 else 1 if hs % 10 < 8 else 2) + (4 if (hs // 10) % 10 < 3 else 0)  # (~30% beards)
         r.setShaderInput("kit_info", (PATTERNS.get(kit.get("pattern"), 0), 1.0 if kit.get("keeper") else 0.0,
                                       1.0 if crest else 0.0, float(style)))
+        # A November game: about a third of outfield players in long sleeves, a few in black gloves too.
+        ls = kit.get("long_sleeves")
+        gl = 0.0
+        if ls is None and not kit.get("keeper") and name and not str(name).startswith(("sub", "steward")):
+            ls = (hs // 100) % 10 < 3
+            gl = 1.0 if (hs // 1000) % 10 < 1 or (ls and (hs // 1000) % 10 < 4) else 0.0
+        if gl:
+            r.setShaderInput("kit_gloves", C((28, 28, 30)))
         r.setShaderInput("kit_extra", (float(kit.get("collar", 0)), 1.0 if kit.get("trousers") else 0.0,
-                                       1.0 if kit.get("long_sleeves") else 0.0, 0.0))
+                                       1.0 if ls else 0.0, gl))
         self.num = None
         self.action_names = []
         if self.cfg.get("make_walk"):

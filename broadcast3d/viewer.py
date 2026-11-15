@@ -513,14 +513,14 @@ class Viewer(ShowBase):
     def _shader_inputs(self):
         sh = Shader.load(Shader.SL_GLSL, os.path.join(HERE, "shaders", "lit.vert"), os.path.join(HERE, "shaders", "lit.frag"))
         self.render.setShader(sh)
+        if ANIM:
+            from players3d import shader_defaults
+            shader_defaults(self.render)
         self.render.setShaderInput("shadow_bias", 0.0004)
         self.render.setShaderInput("shadow_texel", 1.0 / SHADOW_MAP)
         self.render.setShaderInput("detail_amt", 0.0)
         self.render.setShaderInput("crowd_amt", 0.0)
         self.render.setShaderInput("night_on", 1.0 if NIGHT else 0.0)
-        if ANIM:
-            from players3d import shader_defaults
-            shader_defaults(self.render)
         self.render.setShaderInput("detail_scale", 1.0, 1.0)
         if not self.render.hasFog():
             f = Fog("none"); f.setExpDensity(0.0); self.render.setFog(f)
