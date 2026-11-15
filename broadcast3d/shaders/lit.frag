@@ -54,46 +54,59 @@ vec3 shirt_at(float x, float y, float z, bool torso) {
 
 // The head: hair (his style - kit_info.w: 0 short, 1 shaved, 2 longer, +4 a beard), and a simple face.
 vec4 head_colour(float x, float y, float z, float ax) {
-    float style = mod(kit_info.w, 4.0);
-    bool beard = kit_info.w >= 3.5;
-    // The hairline: high at the front (a little higher at the temples), down to above the ears at the sides,
-    // and down the back of the head to the nape (lower for longer hair).
-    float back = style > 1.5 ? 1.545 : 1.605;
-    float frontline = 1.728 - 0.02 * smoothstep(0.03, 0.065, ax);
-    float l = y < -0.02 ? mix(1.668, frontline, smoothstep(-0.02, -0.08, y))
-                        : mix(1.668, back, smoothstep(-0.02, 0.05, y));
-    bool ear = ax > 0.066 && z > 1.61 && z < 1.674 && abs(y + 0.005) < 0.032;
-    if (z > l && !(ear && style < 1.5)) {
-        if (style > 0.5 && style < 1.5) return mix(kit_skin, kit_hair, 0.5);   // (shaved close)
-        return kit_hair;
+    float beard = floor(kit_info.w / 8.0 + 0.01);                  // 0 clean-shaven, 1 stubble, 2 a full beard
+    float style = kit_info.w - beard * 8.0;                        // 0 crop 1 buzz cut 2 longer 3 quiff 4 curls 5 bald
+    bool is_long = (style > 1.5 && style < 2.5) || (style > 3.5 && style < 4.5);
+    bool fade = (style > 0.5 && style < 1.5) || (style > 2.5 && style < 3.5);
+    vec3 skin = kit_skin.rgb;
+    // The hair close to the scalp (the cut's own volume is a mesh on top of this): a hairline that's high at
+    // the front, down to above the ears at the sides and to the nape at the back - soft-edged, and fading
+    // out lower down on the short-sided cuts.
+    float back = is_long ? 1.55 : 1.605;
+    float frontline = 1.735 - 0.018 * smoothstep(0.03, 0.065, ax);
+    float l = y < -0.02 ? mix(1.672, frontline, smoothstep(-0.02, -0.08, y))
+                        : mix(1.672, back, smoothstep(-0.02, 0.05, y));
+    bool ear = ax > 0.064 && z > 1.612 && z < 1.676 && abs(y - 0.006) < 0.03;
+    if (!ear) {
+        float amt = style > 4.5 ? 0.12 : (fade ? 0.55 : 1.0);
+        if (fade) amt *= mix(0.4, 1.0, smoothstep(l, l + 0.07, z));
+        skin = mix(skin, kit_hair.rgb, smoothstep(l - 0.004, l + 0.007, z) * amt);
     }
-    if (y < -0.092) {                                               // the face
-        vec2 e = vec2(ax - 0.033, z - 1.655);
+    if (y < -0.08 && z < l) {                                       // the face
+        vec2 e = vec2(ax - 0.033, z - 1.6555);
+        vec2 lid = vec2(e.x / 0.0098, e.y / 0.0051);
+        float in_eye = dot(lid, lid);
         float r = length(e);
-        vec2 lid = vec2(e.x / 0.0105, e.y / 0.0062);
-        if (dot(lid, lid) < 1.0) {                                  // eyes (almond-shaped): white, iris, pupil
-            if (r < 0.0026) return vec4(0.03, 0.03, 0.03, 1.0);
-            if (r < 0.0056) return vec4(0.27, 0.18, 0.11, 1.0);
-            return vec4(0.84, 0.82, 0.78, 1.0);
+        if (in_eye < 1.0) {                                         // eyes: mostly iris, a little white, the
+            if (r < 0.0017) return vec4(0.02, 0.02, 0.02, 1.0);     //  upper lid's shadow across the top
+            vec3 c = r < 0.0041 ? vec3(0.17, 0.11, 0.07) : vec3(0.80, 0.78, 0.75);
+            return vec4(c * (e.y > 0.0026 ? 0.6 : 1.0), 1.0);
         }
-        if (dot(lid, lid) < 1.35 && e.y > 0.0) return vec4(kit_skin.rgb * 0.55, 1.0);   // (the upper lid's line)
-        float bz = 1.6775 + 0.0035 * (1.0 - pow((ax - 0.036) / 0.022, 2.0));
-        if (ax > 0.013 && ax < 0.058 && abs(z - bz) < 0.0042) return mix(kit_hair, kit_skin, 0.15);   // brows
-        vec2 lp = vec2(ax / 0.022, (z - 1.588) / 0.0068);
-        if (dot(lp, lp) < 1.0) {                                    // lips (and the line between them)
-            if (abs(z - 1.5882) < 0.0009) return vec4(kit_skin.rgb * vec3(0.45, 0.32, 0.3), 1.0);
-            return vec4(kit_skin.rgb * vec3(0.8, 0.6, 0.57), 1.0);
+        if (in_eye < 1.5 && e.y > 0.0) return vec4(skin * 0.5, 1.0);            // the upper lid's line
+        vec2 so = vec2(e.x / 0.017, e.y / 0.0105);
+        skin *= mix(0.88, 1.0, smoothstep(0.6, 1.3, dot(so, so)));               // the eye socket's shade
+        float bz = 1.6742 + 0.0022 * (1.0 - pow((ax - 0.034) / 0.021, 2.0));
+        float bt = 0.0029 * (1.0 - 0.55 * smoothstep(0.04, 0.056, ax));
+        if (ax > 0.012 && ax < 0.056)                                            // brows, soft-edged
+            skin = mix(skin, mix(kit_hair.rgb, kit_skin.rgb, 0.25), smoothstep(bt, bt * 0.5, abs(z - bz)));
+        vec2 lp = vec2(ax / 0.021, (z - 1.588) / 0.0058);
+        float in_lip = dot(lp, lp);
+        if (in_lip < 1.0) {                                         // lips: a natural colour, a line between
+            vec3 c = kit_skin.rgb * vec3(0.90, 0.72, 0.70);
+            if (abs(z - 1.5883) < 0.0007) c = kit_skin.rgb * vec3(0.52, 0.4, 0.38);
+            return vec4(mix(c, skin, smoothstep(0.7, 1.0, in_lip)), 1.0);
         }
     }
-    if (beard && y < 0.0) {                                         // a beard: along the jaw and chin, a
-        float top = 1.596 + 0.018 * smoothstep(0.02, 0.06, ax);     //  moustache, soft at its edges
-        float a = smoothstep(top, top - 0.008, z) * smoothstep(1.535, 1.55, z);
+    if (beard > 0.5 && y < 0.01) {                                  // stubble or a beard: jaw, chin and top lip
+        float top = 1.598 + 0.032 * smoothstep(0.02, 0.066, ax);
+        float a = smoothstep(top, top - (beard > 1.5 ? 0.012 : 0.03), z) * smoothstep(1.528, 1.548, z);
         vec2 lp = vec2(ax / 0.024, (z - 1.588) / 0.0085);
-        a *= smoothstep(1.0, 1.4, dot(lp, lp)) * smoothstep(0.0, -0.03, y);
-        if (ax < 0.026 && z > 1.596 && z < 1.606) a = 0.9;          // (the moustache)
-        if (a > 0.0) return mix(kit_skin, kit_hair, 0.78 * a);
+        a *= smoothstep(1.0, 1.5, dot(lp, lp));
+        float m = smoothstep(0.031, 0.02, ax) * smoothstep(1.609, 1.603, z) * smoothstep(1.593, 1.597, z);
+        a = max(a, m) * smoothstep(0.01, -0.02, y);
+        skin = mix(skin, mix(kit_hair.rgb, kit_skin.rgb, 0.15), a * (beard > 1.5 ? 0.85 : 0.3));
     }
-    return kit_skin;
+    return vec4(skin, 1.0);
 }
 
 vec4 kit_colour() {
@@ -162,7 +175,8 @@ void main() {
         float jump = max(0.0, sin(osg_FrameTime * (5.0 + 4.0 * h) + h * 6.283));
         uv.y -= crowd_amt * 0.0035 * (crowd_amt > 2.0 ? jump : sin(osg_FrameTime * (1.0 + h) + h * 6.283));
     }
-    vec4 base = kit_on > 0.5 ? kit_colour() * p3d_ColorScale
+    vec4 base = kit_on > 1.5 ? vec4(kit_hair.rgb * (0.8 + 0.3 * smoothstep(1.68, 1.80, v_uv.y)), 1.0) * p3d_ColorScale
+              : kit_on > 0.5 ? kit_colour() * p3d_ColorScale
                              : (texture(p3d_Texture0, uv) + p3d_TexAlphaOnly) * v_color * p3d_ColorScale;
     float nl = length(v_normal);
     float lambert = 1.0;

@@ -205,16 +205,15 @@ def shapes():
     # the head: skull, face, cheekbones, brow, jaw and chin, eye sockets with eyes in, nose, lips, ears
     add(lambda q: ellipsoid(q, (0.0, 0.006, 1.688), (0.077, 0.098, 0.092)), 0.03)              # skull
     add(lambda q: ellipsoid(q, (0.0, -0.035, 1.628), (0.067, 0.076, 0.082)), 0.03)            # face
-    add(lambda q: ellipsoid(q, (0.0, -0.045, 1.583), (0.056, 0.068, 0.042)), 0.03)            # jaw
+    add(lambda q: ellipsoid(q, (0.0, -0.045, 1.582), (0.058, 0.066, 0.04)), 0.03)            # jaw
     add(lambda q: ellipsoid(q, (0.0, -0.098, 1.562), (0.026, 0.02, 0.024)), 0.02)             # chin
-    add(lambda q: capsule(q, (-0.044, -0.104, 1.674), (0.044, -0.104, 1.674), 0.011, 0.011), 0.014)  # brow
+    add(lambda q: capsule(q, (-0.042, -0.099, 1.675), (0.042, -0.099, 1.675), 0.010, 0.010), 0.016)  # brow
     for sx in (-1, 1):
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.044, -0.076, 1.636), (0.016, 0.012, 0.011)), 0.02)   # cheekbone
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.077, 0.004, 1.643), (0.009, 0.021, 0.029)), 0.008)  # ear
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.0735, 0.006, 1.643), (0.0075, 0.017, 0.026)), 0.008)  # ear
     for sx in (-1, 1):                                                                          # eye sockets
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.033, -0.113, 1.655), (0.019, 0.016, 0.013)), 0.008, "cut")
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.033, -0.116, 1.655), (0.017, 0.013, 0.0095)), 0.008, "cut")
     for sx in (-1, 1):                                                                          # eyes
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.033, -0.097, 1.655), (0.0125, 0.011, 0.0105)), 0.003)
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.033, -0.098, 1.655), (0.0115, 0.0105, 0.0085)), 0.004)
     add(lambda q: capsule(q, (0.0, -0.107, 1.666), (0.0, -0.132, 1.619), 0.0065, 0.0098), 0.008)   # nose
     add(lambda q: ellipsoid(q, (0.0, -0.121, 1.613), (0.017, 0.012, 0.008)), 0.008)           # (its end)
     add(lambda q: ellipsoid(q, (0.0, -0.107, 1.588), (0.022, 0.009, 0.008)), 0.006)           # lips
@@ -262,12 +261,26 @@ def build(step=0.0036, target=16000):
         vol[i] = field(g.reshape(-1, 3).astype(np.float32)).reshape(len(ys), len(zs))
     verts, faces, _, _ = marching_cubes(vol, 0.0, spacing=(step, step, step))
     verts += lo
-    s = pyfqmr.Simplify()
-    s.setMesh(verts, faces)
-    s.simplify_mesh(target_count=target + 4000, aggressiveness=5, preserve_border=True, verbose=0)
-    verts, faces, _ = s.getMesh()
-    verts = verts.astype(np.float32)
-    faces = faces.astype(np.int32)
+    # thinned out in two parts, so the head keeps plenty of triangles (their shared edge is left alone, and
+    # welded back together afterwards)
+    head = (verts[faces][:, :, 2] > 1.515).all(1)
+    parts = []
+    for sel, tgt in ((~head, target + 2000), (head, 9000)):
+        f = faces[sel]
+        used, inv = np.unique(f, return_inverse=True)
+        sm = pyfqmr.Simplify()
+        sm.setMesh(verts[used], inv.reshape(-1, 3))
+        sm.simplify_mesh(target_count=tgt, aggressiveness=5, preserve_border=True, verbose=0)
+        v2, f2, _ = sm.getMesh()
+        parts.append((v2.astype(np.float32), f2.astype(np.int64)))
+    off = len(parts[0][0])
+    verts = np.concatenate([parts[0][0], parts[1][0]])
+    faces = np.concatenate([parts[0][1], parts[1][1] + off])
+    key = np.round(verts * 20000).astype(np.int64)
+    _, first, inv = np.unique(key, axis=0, return_index=True, return_inverse=True)
+    verts = verts[first]
+    faces = inv.reshape(-1)[faces].astype(np.int32)
+    faces = faces[(faces[:, 0] != faces[:, 1]) & (faces[:, 1] != faces[:, 2]) & (faces[:, 0] != faces[:, 2])]
     # smooth normals from the field itself (its slope), which are better than the triangles'
     e = 0.002
     nrm = np.stack([field(verts + d) - field(verts - d) for d in np.eye(3, dtype=np.float32) * e], -1)
@@ -278,9 +291,71 @@ def build(step=0.0036, target=16000):
     if (np.einsum("ij,ij->i", fn, nrm[faces[:, 0]]) < 0).mean() > 0.5:
         faces = faces[:, ::-1].copy()
     idx, w = weights(verts)
+    hair = {}
+    for name in HAIR:
+        hv, hn, hf = build_hair(name)
+        hair[f"hair_{name}_verts"], hair[f"hair_{name}_normals"], hair[f"hair_{name}_faces"] = hv, hn, hf
     np.savez_compressed(OUT, verts=verts, normals=nrm.astype(np.float32), faces=faces, bone_idx=idx, bone_w=w,
-                        bones=np.array([b[0] for b in BONES]))
+                        bones=np.array([b[0] for b in BONES]), **hair)
     print(f"body: {len(verts)} points, {len(faces)} triangles -> {OUT}")
+
+
+# --- hair: real volume on top of the head (a mesh of its own for each cut, worn like a wig) --------------------
+def scalp(q):
+    return smin(ellipsoid(q, (0.0, 0.006, 1.688), (0.077, 0.098, 0.092)),
+                ellipsoid(q, (0.0, -0.035, 1.628), (0.067, 0.076, 0.082)), 0.03)
+
+
+def _ss(a, b, x):
+    t = np.clip((x - a) / (b - a), 0.0, 1.0)
+    return t * t * (3 - 2 * t)
+
+
+def hairline(q, front, side, back):
+    y = q[..., 1]
+    return np.where(y < -0.02, side + (front - side) * _ss(-0.02, -0.08, y), side + (back - side) * _ss(-0.02, 0.06, y))
+
+
+def _hair(q, thick, front, side, back):
+    top = _ss(1.70, 1.77, q[..., 2])
+    fr = _ss(0.05, -0.06, q[..., 1])
+    d = scalp(q) - thick(q, top, fr)
+    return smax(d, -(q[..., 2] - hairline(q, front, side, back)), 0.008)
+
+
+HAIR = {
+    # a short crop: close all over, a little longer on top
+    "crop": lambda q: _hair(q, lambda q, top, fr: 0.006 + 0.007 * top, 1.737, 1.678, 1.615),
+    # short sides, longer on top and swept up at the front
+    "quiff": lambda q: _hair(q, lambda q, top, fr: 0.003 + 0.013 * top + 0.016 * top * fr, 1.737, 1.70, 1.66),
+    # tight curls / a short afro: full all round
+    "curls": lambda q: _hair(q, lambda q, top, fr: 0.017 + 0.006 * top + 0.0035 * np.sin(q[..., 0] * 150) *
+                             np.sin(q[..., 1] * 150) * np.sin(q[..., 2] * 150), 1.732, 1.672, 1.60),
+    # longer: over the tops of the ears and down to the collar
+    "long": lambda q: _hair(q, lambda q, top, fr: 0.012 + 0.010 * top, 1.737, 1.648, 1.545),
+}
+
+
+def build_hair(name, step=0.004, target=1500):
+    from skimage.measure import marching_cubes
+    import pyfqmr
+    f = HAIR[name]
+    lo, hi = np.array([-0.13, -0.16, 1.50], np.float32), np.array([0.13, 0.16, 1.84], np.float32)
+    n = np.ceil((hi - lo) / step).astype(int) + 1
+    g = np.stack(np.meshgrid(*[lo[i] + np.arange(n[i]) * step for i in range(3)], indexing="ij"), -1).astype(np.float32)
+    verts, faces, _, _ = marching_cubes(f(g), 0.0, spacing=(step, step, step))
+    verts += lo
+    sm = pyfqmr.Simplify(); sm.setMesh(verts, faces)
+    sm.simplify_mesh(target_count=target, aggressiveness=5, preserve_border=True, verbose=0)
+    verts, faces, _ = sm.getMesh()
+    verts, faces = verts.astype(np.float32), faces.astype(np.int32)
+    e = 0.002
+    nrm = np.stack([f(verts + d) - f(verts - d) for d in np.eye(3, dtype=np.float32) * e], -1)
+    nrm /= np.maximum(np.linalg.norm(nrm, axis=-1, keepdims=True), 1e-9)
+    a, b, c = verts[faces[:, 0]], verts[faces[:, 1]], verts[faces[:, 2]]
+    if (np.einsum("ij,ij->i", np.cross(b - a, c - a), nrm[faces[:, 0]]) < 0).mean() > 0.5:
+        faces = faces[:, ::-1].copy()
+    return verts, nrm.astype(np.float32), faces
 
 
 def weights(verts, keep=3):
@@ -360,25 +435,19 @@ def _closest(q, a, b):
 _DATA = None
 
 
-def attach(actor):
-    """Swap the mannequin's pieces for the smooth body (skinned to this actor's own skeleton).  Returns the new
-    node (None if there's no body.npz yet)."""
+def _load():
     global _DATA
+    if _DATA is None and os.path.exists(OUT):
+        _DATA = dict(np.load(OUT))
+    return _DATA
+
+
+def _skinned(char, name, V, N, F, BI, BW, names):
+    """A mesh that moves with the skeleton: each point follows its bones (BI: which, BW: how much)."""
     from panda3d.core import (GeomVertexArrayFormat, GeomVertexFormat, GeomVertexData, GeomVertexWriter, Geom,
                               GeomTriangles, GeomNode, InternalName, GeomVertexAnimationSpec, TransformBlendTable,
                               TransformBlend, JointVertexTransform, SparseArray)
-    if _DATA is None:
-        if not os.path.exists(OUT):
-            return None
-        _DATA = dict(np.load(OUT))
-    D = _DATA
-    ch = actor.find("**/+Character")
-    char = ch.node()
-    joints = {}
-    for b in D["bones"]:
-        j = char.findJoint(str(b))
-        joints[str(b)] = JointVertexTransform(j)
-    names = [str(b) for b in D["bones"]]
+    joints = {nm: JointVertexTransform(char.findJoint(nm)) for nm in set(names[int(k)] for k in np.unique(BI))}
     arr = GeomVertexArrayFormat()
     arr.addColumn(InternalName.getVertex(), 3, Geom.NT_float32, Geom.C_point)
     arr.addColumn(InternalName.getNormal(), 3, Geom.NT_float32, Geom.C_normal)
@@ -390,10 +459,9 @@ def attach(actor):
     spec = GeomVertexAnimationSpec(); spec.setPanda()
     fmt.setAnimation(spec)
     fmt = GeomVertexFormat.registerFormat(fmt)
-    vd = GeomVertexData("body", fmt, Geom.UHDynamic)
+    vd = GeomVertexData(name, fmt, Geom.UHDynamic)
     table = TransformBlendTable()
     cache = {}
-    V, N, BI, BW = D["verts"], D["normals"], D["bone_idx"], D["bone_w"]
     vd.uncleanSetNumRows(len(V))
     vw, nw, t0, t1, bw = (GeomVertexWriter(vd, c) for c in ("vertex", "normal", "texcoord.0", "texcoord.1",
                                                              InternalName.getTransformBlend()))
@@ -411,14 +479,39 @@ def attach(actor):
     vd.setTransformBlendTable(table)
     tri = GeomTriangles(Geom.UHStatic)
     tri.setIndexType(Geom.NT_uint32)
-    F = D["faces"]
     for a, b, c in F:
         tri.addVertices(int(a), int(b), int(c))
     g = Geom(vd); g.addPrimitive(tri)
-    gn = GeomNode("smooth_body"); gn.addGeom(g)
+    gn = GeomNode(name); gn.addGeom(g)
+    return gn
+
+
+def attach(actor):
+    """Swap the mannequin's pieces for the smooth body (skinned to this actor's own skeleton).  Returns the new
+    node (None if there's no body.npz yet)."""
+    D = _load()
+    if D is None:
+        return None
+    ch = actor.find("**/+Character")
+    gn = _skinned(ch.node(), "smooth_body", D["verts"], D["normals"], D["faces"], D["bone_idx"], D["bone_w"],
+                  [str(b) for b in D["bones"]])
     for old in actor.findAllMatches("**/+GeomNode"):
         old.detachNode()
     return ch.attachNewNode(gn)
+
+
+def attach_hair(actor, name):
+    """Put a head of hair on him (name: one of HAIR); it goes with his head."""
+    D = _load()
+    if D is None or f"hair_{name}_verts" not in D:
+        return None
+    ch = actor.find("**/+Character")
+    V = D[f"hair_{name}_verts"]
+    gn = _skinned(ch.node(), "hair", V, D[f"hair_{name}_normals"], D[f"hair_{name}_faces"],
+                  np.zeros((len(V), 1), np.int16), np.ones((len(V), 1), np.float32), ["head"])
+    np_ = ch.attachNewNode(gn)
+    np_.setShaderInput("kit_on", 2.0)
+    return np_
 
 
 if __name__ == "__main__":
