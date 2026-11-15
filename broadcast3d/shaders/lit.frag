@@ -86,9 +86,13 @@ vec4 head_colour(float x, float y, float z, float ax) {
         vec2 so = vec2(e.x / 0.017, e.y / 0.0105);
         skin *= mix(0.88, 1.0, smoothstep(0.6, 1.3, dot(so, so)));               // the eye socket's shade
         float bz = 1.6742 + 0.0022 * (1.0 - pow((ax - 0.034) / 0.021, 2.0));
-        float bt = 0.0029 * (1.0 - 0.55 * smoothstep(0.04, 0.056, ax));
-        if (ax > 0.012 && ax < 0.056)                                            // brows, soft-edged
-            skin = mix(skin, mix(kit_hair.rgb, kit_skin.rgb, 0.25), smoothstep(bt, bt * 0.5, abs(z - bz)));
+        float bt = 0.0036 * (1.0 - 0.6 * smoothstep(0.022, 0.056, ax));             // (fuller at the inner end)
+        if (ax > 0.010 && ax < 0.058) {                                          // brows: soft-edged, a little
+            float hairs = 0.9 + 0.1 * sin(ax * 5200.0 + z * 3100.0);             //  uneven, like hairs, fading
+            float a = smoothstep(bt, bt * 0.25, abs(z - bz)) * hairs                 //  in at the inner end and
+                    * smoothstep(0.010, 0.017, ax) * smoothstep(0.058, 0.050, ax);   //  out at the outer
+            skin = mix(skin, mix(kit_hair.rgb, kit_skin.rgb, 0.22), min(1.0, a * 1.1));
+        }
         vec2 lp = vec2(ax / 0.021, (z - 1.588) / 0.0058);
         float in_lip = dot(lp, lp);
         if (in_lip < 1.0) {                                         // lips: a natural colour, a line between
