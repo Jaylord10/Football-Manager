@@ -388,6 +388,8 @@ class AnimPlayer:
             stand = {"scorer": happy, "joy": happy, "sad": self.sad_pose}.get(self.mood, "idle")
             walk = "walk_sad" if self.mood == "sad" else walk
             run = "run_arms" if self.mood == "scorer" else run
+        if getattr(self, "calling", False) and self.cfg.get("make_walk"):
+            run = "run_call"
         if side:                                                              # (side steps instead of walking)
             walk = "shuffle" if side > 0 else "shuffle_m"
             w_walk, w_run = w_walk + w_run, 0.0

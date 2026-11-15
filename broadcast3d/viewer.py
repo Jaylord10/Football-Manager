@@ -642,6 +642,7 @@ class Viewer(ShowBase):
             px, py = prev.get(i, (wx, wy))
             vel = ((wx - px) / max(dt, 1e-3), (wy - py) / max(dt, 1e-3))
             prev[i] = (wx, wy)
+            p.calling = self._calling(i, fr, wx, wy, sp, k)
             kind, t = self.events.action(i, k)
             if cel and i == cel[1]:
                 kind, t = self._scorer_slide(i, sp, k, kind, t)
@@ -1135,6 +1136,20 @@ def _viewer_scorer_slide(self, i, sp, k, kind, t):
     return kind, t
 
 
+def _viewer_calling(self, i, fr, wx, wy, sp, k):
+    """A team-mate making a run calls for it: arm up for a second or so, now and then - when his side has the
+    ball, he's sprinting, and he's 12-35 m away from it."""
+    o = fr["o"]
+    if o < 0 or o == i or (o < 11) != (i < 11) or sp < 45 or (i in (0, 11)):
+        return False
+    ox, oy = to_world(fr["p"][o][0], fr["p"][o][1])
+    d = math.hypot(wx - ox, wy - oy)
+    if not 12 < d < 35:
+        return False
+    return ((k + i * 37) // 36) % 5 == 0                                    # (about a second in every six)
+
+
+Viewer._calling = _viewer_calling
 Viewer._scorer_slide = _viewer_scorer_slide
 Viewer._restart_id = _viewer_restart_id
 Viewer._manage = _viewer_manage

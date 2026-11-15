@@ -290,7 +290,12 @@ def shuffle_m(u):
     return mirror(m), e
 
 
-LOOPS = {"shuffle": (shuffle, 30, "idle"), "shuffle_m": (shuffle_m, 30, "idle"), "sit": (sit, 90, "idle"), "cheer": (cheer, 30, "idle"), "clap": (clap, 30, "idle"), "hips": (hips, 60, "idle"), "knees": (knees, 60, "idle"),
+def run_call(u):
+    """Running and calling for the ball: right arm up."""
+    return ({"arm_r": 150, "out_r": 20, "elbow_r": 15, "nod": -8}, {})
+
+
+LOOPS = {"run_call": (run_call, 15, "run"), "shuffle": (shuffle, 30, "idle"), "shuffle_m": (shuffle_m, 30, "idle"), "sit": (sit, 90, "idle"), "cheer": (cheer, 30, "idle"), "clap": (clap, 30, "idle"), "hips": (hips, 60, "idle"), "knees": (knees, 60, "idle"),
          "walk_sad": (walk_sad, 30, "idle"), "run_arms": (run_arms, 15, "run")}
 
 
