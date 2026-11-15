@@ -576,7 +576,7 @@ class AnimPlayer:
             happy = "cheer" if self.still_t < 3.5 else "clap"                 # (then he applauds the fans)
             stand = {"scorer": happy, "joy": happy, "sad": self.sad_pose}.get(self.mood, "idle")
             walk = "walk_sad" if self.mood == "sad" else walk
-            special = "run_arms" if self.mood == "scorer" else None
+            special = ("run_arms", "run_sky", "run_fist")[self.seed % 3] if self.mood == "scorer" else None
             w_fwd, w_side, w_back = 1.0, 0.0, 0.0
         if getattr(self, "calling", False) and self.cfg.get("make_walk"):
             special = "run_call"

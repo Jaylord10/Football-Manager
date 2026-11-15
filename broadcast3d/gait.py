@@ -438,6 +438,19 @@ def run_arms(u):
              "lean": -6}, {})
 
 
+def run_sky(u):
+    """Running off pointing both arms to the sky - another scorer's celebration."""
+    return ({"arm_r": 165, "arm_l": 165, "out_r": 15, "out_l": 15, "elbow_r": 5, "elbow_l": 5, "nod": -25,
+             "lean": -8}, {})
+
+
+def run_fist(u):
+    """Running off pumping his fist, the other arm out - another."""
+    c = math.cos(2 * math.pi * u * 2)
+    return ({"arm_r": 115 + 20 * c, "out_r": 35, "elbow_r": 95 - 20 * c, "out_l": 70, "arm_l": -5, "elbow_l": 10,
+             "nod": -10, "lean": -4}, {})
+
+
 def sit(u):
     """Sitting on the bench (a substitute)."""
     b = math.sin(2 * math.pi * u)
@@ -525,7 +538,8 @@ def run_call(u):
 LOOPS = {"run_call": (run_call, 15, "run"), "shuffle": (shuffle, 30, "idle"), "shuffle_m": (shuffle_m, 30, "idle"),
          "backpedal": (backpedal, 30, "idle"), "turnstep": (turnstep, 30, "idle"),
          "shift": (shift, 240, "idle"), "rest": (rest, 240, "idle"), "sit": (sit, 90, "idle"), "cheer": (cheer, 30, "idle"), "clap": (clap, 30, "idle"), "hips": (hips, 60, "idle"), "knees": (knees, 60, "idle"),
-         "walk_sad": (walk_sad, 30, "idle"), "run_arms": (run_arms, 15, "run")}
+         "walk_sad": (walk_sad, 30, "idle"), "run_arms": (run_arms, 15, "run"), "run_sky": (run_sky, 15, "run"),
+         "run_fist": (run_fist, 15, "run")}
 
 
 def action_pose(keys):
