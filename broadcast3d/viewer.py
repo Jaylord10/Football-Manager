@@ -558,7 +558,7 @@ class Viewer(ShowBase):
             else:
                 self.cam.setPos(fx_ + sx * 9, fy_ - 7 if fy_ > -HY + 1 else fy_ + 9, 3.2)
             self.cam.lookAt(fx_, fy_, 0.8)
-        elif CLOSE:                                                         # (a close camera, for checking)
+        elif CLOSE or getattr(self, "cam_mode", 0) == 1:                    # (a close camera, for checking)
             self.cam.setPos(bx - 6, by - 14, 4.5)
             self.cam.lookAt(bx, by, 0.9)
         else:
@@ -1027,8 +1027,48 @@ def tick():
     ClockObject.getGlobalClock().tick()
 
 
+def play(v, F, first):
+    """Watch it in a window, in real time: space = pause, left / right = back / on 10 seconds, [ / ] = slower /
+    faster, 1 = TV camera, 2 = close camera, Esc = quit."""
+    from panda3d.core import ClockObject
+    st = {"t": float(first), "speed": 1.0, "paused": False}
+
+    def key(name, fn):
+        v.accept(name, fn); v.accept(name + "-repeat", fn)
+    key("space", lambda: st.update(paused=not st["paused"]))
+    key("arrow_left", lambda: st.update(t=max(0.0, st["t"] - 300)))
+    key("arrow_right", lambda: st.update(t=min(len(F) - 2.0, st["t"] + 300)))
+    key("[", lambda: st.update(speed=max(0.25, st["speed"] / 2)))
+    key("]", lambda: st.update(speed=min(4.0, st["speed"] * 2)))
+    key("1", lambda: setattr(v, "cam_mode", 0))
+    key("2", lambda: setattr(v, "cam_mode", 1))
+    v.accept("escape", sys.exit)
+    help_t = OnscreenText(text="space pause   <- -> 10 s   [ ] speed   1 TV   2 close   Esc quit", pos=(0, -0.95),
+                          scale=0.04, fg=(1, 1, 1, 0.8), mayChange=False)
+
+    def tick_task(task):
+        dt = min(0.1, ClockObject.getGlobalClock().getDt())
+        if not st["paused"]:
+            st["t"] = min(len(F) - 1.0, st["t"] + dt * 30.0 * st["speed"])
+        v.show(F[int(st["t"])], dt * (0 if st["paused"] else st["speed"]) or 1e-3)
+        return task.cont
+    v.taskMgr.add(tick_task, "play")
+    if "--test" in sys.argv:                              # (a check without a screen: 60 frames, then a picture)
+        c = ClockObject.getGlobalClock(); c.setMode(ClockObject.MNonRealTime); c.setFrameRate(30)
+        for _ in range(60):
+            v.taskMgr.step()
+        img = PNMImage(); v.win.getScreenshot(img); img.write(Filename(os.path.join(HERE, "frames", "live_test.png")))
+        print("live test ok, frame", int(st["t"]))
+        return
+    v.run()
+
+
 def main():
-    if ANIM:
+    if ANIM and not OFF:                                  # (watching live: the real clock)
+        sys.path.insert(0, HERE)
+        global AnimPlayer
+        from players3d import AnimPlayer
+    elif ANIM:
         sys.path.insert(0, HERE)
         global AnimPlayer
         from players3d import AnimPlayer
@@ -1046,6 +1086,8 @@ def main():
     os.makedirs(out, exist_ok=True)
     v = Viewer(d)
     F = d["frames"]
+    if not OFF or "--test" in sys.argv:
+        return play(v, F, first)
     # warm the camera up on the first frame
     for _ in range(40):
         v.show(F[first], 1 / 30.0); tick()
