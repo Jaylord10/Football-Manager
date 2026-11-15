@@ -55,19 +55,43 @@ vec3 shirt_at(float x, float y, float z, bool torso) {
 vec4 head_colour(float x, float y, float z, float ax) {
     float style = mod(kit_info.w, 4.0);
     bool beard = kit_info.w >= 3.5;
-    float top = style > 0.5 && style < 1.5 ? 1.765 : 1.72;          // (where the hair starts at the front)
-    float back = style > 1.5 ? 1.53 : (style > 0.5 ? 1.68 : 1.60);  // (and how far down the back)
-    if (z >= top || (y > 0.02 && z > back) || (style > 1.5 && ax > 0.085 && z > 1.6 && y > -0.05))
+    // The hairline: high at the front (a little higher at the temples), down to above the ears at the sides,
+    // and down the back of the head to the nape (lower for longer hair).
+    float back = style > 1.5 ? 1.545 : 1.605;
+    float frontline = 1.728 - 0.02 * smoothstep(0.03, 0.065, ax);
+    float l = y < -0.02 ? mix(1.668, frontline, smoothstep(-0.02, -0.08, y))
+                        : mix(1.668, back, smoothstep(-0.02, 0.05, y));
+    bool ear = ax > 0.066 && z > 1.61 && z < 1.674 && abs(y + 0.005) < 0.032;
+    if (z > l && !(ear && style < 1.5)) {
+        if (style > 0.5 && style < 1.5) return mix(kit_skin, kit_hair, 0.5);   // (shaved close)
         return kit_hair;
-    if (y < -0.06) {                                                // the face
-        vec2 e = vec2(ax - 0.036, (z - 1.655) * 1.6);
-        if (dot(e, e) < 0.011 * 0.011) return vec4(0.08, 0.06, 0.05, 1.0);                       // eyes
-        if (z > 1.674 && z < 1.683 && ax > 0.016 && ax < 0.056) return mix(kit_hair, kit_skin, 0.2);  // brows
-        if (z > 1.572 && z < 1.578 && ax < 0.022) return vec4(kit_skin.rgb * vec3(0.62, 0.45, 0.42), 1.0); // mouth
-        if (ax < 0.012 && z > 1.60 && z < 1.645) return vec4(kit_skin.rgb * 0.9, 1.0);         // the nose's shade
     }
-    if (beard && y < -0.02 && z > 1.53 && ax < 0.09 && z < 1.605 && (ax > 0.028 || z < 1.565 || (z > 1.583 && z < 1.592)))
-        return mix(kit_hair, kit_skin, 0.35);                       // a beard (and moustache)
+    if (y < -0.092) {                                               // the face
+        vec2 e = vec2(ax - 0.033, z - 1.655);
+        float r = length(e);
+        vec2 lid = vec2(e.x / 0.0105, e.y / 0.0062);
+        if (dot(lid, lid) < 1.0) {                                  // eyes (almond-shaped): white, iris, pupil
+            if (r < 0.0026) return vec4(0.03, 0.03, 0.03, 1.0);
+            if (r < 0.0056) return vec4(0.27, 0.18, 0.11, 1.0);
+            return vec4(0.84, 0.82, 0.78, 1.0);
+        }
+        if (dot(lid, lid) < 1.35 && e.y > 0.0) return vec4(kit_skin.rgb * 0.55, 1.0);   // (the upper lid's line)
+        float bz = 1.6775 + 0.0035 * (1.0 - pow((ax - 0.036) / 0.022, 2.0));
+        if (ax > 0.013 && ax < 0.058 && abs(z - bz) < 0.0042) return mix(kit_hair, kit_skin, 0.15);   // brows
+        vec2 lp = vec2(ax / 0.022, (z - 1.588) / 0.0068);
+        if (dot(lp, lp) < 1.0) {                                    // lips (and the line between them)
+            if (abs(z - 1.5882) < 0.0009) return vec4(kit_skin.rgb * vec3(0.45, 0.32, 0.3), 1.0);
+            return vec4(kit_skin.rgb * vec3(0.8, 0.6, 0.57), 1.0);
+        }
+    }
+    if (beard && y < 0.0) {                                         // a beard: along the jaw and chin, a
+        float top = 1.596 + 0.018 * smoothstep(0.02, 0.06, ax);     //  moustache, soft at its edges
+        float a = smoothstep(top, top - 0.008, z) * smoothstep(1.535, 1.55, z);
+        vec2 lp = vec2(ax / 0.024, (z - 1.588) / 0.0085);
+        a *= smoothstep(1.0, 1.4, dot(lp, lp)) * smoothstep(0.0, -0.03, y);
+        if (ax < 0.026 && z > 1.596 && z < 1.606) a = 0.9;          // (the moustache)
+        if (a > 0.0) return mix(kit_skin, kit_hair, 0.78 * a);
+    }
     return kit_skin;
 }
 

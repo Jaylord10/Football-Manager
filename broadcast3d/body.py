@@ -72,7 +72,7 @@ def smin(a, b, k):
 def shapes():
     """(name, field function, blend) - in the order they're melted together."""
     out = []
-    add = lambda f, k=0.03: out.append((f, k))
+    add = lambda f, k=0.03, mode="add": out.append((f, k, mode))
     # trunk: a V from broad shoulders to a narrower waist, flat across the front
     add(lambda q: ellipsoid(q, (0.0, 0.005, 0.95), (0.148, 0.105, 0.115)))                    # hips
     add(lambda q: ellipsoid(q, (0.0, -0.005, 1.11), (0.135, 0.092, 0.16)), 0.08)               # waist
@@ -81,12 +81,7 @@ def shapes():
     add(lambda q: ellipsoid(q, (0.0, 0.025, 1.30), (0.165, 0.09, 0.14)), 0.06)                 # back (lats)
     add(lambda q: capsule(q, (-0.15, 0.01, 1.41), (0.15, 0.01, 1.41), 0.06, 0.06), 0.06)       # shoulder line
     add(lambda q: capsule(q, (0.0, 0.012, 1.38), (0.0, 0.0, 1.57), 0.057, 0.052), 0.04)       # neck
-    # head
-    add(lambda q: ellipsoid(q, (0.0, -0.018, 1.668), (0.084, 0.104, 0.108)), 0.035)
-    add(lambda q: ellipsoid(q, (0.0, -0.05, 1.585), (0.062, 0.07, 0.05)), 0.03)               # jaw
-    add(lambda q: ellipsoid(q, (0.0, -0.124, 1.618), (0.013, 0.02, 0.026)), 0.01)             # nose
     for sx in (-1, 1):
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.079, -0.012, 1.655), (0.012, 0.024, 0.03)), 0.01)   # ears
         # glutes
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.068, 0.05, 0.895), (0.075, 0.058, 0.085)), 0.05)
         # shoulders (deltoids) and arms
@@ -95,27 +90,58 @@ def shapes():
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.31, -0.012, 1.428), (0.075, 0.045, 0.043)), 0.025)   # biceps
         add(lambda q, sx=sx: capsule(q, (sx * 0.436, 0.011, 1.43), (sx * 0.644, 0.009, 1.43), 0.040, 0.028), 0.025)
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.50, 0.0, 1.43), (0.06, 0.04, 0.036)), 0.02)       # forearm
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.705, -0.004, 1.429), (0.068, 0.043, 0.02)), 0.02)  # hand
-        add(lambda q, sx=sx: capsule(q, (sx * 0.665, -0.03, 1.425), (sx * 0.712, -0.085, 1.414), 0.012, 0.010), 0.012)
+        # the hand: a palm (flat, facing down in the rest pose), four fingers a little curled, a thumb
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.688, 0.004, 1.43), (0.048, 0.042, 0.016)), 0.015)
+        for fy, ln in ((-0.024, 1.0), (0.004, 1.08), (0.031, 1.0), (0.055, 0.8)):
+            k0, k1, k2 = (sx * 0.728, fy, 1.432), (sx * (0.728 + 0.040 * ln), fy, 1.428), \
+                         (sx * (0.728 + 0.064 * ln), fy, 1.410)
+            add(lambda q, a=k0, b=k1: capsule(q, a, b, 0.0095, 0.0088), 0.008)
+            add(lambda q, a=k1, b=k2: capsule(q, a, b, 0.0088, 0.0078), 0.006)
+        add(lambda q, sx=sx: capsule(q, (sx * 0.662, -0.022, 1.427), (sx * 0.698, -0.055, 1.421), 0.013, 0.010), 0.012)
+        add(lambda q, sx=sx: capsule(q, (sx * 0.698, -0.055, 1.421), (sx * 0.722, -0.074, 1.414), 0.010, 0.0085), 0.006)
         # legs
         add(lambda q, sx=sx: capsule(q, (sx * 0.095, -0.006, 0.90), (sx * 0.136, 0.0, 0.533), 0.083, 0.055), 0.05)
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.112, -0.03, 0.75), (0.072, 0.07, 0.16)), 0.035)   # quads
         add(lambda q, sx=sx: capsule(q, (sx * 0.136, 0.0, 0.533), (sx * 0.178, 0.036, 0.115), 0.052, 0.034), 0.03)
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.145, 0.028, 0.40), (0.05, 0.052, 0.105)), 0.03)   # calf
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.19, -0.04, 0.052), (0.048, 0.135, 0.052)), 0.03)   # boot
+    # the head: skull, face, cheekbones, brow, jaw and chin, eye sockets with eyes in, nose, lips, ears
+    add(lambda q: ellipsoid(q, (0.0, 0.002, 1.688), (0.077, 0.095, 0.092)), 0.03)              # skull
+    add(lambda q: ellipsoid(q, (0.0, -0.035, 1.628), (0.067, 0.084, 0.082)), 0.03)            # face
+    add(lambda q: ellipsoid(q, (0.0, -0.045, 1.583), (0.056, 0.068, 0.042)), 0.03)            # jaw
+    add(lambda q: ellipsoid(q, (0.0, -0.098, 1.562), (0.026, 0.02, 0.024)), 0.02)             # chin
+    add(lambda q: capsule(q, (-0.044, -0.104, 1.674), (0.044, -0.104, 1.674), 0.011, 0.011), 0.014)  # brow
+    for sx in (-1, 1):
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.046, -0.084, 1.634), (0.02, 0.016, 0.013)), 0.018)  # cheekbone
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.077, -0.005, 1.643), (0.009, 0.021, 0.029)), 0.008)  # ear
+    for sx in (-1, 1):                                                                          # eye sockets
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.033, -0.118, 1.655), (0.019, 0.016, 0.013)), 0.008, "cut")
+    for sx in (-1, 1):                                                                          # eyes
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.033, -0.102, 1.655), (0.0125, 0.011, 0.0105)), 0.003)
+    add(lambda q: capsule(q, (0.0, -0.113, 1.664), (0.0, -0.129, 1.617), 0.006, 0.0095), 0.008)   # nose
+    add(lambda q: ellipsoid(q, (0.0, -0.119, 1.612), (0.016, 0.011, 0.008)), 0.008)           # (its end)
+    add(lambda q: ellipsoid(q, (0.0, -0.111, 1.588), (0.022, 0.009, 0.008)), 0.006)           # lips
     return out
+
+
+def smax(a, b, k):
+    h = np.clip(0.5 - 0.5 * (b - a) / k, 0.0, 1.0)
+    return b * (1 - h) + a * h + k * h * (1 - h)
 
 
 def field(q):
     d = None
-    for f, k in shapes():
+    for f, k, mode in shapes():
         v = f(q)
-        d = v if d is None else smin(d, v, k)
+        if mode == "cut":
+            d = smax(d, -v, k)
+        else:
+            d = v if d is None else smin(d, v, k)
     return d
 
 
 # --- building it ----------------------------------------------------------------------------------------------
-def build(step=0.007, target=11000):
+def build(step=0.0036, target=16000):
     from skimage.measure import marching_cubes
     import pyfqmr
     lo = np.array([-0.84, -0.22, -0.005], np.float32)
