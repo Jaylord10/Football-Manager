@@ -896,7 +896,20 @@ def _viewer_officiate(self, fr, dt, bx, by):
         if o["role"] != "ref" and speed > 3.0:                               # (an assistant sprinting: along the line)
             fx, fy = vx, vy; fl = speed
         o["p"].update(x, y, fx / fl, fy / fl, speed * 10.0, dt, True, vel=(vx, vy), ball=(bx, by))
-        o["p"].act(None, 0.0)
+        # Offside: the assistant on that side puts his flag up, the referee raises his arm (an indirect free
+        # kick); a free kick: the referee points the way it's going.
+        r = fr.get("r")
+        k = fr.get("k", 0)
+        kind, t = None, 0.0
+        if r and r[0] in ("offside", "free_kick"):
+            start = o.setdefault("r_start", {}).setdefault((r[0], self._restart_id(k)), k)
+            t = (k - start) / 30.0
+            if r[0] == "offside":
+                mine = (o["role"] == "ar_near" and bx > 0) or (o["role"] == "ar_far" and bx <= 0)
+                kind = "flag" if mine else ("signal" if o["role"] == "ref" else None)
+            elif o["role"] == "ref":
+                kind = "point"
+        o["p"].act(kind, t - 0.3 if kind == "point" else t)
 
 
 def _viewer_manage(self, o, fr, dt, bx, by):
@@ -922,6 +935,20 @@ def _viewer_manage(self, o, fr, dt, bx, by):
     p.act("point" if pt < 1.6 and not cel else None, pt - 0.4)
 
 
+def _viewer_restart_id(self, k):
+    """Which dead ball this frame belongs to (the frame it started on)."""
+    F = self.m["frames"]
+    cache = self.__dict__.setdefault("_rid", {})
+    if k in cache:
+        return cache[k]
+    j = k
+    while j > 0 and "r" in F[j - 1]:
+        j -= 1
+    cache[k] = j
+    return j
+
+
+Viewer._restart_id = _viewer_restart_id
 Viewer._manage = _viewer_manage
 Viewer._officiate = _viewer_officiate
 Viewer._goal_ball = _viewer_goal_ball

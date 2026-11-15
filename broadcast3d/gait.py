@@ -191,6 +191,11 @@ ACTIONS = {
                 (0.25, {"arm_r": 100, "arm_l": 100, "across_r": 15, "across_l": 15, "elbow_r": 10, "elbow_l": 10,
                         "lean": 18, "hip_l": 20, "knee_l": 18, "knee_r": 12}),
                 (0.70, N)],
+    # An assistant referee's flag straight up (offside); the referee's arm up for an indirect free kick.
+    "flag": [(-0.3, N), (0.0, {"arm_r": 170, "out_r": 8, "elbow_r": 0}), (2.5, {"arm_r": 170, "out_r": 8}),
+             (2.9, N)],
+    "signal": [(-0.3, N), (0.0, {"arm_r": 172, "out_r": 5, "elbow_r": 0, "nod": -8}),
+               (2.5, {"arm_r": 172, "out_r": 5, "nod": -8}), (2.9, N)],
     # A manager on the touchline, arm out, telling them where to go.
     "point": [(-0.4, N),
               (0.0, {"arm_r": 75, "out_r": 30, "elbow_r": 10, "twist": 12, "lean": 4, "nod": -6}),
