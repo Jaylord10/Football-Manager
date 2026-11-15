@@ -149,14 +149,14 @@ def shapes():
         add(lambda q, sx=sx: capsule(q, (sx * 0.436, 0.011, 1.43), (sx * 0.644, 0.009, 1.43), 0.040, 0.028), 0.025)
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.50, 0.0, 1.43), (0.06, 0.04, 0.036)), 0.02)       # forearm
         # the hand: a palm (flat, facing down in the rest pose), four fingers a little curled, a thumb
-        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.688, 0.004, 1.43), (0.048, 0.042, 0.016)), 0.015)
+        add(lambda q, sx=sx: ellipsoid(q, (sx * 0.688, 0.006, 1.43), (0.048, 0.046, 0.018)), 0.016)
         for fy, ln in ((-0.024, 1.0), (0.004, 1.08), (0.031, 1.0), (0.055, 0.8)):
-            k0, k1, k2 = (sx * 0.728, fy, 1.432), (sx * (0.728 + 0.040 * ln), fy, 1.428), \
-                         (sx * (0.728 + 0.064 * ln), fy, 1.410)
-            add(lambda q, a=k0, b=k1: capsule(q, a, b, 0.0095, 0.0088), 0.008)
-            add(lambda q, a=k1, b=k2: capsule(q, a, b, 0.0088, 0.0078), 0.006)
-        add(lambda q, sx=sx: capsule(q, (sx * 0.662, -0.022, 1.427), (sx * 0.698, -0.055, 1.421), 0.013, 0.010), 0.012)
-        add(lambda q, sx=sx: capsule(q, (sx * 0.698, -0.055, 1.421), (sx * 0.722, -0.074, 1.414), 0.010, 0.0085), 0.006)
+            k0, k1, k2 = (sx * 0.728, fy, 1.432), (sx * (0.728 + 0.036 * ln), fy, 1.424), \
+                         (sx * (0.728 + 0.054 * ln), fy, 1.400)
+            add(lambda q, a=k0, b=k1: capsule(q, a, b, 0.0108, 0.0102), 0.009)
+            add(lambda q, a=k1, b=k2: capsule(q, a, b, 0.0102, 0.009), 0.007)
+        add(lambda q, sx=sx: capsule(q, (sx * 0.662, -0.022, 1.425), (sx * 0.692, -0.046, 1.412), 0.014, 0.011), 0.012)
+        add(lambda q, sx=sx: capsule(q, (sx * 0.692, -0.046, 1.412), (sx * 0.712, -0.056, 1.398), 0.011, 0.0095), 0.006)
         # legs
         add(lambda q, sx=sx: capsule(q, (sx * 0.092, -0.006, 0.90), (sx * 0.136, 0.0, 0.533), 0.076, 0.053), 0.05)
         add(lambda q, sx=sx: ellipsoid(q, (sx * 0.112, -0.03, 0.75), (0.07, 0.068, 0.16)), 0.035)    # quads
@@ -224,8 +224,8 @@ def field(q):
 def build(step=0.0036, target=16000):
     from skimage.measure import marching_cubes
     import pyfqmr
-    lo = np.array([-0.84, -0.22, -0.005], np.float32)
-    hi = np.array([0.84, 0.20, 1.80], np.float32)
+    lo = np.array([-1.02, -0.22, -0.005], np.float32)
+    hi = np.array([1.02, 0.20, 1.80], np.float32)
     n = np.ceil((hi - lo) / step).astype(int) + 1
     xs, ys, zs = (lo[i] + np.arange(n[i]) * step for i in range(3))
     vol = np.empty(n, np.float32)
@@ -236,7 +236,7 @@ def build(step=0.0036, target=16000):
     verts += lo
     s = pyfqmr.Simplify()
     s.setMesh(verts, faces)
-    s.simplify_mesh(target_count=target, aggressiveness=5, preserve_border=True, verbose=0)
+    s.simplify_mesh(target_count=target + 1500, aggressiveness=5, preserve_border=True, verbose=0)
     verts, faces, _ = s.getMesh()
     verts = verts.astype(np.float32)
     faces = faces.astype(np.int32)
