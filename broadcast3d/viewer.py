@@ -939,6 +939,8 @@ class Viewer(ShowBase):
             self.cam.lookAt(fx_, fy_, 0.8)
         elif getattr(self, "replay", None):                                 # (a replay: see _replay_cam)
             self._replay_cam(bx, by, bz, dt)
+        elif fr.get("st") == "penalties" and not CLOSE and getattr(self, "cam_mode", 0) == 0:
+            self._pens_cam(bx, by, dt)                                      # (a shoot-out: behind the taker)
         elif CLOSE or getattr(self, "cam_mode", 0) == 1:                    # (a close camera, for checking)
             self.cam.setPos(bx - 6, by - 14, 4.5)
             self.cam.lookAt(bx, by, 0.9)
@@ -1003,6 +1005,24 @@ def _viewer_replay_cam(self, bx, by, bz, dt):
 
 
 Viewer._replay_cam = _viewer_replay_cam
+
+
+def _viewer_pens_cam(self, bx, by, dt):
+    """A penalty shoot-out: the camera behind the taker, low, looking down the line of the kick at the keeper
+    and the goal - the shot every TV shoot-out lives on.  The spot's 11 m out (Law 14); the camera 15 m behind
+    it, a little off the middle and 3.2 m up on a platform, so the taker, the ball on the spot, the keeper and the
+    whole goal are in the picture (the goal about two-thirds of its width)."""
+    sd = 1 if bx > 0 else -1                            # (the end they're shooting at: the ball's always in that half)
+    self._pen_t = getattr(self, "_pen_t", 0.0) + dt
+    t = self._pen_t
+    sway = (0.06 * math.sin(t * 0.7), 0.04 * math.sin(t * 0.53 + 1.0))   # (a hand on the camera: it breathes a little)
+    spot = sd * (HX - 11.0)
+    self.cam.setPos(spot - sd * 15.0, -1.2 + sway[0], 3.2 + sway[1])
+    self.cam.lookAt(sd * (HX - 4.0), 0.0, 0.2)       # (the spot low in the picture, the bar near the top)
+    self.camLens.setFov(30)
+
+
+Viewer._pens_cam = _viewer_pens_cam
 
 
 def _viewer_cam_tv(self, fr, bx, by, dt):

@@ -54,3 +54,12 @@
   the middle (you see the shot's line and the keeper).
 - Tested: the sample goal (a central shot from ~8 m off the middle -> behind the goal, as before) and the same
   goal forced side-on; 470 frames each, pictures looked at.
+
+### 3. Penalty shoot-out camera - DONE
+- During a shoot-out (frames with state "penalties") the TV camera stands behind the taker: 15 m behind the
+  spot, 3.2 m up, a touch off the middle, looking down the line of the kick - the taker, the ball on the spot,
+  the keeper and the whole goal in the picture, with a slight hand-held breathing.  C (the close camera) still
+  overrides it.
+- `dev/record_pens.py <copy of game> out.json [seconds]` records a shoot-out (a career match set up as a
+  knockout, straight to penalties) for checking; viewed with `viewer.py 40 160 out --match=out.json`.
+- Tested: a 10-kick shoot-out recorded and drawn; pictures looked at.
