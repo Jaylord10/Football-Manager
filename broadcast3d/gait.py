@@ -255,13 +255,23 @@ ACTIONS = {
               (-0.06, {"hip_r": -8, "knee_r": 45, "ankle_r": -10, "knee_l": 15}),
               (0.00, {"hip_r": 22, "knee_r": 20, "ankle_r": -15, "knee_l": 15, "out_l": 15}),
               (0.16, N)],
-    # A header: arms up for balance and leverage, back arched, then the neck and trunk snap forward.
-    "header": [(-0.30, N),
-               (-0.10, {"lean": -14, "chest": -6, "nod": -14, "out_l": 60, "out_r": 60, "arm_l": 40, "arm_r": 40,
-                        "elbow_l": 70, "elbow_r": 70, "hip_r": 25, "knee_r": 55, "hip_l": 10, "knee_l": 40}),
-               (0.00, {"lean": 16, "chest": 6, "nod": 20, "out_l": 45, "out_r": 45, "arm_l": 15, "arm_r": 15,
-                       "elbow_l": 60, "elbow_r": 60, "hip_r": 20, "knee_r": 45, "hip_l": 15, "knee_l": 35}),
-               (0.30, N)],
+    # A header: a quick crouch and spring off both feet, the arms swung up and out (for height, and to hold
+    # his space), back arched and the legs tucked behind in the air, then the trunk and neck snap forward
+    # through the ball, and he lands on bent knees.  (Jump ~0.4 m for a contested header - e.g. Bobbert & van
+    # Ingen Schenau on countermovement jumps; the forehead strike from the arched back.)
+    "header": [(-0.40, N),
+               (-0.28, {"hip_r": 40, "knee_r": 70, "ankle_r": 25, "hip_l": 40, "knee_l": 70, "ankle_l": 25,
+                        "lean": 14, "out_l": 15, "out_r": 15, "arm_l": -35, "arm_r": -35, "elbow_l": 30,
+                        "elbow_r": 30}),
+               (-0.10, {"lean": -14, "chest": -8, "nod": -16, "out_l": 60, "out_r": 60, "arm_l": 45, "arm_r": 45,
+                        "elbow_l": 75, "elbow_r": 75, "hip_r": -6, "knee_r": 75, "hip_l": 6, "knee_l": 60,
+                        "ankle_r": -25, "ankle_l": -25}),
+               (0.00, {"lean": 18, "chest": 8, "nod": 22, "out_l": 45, "out_r": 45, "arm_l": 15, "arm_r": 15,
+                       "elbow_l": 60, "elbow_r": 60, "hip_r": 25, "knee_r": 45, "hip_l": 20, "knee_l": 40,
+                       "ankle_r": -15, "ankle_l": -15}),
+               (0.30, {"hip_r": 35, "knee_r": 55, "ankle_r": 20, "hip_l": 30, "knee_l": 50, "ankle_l": 18,
+                       "lean": 12, "out_l": 30, "out_r": 30, "arm_l": 10, "arm_r": 10, "elbow_l": 40, "elbow_r": 40}),
+               (0.50, N)],
     # A block tackle with the left: low, stretching the left leg across, arms out.
     "tackle": [(-0.30, N),
                (-0.06, {"hip_l": 55, "knee_l": 12, "ankle_l": 15, "hipout_l": 20, "hip_r": 30, "knee_r": 55, "ankle_r": 20,
