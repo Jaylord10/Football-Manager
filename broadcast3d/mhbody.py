@@ -509,6 +509,16 @@ def dress(V, paint, pos):
         dl = np.linalg.norm(d, axis=1)
         k = np.where(dl < r, r / np.maximum(dl, 1e-6), 1.0)
         V += (w * (k - 1))[:, None] * d
+    # shin pads under the socks: the front of the shin stands out a little, flat-faced (~1 cm), ankle to
+    # below the knee
+    for sd, sg in (("l", 1), ("r", -1)):
+        K, A = pos["calf." + sd], pos["foot." + sd]
+        m = (np.sign(V[:, 0]) == sg)
+        t = (V[:, 2] - A[2]) / (K[2] - A[2])
+        c = A + t[:, None] * (K - A)
+        fwd = np.clip(-(V[:, 1] - c[:, 1]) / 0.05, 0, 1)                        # (the front of the leg)
+        w = m * fwd * ss(0.18, 0.30, t) * (1 - ss(0.78, 0.88, t))
+        V[:, 1] -= 0.009 * w
     # boots: the foot's points moved onto the boot's surface (the toes go)
     for sg in (1, -1):
         m = (np.sign(V[:, 0]) == sg) & (V[:, 2] < 0.13)
