@@ -462,7 +462,8 @@ class Viewer(ShowBase):
             if ANIM:
                 info = self.home_info if team == 0 else self.away_info
                 self.players.append(AnimPlayer(self.render, kit, num or (i % 11) + 1, skin, hair, keeper, name=name,
-                                               crest=info.get("crest"), role=role))
+                                               crest=info.get("crest"), role=role,
+                                               captain=(i % 11) == self._captain(match, i // 11)))
             else:
                 self.players.append(Player(self.render, kit, (i % 11) + 1, skin, hair, keeper))
         self.officials = []
@@ -602,6 +603,15 @@ class Viewer(ShowBase):
                 OnscreenText(parent=root, text=role, pos=(x0 + 0.86, y), scale=0.038, fg=(0.7, 0.75, 0.8, 1),
                              align=TextNode.ARight)
         return root
+
+    def _captain(self, match, team):
+        """Who wears the armband (the recording doesn't say): a centre-back, else a central midfielder."""
+        names = match.get("names", [])[team * 11: team * 11 + 11]
+        for want in (("LCB", "CB", "RCB"), ("DM", "LCM", "CM", "RCM")):
+            for j, nm in enumerate(names):
+                if len(nm) > 1 and nm[1] in want:
+                    return j
+        return 1
 
     def make_rain(self):
         """Rain over the picture: two layers of streaks drifting down at different speeds (near and far)."""

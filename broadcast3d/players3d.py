@@ -147,6 +147,7 @@ def shader_defaults(render):
     render.setShaderInput("kit_boots", (0.09, 0.09, 0.10, 0.0))
     render.setShaderInput("kit_info", (0.0, 0.0, 0.0, 0.0))
     render.setShaderInput("kit_extra", (0.0, 0.0, 0.0, 0.0))
+    render.setShaderInput("kit_cap", 0.0)
 
 
 def _back_texture(name, number, colour, outline):
@@ -244,7 +245,7 @@ def _speed_weights(s):
 
 class AnimPlayer:
     def __init__(self, parent, kit, number, skin, hair, keeper=False, model=MODEL, name=None, crest=None,
-                 height=None, role=None):
+                 height=None, role=None, captain=False):
         self.cfg = MODELS[model]
         self.root = parent.attachNewNode("player")
         self.a = Actor(self.cfg["file"] if not (self.cfg.get("smooth") and SMOOTH) else self.cfg["smooth_file"])
@@ -323,6 +324,7 @@ class AnimPlayer:
             gl = 1.0 if (hs // 1000) % 10 < 1 or (ls and (hs // 1000) % 10 < 4) else 0.0
         if gl:
             r.setShaderInput("kit_gloves", C((28, 28, 30)))
+        r.setShaderInput("kit_cap", 1.0 if captain else 0.0)
         r.setShaderInput("kit_extra", (float(kit.get("collar", 0)), 1.0 if kit.get("trousers") else 0.0,
                                        1.0 if ls else 0.0, gl))
         self.num = None
