@@ -47,7 +47,7 @@ with contextlib.redirect_stdout(io.StringIO()):
         if cel and e.time_elapsed < cel.get("until", 0) and cel.get("scorer") in everyone:   # (a goal celebration)
             fr["c"] = [cel["team"], everyone.index(cel["scorer"])]
         frames.append(fr)
-names = [[p.name, p.role, getattr(p, "number", i + 1)] for i, p in enumerate(e.team0 + e.team1)]
+names = [[p.name, p.role, getattr(p, "number", None) or (i % 11) + 1] for i, p in enumerate(e.team0 + e.team1)]
 json.dump({"home": c["clubs"][home]["name"], "away": c["clubs"][away]["name"], "names": names, "frames": frames},
           open(os.environ.get("FM_REC_OUT", os.path.join(HERE, "match.json")), "w"))
 print("frames", len(frames), "score", e.score, "state", e.match_state)

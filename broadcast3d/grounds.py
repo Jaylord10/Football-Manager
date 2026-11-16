@@ -50,6 +50,24 @@ def _away_spec(text, stands):
     return side, part
 
 
+# The play-off final's neutral ground (career/playoffs.py: "the National Bowl"): a modern bowl on the lines of
+# Wembley - 90,000 seats in three tiers all the way round, a roof over them all, the pitch a hybrid
+# (wembleystadium.com, "Stats and facts").  Fans of both clubs: the "home" end and the other end.
+NATIONAL = {
+    "name": "the National Bowl",
+    "ground": {
+        "name": "the National Bowl", "capacity": 90000,
+        "pitch": {"surface": "hybrid - perfect"},
+        "stands": [{"name": side.title() + " Stand", "side": side, "tiers": 3, "capacity": 22500,
+                    "roof": "a modern roof"} for side in ("west", "east", "north", "south")],
+        "corners": "a closed bowl - all four corners filled",
+        "roof": "a modern roof all the way round",
+        "for_the_engine": {"home_end": "south", "away_fans": "north end", "dugouts": "west side, halfway line",
+                           "pitch_m": [105, 68]},
+    },
+}
+
+
 def _filled_corners(text):
     t = (text or "").lower()
     if any(w in t for w in ("closed", "bowl", "continuous", "all four")):

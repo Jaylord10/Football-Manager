@@ -13,7 +13,7 @@ MOWING = ("stripes", "wide", "checks", "diagonal", "lengthways")
 
 def _save(im, name):
     """Save a texture whole or not at all (a half-written picture - the game closed mid-way - can't be read)."""
-    tmp = OUT + name + ".part.png"
+    tmp = OUT + name + f".{os.getpid()}.part.png"
     im.save(tmp)
     os.replace(tmp, OUT + name)
 

@@ -150,6 +150,9 @@ class Stadium:
         import kits, grounds
         home = TEAMS[0] if TEAMS else self.b.m.get("home", "Ashvale Rovers")
         prof, slug = kits.profile(home)
+        if os.environ.get("FM_3D_GROUND") == "national":       # (the play-off final: a neutral ground)
+            grounds.build(self, grounds.NATIONAL, kits.club_kits(home)[0][0])
+            return
         if slug == "ashvale" or not prof or not prof.get("ground", {}).get("stands"):
             self.build_kiln_lane()
         else:
@@ -162,6 +165,9 @@ class Stadium:
             import kits as _kk, textures as _tx
             home = TEAMS[0] if TEAMS else self.b.m.get("home", "Ashvale Rovers")
             prof, slug = _kk.profile(home)
+            if os.environ.get("FM_3D_GROUND") == "national":
+                import grounds as _gr
+                prof, slug = _gr.NATIONAL, "national"
             if slug and slug != "ashvale":
                 tex_name = _tx.ground_pitch(slug, prof)
         except Exception as e:
@@ -782,7 +788,9 @@ class Viewer(ShowBase):
         amts = getattr(self, "_crowd_amts", {})
         for n, (cn, kind) in enumerate(self.crowds):                        # (their fans go up; the others sit)
             fans = {"crowd_home.png": 0, "crowd_home_live.png": 0, "crowd_hosts.png": 0, "crowd_away.png": 1, "crowd_visitors.png": 1}.get(kind, -1)
-            want = 1.0 if not cel else (7.0 if fans == cel[0] else 0.4 if fans >= 0 else 3.0)
+            ooh = getattr(self, "_ooh", None)                               # (a shot that just missed: up they get)
+            near = ooh is not None and 0 <= k - ooh[1] < 45 and fans == ooh[0]
+            want = (4.0 if near else 1.0) if not cel else (7.0 if fans == cel[0] else 0.4 if fans >= 0 else 3.0)
             cur = amts.get(n, 1.0)
             cur += (want - cur) * min(1.0, dt * 2.0)
             amts[n] = cur
@@ -820,6 +828,8 @@ class Viewer(ShowBase):
                 fx, fy = vel[0] / math.hypot(*vel), -vel[1] / math.hypot(*vel)
             p.calling = self._calling(i, fr, wx, wy, sp, k)
             kind, t = self.events.action(i, k)
+            if kind == "shot" and 0.0 <= t < 0.1 and not cel:
+                self._ooh = (0 if i < 11 else 1, k)
             if cel and i == cel[1]:
                 kind, t = self._scorer_slide(i, sp, k, kind, t)
             card = fr.get("card")

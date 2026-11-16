@@ -76,7 +76,7 @@ def weather_flags(when):
 
 
 def names_from_engine(e):
-    return [[p.name, p.role, getattr(p, "number", i + 1)] for i, p in enumerate(e.team0 + e.team1)]
+    return [[p.name, p.role, getattr(p, "number", None) or (i % 11) + 1] for i, p in enumerate(e.team0 + e.team1)]
 
 
 # The shared memory: a header, then two picture slots (the 3D side fills one while the game reads the other).

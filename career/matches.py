@@ -213,6 +213,7 @@ def _view_env(career, home_id):
     except Exception:
         pass
     os.environ["FM_3D_CROWD"] = f"{fill:.2f}"
+    os.environ.pop("FM_3D_GROUND", None)            # (the home club's own ground - watch_playoff: the final)
 
 
 def watch(career, home, away, matchday):
@@ -281,6 +282,9 @@ def watch_playoff(career, m):
     me.RL_ENABLED = False
     me.HALF_DURATION_REAL = HALF_SECONDS
     _view_env(career, m["home"])                 # (2D or 3D - V switches - and the light and weather)
+    if m.get("round") == "final":                      # (the final: the national stadium, full)
+        os.environ["FM_3D_GROUND"] = "national"
+        os.environ["FM_3D_CROWD"] = "1"
     engine = me.MatchEngine(career=True)
     engine.run()
     career["match_view"] = engine.view_wanted                        # (remembered for next time)
