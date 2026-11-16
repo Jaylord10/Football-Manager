@@ -446,6 +446,7 @@ def _closest(q, a, b):
 # --- putting it on a player -------------------------------------------------------------------------------
 _DATA = {}
 LOD = "--nolod" not in __import__("sys").argv
+LOD_FAR = 48.0          # (further than this: the lightest body)
 LOD_NEAR = 22.0         # (metres from the camera: nearer, the full body; further, the lighter one)
 MH_OUT = os.path.join(HERE, "models", "mh_body.npz")
 
@@ -578,7 +579,15 @@ def attach(actor, which=None, face=None, gloves=False):
         lnp.attachNewNode(gn)
         lnp.attachNewNode(lo)
         lod.addSwitch(LOD_NEAR, 0.0)
-        lod.addSwitch(1e6, LOD_NEAR)
+        if "lod2_idx" in D:                     # (and a lighter one still, far off - as most are from the gantry)
+            l2 = D["lod2_idx"]
+            lo2 = _skinned(ch.node(), "smooth_body_far2", V[l2], N[l2], D["lod2_faces"], D["bone_idx"][l2],
+                           D["bone_w"][l2], names, D["paint"][l2] if "paint" in D else None)
+            lnp.attachNewNode(lo2)
+            lod.addSwitch(LOD_FAR, LOD_NEAR)
+            lod.addSwitch(1e6, LOD_FAR)
+        else:
+            lod.addSwitch(1e6, LOD_NEAR)
         for old in actor.findAllMatches("**/+GeomNode"):
             old.detachNode()
         lnp.reparentTo(ch)

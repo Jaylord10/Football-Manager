@@ -704,14 +704,16 @@ def main():
     # (so it's skinned and painted the same)
     import pyfqmr
     from scipy.spatial import cKDTree
-    sm = pyfqmr.Simplify(); sm.setMesh(Vb.astype(np.float64), Fb.astype(np.int32))
-    sm.simplify_mesh(target_count=5200, aggressiveness=6, preserve_border=True, verbose=0)
-    lv, lf, _ = sm.getMesh()
-    near = cKDTree(Vb).query(lv)[1]
-    lf = near[lf]
-    lf = lf[(lf[:, 0] != lf[:, 1]) & (lf[:, 1] != lf[:, 2]) & (lf[:, 0] != lf[:, 2])]
-    lod_idx, lod_f = np.unique(lf, return_inverse=True)
-    extra.update(lod_idx=lod_idx.astype(np.int32), lod_faces=lod_f.reshape(-1, 3).astype(np.int32))
+    for key, target in (("lod", 5200), ("lod2", 1700)):    # (~22-45 m from the camera, and further)
+        sm = pyfqmr.Simplify(); sm.setMesh(Vb.astype(np.float64), Fb.astype(np.int32))
+        sm.simplify_mesh(target_count=target, aggressiveness=6, preserve_border=True, verbose=0)
+        lv, lf, _ = sm.getMesh()
+        near = cKDTree(Vb).query(lv)[1]
+        lf = near[lf]
+        lf = lf[(lf[:, 0] != lf[:, 1]) & (lf[:, 1] != lf[:, 2]) & (lf[:, 0] != lf[:, 2])]
+        li, lfi = np.unique(lf, return_inverse=True)
+        extra[key + "_idx"] = li.astype(np.int32)
+        extra[key + "_faces"] = lfi.reshape(-1, 3).astype(np.int32)
     fi, fm, fe = face_morphs(len(V), used, Vb[:len(used)])
     extra.update(face_idx=fi.astype(np.int32), face_morph=fm, face_eth=fe,
                  face_names=np.array([f[0] for f in FACE_SLIDERS]))
