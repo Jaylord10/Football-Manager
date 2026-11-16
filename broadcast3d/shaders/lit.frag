@@ -57,7 +57,7 @@ vec3 shirt_at(float x, float y, float z, bool torso) {
 vec4 head_colour(float x, float y, float z, float ax) {
     float beard = floor(kit_info.w / 8.0 + 0.01);                  // 0 clean-shaven, 1 stubble, 2 a full beard
     float style = kit_info.w - beard * 8.0;                        // 0 crop 1 buzz cut 2 longer 3 quiff 4 curls 5 bald
-    bool is_long = (style > 1.5 && style < 2.5) || (style > 3.5 && style < 4.5);
+    bool is_long = (style > 1.5 && style < 2.5) || (style > 3.5 && style < 4.5) || style > 5.5;
     bool fade = (style > 0.5 && style < 1.5) || (style > 2.5 && style < 3.5);
     vec3 skin = kit_skin.rgb;
     // The hair close to the scalp (the cut's own volume is a mesh on top of this): a hairline that's high at
@@ -69,7 +69,7 @@ vec4 head_colour(float x, float y, float z, float ax) {
                         : mix(1.672, back, smoothstep(-0.02, 0.05, y));
     bool ear = ax > 0.064 && z > 1.612 && z < 1.676 && abs(y - 0.006) < 0.03;
     if (!ear) {
-        float amt = style > 4.5 ? 0.12 : (fade ? 0.55 : 1.0);
+        float amt = (style > 4.5 && style < 5.5) ? 0.12 : (fade ? 0.55 : 1.0);
         if (fade) amt *= mix(0.4, 1.0, smoothstep(l, l + 0.07, z));
         skin = mix(skin, kit_hair.rgb, smoothstep(l - 0.004, l + 0.007, z) * amt);
     }

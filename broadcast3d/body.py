@@ -323,6 +323,16 @@ def _hair(q, thick, front, side, back):
     return smax(d, -(q[..., 2] - hairline(q, front, side, back)), 0.008)
 
 
+def _twists(q):
+    """Strands of twisted hair standing out from the scalp: bumps in rows round the head, twisting along."""
+    c = q - np.array([0.0, -0.01, 1.66], np.float32)
+    th = np.arctan2(c[..., 1], c[..., 0])
+    ph = np.arctan2(c[..., 2], np.hypot(c[..., 0], c[..., 1]))
+    r = np.linalg.norm(c, axis=-1)
+    strands = np.cos(th * 26 + 1.3 * np.sin(ph * 9)) * np.cos(ph * 20 + r * 400)
+    return 0.007 * np.maximum(strands, -0.4)
+
+
 HAIR = {
     # a short crop: close all over, a little longer on top
     "crop": lambda q: _hair(q, lambda q, top, fr: 0.006 + 0.007 * top, 1.737, 1.678, 1.615),
@@ -331,6 +341,8 @@ HAIR = {
     # tight curls / a short afro: full all round
     "curls": lambda q: _hair(q, lambda q, top, fr: 0.017 + 0.006 * top + 0.0035 * np.sin(q[..., 0] * 150) *
                              np.sin(q[..., 1] * 150) * np.sin(q[..., 2] * 150), 1.732, 1.672, 1.60),
+    # short twists (dreadlocks): rope-like strands all over, down to the nape
+    "twists": lambda q: _hair(q, lambda q, top, fr: 0.016 + 0.008 * top + _twists(q), 1.734, 1.66, 1.565),
     # longer: over the tops of the ears and down to the collar
     "long": lambda q: _hair(q, lambda q, top, fr: 0.012 + 0.010 * top, 1.737, 1.648, 1.545),
 }

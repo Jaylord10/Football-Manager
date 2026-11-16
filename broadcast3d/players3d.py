@@ -306,11 +306,13 @@ class AnimPlayer:
         # beard (0 clean-shaven, 1 stubble, 2 a full beard).
         h100 = hs % 100
         cut = 0 if h100 < 30 else 3 if h100 < 55 else 1 if h100 < 70 else 4 if h100 < 82 else 2 if h100 < 92 else 5
+        if cut == 4 and (hs // 7) % 2 and MHBODY:          # (some of the curly-haired: short twists instead)
+            cut = 6
         bd = (hs // 100) % 10
         style = cut + 8 * (0 if bd < 5 else 1 if bd < 8 else 2)
-        if self.cfg.get("smooth") and SMOOTH and cut in (0, 2, 3, 4):
+        if self.cfg.get("smooth") and SMOOTH and cut in (0, 2, 3, 4, 6):
             import body
-            body.attach_hair(self.a, {0: "crop", 2: "long", 3: "quiff", 4: "curls"}[cut], "mh" if MHBODY else None)
+            body.attach_hair(self.a, {0: "crop", 2: "long", 3: "quiff", 4: "curls", 6: "twists"}[cut], "mh" if MHBODY else None)
         r.setShaderInput("kit_info", (PATTERNS.get(kit.get("pattern"), 0), 1.0 if kit.get("keeper") else 0.0,
                                       1.0 if crest else 0.0, float(style)))
         # A November game: about a third of outfield players in long sleeves, a few in black gloves too.
