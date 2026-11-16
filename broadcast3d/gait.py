@@ -215,25 +215,41 @@ N = {}
 ACTIONS = {
     # A pass / clearance with the right instep.
     "kick": [(-0.32, N),
-             (-0.14, {"hip_r": -28, "knee_r": 95, "ankle_r": -20, "hip_l": 12, "knee_l": 30, "turn": -16, "twist": -6,
-                      "lean": 4, "out_l": 50, "arm_l": 15, "elbow_l": 30, "out_r": 25, "arm_r": -20, "elbow_r": 25}),
-             (0.00, {"hip_r": 24, "knee_r": 35, "ankle_r": -30, "hip_l": 10, "knee_l": 32, "turn": 8, "twist": 6,
-                     "lean": 2, "out_l": 60, "arm_l": 10, "elbow_l": 25, "out_r": 30, "arm_r": -25, "elbow_r": 20}),
+             # the last stride: the left (standing) foot reaching out to plant beside the ball, the right leg
+             # drawing back (Lees & Nolan 1998, "The biomechanics of soccer": a long last stride, the plant foot
+             # ~0.3 m beside and level with the ball, the knee ~25-40 deg bent at contact, the trunk leaning away
+             # from the kicking side, the arm on the standing side out wide)
+             (-0.20, {"hip_l": 32, "knee_l": 12, "ankle_l": 10, "hip_r": -18, "knee_r": 70, "ankle_r": -20,
+                      "turn": -10, "lean": 4, "tilt": -2, "out_l": 40, "arm_l": 15, "elbow_l": 30, "out_r": 20,
+                      "arm_r": -15, "elbow_r": 25}),
+             (-0.10, {"hip_r": -30, "knee_r": 100, "ankle_r": -25, "hip_l": 14, "knee_l": 34, "turn": -18,
+                      "twist": -8, "lean": 5, "tilt": -4, "side": -3, "out_l": 60, "arm_l": 15, "elbow_l": 30,
+                      "out_r": 25, "arm_r": -25, "elbow_r": 25}),
+             (0.00, {"hip_r": 24, "knee_r": 32, "ankle_r": -32, "hip_l": 10, "knee_l": 36, "turn": 10, "twist": 8,
+                     "lean": 4, "tilt": -5, "side": -4, "out_l": 52, "arm_l": 12, "elbow_l": 25, "out_r": 30,
+                     "arm_r": -25, "elbow_r": 20}),
              (0.14, {"hip_r": 55, "knee_r": 10, "ankle_r": -25, "hip_l": 5, "knee_l": 25, "turn": 18, "twist": 10,
-                     "lean": -2, "out_l": 45, "arm_l": 20, "elbow_l": 30, "out_r": 25, "arm_r": -10, "elbow_r": 25}),
+                     "lean": -2, "tilt": -2, "out_l": 45, "arm_l": 20, "elbow_l": 30, "out_r": 25, "arm_r": -10,
+                     "elbow_r": 25}),
              (0.40, N)],
-    # A shot: a longer backswing and a bigger follow-through, over the ball to keep it down.
+    # A shot: a longer backswing and a bigger follow-through, over the ball to keep it down, landing on the
+    # kicking foot after it (as players do when they strike it hard).
     "shot": [(-0.36, N),
-             (-0.14, {"hip_r": -35, "knee_r": 110, "ankle_r": -25, "hip_l": 15, "knee_l": 35, "turn": -24, "twist": -10,
-                      "lean": 8, "out_l": 60, "arm_l": 25, "elbow_l": 30, "out_r": 35, "arm_r": -35, "elbow_r": 30}),
-             (0.00, {"hip_r": 30, "knee_r": 40, "ankle_r": -35, "hip_l": 12, "knee_l": 35, "turn": 10, "twist": 8,
-                     "lean": 12, "chest": 4, "out_l": 70, "arm_l": 10, "elbow_l": 25, "out_r": 40, "arm_r": -30,
-                     "elbow_r": 20}),
-             (0.16, {"hip_r": 75, "knee_r": 12, "ankle_r": -25, "hip_l": 5, "knee_l": 25, "turn": 26, "twist": 14,
-                     "lean": 6, "out_l": 50, "arm_l": 25, "elbow_l": 35, "out_r": 30, "arm_r": -10, "elbow_r": 30}),
-             (0.30, {"hip_r": 35, "knee_r": 30, "ankle_r": -10, "knee_l": 15, "turn": 12, "twist": 6, "lean": 4,
-                     "out_l": 30, "arm_l": 15, "elbow_l": 30, "out_r": 20, "elbow_r": 30}),
-             (0.48, N)],
+             (-0.24, {"hip_l": 36, "knee_l": 10, "ankle_l": 10, "hip_r": -20, "knee_r": 75, "ankle_r": -20,
+                      "turn": -14, "lean": 8, "tilt": -2, "out_l": 45, "arm_l": 20, "elbow_l": 30, "out_r": 25,
+                      "arm_r": -20, "elbow_r": 25}),
+             (-0.12, {"hip_r": -38, "knee_r": 115, "ankle_r": -28, "hip_l": 16, "knee_l": 36, "turn": -26,
+                      "twist": -12, "lean": 10, "tilt": -5, "side": -4, "out_l": 52, "arm_l": 25, "elbow_l": 30,
+                      "out_r": 35, "arm_r": -35, "elbow_r": 30}),
+             (0.00, {"hip_r": 30, "knee_r": 36, "ankle_r": -35, "hip_l": 12, "knee_l": 38, "turn": 12, "twist": 10,
+                     "lean": 14, "chest": 4, "tilt": -6, "side": -4, "out_l": 55, "arm_l": 10, "elbow_l": 25,
+                     "out_r": 40, "arm_r": -30, "elbow_r": 20}),
+             (0.16, {"hip_r": 78, "knee_r": 12, "ankle_r": -25, "hip_l": 5, "knee_l": 25, "turn": 28, "twist": 14,
+                     "lean": 6, "tilt": -3, "out_l": 50, "arm_l": 25, "elbow_l": 35, "out_r": 30, "arm_r": -10,
+                     "elbow_r": 30}),
+             (0.32, {"hip_r": 30, "knee_r": 34, "ankle_r": -5, "hip_l": -10, "knee_l": 30, "turn": 12, "twist": 6,
+                     "lean": 6, "out_l": 30, "arm_l": 15, "elbow_l": 30, "out_r": 20, "elbow_r": 30}),
+             (0.50, N)],
     # A touch while dribbling: a little push with the right foot (blended lightly over the running).
     "touch": [(-0.16, N),
               (-0.06, {"hip_r": -8, "knee_r": 45, "ankle_r": -10, "knee_l": 15}),
