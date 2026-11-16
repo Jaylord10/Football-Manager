@@ -898,11 +898,13 @@ class MatchEngine:
 
         # Schedule UI messages
         self._foul_display_until = self.time_elapsed + 2.0 * getattr(self, "match_speed", 1)   # 2 s of watching time
+        self._foul_display_at = self.time_elapsed                 # (when it happened: the 3D picture is behind)
         if display_card != "none":
             self._card_display = {
                 "type":  display_card,
                 "name":  getattr(fouler, "name", fouler.role),
                 "until": self.time_elapsed + 3.5 * getattr(self, "match_speed", 1),
+                "at":    self.time_elapsed,
             }
 
         # Decide penalty vs free kick
@@ -975,7 +977,9 @@ class MatchEngine:
         }
 
     def _draw_3d(self):
-        """The 3D picture on the pitch area -> the score it shows, or None (then draw the 2D pitch)."""
+        """The 3D picture on the pitch area -> the score it shows, or None (then draw the 2D pitch).
+        self._shown_t: the moment of the match the picture shows (half a second behind the engine)."""
+        self._shown_t = self.time_elapsed
         if not self._3d_on():
             return None
         pic = self.live3d.picture()
@@ -987,10 +991,13 @@ class MatchEngine:
             return list(self.score)
         self.screen.blit(pic, (0, 0))
         shown = self.live3d.shown()
+        if shown:
+            self._shown_t = shown["t"]
         return list(shown["s"]) if shown else list(self.score)
 
     def _render(self, flip=True):
         score3d = self._draw_3d()
+        now = self._shown_t                       # (the banners: at the moment the picture shows)
         if score3d is None:
             self.pitch_renderer.draw_pitch(self.screen)
 
@@ -1018,16 +1025,17 @@ class MatchEngine:
             self.ui_renderer.draw_offside_message(self.screen)
 
         # Foul + card display
-        if self.time_elapsed < self._foul_display_until:
+        if now < self._foul_display_until and now >= getattr(self, "_foul_display_at", 0.0):
             self.ui_renderer.draw_foul_message(self.screen)
-        if self._card_display and self.time_elapsed < self._card_display["until"]:
+        if self._card_display and now < self._card_display["until"] and score3d is None and \
+                now >= self._card_display.get("at", 0.0):
             self.ui_renderer.draw_card_flash(
                 self.screen,
                 self._card_display["type"],
                 self._card_display["name"]
             )
 
-        boards = [m for m in self.subs.messages.values() if self.time_elapsed < m["until"]]
+        boards = [m for m in self.subs.messages.values() if now < m["until"]]
         for i, msg in enumerate(boards):
             self.ui_renderer.draw_sub_flash(self.screen, msg["text"], msg["team"], row=i,
                                             kind=msg.get("kind", "sub"))

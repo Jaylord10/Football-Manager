@@ -40,7 +40,7 @@ class UIRenderer:
         # on the pitch area by the engine.
         self._draw_top_bar(surface, score, match_info)
         self._draw_stats_bar(surface, match_info, ball)
-        self._draw_legend(surface)
+        self._draw_legend(surface, match_info)
 
     # ------------------------------------------------------------------
     # Top bar: score + clock + half label
@@ -136,11 +136,13 @@ class UIRenderer:
     # Bottom legend
     # ------------------------------------------------------------------
 
-    def _draw_legend(self, surface):
+    def _draw_legend(self, surface, mi=None):
         legend_y   = surface.get_height() - BOTTOM_UI
         pygame.draw.rect(surface, (20, 20, 20), pygame.Rect(0, legend_y, surface.get_width(), BOTTOM_UI))
         legend_y  += 4
         legend_str = "States: press / dribble / pass / drive / support / chase / guard / tackle"
+        if mi and mi.get("view3d"):
+            legend_str = "3D view - V switches to 2D.  After a goal the match waits for the replay (ENTER skips it)."
         legend_surf = self.normal_font.render(legend_str, True, (100, 100, 100))
         surface.blit(legend_surf, (12, legend_y))
 

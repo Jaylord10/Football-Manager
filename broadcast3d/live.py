@@ -29,7 +29,7 @@ def frame_from_engine(e):
     """One frame of the match as the 3D view reads it (the same as record.py writes)."""
     b = e.ball
     everyone = e.team0 + e.team1
-    fr = {"t": round(e.time_elapsed, 2), "s": list(e.score), "st": e.match_state,
+    fr = {"t": round(e.time_elapsed, 2), "s": list(e.score), "st": e.match_state, "m": e.match_minute(),
           "b": [round(b.pos.x, 1), round(b.pos.y, 1), round(getattr(b, "z", 0.0), 1)],
           "o": everyone.index(b.owner) if b.owner in everyone else -1,
           "p": [[round(p.pos.x, 1), round(p.pos.y, 1), round(p.facing.x, 3), round(p.facing.y, 3),
@@ -87,6 +87,7 @@ class Live3D:
         self._count = -1
         self._surf = None
         self._k = -1
+        self._names = [p.name for p in engine.team0 + engine.team1]
         self.shm = shared_memory.SharedMemory(create=True, size=HEAD + 2 * self.w * self.h * 3)
         _write_head(self.shm.buf, ready=0, slot=0, count=0, k=-1, replay=0, w=self.w, h=self.h)
         ctx = mp.get_context("spawn")
@@ -108,6 +109,10 @@ class Live3D:
         fr = frame_from_engine(engine)
         self.frames.append({"s": fr["s"], "t": fr["t"], "st": fr["st"]})
         try:
+            names = [p.name for p in engine.team0 + engine.team1]
+            if names != self._names:                    # (a substitute's come on: his name and number)
+                self._names = names
+                self.conn.send(("names", names_from_engine(engine)))
             self.conn.send(("frame", fr))
         except Exception:
             self._give_up("the 3D view stopped (sending)")
@@ -282,6 +287,9 @@ def _draw_loop(conn, buf, w, h, meta):
     gks = tuple(i for i, nm in enumerate(meta["names"]) if len(nm) > 1 and nm[1] == "GK") or (0, 11)
     ev_lo = 0
     d = _LiveDirector(v)
+    subs_on = [0, 0]
+    pending = []
+    sheet = {"n": None, "t": 0.0}
     clock = ClockObject.getGlobalClock()
     last = time.perf_counter()
     slot, count, shown_k, started = 0, 0, -1, False
@@ -299,6 +307,9 @@ def _draw_loop(conn, buf, w, h, meta):
                 v.replay = None
                 v._gp = {}
                 _write_head(buf, replay=0)
+            if msg[0] == "names":                               # (substitutes on: new men in those places,
+                pending.append((len(F), msg[1]))                #  when the picture gets to that moment)
+                continue
             if msg[0] == "frame":
                 fr = msg[1]
                 fr["k"] = len(F)
@@ -313,15 +324,34 @@ def _draw_loop(conn, buf, w, h, meta):
         now = time.perf_counter()
         real_dt = min(0.1, now - last)
         k, dt = d.frame(F, real_dt)
+        while pending and k >= pending[0][0] and d.rp is None:
+            for i, (nm, role, _n) in enumerate(pending.pop(0)[1]):
+                if i < len(v.players) and nm != match["names"][i][0]:
+                    team = 0 if i < 11 else 1
+                    subs_on[team] += 1
+                    try:
+                        v.replace_player(i, nm, role, 11 + subs_on[team])
+                    except Exception:
+                        print("sub:", traceback.format_exc(), flush=True)
         if k == shown_k and d.rp is None and started:
             time.sleep(0.004)                           # (nothing new to draw: the match is paused or waiting)
             last = now
             continue
         last = now
+        if sheet["n"] is not None:                      # (the team sheets, for the first few seconds)
+            sheet["t"] += real_dt
+            if sheet["t"] > 6.0:
+                sheet["n"].removeNode()
+                sheet["n"] = None
         t0 = time.perf_counter()
         v.show(F[k], dt or 1e-3)
         v.taskMgr.step()
         if not started:                                 # (the first time: draw twice - the shadows settle)
+            if k < 30:                                  # (at kick-off: the team sheets)
+                try:
+                    sheet["n"] = v.lineups(match)
+                except Exception:
+                    print("lineups:", traceback.format_exc(), flush=True)
             v.show(F[k], 1e-3)
             v.taskMgr.step()
         tex = v.win.getScreenshot()

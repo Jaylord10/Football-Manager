@@ -459,6 +459,7 @@ class Viewer(ShowBase):
         self.nets = []
         self.crowds = []                                    # (the crowd in each stand, to liven up after a goal)
         st = Stadium(self); st.build(); st.goals()
+        self.stadium = st
         self.light_up()
         fog = Fog("haze"); fog.setColor(*((0.62, 0.66, 0.7) if not NIGHT else (0.04, 0.045, 0.07)))
         fog.setExpDensity(0.0012 if not RAIN else 0.0035); self.render.setFog(fog)
@@ -484,6 +485,7 @@ class Viewer(ShowBase):
                 self.players.append(AnimPlayer(self.render, kit, num or (i % 11) + 1, skin, hair, keeper, name=name,
                                                crest=info.get("crest"), role=role,
                                                captain=(i % 11) == self._captain(match, i // 11)))
+                self.players[-1].kit = kit
             else:
                 self.players.append(Player(self.render, kit, (i % 11) + 1, skin, hair, keeper))
         self.officials = []
@@ -495,21 +497,9 @@ class Viewer(ShowBase):
         sh.filter(ImageFilter.GaussianBlur(5)).save(T + "shadow.png")
         stex = self.loader.loadTexture(pf(T + "shadow.png"))
         self.shadows = []
+        self._blob = (cm, stex)
         for p in self.players + [o["p"] for o in self.officials]:
-            n = p.root.attachNewNode(cm.generate()); n.setP(-90); n.setPos(0.25, 0.25, 0.02); n.setTexture(stex)
-            n.setTransparency(TransparencyAttrib.MAlpha); n.setLightOff(); n.setDepthWrite(False); n.setBin("fixed", 0)
-            no_shadow(n, lit=False)
-            if not OVERCAST:                                # (sunshine: the sun casts the real shadow - this is just
-                n.setPos(0, 0, 0.02); n.setScale(0.75, 1, 0.9); n.setAlphaScale(0.55)    # the darkening under his feet)
-            if NIGHT:                                       # (floodlights: four faint shadows, one to each corner)
-                fl = self.render.attachNewNode("floodshadows")
-                for a in (45, 135, 225, 315):
-                    s4 = fl.attachNewNode(cm.generate()); s4.setP(-90); s4.setTexture(stex)
-                    s4.setH(a); s4.setScale(0.55, 1, 2.2); s4.setPos(fl, math.cos(math.radians(a + 90)) * -0.6,
-                                                                     math.sin(math.radians(a + 90)) * -0.6, 0.015)
-                    s4.setTransparency(TransparencyAttrib.MAlpha); s4.setAlphaScale(0.35)
-                fl.setLightOff(1); fl.setDepthWrite(False); fl.setBin("fixed", 0); no_shadow(fl, lit=False)
-                p.flood = fl
+            self._shadow_under(p)
         self.ball = football(self.render, BALL_R)
         cm = CardMaker("bshadow"); cm.setFrame(-0.22, 0.22, -0.22, 0.22)          # (a soft round shadow)
         self.bsh = self.render.attachNewNode(cm.generate()); self.bsh.setP(-90); self.bsh.setTexture(stex)
@@ -533,6 +523,49 @@ class Viewer(ShowBase):
         self.hud(match)
         if RAIN:
             self.make_rain()
+
+    def _shadow_under(self, p):
+        """The soft dark patch under a player's feet (and at night, the floodlights' four faint shadows)."""
+        cm, stex = self._blob
+        n = p.root.attachNewNode(cm.generate()); n.setP(-90); n.setPos(0.25, 0.25, 0.02); n.setTexture(stex)
+        n.setTransparency(TransparencyAttrib.MAlpha); n.setLightOff(); n.setDepthWrite(False); n.setBin("fixed", 0)
+        no_shadow(n, lit=False)
+        if not OVERCAST:                                # (sunshine: the sun casts the real shadow - this is just
+            n.setPos(0, 0, 0.02); n.setScale(0.75, 1, 0.9); n.setAlphaScale(0.55)    # the darkening under his feet)
+        if NIGHT:                                       # (floodlights: four faint shadows, one to each corner)
+            fl = self.render.attachNewNode("floodshadows")
+            for a in (45, 135, 225, 315):
+                s4 = fl.attachNewNode(cm.generate()); s4.setP(-90); s4.setTexture(stex)
+                s4.setH(a); s4.setScale(0.55, 1, 2.2); s4.setPos(fl, math.cos(math.radians(a + 90)) * -0.6,
+                                                                 math.sin(math.radians(a + 90)) * -0.6, 0.015)
+                s4.setTransparency(TransparencyAttrib.MAlpha); s4.setAlphaScale(0.35)
+            fl.setLightOff(1); fl.setDepthWrite(False); fl.setBin("fixed", 0); no_shadow(fl, lit=False)
+            p.flood = fl
+
+    def replace_player(self, i, name, role, num):
+        """A substitute on for player i (live, broadcast3d/live.py): a new man - his own face, build, name and
+        number - in the same kit, where the old one was."""
+        old = self.players[i]
+        team = 0 if i < 11 else 1
+        keeper = role == "GK"
+        home, away = self.kits
+        kit = getattr(old, "kit", None)
+        if kit is None:
+            kit = home if team == 0 else away
+        import random
+        rnd = random.Random(f"{name}{num}")
+        skin = rnd.choice(Player.SKINS)
+        hair = rnd.choice([(40, 28, 20), (25, 20, 18), (120, 80, 40), (200, 170, 110), (15, 12, 10)])
+        info = self.home_info if team == 0 else self.away_info
+        p = AnimPlayer(self.render, kit, num, skin, hair, keeper, name=name, crest=info.get("crest"), role=role)
+        p.kit = kit
+        p.root.setPos(old.root.getPos()); p.root.setH(old.root.getH())
+        self._shadow_under(p)
+        if getattr(old, "flood", None) is not None:
+            old.flood.removeNode()
+        old.root.removeNode()
+        self.players[i] = p
+        self.m["names"][i] = [name, role, num]
 
     def light_up(self):
         """The light.  Default: a bright autumn afternoon - a low sun from behind the Main Stand (the camera's side),
@@ -572,6 +605,7 @@ class Viewer(ShowBase):
                 self.render.setShaderInput("mud_amt", 1.0)
         import sunshadow
         sunshadow.no_sun(self.render)                       # (until the sun's own is made: light_up)
+        self.render.setShaderInput("clip_y", -1.0e6)
         self.render.setShaderInput("shadow_bias", 0.0004)
         self.render.setShaderInput("shadow_texel", 1.0 / SHADOW_MAP)
         self.render.setShaderInput("detail_amt", 0.0)
@@ -720,7 +754,7 @@ class Viewer(ShowBase):
             nm = names[scorer][0] if scorer < len(names) else ""
             short = (nm.split()[0][0] + ". " + nm.split()[-1]) if nm and " " in nm else nm
             club = self.home_name if team == 0 else self.away_name
-            mins = int(fr["t"] / 600.0 * 45) + 1
+            mins = fr.get("m") or int(fr["t"] / 600.0 * 45) + 1           # (live: the engine's own minute)
             kit = self.kits[team]
             bar = kit["shirt"] if sum(kit["shirt"]) / 765 > 0.2 else kit.get("trim", (240, 240, 240))
             self.cap_bar["frameColor"] = C(bar)
@@ -753,6 +787,21 @@ class Viewer(ShowBase):
             else:
                 p.mood = None
             wx, wy = to_world(x, y)
+            if not act:                                                     # (sent off: the engine takes him
+                was = self.__dict__.setdefault("_was_on", {})               #  straight off; on TV he walks off,
+                off = self.__dict__.setdefault("_walk_off", {})             #  head down, to the tunnel)
+                if i not in off and was.get(i, False) and not getattr(self, "replay", None) and i in prev:
+                    off[i] = [prev[i][0], prev[i][1], 0.0]
+                w = off.get(i)
+                if w is not None and w[2] < 22.0 and not getattr(self, "replay", None):
+                    dx, dy = 0.0 - w[0], -HY - 4.0 - w[1]
+                    dd = math.hypot(dx, dy)
+                    if dd > 0.3:
+                        w[0] += dx / dd * min(dd, 1.5 * dt); w[1] += dy / dd * min(dd, 1.5 * dt)
+                        fx, fy = dx / dd, -dy / dd
+                    w[2] += dt
+                    wx, wy, sp, act = w[0], w[1], 15.0 if dd > 0.3 else 0.0, 1
+            self.__dict__.setdefault("_was_on", {})[i] = bool(fr["p"][i][6])
             wx, wy, sp2 = self._gather(i, fr, cel, wx, wy, dt)                  # (team-mates mob the scorer)
             if sp2 is not None:
                 sp = sp2
@@ -824,7 +873,10 @@ class Viewer(ShowBase):
         # does, leaving space in front of the attack), on a smooth spring - no jerks when the ball's hit - and
         # zooms out a touch when the ball's travelling fast or play's spread, in when it's tight.  After a
         # goal it finds the scorer and moves in on him.
-        self._cam_tv(fr, bx, by, dt)
+        if fr.get("st") in ("halftime", "full_time", "et_break", "et_halftime"):
+            self._cam_tv(fr, 0.0, 0.0, dt)                                   # (a break: the whole pitch, not the ball)
+        else:
+            self._cam_tv(fr, bx, by, dt)
         if "--top" in sys.argv:                                             # (a check: the whole ground from above)
             self.cam.setPos(0, -330, 230); self.cam.lookAt(0, 40, 0)
         elif FOLLOW is not None:                                            # (a close camera on one player)
@@ -857,6 +909,11 @@ class Viewer(ShowBase):
             yw = 0.35 + 0.6 * self.cam_tilt                                 # (close in: right on him)
             self.cam.lookAt(self.cx, self.cy * yw + 9 * (1 - self.cam_tilt), 0.8 * self.cam_tilt)
             self.camLens.setFov(self.cam_fov)
+        # A close-up from the gantry (a scorer by the near corner flag, say): the near side of the ground would
+        # be in the way - leave it out of the picture while it is
+        tv = not getattr(self, "replay", None) and not CLOSE and getattr(self, "cam_mode", 0) == 0 \
+            and FOLLOW is None and "--top" not in sys.argv
+        self.stadium.root.setShaderInput("clip_y", (-HY - 7.5) if tv and getattr(self, "cam_tilt", 0.0) > 0.4 else -1.0e6)
         if not hasattr(self, "rp_t"):
             self.rp_t = OnscreenText(text="REPLAY", pos=(1.15, 0.88), scale=0.07, fg=(1, 1, 1, 1),
                                      shadow=(0, 0, 0, 0.8), align=TextNode.ARight, mayChange=False)
@@ -864,9 +921,10 @@ class Viewer(ShowBase):
             self.rp_t.show()
         else:
             self.rp_t.hide()
-        self.render.setShaderInput("sweat", min(1.0, 0.25 + fr["t"] / 1200.0 * 0.6 + (0.3 if RAIN else 0.0)))
+        gone = fr["m"] / 90.0 if fr.get("m") else fr["t"] / 1200.0         # (how far into the match)
+        self.render.setShaderInput("sweat", min(1.0, 0.25 + gone * 0.6 + (0.3 if RAIN else 0.0)))
         if RAIN:                                                            # (a wet day: the pitch cuts up)
-            self.render.setShaderInput("pitch_churn", min(1.0, 0.25 + fr["t"] / 1200.0 * 0.75))
+            self.render.setShaderInput("pitch_churn", min(1.0, 0.25 + gone * 0.75))
         s = fr["s"]
         self.score_t.setText(f"{self.labels[0]}  {s[0]} - {s[1]}  {self.labels[1]}")
         self._goal_caption(fr)

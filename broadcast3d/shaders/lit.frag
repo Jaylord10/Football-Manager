@@ -236,7 +236,10 @@ float sun_visible() {
     return s / 9.0;
 }
 
+uniform float clip_y;                   // (close-ups from the TV gantry: nothing of the ground nearer than this)
+
 void main() {
+    if (v_world.y < clip_y) discard;
     vec2 uv = v_uv;
     if (crowd_amt > 0.0) {                  // each person (a cell of the crowd picture) bobs on his own
         vec2 cell = floor(v_uv * vec2(46.0, 22.0));
