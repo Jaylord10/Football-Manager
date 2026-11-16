@@ -269,6 +269,12 @@ ACTIONS = {
               (0.80, {"hip_l": 60, "knee_l": 100, "hip_r": 40, "knee_r": 120, "ankle_r": 20, "pitch": -10,
                       "lean": 30, "out_r": 30, "arm_r": 10, "elbow_r": 40, "out_l": 30, "arm_l": 15, "elbow_l": 40}),
               (1.10, N)],
+    # Shielding the ball: side-on, low, knees bent, backside out towards the man, the left arm out and back
+    # to hold him off (the man on his left; mirrored for the right), eyes down on the ball.
+    "shield": [(0.0, {"hip_r": 30, "knee_r": 45, "ankle_r": 14, "hip_l": 22, "knee_l": 40, "ankle_l": 12,
+                      "hipout_r": 8, "hipout_l": 10, "lean": 22, "side": 6, "turn": 18, "twist": 10, "nod": 18,
+                      "out_l": 70, "arm_l": -20, "elbow_l": 25, "out_r": 25, "arm_r": 15, "elbow_r": 40}),
+               (1.0, "same")],
     # A sharp cut to his left at speed: the right (outside) foot planted wide, knee bent to take the load, body
     # leaning into the new direction and low, then the push-off (e.g. Besier et al. 2001 on sidestep cutting:
     # the plant foot ~0.3-0.5 m out to the side, knee ~40-60 deg; trunk leaning into the cut).
@@ -386,7 +392,7 @@ for _keys in ACTIONS.values():
                     if _m in _p:
                         _p[_m] += OUT_SHIFT
 # How strongly each blends over the running (a dribbling touch stays light).
-WEIGHT = {"touch": 0.55, "cut": 0.7, "brake": 0.75}
+WEIGHT = {"touch": 0.55, "cut": 0.7, "brake": 0.75, "shield": 0.8}
 
 
 # --- moods: other ways of standing, walking and running (goal celebrations) -----------------------------------
@@ -816,7 +822,7 @@ def _make(actor):
             _CACHE[name] = build(actor, name, fn, n)
     for name, keys in ACTIONS.items():
         variants = [(name, keys)]
-        if name in ("dive", "recover", "kick", "shot", "touch", "tackle", "punt", "cut", "brake", "slide"):
+        if name in ("dive", "recover", "kick", "shot", "touch", "tackle", "punt", "cut", "brake", "slide", "shield"):
             variants.append((name + "_m", [(t, mirror(p) if isinstance(p, dict) else p) for t, p in keys]))
         for vn, vk in variants:
             fn, t0, t1 = action_pose(vk)

@@ -508,6 +508,7 @@ class Viewer(ShowBase):
         self.ball_mode = None
         self.last_ball = None
         self.dribble = {}
+        self._shield_left = {}
         self.hud(match)
         if RAIN:
             self.make_rain()
@@ -673,6 +674,11 @@ class Viewer(ShowBase):
             if dv in ("diving", "recover") and getattr(p, "keeper", False):    # (a keeper's dive)
                 self._keeper_dive(i, p, dv, k)
                 continue
+            if kind is None and fr["o"] == i and sp < 22:                   # (on the ball, a man tight on him:
+                near = self._shield_side(i, fr, wx, wy, fx, -fy)              #  he shields it)
+                if near:
+                    kind, t = "shield", 0.5
+                    self._shield_left[i] = near > 0           # (the pose has the man on his left)
             if kind is None and fr["o"] == i:
                 kind, t = self._dribble_touch(i, p, dt)
             r = fr.get("r")
@@ -905,9 +911,26 @@ def _viewer_keeper_dive(self, i, p, stage, k):
     p.root.setHpr(p.h, 0, p.roll * p.roll_side)
 
 
+def _viewer_shield_side(self, i, fr, wx, wy, fwx, fwy):
+    """An opponent within 1.6 m: +1 if he's on this player's right, -1 his left (None if no one's that close)."""
+    import math as _m
+    best, side = 1.6, None
+    for j, q in enumerate(fr["p"]):
+        if (j < 11) == (i < 11):
+            continue
+        ox, oy = to_world(q[0], q[1])
+        d = _m.hypot(ox - wx, oy - wy)
+        if d < best:
+            best = d
+            side = 1 if (ox - wx) * fwy - (oy - wy) * fwx > 0 else -1
+    return side
+
+
 def _viewer_left_foot(self, i, p, kind, t, k):
     """Which foot he plays it with: the one on the ball's side - or, if it's straight in front of him, his
     stronger foot (about 1 in 5 players are left-footed)."""
+    if kind == "shield":                                            # (the arm out on the man's side)
+        return self._shield_left.get(i, True)
     if kind not in ("kick", "shot", "touch", "tackle"):
         return False
     F = self.m["frames"]
@@ -1242,6 +1265,7 @@ Viewer._goal_ball = _viewer_goal_ball
 Viewer._spin_ball = _viewer_spin_ball
 Viewer._throw_dir = _viewer_throw_dir
 Viewer._left_foot = _viewer_left_foot
+Viewer._shield_side = _viewer_shield_side
 Viewer._keeper_dive = _viewer_keeper_dive
 Viewer._ball = _viewer_ball
 Viewer._dribble_touch = _viewer_dribble
