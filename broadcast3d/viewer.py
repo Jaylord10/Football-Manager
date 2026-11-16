@@ -32,6 +32,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))       # (this folder: broadcas
 GAME = os.path.dirname(HERE)                             # (the game folder)
 sys.path.insert(0, HERE)
 T = os.path.join(HERE, "tex") + os.sep
+
+
+def pf(path):
+    """A file's path the way Panda3D wants it (on Windows "C:\\Users\\..." has to become "/c/Users/...")."""
+    from panda3d.core import Filename
+    return Filename.fromOsSpecific(path)
+
+
 CLUBS = os.path.join(GAME, "data", "world", "clubs") + os.sep
 L, WD = 110.0, 70.0
 HX, HY = L / 2, WD / 2
@@ -65,7 +73,7 @@ class Stadium:
 
     def T(self, name, rep=True):
         if name not in self.tex:
-            t = self.b.loader.loadTexture(T + name)
+            t = self.b.loader.loadTexture(pf(T + name))
             t.setMinfilter(SamplerState.FT_linear_mipmap_linear); t.setAnisotropicDegree(8)
             if rep:
                 t.setWrapU(Texture.WM_repeat); t.setWrapV(Texture.WM_repeat)
@@ -483,7 +491,7 @@ class Viewer(ShowBase):
         from PIL import Image, ImageFilter, ImageDraw
         sh = Image.new("RGBA", (64, 64), (0, 0, 0, 0)); ImageDraw.Draw(sh).ellipse([8, 14, 56, 50], fill=(0, 0, 0, 120))
         sh.filter(ImageFilter.GaussianBlur(5)).save(T + "shadow.png")
-        stex = self.loader.loadTexture(T + "shadow.png")
+        stex = self.loader.loadTexture(pf(T + "shadow.png"))
         self.shadows = []
         for p in self.players + [o["p"] for o in self.officials]:
             n = p.root.attachNewNode(cm.generate()); n.setP(-90); n.setPos(0.25, 0.25, 0.02); n.setTexture(stex)
@@ -554,7 +562,7 @@ class Viewer(ShowBase):
         self._shader_inputs()
 
     def _shader_inputs(self):
-        sh = Shader.load(Shader.SL_GLSL, os.path.join(HERE, "shaders", "lit.vert"), os.path.join(HERE, "shaders", "lit.frag"))
+        sh = Shader.load(Shader.SL_GLSL, pf(os.path.join(HERE, "shaders", "lit.vert")), pf(os.path.join(HERE, "shaders", "lit.frag")))
         self.render.setShader(sh)
         if ANIM:
             from players3d import shader_defaults
@@ -661,7 +669,7 @@ class Viewer(ShowBase):
     def make_rain(self):
         """Rain over the picture: two layers of streaks drifting down at different speeds (near and far)."""
         from panda3d.core import TextureStage
-        tex = self.loader.loadTexture(T + "rain.png")
+        tex = self.loader.loadTexture(pf(T + "rain.png"))
         tex.setWrapU(Texture.WM_repeat); tex.setWrapV(Texture.WM_repeat)
         self.rain = []
         for scale, alpha, speed in ((1.0, 0.55, 1.9), (2.2, 0.35, 1.1)):
@@ -1566,7 +1574,7 @@ def intro(v, F, first, n, out, start_idx):
         v.cam.setPos(150 * math.sin(a) + 20, -150 * math.cos(a), 70 - 25 * i / n)
         v.cam.lookAt(0, 8, 0)
         v.taskMgr.step()   # (runs the lighting tasks, then draws)
-        img = PNMImage(); v.win.getScreenshot(img); img.write(Filename(f"{out}/f{start_idx + i:05d}.png"))
+        img = PNMImage(); v.win.getScreenshot(img); img.write(pf(os.path.join(out, f"f{start_idx + i:05d}.png")))
     return n
 
 
@@ -1671,7 +1679,7 @@ def play(v, F, first):
         if "--time" in sys.argv:
             ms = (time.perf_counter() - t0) / (n - 30) * 1000
             print(f"frame time {ms:.1f} ms ({1000 / ms:.0f} frames a second, offscreen, software drawing)")
-        img = PNMImage(); v.win.getScreenshot(img); img.write(Filename(os.path.join(HERE, "frames", "live_test.png")))
+        img = PNMImage(); v.win.getScreenshot(img); img.write(pf(os.path.join(HERE, "frames", "live_test.png")))
         print("live test ok, frame", int(st["t"]))
         return
     v.run()
@@ -1719,7 +1727,7 @@ def main():
         fr = d.frame(1.0 if i else 0.0)
         v.show(fr, 1 / 30.0 * (Director.SLOW if v.replay else 1.0))
         v.taskMgr.step()   # (this also moves the clock on one frame - don't tick() as well)   # (runs the lighting tasks, then draws)
-        img = PNMImage(); v.win.getScreenshot(img); img.write(Filename(f"{out}/f{k + i:05d}.png"))
+        img = PNMImage(); v.win.getScreenshot(img); img.write(pf(os.path.join(out, f"f{k + i:05d}.png")))
     print("rendered", n)
 
 

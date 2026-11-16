@@ -27,8 +27,8 @@ al = AmbientLight("a"); al.setColor(Vec4(0.5, 0.53, 0.6, 1)); b.render.setLight(
 dl = DirectionalLight("sun"); dl.setColor(Vec4(1.2, 1.1, 0.92, 1)); dl.setShadowCaster(True, 2048, 2048)
 dl.getLens().setFilmSize(30, 20); dl.getLens().setNearFar(1, 100)
 sun = b.render.attachNewNode(dl); sun.setPos(-12, -25, 30); sun.lookAt(0, 0, 0); b.render.setLight(sun)
-b.render.setShader(Shader.load(Shader.SL_GLSL, os.path.join(HERE, "shaders", "lit.vert"),
-                               os.path.join(HERE, "shaders", "lit.frag")))
+b.render.setShader(Shader.load(Shader.SL_GLSL, Filename.fromOsSpecific(os.path.join(HERE, "shaders", "lit.vert")),
+                               Filename.fromOsSpecific(os.path.join(HERE, "shaders", "lit.frag"))))
 b.render.setShaderInput("shadow_bias", 0.0005)
 b.render.setShaderInput("shadow_texel", 1.0 / 2048)
 b.render.setShaderInput("detail_amt", 0.0)

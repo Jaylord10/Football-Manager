@@ -252,7 +252,9 @@ class AnimPlayer:
                  height=None, role=None, captain=False):
         self.cfg = MODELS[model]
         self.root = parent.attachNewNode("player")
-        self.a = Actor(self.cfg["file"] if not (self.cfg.get("smooth") and SMOOTH) else self.cfg["smooth_file"])
+        from panda3d.core import Filename as _Fn                 # (Windows paths made Panda3D's way)
+        self.a = Actor(_Fn.fromOsSpecific(self.cfg["file"] if not (self.cfg.get("smooth") and SMOOTH)
+                                          else self.cfg["smooth_file"]).getFullpath())
         self.a.reparentTo(self.root)
         # His height (the model stands ~1.82 m) and build: real squads average ~1.81 m (outfield, s.d. ~6.5 cm),
         # keepers ~1.90 m (CIES Football Observatory, Big-5 league squads).  Given, or picked from his name.
