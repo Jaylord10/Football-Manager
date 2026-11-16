@@ -204,7 +204,11 @@ vec4 kit_colour() {
         return vec4(shirt_at(x, y, z, ax < 0.24) * shirt_folds(x, y, z, ax), 1.0);
     }
     if (keeper && z < 1.49 && ax < 0.76) return vec4(shirt_at(x, y, z, false), 1.0);   // a keeper's long sleeves
-    if (keeper && z < 1.49) return kit_gloves;                                       // and gloves
+    if (keeper && z < 1.49) {                                                        // and gloves: a padded
+        if (ax < 0.79) return vec4(mix(kit_gloves.rgb, vec3(0.08), 0.65), 1.0);         //  hand, a dark strap
+        if (y < -0.01 && ax > 0.80 && ax < 0.86) return vec4(kit_gloves.rgb * 0.82, 1.0);   //  at the wrist and a
+        return kit_gloves;                                                           //  palm patch
+    }
     if (z < top && ax < 0.3735) return kit_trim;                                   // the sleeve's hem
     return head_colour(x, y, z, ax);
 }
