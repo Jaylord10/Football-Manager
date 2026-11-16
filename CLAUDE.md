@@ -51,6 +51,9 @@ cache - keep that line.
   prompts). Ashvale, Northwick and Bramhall have them; their honours years are fixed - never change them.
 - `data/world/honours.json` - the roll of honour, built by `dev/make_roll.py` (asserts Ashvale's years).
 - `career/ui.py` - every screen (`draw_<screen>`), `career/office.py` - the office picture hub.
+- The 3D match view: `broadcast3d/` (Panda3D). `broadcast3d/live.py` draws career matches live inside the match
+  screen (a second process, picture via shared memory; `MatchEngine._start_3d` / `_draw_3d`; V switches 2D/3D,
+  remembered in `career["match_view"]`). It never changes the engine's play. Check: `python broadcast3d/check.py`.
 - Faces: `faces/newgan` (3,000 NewGAN faces, 128px) - `career/faces.py`. The big NewGAN pack and
   `faces/photos` stay on Jay's PC only.
 

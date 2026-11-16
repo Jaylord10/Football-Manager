@@ -2,9 +2,16 @@
 
 A TV-style 3D picture of a match at Kiln Lane, drawn with Panda3D from a match recorded by our own engine.
 
-**It's completely separate from the game.** Nothing in `career/`, `gameplay/` or `rendering/` uses it - the
-game still shows matches in the 2D view exactly as before. It only joins the game once Jay is happy with it,
-and even then the 2D view stays as an option.
+**In the game (branch `live-3d`):** career matches can be watched in 3D inside the match screen -
+`live.py`. The engine plays the match exactly as before; a second process draws it (half a second behind, so
+kicks and shots are drawn right), and the picture goes onto the pitch area of the game's window - the score bar,
+subs, half-time talk and pause stay the game's. **V** 2D / 3D (remembered), **C** camera, **Enter** skips a
+goal replay (the match waits while one's on). If the 3D view can't run, the match carries on in 2D and
+`live_3d.log` says why; `last_live.log` has the graphics chip and how long each picture takes. The day's light
+and weather come from the date and kick-off time, the crowd from the game's crowd for the match, the play-off
+final is at a national bowl.
+
+The recordings and `viewer.py` on its own still work as before (below).
 
 ## Watching it
 
