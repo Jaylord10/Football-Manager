@@ -57,7 +57,7 @@ vec3 shirt_at(float x, float y, float z, bool torso) {
 
 // The head: hair (his style - kit_info.w: 0 short, 1 shaved, 2 longer, +4 a beard), and a simple face.
 vec4 head_colour(float x, float y, float z, float ax) {
-    float beard = floor(kit_info.w / 8.0 + 0.01);                  // 0 clean-shaven, 1 stubble, 2 a full beard
+    float beard = floor(kit_info.w / 8.0 + 0.01);                  // 0 clean-shaven, 1 stubble, 2 a full beard, 3 a goatee
     float style = kit_info.w - beard * 8.0;                        // 0 crop 1 buzz cut 2 longer 3 quiff 4 curls 5 bald
     bool is_long = (style > 1.5 && style < 2.5) || (style > 3.5 && style < 4.5) || style > 5.5;
     bool fade = (style > 0.5 && style < 1.5) || (style > 2.5 && style < 3.5);
@@ -113,6 +113,8 @@ vec4 head_colour(float x, float y, float z, float ax) {
         a *= smoothstep(1.0, 1.5, dot(lp, lp));
         float m = smoothstep(0.031, 0.02, ax) * smoothstep(1.609, 1.603, z) * smoothstep(1.593, 1.597, z);
         a = max(a, m) * smoothstep(0.01, -0.02, y);
+        if (beard > 2.5) a *= smoothstep(0.03, 0.02, ax);              // (a goatee: the chin and top lip only)
+        a *= 0.82 + 0.18 * sin(ax * 2900.0) * sin(z * 3300.0);         // (hairs, not paint)
         skin = mix(skin, mix(kit_hair.rgb, kit_skin.rgb, 0.15), a * (beard > 1.5 ? 0.85 : 0.3));
     }
     return vec4(skin, 1.0);
