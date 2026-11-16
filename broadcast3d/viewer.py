@@ -937,12 +937,8 @@ class Viewer(ShowBase):
             else:
                 self.cam.setPos(fx_ + sx * 9, fy_ - 7 if fy_ > -HY + 1 else fy_ + 9, 3.2)
             self.cam.lookAt(fx_, fy_, 0.8)
-        elif getattr(self, "replay", None):                                 # (a replay: from behind the goal)
-            sd = self.replay
-            self._rp_y = getattr(self, "_rp_y", by) + (by - getattr(self, "_rp_y", by)) * min(1.0, dt * 3)
-            self.cam.setPos(sd * (HX + 6.0), self._rp_y * 0.4, 9.0)
-            self.cam.lookAt(sd * (HX - 9), self._rp_y * 0.6, 0.0)
-            self.camLens.setFov(62)
+        elif getattr(self, "replay", None):                                 # (a replay: see _replay_cam)
+            self._replay_cam(bx, by, bz, dt)
         elif CLOSE or getattr(self, "cam_mode", 0) == 1:                    # (a close camera, for checking)
             self.cam.setPos(bx - 6, by - 14, 4.5)
             self.cam.lookAt(bx, by, 0.9)
@@ -977,6 +973,36 @@ class Viewer(ShowBase):
                 n.setTexOffset(TextureStage.getDefault(), 0.06 * self.rain_t * speed, self.rain_t * speed)
         mins = int(fr["t"] / 600.0 * 45)
         self.clock_t.setText(f"{mins:02d}:{int((fr['t'] / 600.0 * 45 * 60) % 60):02d}")
+
+
+def _viewer_replay_cam(self, bx, by, bz, dt):
+    """The replay camera.  From the middle: behind the goal, up on a gantry over the crowd, looking back down
+    the pitch at the shooter.  From wide: side-on, a camera on the near touchline level with the edge of the
+    box, panning with the ball (a long lens, so the players fill the picture)."""
+    sd = self.replay
+    kind = getattr(self, "replay_kind", "goal")
+    rc = getattr(self, "_rp_cam", None)
+    if rc is None:                                     # (start where the ball is: no swing in from the last shot)
+        rc = self._rp_cam = [bx, by]
+    k = min(1.0, dt * (2.2 if kind == "side" else 3.0))
+    rc[0] += (bx - rc[0]) * k
+    rc[1] += (by - rc[1]) * k
+    if kind == "side":
+        # level with the 18-yard line on the near side, 7 m up (a TV platform at the front of the stand)
+        cx = sd * (HX - 16.5)
+        self.cam.setPos(cx, -HY - 9.0, 7.0)
+        tx = rc[0] * 0.75 + sd * (HX - 6.0) * 0.25          # (lean towards the goal: the finish is the point)
+        ty = rc[1]
+        self.cam.lookAt(tx, ty, 0.9 + min(2.0, bz * 0.3))
+        dist = math.hypot(tx - cx, ty + HY + 9.0)
+        self.camLens.setFov(max(26.0, min(48.0, 2 * math.degrees(math.atan2(14.0, dist)))))   # (~28 m of pitch across)
+    else:
+        self.cam.setPos(sd * (HX + 6.0), rc[1] * 0.4, 9.0)
+        self.cam.lookAt(sd * (HX - 9), rc[1] * 0.6, 0.0)
+        self.camLens.setFov(62)
+
+
+Viewer._replay_cam = _viewer_replay_cam
 
 
 def _viewer_cam_tv(self, fr, bx, by, dt):
@@ -1697,6 +1723,30 @@ def intro(v, F, first, n, out, start_idx):
     return n
 
 
+def replay_angle(F, g):
+    """Which camera for the replay of the goal at frame g (the first frame of the celebration):
+    -> (end: +1 / -1 which goal, "goal" or "side", where the shot was hit (x, y) in metres).
+    The way TV does it: a goal from out wide (an angled shot, or a cross) is best seen side-on, from the
+    touchline level with the edge of the box - you see the ball come across and the finish; a shot from the
+    middle is best from behind the goal, looking back at the shooter.  (--replay=side / --replay=goal forces one.)"""
+    b = lambda k: to_world(F[k]["b"][0], F[k]["b"][1])
+    k = max(1, g - 3)
+    end = 1 if b(max(0, g - 5))[0] > 0 else -1
+    # back from the goal while the ball was flying in (moving, getting nearer the goal): where it was hit from
+    while k > max(1, g - 90):
+        (x0, y0), (x1, y1) = b(k - 1), b(k)
+        if math.hypot(x1 - x0, y1 - y0) * 30.0 < 7.0 or (x1 - x0) * end < -0.05:
+            break
+        k -= 1
+    sx, sy = b(k)
+    wx, wy = b(max(0, k - 45))                              # (a second and a half before: a cross from the wing?)
+    kind = "side" if abs(sy) > 12.0 or abs(wy) > 22.0 else "goal"
+    force = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--replay=")), None)
+    if force in ("side", "goal"):
+        kind = force
+    return end, kind, (sx, sy)
+
+
 def tick():
     from panda3d.core import ClockObject
     ClockObject.getGlobalClock().tick()
@@ -1735,10 +1785,11 @@ class Director:
                 self.done.add(g)
                 if "--noreplay" not in sys.argv and g - self.BEFORE >= 0:
                     self.rp = (g, float(g - self.BEFORE))
-                    side = 1 if to_world(F[g - 5]["b"][0], F[g - 5]["b"][1])[0] > 0 else -1
+                    side, self.v.replay_kind, self.v.replay_from = replay_angle(F, g)
                     self.v.replay = side
                     self.v._gp = {}                         # (the replay shows them where they were)
                     self.v.gball = None                     # (and the ball where it was, not in the net)
+                    self.v._rp_cam = None
                     return F[g - self.BEFORE]
         return F[int(self.t)]
 

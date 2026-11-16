@@ -278,8 +278,9 @@ class _LiveDirector:
                 self.done.add(g)
                 if g - self.BEFORE >= 0:
                     self.rp = (g, float(g - self.BEFORE))
-                    side = 1 if viewer.to_world(F[g - 5]["b"][0], F[g - 5]["b"][1])[0] > 0 else -1
+                    side, self.v.replay_kind, self.v.replay_from = viewer.replay_angle(F, g)
                     self.v.replay = side
+                    self.v._rp_cam = None
                     self.v._gp = {}                         # (the replay shows them where they were)
                     self.v.gball = None                     # (and the ball where it was, not in the net)
                     return float(g - self.BEFORE), 1 / 30.0

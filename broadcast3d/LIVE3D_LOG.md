@@ -41,3 +41,16 @@
   broadcast3d/check.py: all good.  Frame time on this test machine (software drawing, so the "card" is the
   processor too): 142 -> 133 ms; on a real graphics chip the card does this work almost for free, so the
   saving there is bigger.
+
+### 2. Replay angles - DONE
+- `viewer.replay_angle(F, g)` works back from the goal to where the shot was hit (the ball flying towards the
+  goal, fast) and where the ball was 1.5 s before that.  Shot from wider than 12 m off the middle, or a ball
+  from the wing (over 22 m out) just before: a SIDE-ON replay - a camera on the near touchline level with the
+  edge of the box, 7 m up, panning with the ball on a long lens (about 28 m of pitch across the picture).
+  Otherwise (a central shot): BEHIND THE GOAL as before.  Both the stand-alone viewer and the live view use it.
+  `--replay=side` / `--replay=goal` forces one, for checking.
+- Why: that's how TV directors cut replays - an angle that shows what the wide shot doesn't: from the side for
+  crosses and angled finishes (you see the ball come across and the run), from behind the goal for shots from
+  the middle (you see the shot's line and the keeper).
+- Tested: the sample goal (a central shot from ~8 m off the middle -> behind the goal, as before) and the same
+  goal forced side-on; 470 frames each, pictures looked at.
