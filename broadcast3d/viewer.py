@@ -704,9 +704,14 @@ class Viewer(ShowBase):
             else:
                 p.mood = None
             wx, wy = to_world(x, y)
+            wx, wy, sp2 = self._gather(i, fr, cel, wx, wy, dt)                  # (team-mates mob the scorer)
+            if sp2 is not None:
+                sp = sp2
             px, py = prev.get(i, (wx, wy))
             vel = ((wx - px) / max(dt, 1e-3), (wy - py) / max(dt, 1e-3))
             prev[i] = (wx, wy)
+            if sp2 is not None and math.hypot(*vel) > 0.3:
+                fx, fy = vel[0] / math.hypot(*vel), -vel[1] / math.hypot(*vel)
             p.calling = self._calling(i, fr, wx, wy, sp, k)
             kind, t = self.events.action(i, k)
             if cel and i == cel[1]:
@@ -1020,6 +1025,44 @@ def _viewer_keeper_dive(self, i, p, stage, k):
     p.h = st["h"]
     p.root.setPos(p.root.getX(), p.root.getY(), p.lift)
     p.root.setHpr(p.h, 0, p.roll * p.roll_side)
+
+
+def _viewer_gather(self, i, fr, cel, wx, wy, dt):
+    """After a goal the engine walks everyone back for the kick-off; on TV the scorer's team-mates run to him
+    first and mob him.  For a team-mate within 35 m, a second into the celebration: he runs (up to 7 m/s) to a
+    place round the scorer, and when it's over, back to where the engine has him.  -> (x, y, speed or None)."""
+    g = getattr(self, "_gp", None)
+    if g is None:
+        g = self._gp = {}
+        self._cel_t = 0.0
+    if i == 0:
+        self._cel_t = self._cel_t + dt if cel else 0.0
+    cur = g.get(i)
+    target = None
+    if cel and 0 <= cel[1] < len(fr["p"]) and i != cel[1] and ((i < 11) == (cel[0] == 0)) \
+            and not getattr(self.players[i], "keeper", False) and self._cel_t > 1.0:
+        sx, sy = to_world(fr["p"][cel[1]][0], fr["p"][cel[1]][1])
+        if cur is not None or math.hypot(wx - sx, wy - sy) < 35:
+            a = (i * 2.399) % (2 * math.pi)                     # (each his own place round him)
+            r = 0.75 + 0.35 * ((i * 7) % 3)
+            target = (sx + r * math.cos(a), sy + r * math.sin(a))
+    if target is None:
+        if cur is None:
+            return wx, wy, None
+        target = (wx, wy)
+        if math.hypot(cur[0] - wx, cur[1] - wy) < 0.3:          # (back where the engine has him)
+            del g[i]
+            return wx, wy, None
+    if cur is None:
+        cur = (wx, wy)
+    dx, dy = target[0] - cur[0], target[1] - cur[1]
+    d = math.hypot(dx, dy)
+    v = min(7.0, d * 2.5)
+    step = min(d, v * dt)
+    if d > 1e-6:
+        cur = (cur[0] + dx / d * step, cur[1] + dy / d * step)
+    g[i] = cur
+    return cur[0], cur[1], v * 10.0
 
 
 def _viewer_shield_side(self, i, fr, wx, wy, fwx, fwy):
@@ -1377,6 +1420,7 @@ Viewer._spin_ball = _viewer_spin_ball
 Viewer._throw_dir = _viewer_throw_dir
 Viewer._left_foot = _viewer_left_foot
 Viewer._shield_side = _viewer_shield_side
+Viewer._gather = _viewer_gather
 Viewer._cam_tv = _viewer_cam_tv
 Viewer._keeper_dive = _viewer_keeper_dive
 Viewer._ball = _viewer_ball
@@ -1504,6 +1548,7 @@ class Director:
             if pos >= g + self.AFTER:
                 self.rp = None
                 self.v.replay = None
+                self.v._gp = {}
             else:
                 self.rp = (g, pos)
                 return F[int(pos)]
@@ -1515,6 +1560,7 @@ class Director:
                     self.rp = (g, float(g - self.BEFORE))
                     side = 1 if to_world(F[g - 5]["b"][0], F[g - 5]["b"][1])[0] > 0 else -1
                     self.v.replay = side
+                    self.v._gp = {}                         # (the replay shows them where they were)
                     return F[g - self.BEFORE]
         return F[int(self.t)]
 
