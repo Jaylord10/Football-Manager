@@ -301,6 +301,18 @@ ACTIONS = {
                       "hipout_r": 8, "hipout_l": 10, "lean": 22, "side": 6, "turn": 18, "twist": 10, "nod": 18,
                       "out_l": 70, "arm_l": -20, "elbow_l": 25, "out_r": 25, "arm_r": 15, "elbow_r": 40}),
                (1.0, "same")],
+    # Fouled: his legs taken, he stumbles and goes down - onto his hands and chest - lies there a moment, then
+    # pushes up onto a knee and gets up.
+    "fouled": [(-0.10, N),
+               (0.12, {"hip_r": -20, "knee_r": 50, "hip_l": 35, "knee_l": 20, "lean": 30, "pitch": 15,
+                       "arm_l": 70, "arm_r": 60, "out_l": 30, "out_r": 30, "elbow_l": 20, "elbow_r": 20, "nod": -20}),
+               (0.40, {"hip_r": 0, "knee_r": 20, "hip_l": 5, "knee_l": 25, "pitch": 78, "lean": 5, "nod": -45,
+                       "arm_l": 80, "arm_r": 80, "out_l": 40, "out_r": 40, "elbow_l": 70, "elbow_r": 70}),
+               (1.30, {"hip_r": 0, "knee_r": 30, "hip_l": 10, "knee_l": 35, "pitch": 82, "lean": 0, "nod": -40,
+                       "arm_l": 60, "arm_r": 90, "out_l": 50, "out_r": 35, "elbow_l": 90, "elbow_r": 60}),
+               (1.90, {"hip_r": 80, "knee_r": 100, "hip_l": 10, "knee_l": 90, "pitch": 35, "lean": 20, "nod": -10,
+                       "arm_l": 40, "arm_r": 40, "out_l": 20, "out_r": 20, "elbow_l": 30, "elbow_r": 30}),
+               (2.60, N)],
     # A sharp cut to his left at speed: the right (outside) foot planted wide, knee bent to take the load, body
     # leaning into the new direction and low, then the push-off (e.g. Besier et al. 2001 on sidestep cutting:
     # the plant foot ~0.3-0.5 m out to the side, knee ~40-60 deg; trunk leaning into the cut).
@@ -690,7 +702,7 @@ def build(actor, name, pose_fn, frames, ground=True, base_anim="idle", base_fram
         backside, if he's down on the ground (a slide, a knee slide): as if those were soles."""
         nm = nets(local)
         z = min(nm[j].xformPoint(pt)[2] for j, pt in soles)
-        for j, r in (("calf.r", 0.03), ("calf.l", 0.03), ("pelvis", 0.09)):
+        for j, r in (("calf.r", 0.03), ("calf.l", 0.03), ("pelvis", 0.09), ("spine_02", 0.11), ("head", 0.10)):
             if j in nm:
                 z = min(z, nm[j].xformPoint(LPoint3f(0, 0, 0))[2] - r)
         return z
@@ -848,7 +860,7 @@ def _make(actor):
             _CACHE[name] = build(actor, name, fn, n)
     for name, keys in ACTIONS.items():
         variants = [(name, keys)]
-        if name in ("dive", "recover", "kick", "shot", "touch", "tackle", "punt", "cut", "brake", "slide", "shield"):
+        if name in ("dive", "recover", "kick", "shot", "touch", "tackle", "punt", "cut", "brake", "slide", "shield", "fouled"):
             variants.append((name + "_m", [(t, mirror(p) if isinstance(p, dict) else p) for t, p in keys]))
         for vn, vk in variants:
             fn, t0, t1 = action_pose(vk)

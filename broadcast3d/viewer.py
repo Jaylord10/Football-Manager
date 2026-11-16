@@ -1436,7 +1436,7 @@ class Events:
         self.by_player = {}
         self.fps = 30.0
 
-    RANK = {"despair": 0, "kneeslide": 7, "throwin": 6, "punt": 5, "bowl": 5, "shot": 4, "header": 3, "tackle": 3, "kick": 2, "touch": 1}
+    RANK = {"fouled": 8, "despair": 0, "kneeslide": 7, "throwin": 6, "punt": 5, "bowl": 5, "shot": 4, "header": 3, "tackle": 3, "kick": 2, "touch": 1}
 
     def add(self, i, k, kind):
         l = self.by_player.setdefault(i, [])
@@ -1497,6 +1497,15 @@ def find_events(F, keepers=(0, 11)):
         for (ke, kind) in list(l):                                           # on head a moment later
             if kind == "shot" and ke + 75 < len(F) and F[ke + 75]["s"] == F[ke]["s"]:
                 l.append((ke + 24, "despair"))
+    for k in range(2, len(F)):                                               # a free kick: the man fouled goes
+        r = F[k].get("r")                                                    #  down (the taker's team-mate
+        if r and r[0] == "free_kick" and F[k - 1].get("r", [None])[0] != "free_kick" and r[1] >= 0:   # nearest
+            bx, by = F[k - 1]["b"][0], F[k - 1]["b"][1]                                               # the ball)
+            team = r[1] < 11
+            near = min(((_m.hypot(p[0] - bx, p[1] - by), j) for j, p in enumerate(F[k - 1]["p"])
+                        if (j < 11) == team and j not in keepers), default=(99, -1))
+            if near[0] < 30 and near[1] >= 0:
+                ev.by_player.setdefault(near[1], []).append((k, "fouled"))
     for k in range(1, len(F) - 4):                                           # dead balls: who took it, and how
         r = F[k - 1].get("r")
         if r and "r" not in F[k] and r[1] >= 0:
