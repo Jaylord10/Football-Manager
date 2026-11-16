@@ -542,15 +542,30 @@ def face_shape(D, sliders, eth):
     return V, N
 
 
-def attach(actor, which=None, face=None):
+def gloved(V, N, D, names):
+    """A keeper's gloves: the hands padded out (~1 cm all round the palm and fingers, more on the backs), so
+    they're the big gloves keepers wear, not his bare hands."""
+    hand = [i for i, b in enumerate(names) if b.split(".")[0] in ("hand",) or "_0" in b.split(".")[0]]
+    w = np.isin(D["bone_idx"], hand) * D["bone_w"]
+    w = np.clip(w.sum(1), 0, 1)
+    if not w.any():
+        return V, N
+    V = V + (0.011 * w)[:, None] * N
+    return V, N
+
+
+def attach(actor, which=None, face=None, gloves=False):
     """Swap the mannequin's pieces for the smooth body (skinned to this actor's own skeleton).  Returns the new
-    node (None if there's no body.npz yet).  face: (sliders, eth) - his own face (MakeHuman's body)."""
+    node (None if there's no body.npz yet).  face: (sliders, eth) - his own face (MakeHuman's body).  gloves: a
+    keeper's padded gloves."""
     D = _load(which)
     if D is None:
         return None
     ch = actor.find("**/+Character")
     V, N = (face_shape(D, *face) if face is not None and "face_idx" in D else (D["verts"], D["normals"]))
     names = [str(b) for b in D["bones"]]
+    if gloves:
+        V, N = gloved(np.array(V, np.float32), N, D, names)
     gn = _skinned(ch.node(), "smooth_body", V, N, D["faces"], D["bone_idx"], D["bone_w"], names, D.get("paint"))
     if "lod_idx" in D and LOD:
         # near the camera the full body, further off the lighter one (only the one drawn is moved each frame)

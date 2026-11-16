@@ -271,7 +271,8 @@ class AnimPlayer:
         if self.cfg.get("smooth") and SMOOTH:                # (a smooth body instead of the mannequin's pieces)
             import body
             body.attach(self.a, "mh" if MHBODY else None,
-                        _face(name, number, skin) if MHBODY and os.environ.get("FM_FACES") != "0" else None)
+                        _face(name, number, skin) if MHBODY and os.environ.get("FM_FACES") != "0" else None,
+                        gloves=keeper and MHBODY)
         # The kit is drawn by the lighting shader, pixel by pixel (crisp stripes, hoops, sock tops), with his
         # name and number on his back and the club crest on his chest.
         r = self.root
