@@ -556,6 +556,22 @@ class Viewer(ShowBase):
             fl.setLightOff(1); fl.setDepthWrite(False); fl.setBin("fixed", 0); no_shadow(fl, lit=False)
             p.flood = fl
 
+    def lighten(self):
+        """Less to draw, for a slower computer (live.py, when the pictures take too long): the stewards and the
+        subs warming up go, and the sun's shadow picture is made at half the size (softer shadow edges)."""
+        for o in self.officials:
+            if o["role"] in ("edge", "warmup"):
+                o["skip"] = True
+                o["p"].root.hide()
+        if getattr(self, "sun_buf", None) is not None:
+            import sunshadow
+            self.graphicsEngine.removeWindow(self.sun_buf)
+            old = self.sun.find("sun camera")
+            if not old.isEmpty():
+                old.removeNode()
+            self.sun_buf = sunshadow.make(self, self.sun, 2048, (250, 170), (10, 600), NO_SHADOW_BIT)
+            self.render.setShaderInput("shadow_texel", 1.0 / 2048)
+
     def replace_player(self, i, name, role, num):
         """A substitute on for player i (live, broadcast3d/live.py): a new man - his own face, build, name and
         number - in the same kit, where the old one was."""
@@ -1382,6 +1398,8 @@ def _viewer_officiate(self, fr, dt, bx, by):
     xs_l = sorted(to_world(P[i][0], P[i][1])[0] for i in left if P[i][6])
     xs_r = sorted((to_world(P[i][0], P[i][1])[0] for i in right if P[i][6]), reverse=True)
     for o in self.officials:
+        if o.get("skip"):                               # (left out: lighten())
+            continue
         x, y = o["pos"]
         if o["role"] == "manager":
             self._manage(o, fr, dt, bx, by)

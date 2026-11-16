@@ -121,6 +121,8 @@ class Live3D:
         self.conn, child = ctx.Pipe()
         if flags is None:                               # (the day's light and weather: career/matches.py)
             flags = weather_flags(os.environ.get("FM_3D_WHEN", ""))
+        if os.environ.get("FM_3D_LIGHT"):               # (always the lighter 3D)
+            flags = list(flags) + ["--light"]
         meta = {"home": home, "away": away, "names": names_from_engine(engine)}
         self.proc = ctx.Process(target=_child, args=(child, self.shm.name, self.w, self.h, meta, list(flags)),
                                 daemon=True)
@@ -355,6 +357,7 @@ def _draw_loop(conn, buf, w, h, meta):
     subs_on = [0, 0]
     pending = []
     sheet = {"n": None, "t": 0.0}
+    lighter = False
     clock = ClockObject.getGlobalClock()
     last = time.perf_counter()
     slot, count, shown_k, started = 0, 0, -1, False
@@ -445,6 +448,14 @@ def _draw_loop(conn, buf, w, h, meta):
         started = True
         n_draw += 1
         t_draw += time.perf_counter() - t0
-        if n_draw == 300:
-            print(f"3D picture: {t_draw / n_draw * 1000:.1f} ms each", flush=True)
+        if n_draw == 150 and (t_draw / n_draw > 0.045 or "--light" in sys.argv) and not lighter:
+            lighter = True                              # (too slow for a smooth picture: less to draw)
+            print(f"3D picture: {t_draw / n_draw * 1000:.1f} ms each - drawing less (lighter 3D)", flush=True)
+            try:
+                v.lighten()
+            except Exception:
+                print("lighten:", traceback.format_exc(), flush=True)
+            n_draw, t_draw = 0, 0.0
+        elif n_draw == 300:
+            print(f"3D picture: {t_draw / n_draw * 1000:.1f} ms each" + (" (lighter 3D)" if lighter else ""), flush=True)
         clock.tick()
