@@ -605,6 +605,9 @@ class Viewer(ShowBase):
                                       align=TextNode.ALeft, mayChange=True)
             self.cap.hide()
         k = fr.get("k", 0)
+        if getattr(self, "replay", None):                  # (no captions over a replay)
+            self.cap.hide()
+            return
         if card and 0 <= card[1] < len(self.m.get("names", [])):
             nm = self.m["names"][card[1]][0]
             short = (nm.split()[0][0] + ". " + nm.split()[-1]) if " " in nm else nm
@@ -717,10 +720,11 @@ class Viewer(ShowBase):
         self._spin_ball(bx, by, bz, dt)
         self.ball.setPos(bx, by, bz)
         self.bsh.setPos(bx, by, 0.02)
-        # the camera pans with the ball (smoothly), a little zoom when it's near the far side
-        k = min(1.0, dt * 2.2)
-        self.cx += (max(-34, min(34, bx)) - self.cx) * k
-        self.cy += (by - self.cy) * k
+        # The TV camera: it pans with the play, a little ahead of the ball the way it's going (as a TV director
+        # does, leaving space in front of the attack), on a smooth spring - no jerks when the ball's hit - and
+        # zooms out a touch when the ball's travelling fast or play's spread, in when it's tight.  After a
+        # goal it finds the scorer and moves in on him.
+        self._cam_tv(fr, bx, by, dt)
         if "--top" in sys.argv:                                             # (a check: the whole ground from above)
             self.cam.setPos(0, -330, 230); self.cam.lookAt(0, 40, 0)
         elif FOLLOW is not None:                                            # (a close camera on one player)
@@ -739,12 +743,26 @@ class Viewer(ShowBase):
             else:
                 self.cam.setPos(fx_ + sx * 9, fy_ - 7 if fy_ > -HY + 1 else fy_ + 9, 3.2)
             self.cam.lookAt(fx_, fy_, 0.8)
+        elif getattr(self, "replay", None):                                 # (a replay: from behind the goal)
+            sd = self.replay
+            self._rp_y = getattr(self, "_rp_y", by) + (by - getattr(self, "_rp_y", by)) * min(1.0, dt * 3)
+            self.cam.setPos(sd * (HX + 6.0), self._rp_y * 0.4, 9.0)
+            self.cam.lookAt(sd * (HX - 9), self._rp_y * 0.6, 0.0)
+            self.camLens.setFov(62)
         elif CLOSE or getattr(self, "cam_mode", 0) == 1:                    # (a close camera, for checking)
             self.cam.setPos(bx - 6, by - 14, 4.5)
             self.cam.lookAt(bx, by, 0.9)
         else:
             self.cam.setPos(self.cx * 0.8, -HY - 62, 33)
-            self.cam.lookAt(self.cx, self.cy * 0.35 + 9, 0)
+            self.cam.lookAt(self.cx, self.cy * 0.35 + 9 + self.cam_tilt, 0)
+            self.camLens.setFov(self.cam_fov)
+        if not hasattr(self, "rp_t"):
+            self.rp_t = OnscreenText(text="REPLAY", pos=(1.15, 0.88), scale=0.07, fg=(1, 1, 1, 1),
+                                     shadow=(0, 0, 0, 0.8), align=TextNode.ARight, mayChange=False)
+        if getattr(self, "replay", None):
+            self.rp_t.show()
+        else:
+            self.rp_t.hide()
         s = fr["s"]
         self.score_t.setText(f"{self.labels[0]}  {s[0]} - {s[1]}  {self.labels[1]}")
         self._goal_caption(fr)
@@ -755,6 +773,44 @@ class Viewer(ShowBase):
                 n.setTexOffset(TextureStage.getDefault(), 0.06 * self.rain_t * speed, self.rain_t * speed)
         mins = int(fr["t"] / 600.0 * 45)
         self.clock_t.setText(f"{mins:02d}:{int((fr['t'] / 600.0 * 45 * 60) % 60):02d}")
+
+
+def _viewer_cam_tv(self, fr, bx, by, dt):
+    """Where the TV camera points (self.cx, self.cy) and how wide (self.cam_fov)."""
+    if not hasattr(self, "cam_v"):
+        self.cam_v = [0.0, 0.0]
+        self.cam_fov, self.cam_tilt = 36.0, 0.0
+        self.bv = [0.0, 0.0]
+        self.prev_b = (bx, by)
+    dt = max(dt, 1e-3)
+    vx, vy = (bx - self.prev_b[0]) / dt, (by - self.prev_b[1]) / dt
+    self.prev_b = (bx, by)
+    if abs(vx) > 60 or abs(vy) > 60:                    # (a jump: the ball put back on the spot)
+        vx = vy = 0.0
+    k = min(1.0, dt * 1.5)
+    self.bv = [self.bv[0] + (vx - self.bv[0]) * k, self.bv[1] + (vy - self.bv[1]) * k]
+    tx = bx + max(-9.0, min(9.0, self.bv[0] * 0.7))     # (a little ahead of the play)
+    ty = by + max(-5.0, min(5.0, self.bv[1] * 0.4))
+    fov = 34.0 + min(5.0, math.hypot(*self.bv) * 0.35)  # (wider while the ball's flying about)
+    tilt = 0.0
+    cel = fr.get("c")
+    if cel and 0 <= cel[1] < len(fr["p"]):              # (a goal: on to the scorer, closer)
+        sx_, sy_ = to_world(fr["p"][cel[1]][0], fr["p"][cel[1]][1])
+        tx, ty, fov, tilt = sx_, sy_, 17.0, 0.5
+    tx = max(-36.0, min(36.0, tx)) if not cel else max(-46.0, min(46.0, tx))
+    # a critically damped spring: smooth to start and to stop
+    w = 1.7
+    for i, t in ((0, tx), (1, ty)):
+        c = self.cx if i == 0 else self.cy
+        a = (t - c) * w * w - 2 * w * self.cam_v[i]
+        self.cam_v[i] += a * dt
+        c += self.cam_v[i] * dt
+        if i == 0:
+            self.cx = c
+        else:
+            self.cy = c
+    self.cam_fov += (fov - self.cam_fov) * min(1.0, dt * (1.3 if cel else 0.9))
+    self.cam_tilt += (tilt - self.cam_tilt) * min(1.0, dt * 0.9)
 
 
 # --- The ball at the players' feet, and what each player is doing with it ------------------------------------
@@ -1266,6 +1322,7 @@ Viewer._spin_ball = _viewer_spin_ball
 Viewer._throw_dir = _viewer_throw_dir
 Viewer._left_foot = _viewer_left_foot
 Viewer._shield_side = _viewer_shield_side
+Viewer._cam_tv = _viewer_cam_tv
 Viewer._keeper_dive = _viewer_keeper_dive
 Viewer._ball = _viewer_ball
 Viewer._dribble_touch = _viewer_dribble
@@ -1369,6 +1426,44 @@ def tick():
     ClockObject.getGlobalClock().tick()
 
 
+class Director:
+    """The TV director: plays the match on, and after a goal - once they've celebrated a few seconds - shows a
+    replay: the last five seconds before it, slowed down, from behind the goal.  frame(step) -> which recorded
+    frame to show next (and v.replay is set while a replay's on)."""
+    BEFORE, AFTER, WAIT, SLOW = 150, 18, 150, 0.55
+
+    def __init__(self, v, F, first):
+        self.v, self.F = v, F
+        self.t = float(first)
+        self.goals = [k for k in range(1, len(F)) if "c" in F[k] and "c" not in F[k - 1]]
+        self.done = {g for g in self.goals if g < first}
+        self.rp = None
+        v.replay = None
+
+    def frame(self, step):
+        """step: recorded frames to move on (1 a frame, at normal speed)."""
+        F = self.F
+        if self.rp is not None:
+            g, pos = self.rp
+            pos += step * self.SLOW
+            if pos >= g + self.AFTER:
+                self.rp = None
+                self.v.replay = None
+            else:
+                self.rp = (g, pos)
+                return F[int(pos)]
+        self.t = min(len(F) - 1.0, self.t + step)
+        for g in self.goals:
+            if g not in self.done and self.t >= g + self.WAIT:
+                self.done.add(g)
+                if "--noreplay" not in sys.argv and g - self.BEFORE >= 0:
+                    self.rp = (g, float(g - self.BEFORE))
+                    side = 1 if to_world(F[g - 5]["b"][0], F[g - 5]["b"][1])[0] > 0 else -1
+                    self.v.replay = side
+                    return F[g - self.BEFORE]
+        return F[int(self.t)]
+
+
 def play(v, F, first):
     """Watch it in a window, in real time: space = pause, left / right = back / on 10 seconds, [ / ] = slower /
     faster, 1 = TV camera, 2 = close camera, Esc = quit."""
@@ -1388,11 +1483,17 @@ def play(v, F, first):
     help_t = OnscreenText(text="space pause   <- -> 10 s   [ ] speed   1 TV   2 close   Esc quit", pos=(0, -0.95),
                           scale=0.04, fg=(1, 1, 1, 0.8), mayChange=False)
 
+    d = Director(v, F, first)
+
     def tick_task(task):
         dt = min(0.1, ClockObject.getGlobalClock().getDt())
-        if not st["paused"]:
-            st["t"] = min(len(F) - 1.0, st["t"] + dt * 30.0 * st["speed"])
-        v.show(F[int(st["t"])], dt * (0 if st["paused"] else st["speed"]) or 1e-3)
+        if abs(d.t - st["t"]) > 2:                         # (skipped with the arrow keys)
+            d.t, d.rp, v.replay = st["t"], None, None
+            d.done = {g for g in d.goals if g < st["t"]}
+        step = 0.0 if st["paused"] else dt * 30.0 * st["speed"]
+        fr = d.frame(step)
+        st["t"] = d.t
+        v.show(fr, dt * (0 if st["paused"] else st["speed"] * (Director.SLOW if v.replay else 1)) or 1e-3)
         return task.cont
     v.taskMgr.add(tick_task, "play")
     if "--test" in sys.argv:                              # (a check without a screen: 60 frames, then a picture)
@@ -1446,8 +1547,10 @@ def main():
         v.show(F[first], 1 / 30.0)
     for _ in range(2):
         v.taskMgr.step()                                  # (draw twice first: the sun's shadow map is a frame behind)
+    d = Director(v, F, first)
     for i in range(n):
-        v.show(F[first + i], 1 / 30.0)
+        fr = d.frame(1.0 if i else 0.0)
+        v.show(fr, 1 / 30.0 * (Director.SLOW if v.replay else 1.0))
         v.taskMgr.step()   # (this also moves the clock on one frame - don't tick() as well)   # (runs the lighting tasks, then draws)
         img = PNMImage(); v.win.getScreenshot(img); img.write(Filename(f"{out}/f{k + i:05d}.png"))
     print("rendered", n)
