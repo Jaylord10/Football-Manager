@@ -136,25 +136,45 @@ def sorted_rect(a, b):
 
 
 def crowd(name, cols, density=0.93, seed=0, seat=(60, 30, 30)):
-    """Rows of fans (dots of colour) - tiles across a stand."""
+    """Rows of fans - tiles across a stand.  Each fan: shoulders and a body in a colour (mostly the club's), a
+    head (skin tones, hair, a woolly hat on some - it's November), some with a scarf in the club's colours,
+    a few smaller (children); empty seats here and there."""
     rnd = random.Random(seed)
-    w, h = 1024, 512
+    S = 2                                       # (drawn at twice the old size: sharper close up)
+    w, h = 1024 * S, 512 * S
     im = Image.new("RGB", (w, h), seat)
     d = ImageDraw.Draw(im)
     rows = 32
     rh = h / rows
+    main = [k for k, _ in cols]
+    skins = [(232, 192, 162), (214, 168, 134), (196, 146, 112), (150, 104, 76), (104, 70, 50), (78, 52, 38)]
+    hairs = [(30, 22, 18), (60, 42, 30), (110, 80, 50), (170, 140, 100), (140, 140, 140), (20, 18, 16)]
     for r in range(rows):
         y = r * rh
-        d.line([(0, y + rh - 1), (w, y + rh - 1)], fill=(25, 25, 28), width=2)
-        x = rnd.uniform(0, 6)
+        d.rectangle([0, y + rh - 3 * S, w, y + rh], fill=tuple(max(0, v - 25) for v in seat))   # (the seat backs)
+        x = rnd.uniform(0, 6 * S)
         while x < w:
             if rnd.random() < density:
-                c = rnd.choices([k for k, _ in cols], [wt for _, wt in cols])[0]
+                c = rnd.choices(main, [wt for _, wt in cols])[0]
                 c = tuple(max(0, min(255, v + rnd.randint(-18, 18))) for v in c)
-                d.rectangle([x, y + rh * 0.25, x + 9, y + rh - 3], fill=c)            # body
-                sk = rnd.choice([(230, 190, 160), (200, 150, 120), (140, 95, 70), (90, 60, 45)])
-                d.ellipse([x + 2, y + 1, x + 7, y + rh * 0.45], fill=sk)              # head
-            x += rnd.uniform(11, 14)
+                kid = rnd.random() < 0.08
+                k = 0.75 if kid else 1.0
+                bw, top = 10 * S * k, y + rh * (0.42 if kid else 0.30)
+                d.rounded_rectangle([x, top, x + bw, y + rh - 2 * S], radius=int(3 * S * k), fill=c)   # (body)
+                if rnd.random() < 0.3:                                        # (a scarf)
+                    sc = rnd.choice(main)
+                    d.rectangle([x + 1 * S, top, x + bw - 1 * S, top + 2 * S], fill=sc)
+                    d.rectangle([x + bw * 0.55, top, x + bw * 0.55 + 2 * S, top + 6 * S], fill=sc)
+                sk = rnd.choice(skins)
+                hx, hy, hr = x + bw / 2, top - 3.0 * S * k, 3.2 * S * k
+                d.ellipse([hx - hr, hy - hr, hx + hr, hy + hr], fill=sk)                         # (head)
+                hat = rnd.random()
+                if hat < 0.18:                                                # (a woolly hat)
+                    d.chord([hx - hr - 0.5, hy - hr - 1.0 * S, hx + hr + 0.5, hy + hr * 0.6], 180, 360,
+                            fill=rnd.choice(main))
+                elif hat < 0.85:                                              # (hair)
+                    d.chord([hx - hr, hy - hr, hx + hr, hy + hr * 0.4], 180, 360, fill=rnd.choice(hairs))
+            x += rnd.uniform(11, 14) * S
     im.save(OUT + name)
 
 
