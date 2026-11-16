@@ -549,8 +549,9 @@ class AnimPlayer:
         want_off = ang if (self.turned and abs(ang) > 30) else 0.0
         self.off = getattr(self, "off", 0.0)
         self.off += ((want_off - self.off + 180) % 360 - 180) * min(1.0, dt * 5)
-        if abs(self.off) > 0.5:
-            self.root.setH(self.h - self.off)                                 # (Panda turns anticlockwise)
+        bl = getattr(self, "body_look", 0.0)                                  # (+ turning to see the ball behind)
+        if abs(self.off) > 0.5 or abs(bl) > 0.5:
+            self.root.setH(self.h - self.off - bl)                            # (Panda turns anticlockwise)
         res = math.radians(ang - self.off)                                    # (what's left: stepped)
         f2, r2 = math.cos(res), math.sin(res)
         w_side, w_back = r2 * r2, max(0.0, -f2) ** 2
@@ -595,7 +596,9 @@ class AnimPlayer:
         self.phase = (self.phase + cyc * dt) % 1.0
         w_idle = max(0.0, 1 - w_move)
         # turning on the spot (or nearly): little steps round, not a spin on the spot
-        rate = abs(turn) / max(dt, 1e-3)
+        bl_now = getattr(self, "body_look", 0.0)                              # (turning to watch the ball counts)
+        rate = abs(turn + bl_now - getattr(self, "_bl_prev", bl_now)) / max(dt, 1e-3)
+        self._bl_prev = bl_now
         w_turn = 0.0
         if self.cfg.get("make_walk"):
             want_t = min(1.0, max(0.0, (rate - 35.0) / 110.0)) * max(0.0, 1.0 - s / 1.2)
@@ -683,7 +686,14 @@ class AnimPlayer:
             want = 0.0
         else:
             want = (math.degrees(math.atan2(-dx, dy)) - self.h + getattr(self, "off", 0.0) + 180) % 360 - 180
-            want = max(-70.0, min(70.0, want))
+        # The ball behind him: past what his neck can do (~55 deg here), his shoulders and body come round too
+        # (when he's not running hard - then he just looks over his shoulder).
+        bl = getattr(self, "body_look", 0.0)
+        excess = 0.0
+        if abs(want) > 55.0 and self.sp < 2.5 and not self.mood:
+            excess = math.copysign(min(70.0, abs(want) - 55.0), want)
+        self.body_look = bl + (excess - bl) * min(1.0, dt * 2.5)
+        want = max(-70.0, min(70.0, want - self.body_look))
         self.look += (want - self.look) * min(1.0, dt * 5)
         c, base = self.head
         _, axis, sign = self.cfg["joints"][key]
