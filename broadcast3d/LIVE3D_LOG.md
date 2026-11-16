@@ -94,3 +94,13 @@
   recommended), and the people are as wide as they are tall in the picture, so they look like people.
 - Tested: the TV view (looks the same from the gantry - a touch chunkier, as a real crowd), and the shoot-out
   view before/after (picture: crowd_before_after.png).
+
+### 7. Floodlit games: players lit from all round - DONE
+- Under the floodlights the players were near-black silhouettes from the TV camera: the only strong light came
+  from one direction (high behind the far side), so the side facing the camera was in the dark.  Real stadium
+  floodlights ring the ground (corner masts or along the roofs) and are designed to light the players' fronts
+  towards the TV cameras, not just the grass (UEFA Stadium Lighting Guide 2023 - it sets "vertical
+  illuminance" towards the cameras as well as light on the pitch).  Now at night the players also get four
+  banks of lamps, one from each corner, 35 degrees up; the pitch and stands are unchanged.
+- Tested: night pictures before/after (night_before_after.png), night close camera, check.py.
+- Source: UEFA Stadium Lighting Guide 2023, https://documents.uefa.com/r/UEFA-Stadium-Lighting-Guide-2023-2023/Overview-of-illuminance-levels-for-UEFA-competitions-Online

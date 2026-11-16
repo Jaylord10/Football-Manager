@@ -276,6 +276,21 @@ void main() {
         sky *= mix(0.45, 1.0, flood);
     }
     vec3 light = p3d_LightModel.ambient.rgb * sky + p3d_LightSource[0].diffuse.rgb * lambert * sun_visible() * flood;
+    if (night_on > 0.5 && kit_on > 0.5 && nl > 0.01) {
+        // Under floodlights the players are lit from every side, not by one "sun": the lamps run round the
+        // ground (masts in the corners or along the roofs), and stadium lighting is designed to light the
+        // players' fronts towards the TV cameras, not just the grass (UEFA Stadium Lighting Guide 2023:
+        // vertical illuminance towards the cameras).  Four more banks of lamps, one from each corner, 35 deg up.
+        vec3 n4 = v_normal / nl;
+        if (!gl_FrontFacing) n4 = -n4;
+        float fl = 0.0;
+        for (int i = 0; i < 4; i++) {
+            vec2 c = vec2(i < 2 ? 1.0 : -1.0, (i % 2 == 0) ? 1.0 : -1.0) * 0.7071;
+            vec3 Ld = normalize(mat3(p3d_ViewMatrix) * vec3(c * 0.819, 0.574));
+            fl += max((dot(n4, Ld) + 0.3) / 1.3, 0.0);
+        }
+        light += p3d_LightSource[0].diffuse.rgb * fl * 0.30 * flood;
+    }
     if (detail_amt > 0.0) {
         base.rgb *= mix(vec3(1.0), texture(p3d_Texture1, v_uv * detail_scale).rgb * 2.0, detail_amt);
         if (mud_amt > 0.0) {
