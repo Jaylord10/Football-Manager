@@ -4,12 +4,7 @@ uniform mat4 p3d_ModelViewProjectionMatrix;
 uniform mat4 p3d_ModelViewMatrix;
 uniform mat4 p3d_ModelMatrix;
 uniform mat3 p3d_NormalMatrix;
-uniform struct p3d_LightSourceParameters {
-    vec4 position;
-    vec4 diffuse;
-    sampler2DShadow shadowMap;
-    mat4 shadowViewMatrix;
-} p3d_LightSource[1];
+uniform mat4 trans_model_to_clip_of_suncam;    // (the sun camera's view: broadcast3d/sunshadow.py)
 
 in vec4 p3d_Vertex;
 in vec3 p3d_Normal;
@@ -40,7 +35,7 @@ void main() {
     vec4 view = p3d_ModelViewMatrix * pv;
     v_view = view.xyz;
     v_world = (p3d_ModelMatrix * pv).xyz;
-    v_shadow = p3d_LightSource[0].shadowViewMatrix * view;
+    v_shadow = trans_model_to_clip_of_suncam * pv;
     v_normal = p3d_NormalMatrix * p3d_Normal;
     v_color = p3d_Color;
     v_uv = p3d_MultiTexCoord0;

@@ -550,16 +550,15 @@ class Viewer(ShowBase):
         al = AmbientLight("amb"); al.setColor(Vec4(0.50, 0.53, 0.60, 1) if not NIGHT else Vec4(0.30, 0.32, 0.38, 1))
         self.render.setLight(self.render.attachNewNode(al))
         dl = DirectionalLight("sun"); dl.setColor(Vec4(1.25, 1.12, 0.92, 1) if not NIGHT else Vec4(1.0, 1.0, 1.05, 1))
-        dl.setShadowCaster(True, SHADOW_MAP, SHADOW_MAP)
-        lens = dl.getLens(); lens.setFilmSize(250, 170); lens.setNearFar(10, 600)
         sun = self.render.attachNewNode(dl)
         az, el = math.radians(SUN_AZ), math.radians(SUN_EL)
         sun.setPos(-math.sin(az) * math.cos(el) * 300, -math.cos(az) * math.cos(el) * 300, math.sin(el) * 300)
         sun.lookAt(0, 0, 0)
         self.render.setLight(sun)
         self.sun = sun
-        dl.setCameraMask(NO_SHADOW_BIT)                    # (the sun's shadow camera: see no_shadow())
         self._shader_inputs()
+        import sunshadow                                   # (the sun's shadows: our own depth picture from the sun;
+        self.sun_buf = sunshadow.make(self, sun, SHADOW_MAP, (250, 170), (10, 600), NO_SHADOW_BIT)  # no_shadow())
 
     def _shader_inputs(self):
         sh = Shader.load(Shader.SL_GLSL, pf(os.path.join(HERE, "shaders", "lit.vert")), pf(os.path.join(HERE, "shaders", "lit.frag")))
@@ -569,6 +568,8 @@ class Viewer(ShowBase):
             shader_defaults(self.render)
             if RAIN:
                 self.render.setShaderInput("mud_amt", 1.0)
+        import sunshadow
+        sunshadow.no_sun(self.render)                       # (until the sun's own is made: light_up)
         self.render.setShaderInput("shadow_bias", 0.0004)
         self.render.setShaderInput("shadow_texel", 1.0 / SHADOW_MAP)
         self.render.setShaderInput("detail_amt", 0.0)
@@ -1652,6 +1653,11 @@ def play(v, F, first):
     help_t = OnscreenText(text="space pause   <- -> 10 s   [ ] speed   1 TV   2 close   S stats   Esc quit", pos=(0, -0.95),
                           scale=0.04, fg=(1, 1, 1, 0.8), mayChange=False)
 
+    try:                                                  # (for the log: which graphics chip is drawing it)
+        g = v.win.getGsg()
+        print("graphics:", g.getDriverVendor(), "|", g.getDriverRenderer(), "|", g.getDriverVersion(), flush=True)
+    except Exception:
+        pass
     d = Director(v, F, first)
     end_t = {"n": None}
     sheet = {"n": v.lineups(v.m) if "--nolineups" not in sys.argv else None, "t": 0.0}

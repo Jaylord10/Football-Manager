@@ -6,9 +6,9 @@ uniform struct p3d_LightModelParameters { vec4 ambient; } p3d_LightModel;
 uniform struct p3d_LightSourceParameters {
     vec4 position;
     vec4 diffuse;
-    sampler2DShadow shadowMap;
-    mat4 shadowViewMatrix;
 } p3d_LightSource[1];
+uniform sampler2DShadow sun_shadow;      // (the sun's depth picture: broadcast3d/sunshadow.py)
+uniform float shadow_on;
 uniform struct p3d_FogParameters { vec4 color; float density; } p3d_Fog;
 uniform float shadow_bias;
 uniform float shadow_texel;
@@ -225,12 +225,14 @@ vec4 kit_colour() {
 
 float sun_visible() {
     // A soft edge: 3 x 3 samples of the shadow map around this point.
-    vec3 p = v_shadow.xyz / v_shadow.w;
+    if (shadow_on < 0.5) return 1.0;
+    vec3 p = v_shadow.xyz / v_shadow.w * 0.5 + 0.5;
+    if (p.x < 0.0 || p.x > 1.0 || p.y < 0.0 || p.y > 1.0 || p.z > 1.0) return 1.0;   // (outside the sun's view)
     p.z -= shadow_bias;
     float s = 0.0;
     for (int x = -1; x <= 1; ++x)
         for (int y = -1; y <= 1; ++y)
-            s += texture(p3d_LightSource[0].shadowMap, p + vec3(x, y, 0) * shadow_texel);
+            s += texture(sun_shadow, p + vec3(x, y, 0) * shadow_texel);
     return s / 9.0;
 }
 
