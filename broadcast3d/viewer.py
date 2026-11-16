@@ -26,7 +26,7 @@ loadPrcFileData("", ("window-type offscreen\n" if OFF else "") + f"win-size {_SI
 from direct.showbase.ShowBase import ShowBase
 from direct.gui.OnscreenText import OnscreenText
 from direct.gui.OnscreenImage import OnscreenImage
-from panda3d.core import (AmbientLight, DirectionalLight, Vec4, Vec3, Point3, CardMaker, TextNode, PNMImage, Shader, BitMask32,
+from panda3d.core import (ShaderAttrib, AmbientLight, DirectionalLight, Vec4, Vec3, Point3, CardMaker, TextNode, PNMImage, Shader, BitMask32,
                           Filename, Texture, SamplerState, TransparencyAttrib, AntialiasAttrib, Fog)
 from geom import Mesh, box, box_into, sphere, prism
 
@@ -628,6 +628,10 @@ class Viewer(ShowBase):
     def _shader_inputs(self):
         sh = Shader.load(Shader.SL_GLSL, pf(os.path.join(HERE, "shaders", "lit.vert")), pf(os.path.join(HERE, "shaders", "lit.frag")))
         self.render.setShader(sh)
+        import sunshadow as _ss
+        if _ss.GPU_SKIN:                                   # (the players bent onto their skeletons by the graphics card)
+            self.render.setAttrib(self.render.getAttrib(ShaderAttrib).setFlag(ShaderAttrib.F_hardware_skinning, True))
+        self.render.setShaderInput("skin_on", 0.0)
         if ANIM:
             from players3d import shader_defaults
             shader_defaults(self.render)

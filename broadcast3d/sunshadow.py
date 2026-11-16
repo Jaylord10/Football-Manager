@@ -14,10 +14,32 @@ from panda3d.core import (FrameBufferProperties, WindowProperties, GraphicsPipe,
                           OrthographicLens, Camera, SamplerState, RenderState, ShaderAttrib, ColorWriteAttrib,
                           Shader, LColor)
 
+import os
+import sys
+# The players' bodies bent onto their skeletons by the graphics card (the shaders) rather than by the processor.
+# --cpuskin (or FM_GPUSKIN=0) goes back to the processor doing it.
+GPU_SKIN = "--cpuskin" not in sys.argv and os.environ.get("FM_GPUSKIN", "1") != "0"
+
 DEPTH_VERT = """#version 130
 uniform mat4 p3d_ModelViewProjectionMatrix;
 in vec4 p3d_Vertex;
 void main() { gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex; }
+"""
+# The players' depth: bent onto their skeletons first, as in shaders/lit.vert (given to the sun camera for
+# whatever carries the "skin" tag: broadcast3d/players3d.py).
+SKIN_DEPTH_VERT = """#version 130
+uniform mat4 p3d_ModelViewProjectionMatrix;
+uniform mat4 p3d_TransformTable[48];
+in vec4 transform_weight;
+in uvec4 transform_index;
+in vec4 p3d_Vertex;
+void main() {
+    mat4 m = p3d_TransformTable[transform_index.x] * transform_weight.x
+           + p3d_TransformTable[transform_index.y] * transform_weight.y
+           + p3d_TransformTable[transform_index.z] * transform_weight.z
+           + p3d_TransformTable[transform_index.w] * transform_weight.w;
+    gl_Position = p3d_ModelViewProjectionMatrix * (m * p3d_Vertex);
+}
 """
 DEPTH_FRAG = """#version 130
 out vec4 o_color;
@@ -75,6 +97,11 @@ def make(base, sun, size, film, near_far, mask):
     depth_only = Shader.make(Shader.SL_GLSL, DEPTH_VERT, DEPTH_FRAG)
     cn.setInitialState(RenderState.make(ShaderAttrib.make(depth_only), ColorWriteAttrib.make(ColorWriteAttrib.C_off),
                                         1000))
+    if GPU_SKIN:                                       # (the players: their own depth shader, skinned on the card)
+        sk = ShaderAttrib.make(Shader.make(Shader.SL_GLSL, SKIN_DEPTH_VERT, DEPTH_FRAG), 1001)
+        sk = sk.setFlag(ShaderAttrib.F_hardware_skinning, True)
+        cn.setTagStateKey("skin")
+        cn.setTagState("1", RenderState.make(sk, ColorWriteAttrib.make(ColorWriteAttrib.C_off), 1001))
     cam = sun.attachNewNode(cn)
     dr = buf.makeDisplayRegion()
     dr.setCamera(cam)

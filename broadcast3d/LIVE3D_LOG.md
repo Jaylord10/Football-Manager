@@ -27,3 +27,17 @@
 - season2: ok
 - broadcast3d/check.py: all good
 - live flows: kick-off -> half-time -> goal + replay -> full time, at 8x.
+
+## Night 2 (16-17 Nov, unattended)
+
+### 1. Players' bodies bent by the graphics card (GPU skinning) - KEPT
+- Before, every frame the processor moved every point of every player's body (14,000 points each, ~40 people
+  on screen counting subs, stewards and officials) onto his skeleton.  Now the graphics card does it in the
+  lighting shader (shaders/lit.vert) and in the sun's shadow picture (sunshadow.py: the players carry a
+  "skin" tag and get their own skinned depth shader).  The processor only works out the 45 joints per man.
+- `FM_GPUSKIN=0` (or `--cpuskin`) puts it back the old way, in case a graphics chip doesn't like it.
+- Tested: pictures before/after (viewer.py 6000, a close side-on follow of the keeper at 6260, the kit
+  picture) - the same to the eye; at most ~130 of 921,600 pixels differ, by idle-sway rounding.
+  broadcast3d/check.py: all good.  Frame time on this test machine (software drawing, so the "card" is the
+  processor too): 142 -> 133 ms; on a real graphics chip the card does this work almost for free, so the
+  saving there is bigger.

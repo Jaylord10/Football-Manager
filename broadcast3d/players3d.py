@@ -142,6 +142,7 @@ def shader_defaults(render):
         render.setShaderInput(k, 0.0)
     render.setShaderInput("detail_scale", 1.0, 1.0)
     render.setShaderInput("kit_on", 0.0)
+    render.setShaderInput("skin_on", 0.0)
     render.setShaderInput("cloth", (0.0, 0.0))
     for k in ("shirt", "trim", "shorts", "socks", "socktop", "skin", "hair", "gloves"):
         render.setShaderInput("kit_" + k, (1.0, 1.0, 1.0, 1.0))
@@ -284,6 +285,9 @@ class AnimPlayer:
         # name and number on his back and the club crest on his chest.
         r = self.root
         r.setShaderInput("kit_on", 1.0)
+        from sunshadow import GPU_SKIN
+        r.setShaderInput("skin_on", 1.0 if GPU_SKIN else 0.0)   # (his body bent onto his skeleton in the shader)
+        r.setTag("skin", "1")                                   # (and for the sun's depth picture: sunshadow.py)
         for k, c in (("shirt", kit["shirt"]), ("trim", kit.get("trim", kit["shirt"])), ("shorts", kit["shorts"]),
                      ("socks", kit["socks"]), ("socktop", kit.get("socktop") or kit["socks"]), ("skin", skin),
                      ("hair", hair), ("gloves", (235, 235, 235) if sum(kit["shirt"]) < 600 else (40, 40, 44))):

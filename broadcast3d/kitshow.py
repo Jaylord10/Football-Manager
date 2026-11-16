@@ -28,6 +28,10 @@ dl = DirectionalLight("sun"); dl.setColor(Vec4(1.2, 1.1, 0.92, 1))
 sun = b.render.attachNewNode(dl); sun.setPos(-12, -25, 30); sun.lookAt(0, 0, 0); b.render.setLight(sun)
 b.render.setShader(Shader.load(Shader.SL_GLSL, Filename.fromOsSpecific(os.path.join(HERE, "shaders", "lit.vert")),
                                Filename.fromOsSpecific(os.path.join(HERE, "shaders", "lit.frag"))))
+import sunshadow
+if sunshadow.GPU_SKIN:                              # (the players bent onto their skeletons by the graphics card)
+    from panda3d.core import ShaderAttrib
+    b.render.setAttrib(b.render.getAttrib(ShaderAttrib).setFlag(ShaderAttrib.F_hardware_skinning, True))
 b.render.setShaderInput("shadow_bias", 0.0005)
 b.render.setShaderInput("shadow_texel", 1.0 / 2048)
 b.render.setShaderInput("detail_amt", 0.0)
