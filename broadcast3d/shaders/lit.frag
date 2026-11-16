@@ -159,10 +159,21 @@ vec4 kit_colour() {
         return (dx > 0.03 && abs(y + 0.002) < 0.017) ? kit_trim : kit_shorts;      // (3.5 cm wide, at the side)
     }
     float top = 1.49 + 0.045 * smoothstep(0.1, 0.2, ax);                            // (the shoulders)
+    // The neckline goes round the base of the neck: low at the front (the throat), up the sides over the
+    // traps and higher at the back - not a flat line across.  The collar is a band just below it.
+    float ny = y + 0.012;
+    float rn = length(vec2(x, ny));
+    float front = clamp(-ny / max(rn, 1e-4), 0.0, 1.0);
+    float neck = mix(1.512, 1.478, pow(front, 1.4));
+    float near_neck = 1.0 - smoothstep(0.075, 0.13, rn);
+    top = mix(top, neck + 0.35 * max(0.0, rn - 0.065), near_neck);
     if (z < top && ax < 0.355) {
         int col = int(kit_extra.x + 0.5);
-        float cz = col == 3 ? 1.445 : (col == 2 ? 1.455 : 1.465);                   // the collar (a polo's is deeper)
-        if (z > cz && ax < (col == 3 ? 0.10 : 0.085)) return kit_trim;
+        float band = col == 3 ? 0.045 : (col == 2 ? 0.035 : 0.022);                 // the collar (a polo's is deeper)
+        band *= mix(0.45, 1.0, front);                                              // (over the traps: thinner)
+        float reach = col == 3 ? 0.105 : 0.092;
+        band *= 1.0 - smoothstep(reach - 0.02, reach, rn);
+        if (z > top - band) return kit_trim;
         if (col == 1 && y < 0.0 && z > 1.40 && ax < 0.05 - (1.465 - z) * 0.6 && ax > 0.032 - (1.465 - z) * 0.6)
             return kit_trim;                                                        // (a V-neck's trim)
         if (col == 2 && y < 0.0 && z > 1.39 && ax < 0.005) return kit_trim;          // (a grandad's button opening)
