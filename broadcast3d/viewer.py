@@ -613,6 +613,41 @@ class Viewer(ShowBase):
                              align=TextNode.ARight)
         return root
 
+    def stats_panel(self, k):
+        """The TV stats card (key S live, --stats for pictures): possession, shots, passes... up to frame k,
+        worked out from the recording."""
+        from direct.gui.DirectGui import DirectFrame
+        F = self.m["frames"]
+        own = [0, 0]
+        for fr in F[:k + 1]:
+            o = fr["o"]
+            if o is not None and o >= 0:
+                own[0 if o < 11 else 1] += 1
+        tot = max(1, own[0] + own[1])
+        poss = [round(100 * own[0] / tot), 100 - round(100 * own[0] / tot)]
+        cnt = {kind: [0, 0] for kind in ("shot", "kick", "tackle", "fouled", "header")}
+        for i, l in self.events.by_player.items():
+            for ke, kind in l:
+                if ke <= k and kind in cnt:
+                    cnt[kind][0 if i < 11 else 1] += 1
+        rows = [("Possession", f"{poss[0]}%", f"{poss[1]}%"), ("Shots", *map(str, cnt["shot"])),
+                ("Passes", *map(str, cnt["kick"])), ("Tackles won", *map(str, cnt["tackle"])),
+                ("Headers", *map(str, cnt["header"])), ("Fouls suffered", *map(str, cnt["fouled"]))]
+        root = self.aspect2d.attachNewNode("stats")
+        DirectFrame(parent=root, frameColor=(0.06, 0.07, 0.09, 0.9), frameSize=(-0.62, 0.62, -0.54, 0.42))
+        for side, (kit, x) in enumerate(((self.kits[0], -0.45), (self.kits[1], 0.45))):
+            DirectFrame(parent=root, frameColor=C(kit["shirt"]), frameSize=(-0.15, 0.15, -0.012, 0.012),
+                        pos=(x, 0, 0.25))
+        OnscreenText(parent=root, text=self.labels[0], pos=(-0.45, 0.3), scale=0.055, fg=(1, 1, 1, 1))
+        OnscreenText(parent=root, text=self.labels[1], pos=(0.45, 0.3), scale=0.055, fg=(1, 1, 1, 1))
+        OnscreenText(parent=root, text="MATCH STATS", pos=(0, 0.3), scale=0.045, fg=(0.98, 0.85, 0.3, 1))
+        for j, (lab, a, b) in enumerate(rows):
+            y = 0.13 - j * 0.12
+            OnscreenText(parent=root, text=lab, pos=(0, y), scale=0.045, fg=(0.8, 0.85, 0.9, 1))
+            OnscreenText(parent=root, text=a, pos=(-0.45, y), scale=0.055, fg=(1, 1, 1, 1))
+            OnscreenText(parent=root, text=b, pos=(0.45, y), scale=0.055, fg=(1, 1, 1, 1))
+        return root
+
     def _captain(self, match, team):
         """Who wears the armband (the recording doesn't say): a centre-back, else a central midfielder."""
         names = match.get("names", [])[team * 11: team * 11 + 11]
@@ -1592,10 +1627,16 @@ def play(v, F, first):
     key("arrow_right", lambda: st.update(t=min(len(F) - 2.0, st["t"] + 300)))
     key("[", lambda: st.update(speed=max(0.25, st["speed"] / 2)))
     key("]", lambda: st.update(speed=min(4.0, st["speed"] * 2)))
+    def toggle_stats():
+        if getattr(v, "_stats", None) is not None:
+            v._stats.removeNode(); v._stats = None
+        else:
+            v._stats = v.stats_panel(int(st["t"]))
+    v.accept("s", toggle_stats)
     key("1", lambda: setattr(v, "cam_mode", 0))
     key("2", lambda: setattr(v, "cam_mode", 1))
     v.accept("escape", sys.exit)
-    help_t = OnscreenText(text="space pause   <- -> 10 s   [ ] speed   1 TV   2 close   Esc quit", pos=(0, -0.95),
+    help_t = OnscreenText(text="space pause   <- -> 10 s   [ ] speed   1 TV   2 close   S stats   Esc quit", pos=(0, -0.95),
                           scale=0.04, fg=(1, 1, 1, 0.8), mayChange=False)
 
     d = Director(v, F, first)
@@ -1669,7 +1710,7 @@ def main():
     for _ in range(2):
         v.taskMgr.step()                                  # (draw twice first: the sun's shadow map is a frame behind)
     d = Director(v, F, first)
-    sheet = v.lineups(v.m) if "--lineups" in sys.argv else None
+    sheet = v.lineups(v.m) if "--lineups" in sys.argv else (v.stats_panel(first) if "--stats" in sys.argv else None)
     for i in range(n):
         if sheet is not None and i == 150:
             sheet.removeNode()
