@@ -33,7 +33,8 @@ uniform float crowd_amt;                // (the crowd: how much they're bobbing 
 uniform float osg_FrameTime;
 uniform float kit_on;
 uniform float mud_amt;
-uniform float pitch_churn;              // (0 at kick-off .. 1 by full time: how churned the worn places are)                  // (a wet day: mud splashed up the boots, socks and the backs of the legs)
+uniform float pitch_churn;
+uniform float sweat;                    // (0 fresh .. 1 late in the game: a sheen on the skin)              // (0 at kick-off .. 1 by full time: how churned the worn places are)                  // (a wet day: mud splashed up the boots, socks and the backs of the legs)
 uniform vec4 kit_shirt, kit_trim, kit_shorts, kit_socks, kit_socktop, kit_skin, kit_hair, kit_gloves;
 uniform vec4 kit_boots;                 // (rgb, a: 1 = a bright boot with a white sole)
 uniform float kit_cap;
@@ -288,6 +289,15 @@ void main() {
         if (!gl_FrontFacing) n3 = -n3;
         float rim = pow(1.0 - abs(dot(n3, normalize(-v_view))), 3.0);
         col += base.rgb * p3d_LightModel.ambient.rgb * rim * 0.35;
+        // a sheen of sweat on bare skin, more as the game goes on (and on a wet day): a soft highlight
+        vec3 sk = kit_skin.rgb;
+        float skin_px = 1.0 - smoothstep(0.06, 0.16, length(base.rgb / max(max(base.r, base.g), 0.01)
+                                                            - sk / max(max(sk.r, sk.g), 0.01)));
+        if (sweat > 0.0 && skin_px > 0.0) {
+            vec3 L = normalize(p3d_LightSource[0].position.xyz);
+            float sp = pow(max(dot(reflect(-L, n3), normalize(-v_view)), 0.0), 30.0);
+            col += vec3(1.0, 0.97, 0.92) * sp * 0.13 * sweat * skin_px * sun_visible();
+        }
     }
     float fog = clamp(exp(-length(v_view) * p3d_Fog.density), 0.0, 1.0);
     o_color = vec4(mix(p3d_Fog.color.rgb, col, fog), base.a);

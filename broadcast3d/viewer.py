@@ -815,6 +815,7 @@ class Viewer(ShowBase):
             self.rp_t.show()
         else:
             self.rp_t.hide()
+        self.render.setShaderInput("sweat", min(1.0, 0.25 + fr["t"] / 1200.0 * 0.6 + (0.3 if RAIN else 0.0)))
         if RAIN:                                                            # (a wet day: the pitch cuts up)
             self.render.setShaderInput("pitch_churn", min(1.0, 0.25 + fr["t"] / 1200.0 * 0.75))
         s = fr["s"]
