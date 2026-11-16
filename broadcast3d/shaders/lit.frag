@@ -136,6 +136,21 @@ vec3 muddy(vec3 c, float x, float y, float z) {
     return mix(c * (1.0 - 0.08 * mud_amt), vec3(0.27, 0.21, 0.14), a * 0.85);
 }
 
+float shirt_folds(float x, float y, float z, float ax) {
+    // Soft folds in a loose shirt: creases running from the armpits down and in across the chest and back,
+    // and the cloth gathering in soft ripples above the hem.  (Shading only - a few percent darker in the
+    // hollows.)
+    if (ax > 0.24) return 1.0;
+    float f = 0.0;
+    float d = (ax - 0.17) + (z - 1.30) * 0.8;                         // (diagonal, from the armpit)
+    f += smoothstep(1.32, 1.18, z) * smoothstep(0.92, 1.05, z) * smoothstep(0.24, 0.12, ax)
+         * (0.5 + 0.5 * sin(d * 95.0 + (y < 0.0 ? 0.0 : 1.7)));
+    float hem = smoothstep(1.04, 0.95, z) * smoothstep(0.90, 0.95, z);
+    f += hem * (0.5 + 0.5 * sin(x * 70.0 + (y < 0.0 ? 0.5 : 2.1) + 6.0 * sin(z * 40.0)));
+    f *= 0.4 + 0.9 * vnoise(vec3(x, y, z) * 18.0);                    // (uneven: cloth isn't regular)
+    return 1.0 - 0.055 * f;
+}
+
 vec4 kit_colour() {
     float x = v_uv.x, z = v_uv.y, y = v_uv1.x, ax = abs(x);
     bool keeper = kit_info.y > 0.5;
@@ -186,7 +201,7 @@ vec4 kit_colour() {
             vec4 c = texture(p3d_Texture1, vec2((x - 0.04) / 0.11, (z - 1.27) / 0.11));
             if (c.a > 0.5) return vec4(c.rgb, 1.0);
         }
-        return vec4(shirt_at(x, y, z, ax < 0.24), 1.0);
+        return vec4(shirt_at(x, y, z, ax < 0.24) * shirt_folds(x, y, z, ax), 1.0);
     }
     if (keeper && z < 1.49 && ax < 0.76) return vec4(shirt_at(x, y, z, false), 1.0);   // a keeper's long sleeves
     if (keeper && z < 1.49) return kit_gloves;                                       // and gloves
