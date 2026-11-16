@@ -1018,7 +1018,7 @@ def _viewer_ball(self, fr, dt):
         if self.last_ball is not None:
             self.ball_off = Vec3(*self.last_ball) - Vec3(bx, by, bz)        # (ease from where it was drawn)
         # (out of someone's hands - a throw-in, a keeper's throw - it comes down over a longer flight)
-        held = isinstance(self.ball_mode, tuple) or (self.ball_mode is not None and
+        held = isinstance(self.ball_mode, tuple) or (isinstance(self.ball_mode, int) and
                                                      getattr(self.players[self.ball_mode], "keeper", False))
         self.ball_tau = 0.28 if held else 0.09
         self.ball_mode = mode
