@@ -185,7 +185,8 @@ class Stadium:
         sk = self.root.attachNewNode(cm.generate()); sk.setPos(0, 1200, -50); sk.setTexture(self.T("sky.png", False)); sk.setLightOff(); no_shadow(sk, lit=False)
         if NIGHT:                                           # (a dark sky; the floodlights lit)
             sk.setColorScale(0.05, 0.06, 0.11, 1); mo.setColorScale(0.04, 0.04, 0.06, 1)
-            lamp = (2.2, 2.2, 2.1, 1)
+        if NIGHT or OVERCAST:                               # (a dull November afternoon: the floodlights on too)
+            lamp = (2.2, 2.2, 2.1, 1) if NIGHT else (1.6, 1.6, 1.5, 1)
             for side, x0, x1, d, z in lamps:
                 strip = box(self.side(side), x0, d - 0.3, z - 0.4, x1, d, z, lamp)
                 strip.setShaderOff(1); strip.setLightOff(1); no_shadow(strip, lit=False)
@@ -255,8 +256,8 @@ class Stadium:
             for a, bb in (((-w, -w), (w, -w)), ((w, -w), (w, w)), ((w, w), (-w, w)), ((-w, w), (-w, -w))):
                 box(n, min(a[0], bb[0]) - 0.06, min(a[1], bb[1]) - 0.06, z, max(a[0], bb[0]) + 0.06, max(a[1], bb[1]) + 0.06, z + 0.12, col)
         head = box(n, -4, -0.5, H, 4, 0.5, H + 5, C((90, 92, 98)))
-        if NIGHT:                                           # (the lamps, lit)
-            gl = box(n, -3.8, -0.62, H + 0.2, 3.8, -0.5, H + 4.8, (2.4, 2.4, 2.3, 1))
+        if NIGHT or OVERCAST:                               # (the lamps, lit - at night, or on a dull day)
+            gl = box(n, -3.8, -0.62, H + 0.2, 3.8, -0.5, H + 4.8, (2.4, 2.4, 2.3, 1) if NIGHT else (1.7, 1.7, 1.6, 1))
             gl.setShaderOff(1); gl.setLightOff(1)
         for i in range(4):
             for j in range(3):
