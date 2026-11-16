@@ -142,6 +142,7 @@ def shader_defaults(render):
         render.setShaderInput(k, 0.0)
     render.setShaderInput("detail_scale", 1.0, 1.0)
     render.setShaderInput("kit_on", 0.0)
+    render.setShaderInput("cloth", (0.0, 0.0))
     for k in ("shirt", "trim", "shorts", "socks", "socktop", "skin", "hair", "gloves"):
         render.setShaderInput("kit_" + k, (1.0, 1.0, 1.0, 1.0))
     render.setShaderInput("kit_boots", (0.09, 0.09, 0.10, 0.0))
@@ -504,6 +505,10 @@ class AnimPlayer:
         running backwards when he's backing off.  ball: (x, y) - he turns his head to watch it."""
         if not active:
             self.root.hide(); return
+        self.cloth_t = getattr(self, "cloth_t", 0.0) + dt              # (his shirt moves with his running)
+        if self.cfg.get("make_walk"):
+            amt = min(0.009, max(0.0, (getattr(self, "sp", 0.0) - 1.5) * 0.0015))
+            self.root.setShaderInput("cloth", (self.cloth_t, amt))
         self.root.show()
         self.root.setPos(x, y, self.lift)
         h = math.degrees(math.atan2(-fx, fy))
