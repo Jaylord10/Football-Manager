@@ -576,6 +576,33 @@ class Viewer(ShowBase):
                                     mayChange=True)
         DirectFrame(frameColor=(0.06, 0.07, 0.09, 0.0), frameSize=(0, 0.1, -0.1, 0), pos=(-1.7, 0, 0.94))
 
+    def lineups(self, match):
+        """The team sheets, as TV shows them before kick-off: both XIs, numbers and names, in the clubs' colours.
+        Shown for the first few seconds (live, or --lineups when making pictures)."""
+        from direct.gui.DirectGui import DirectFrame
+        names = match.get("names", [])
+        if len(names) < 22:
+            return None
+        root = self.aspect2d.attachNewNode("lineups")
+        for side, (info, kit, x0) in enumerate(((self.home_info, self.kits[0], -0.98), (self.away_info, self.kits[1], 0.06))):
+            DirectFrame(parent=root, frameColor=(0.06, 0.07, 0.09, 0.9), frameSize=(0, 0.92, -1.12, 0),
+                        pos=(x0, 0, 0.62))
+            DirectFrame(parent=root, frameColor=C(kit["shirt"]), frameSize=(0, 0.92, -0.11, 0), pos=(x0, 0, 0.62))
+            sh = kit["shirt"]
+            dark = (sh[0] * 0.3 + sh[1] * 0.59 + sh[2] * 0.11) > 150
+            OnscreenText(parent=root, text=(match.get("home") if side == 0 else match.get("away") or "")[:24].upper(), pos=(x0 + 0.46, 0.545), scale=0.05,
+                         fg=(0.05, 0.05, 0.05, 1) if dark else (1, 1, 1, 1), align=TextNode.ACenter)
+            for j in range(11):
+                nm, role, num = names[side * 11 + j][:3]
+                y = 0.44 - j * 0.088
+                OnscreenText(parent=root, text=str(num), pos=(x0 + 0.1, y), scale=0.045, fg=(0.98, 0.85, 0.3, 1),
+                             align=TextNode.ARight)
+                OnscreenText(parent=root, text=nm, pos=(x0 + 0.15, y), scale=0.045, fg=(1, 1, 1, 1),
+                             align=TextNode.ALeft)
+                OnscreenText(parent=root, text=role, pos=(x0 + 0.86, y), scale=0.038, fg=(0.7, 0.75, 0.8, 1),
+                             align=TextNode.ARight)
+        return root
+
     def make_rain(self):
         """Rain over the picture: two layers of streaks drifting down at different speeds (near and far)."""
         from panda3d.core import TextureStage
@@ -754,7 +781,8 @@ class Viewer(ShowBase):
             self.cam.lookAt(bx, by, 0.9)
         else:
             self.cam.setPos(self.cx * 0.8, -HY - 62, 33)
-            self.cam.lookAt(self.cx, self.cy * 0.35 + 9 + self.cam_tilt, 0)
+            yw = 0.35 + 0.6 * self.cam_tilt                                 # (close in: right on him)
+            self.cam.lookAt(self.cx, self.cy * yw + 9 * (1 - self.cam_tilt), 0.8 * self.cam_tilt)
             self.camLens.setFov(self.cam_fov)
         if not hasattr(self, "rp_t"):
             self.rp_t = OnscreenText(text="REPLAY", pos=(1.15, 0.88), scale=0.07, fg=(1, 1, 1, 1),
@@ -794,9 +822,17 @@ def _viewer_cam_tv(self, fr, bx, by, dt):
     fov = 34.0 + min(5.0, math.hypot(*self.bv) * 0.35)  # (wider while the ball's flying about)
     tilt = 0.0
     cel = fr.get("c")
+    r = fr.get("r")
+    if r and r[0] != "offside" and 0 <= r[1] < len(fr["p"]) and not cel:
+        self.r_t = getattr(self, "r_t", 0.0) + dt         # (a dead ball: a close look at the taker as he
+    else:                                               #  sets it up, then back out before he takes it)
+        self.r_t = 0.0
+    if 0.5 < self.r_t < 3.0 and to_world(fr["p"][r[1]][0], fr["p"][r[1]][1])[1] > -HY + 10:
+        tx, ty = to_world(fr["p"][r[1]][0], fr["p"][r[1]][1])          # (not right under the gantry: the
+        fov, tilt = 21.0, 1.0                                           #  dugout roofs are in the way)
     if cel and 0 <= cel[1] < len(fr["p"]):              # (a goal: on to the scorer, closer)
         sx_, sy_ = to_world(fr["p"][cel[1]][0], fr["p"][cel[1]][1])
-        tx, ty, fov, tilt = sx_, sy_, 17.0, 0.5
+        tx, ty, fov, tilt = sx_, sy_, 17.0, 1.0
     tx = max(-36.0, min(36.0, tx)) if not cel else max(-46.0, min(46.0, tx))
     # a critically damped spring: smooth to start and to stop
     w = 1.7
@@ -809,8 +845,8 @@ def _viewer_cam_tv(self, fr, bx, by, dt):
             self.cx = c
         else:
             self.cy = c
-    self.cam_fov += (fov - self.cam_fov) * min(1.0, dt * (1.3 if cel else 0.9))
-    self.cam_tilt += (tilt - self.cam_tilt) * min(1.0, dt * 0.9)
+    self.cam_fov += (fov - self.cam_fov) * min(1.0, dt * (1.3 if cel or 0.5 < self.r_t < 3.0 else 0.9))
+    self.cam_tilt += (tilt - self.cam_tilt) * min(1.0, dt * 1.2)
 
 
 # --- The ball at the players' feet, and what each player is doing with it ------------------------------------
@@ -1484,9 +1520,15 @@ def play(v, F, first):
                           scale=0.04, fg=(1, 1, 1, 0.8), mayChange=False)
 
     d = Director(v, F, first)
+    sheet = {"n": v.lineups(v.m) if "--nolineups" not in sys.argv else None, "t": 0.0}
 
     def tick_task(task):
         dt = min(0.1, ClockObject.getGlobalClock().getDt())
+        if sheet["n"] is not None:                          # (the team sheets for the first few seconds)
+            sheet["t"] += dt
+            if sheet["t"] > 6.0:
+                sheet["n"].removeNode()
+                sheet["n"] = None
         if abs(d.t - st["t"]) > 2:                         # (skipped with the arrow keys)
             d.t, d.rp, v.replay = st["t"], None, None
             d.done = {g for g in d.goals if g < st["t"]}
@@ -1548,7 +1590,11 @@ def main():
     for _ in range(2):
         v.taskMgr.step()                                  # (draw twice first: the sun's shadow map is a frame behind)
     d = Director(v, F, first)
+    sheet = v.lineups(v.m) if "--lineups" in sys.argv else None
     for i in range(n):
+        if sheet is not None and i == 150:
+            sheet.removeNode()
+            sheet = None
         fr = d.frame(1.0 if i else 0.0)
         v.show(fr, 1 / 30.0 * (Director.SLOW if v.replay else 1.0))
         v.taskMgr.step()   # (this also moves the clock on one frame - don't tick() as well)   # (runs the lighting tasks, then draws)
