@@ -514,6 +514,9 @@ class MatchEngine:
                 if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER) and self._3d_on() and self.live3d.replaying():
                     self.live3d.skip()                   # (on with the match: no more of the replay)
                     continue
+                if event.key == pygame.K_c and self._3d_on():
+                    self.live3d.camera()                 # (the TV camera, or close to the ball)
+                    continue
                 if event.key == pygame.K_v and self.career:
                     # 2D <-> 3D (the 3D view starts the first time it's asked for)
                     if self.live3d is None or self.live3d.failed:

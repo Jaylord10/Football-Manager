@@ -193,6 +193,19 @@ class BackgroundMatches:
 # ---------------------------------------------------------------------------
 # Watching your match
 # ---------------------------------------------------------------------------
+def _view_env(career, home_id):
+    """For the match window: 2D or 3D (as you last chose), and for the 3D picture the day, the kick-off time
+    and the home club (the light and the weather: broadcast3d/live.py weather_flags)."""
+    from career import calendar as cal
+    os.environ["FM_MATCH_VIEW"] = career.get("match_view", "3d")
+    date = career.get("date", "")
+    try:
+        ko = cal.kick_off(date)
+    except Exception:
+        ko = "15:00"
+    os.environ["FM_3D_WHEN"] = f"{date}|{ko}|{home_id}"
+
+
 def watch(career, home, away, matchday):
     """Play the match in the game window.  Returns (result, quit_requested)."""
     me_id = career["my_club"]
@@ -205,7 +218,7 @@ def watch(career, home, away, matchday):
     import gameplay.match_engine as me
     me.RL_ENABLED = False
     me.HALF_DURATION_REAL = HALF_SECONDS
-    os.environ["FM_MATCH_VIEW"] = career.get("match_view", "3d")    # (2D or the 3D TV picture: V switches)
+    _view_env(career, home)                 # (2D or 3D - V switches - and the light and weather)
     engine = me.MatchEngine(career=True)
     engine.run()
     career["match_view"] = engine.view_wanted                        # (remembered for next time)
@@ -232,7 +245,7 @@ def watch_friendly(career, f):
     import gameplay.match_engine as me
     me.RL_ENABLED = False
     me.HALF_DURATION_REAL = HALF_SECONDS
-    os.environ["FM_MATCH_VIEW"] = career.get("match_view", "3d")    # (2D or the 3D TV picture: V switches)
+    _view_env(career, home["id"])                 # (2D or 3D - V switches - and the light and weather)
     engine = me.MatchEngine(career=True)
     engine.run()
     career["match_view"] = engine.view_wanted                        # (remembered for next time)
@@ -258,7 +271,7 @@ def watch_playoff(career, m):
     import gameplay.match_engine as me
     me.RL_ENABLED = False
     me.HALF_DURATION_REAL = HALF_SECONDS
-    os.environ["FM_MATCH_VIEW"] = career.get("match_view", "3d")    # (2D or the 3D TV picture: V switches)
+    _view_env(career, m["home"])                 # (2D or 3D - V switches - and the light and weather)
     engine = me.MatchEngine(career=True)
     engine.run()
     career["match_view"] = engine.view_wanted                        # (remembered for next time)
@@ -289,7 +302,7 @@ def watch_cup(career, m):
     import gameplay.match_engine as me
     me.RL_ENABLED = False
     me.HALF_DURATION_REAL = HALF_SECONDS
-    os.environ["FM_MATCH_VIEW"] = career.get("match_view", "3d")    # (2D or the 3D TV picture: V switches)
+    _view_env(career, m["home"])                 # (2D or 3D - V switches - and the light and weather)
     engine = me.MatchEngine(career=True)
     engine.run()
     career["match_view"] = engine.view_wanted                        # (remembered for next time)

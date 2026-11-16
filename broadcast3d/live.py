@@ -48,6 +48,33 @@ def frame_from_engine(e):
     return fr
 
 
+def weather_flags(when):
+    """The light and the weather for the 3D picture, from "date|kick-off|home club" (career/matches.py):
+    an evening kick-off is under the floodlights; a 3 o'clock kick-off from November to January ends in the
+    dusk (sunset in Manchester is about 15:50 in December - timeanddate.com), so a dull sky and the floodlights
+    on; and some days it rains.  The Met Office's averages for Woodford, Greater Manchester (1991-2020): about
+    15 days a month with 1 mm of rain or more from October to January, 11-14 the rest of the year - but on most
+    of those days it isn't raining for the whole afternoon, so rain during the match about one time in four
+    from October to February, one in six the rest of the year.  The same match always gets the same weather."""
+    import datetime
+    import random
+    try:
+        date, ko, home = when.split("|")
+        d = datetime.date.fromisoformat(date)
+        hour = int(ko.split(":")[0])
+    except Exception:
+        return []
+    if hour >= 17:
+        return ["--night"]
+    flags = []
+    winter = d.month in (10, 11, 12, 1, 2)
+    if random.Random(f"weather:{date}:{home}").random() < (0.25 if winter else 0.16):
+        flags.append("--rain")
+    elif d.month in (11, 12, 1):
+        flags.append("--overcast")
+    return flags
+
+
 def names_from_engine(e):
     return [[p.name, p.role, getattr(p, "number", i + 1)] for i, p in enumerate(e.team0 + e.team1)]
 
@@ -76,7 +103,7 @@ class Live3D:
     """The game's side.  push(engine) every engine step, picture() for the newest picture (a pygame Surface,
     or None while there isn't one), shown() for the frame it shows, holding() while a replay's on."""
 
-    def __init__(self, engine, size, home, away, flags=()):
+    def __init__(self, engine, size, home, away, flags=None):
         import multiprocessing as mp
         from multiprocessing import shared_memory
         self.w, self.h = size
@@ -92,6 +119,8 @@ class Live3D:
         _write_head(self.shm.buf, ready=0, slot=0, count=0, k=-1, replay=0, w=self.w, h=self.h)
         ctx = mp.get_context("spawn")
         self.conn, child = ctx.Pipe()
+        if flags is None:                               # (the day's light and weather: career/matches.py)
+            flags = weather_flags(os.environ.get("FM_3D_WHEN", ""))
         meta = {"home": home, "away": away, "names": names_from_engine(engine)}
         self.proc = ctx.Process(target=_child, args=(child, self.shm.name, self.w, self.h, meta, list(flags)),
                                 daemon=True)
@@ -146,6 +175,13 @@ class Live3D:
         """Stop the replay: back to the match."""
         try:
             self.conn.send(("skip",))
+        except Exception:
+            self._give_up("the 3D view stopped (sending)")
+
+    def camera(self):
+        """The next camera: the TV gantry, or close to the ball."""
+        try:
+            self.conn.send(("camera",))
         except Exception:
             self._give_up("the 3D view stopped (sending)")
 
@@ -214,7 +250,8 @@ class _LiveDirector:
             self.goals.append(k)
 
     def frame(self, F, real_dt):
-        """-> (frame index, how much match time it moves on)"""
+        """-> (where in the recording: a frame number with a fraction - the picture is drawn between two frames,
+        so it moves smoothly at any frame rate - and how much match time it moves on)"""
         import viewer
         if self.rp is not None:
             g, pos = self.rp
@@ -225,10 +262,15 @@ class _LiveDirector:
                 self.v._gp = {}
             else:
                 self.rp = (g, pos)
-                return int(pos), real_dt * self.SLOW
-        want = max(0, len(F) - 1 - LAG)
-        dt = max(0.0, (want - self.t) / 30.0)
-        self.t = float(max(self.t, want))
+                return pos, real_dt * self.SLOW
+        want = float(max(0, len(F) - 1 - LAG))
+        was = self.t
+        gap = want - self.t
+        if gap > 90:                                    # (far behind - back to 3D after a while in 2D: jump)
+            self.t = want - 1.0
+        elif gap > 0:                                   # (follow the newest frames smoothly)
+            self.t += min(gap, max(gap * min(1.0, real_dt * 8.0), real_dt * 15.0))
+        dt = max(0.0, (self.t - was) / 30.0)
         for g in self.goals:
             if g not in self.done and self.t >= g + self.WAIT:
                 self.done.add(g)
@@ -238,8 +280,31 @@ class _LiveDirector:
                     self.v.replay = side
                     self.v._gp = {}                         # (the replay shows them where they were)
                     self.v.gball = None                     # (and the ball where it was, not in the net)
-                    return g - self.BEFORE, 1 / 30.0
-        return int(self.t), dt
+                    return float(g - self.BEFORE), 1 / 30.0
+        return self.t, dt
+
+
+def _blend(F, t):
+    """The match between two recorded frames (t = 12.4: 40% of the way from frame 12 to 13)."""
+    k = min(int(t), len(F) - 1)
+    a = F[k]
+    f = t - k
+    if f < 1e-3 or k + 1 >= len(F):
+        return a
+    b = F[k + 1]
+    if a.get("st") != b.get("st") or len(a["p"]) != len(b["p"]):
+        return a
+    fr = dict(a)
+    fr["b"] = [a["b"][j] + (b["b"][j] - a["b"][j]) * f for j in range(3)]
+    ps = []
+    for pa, pb in zip(a["p"], b["p"]):
+        if abs(pb[0] - pa[0]) + abs(pb[1] - pa[1]) > 40 or pa[6] != pb[6]:     # (put somewhere else: no blending)
+            ps.append(pa)
+        else:
+            ps.append([pa[0] + (pb[0] - pa[0]) * f, pa[1] + (pb[1] - pa[1]) * f, pa[2] + (pb[2] - pa[2]) * f,
+                       pa[3] + (pb[3] - pa[3]) * f, pa[4] + (pb[4] - pa[4]) * f] + list(pa[5:]))
+    fr["p"] = ps
+    return fr
 
 
 def _child(conn, shm_name, w, h, meta, flags):
@@ -293,6 +358,7 @@ def _draw_loop(conn, buf, w, h, meta):
     clock = ClockObject.getGlobalClock()
     last = time.perf_counter()
     slot, count, shown_k, started = 0, 0, -1, False
+    shown_t = -1.0
     size = w * h * 3
     n_draw, t_draw = 0, 0.0
     while True:
@@ -302,6 +368,10 @@ def _draw_loop(conn, buf, w, h, meta):
             msg = conn.recv()
             if msg[0] == "quit":
                 return
+            if msg[0] == "camera":                              # (C: the TV gantry <-> close to the ball)
+                v.cam_mode = (getattr(v, "cam_mode", 0) + 1) % 2
+                shown_t = -1.0                                  # (draw it, even while paused)
+                continue
             if msg[0] == "skip" and d.rp is not None:           # (Enter: no more of the replay)
                 d.rp = None
                 v.replay = None
@@ -323,7 +393,8 @@ def _draw_loop(conn, buf, w, h, meta):
             ev_lo = max(ev_lo, len(F) - 4)
         now = time.perf_counter()
         real_dt = min(0.1, now - last)
-        k, dt = d.frame(F, real_dt)
+        t, dt = d.frame(F, real_dt)
+        k = min(int(t), len(F) - 1)
         while pending and k >= pending[0][0] and d.rp is None:
             for i, (nm, role, _n) in enumerate(pending.pop(0)[1]):
                 if i < len(v.players) and nm != match["names"][i][0]:
@@ -333,7 +404,7 @@ def _draw_loop(conn, buf, w, h, meta):
                         v.replace_player(i, nm, role, 11 + subs_on[team])
                     except Exception:
                         print("sub:", traceback.format_exc(), flush=True)
-        if k == shown_k and d.rp is None and started:
+        if abs(t - shown_t) < 1e-3 and d.rp is None and started:
             time.sleep(0.004)                           # (nothing new to draw: the match is paused or waiting)
             last = now
             continue
@@ -344,7 +415,8 @@ def _draw_loop(conn, buf, w, h, meta):
                 sheet["n"].removeNode()
                 sheet["n"] = None
         t0 = time.perf_counter()
-        v.show(F[k], dt or 1e-3)
+        v.show(_blend(F, t), min(dt, 0.1) or 1e-3)        # (fast-forwarding at 8x+: the camera and the
+                                                          #  animations still move in small steps)
         v.taskMgr.step()
         if not started:                                 # (the first time: draw twice - the shadows settle)
             if k < 30:                                  # (at kick-off: the team sheets)
@@ -352,7 +424,7 @@ def _draw_loop(conn, buf, w, h, meta):
                     sheet["n"] = v.lineups(match)
                 except Exception:
                     print("lineups:", traceback.format_exc(), flush=True)
-            v.show(F[k], 1e-3)
+            v.show(_blend(F, t), 1e-3)
             v.taskMgr.step()
         tex = v.win.getScreenshot()
         if tex is None:
@@ -368,7 +440,7 @@ def _draw_loop(conn, buf, w, h, meta):
         nxt = 1 - slot
         off = HEAD + nxt * size
         buf[off:off + size] = np.ascontiguousarray(img).tobytes()
-        slot, count, shown_k = nxt, count + 1, k
+        slot, count, shown_k, shown_t = nxt, count + 1, k, t
         _write_head(buf, ready=1, slot=slot, count=count, k=k, replay=1 if d.rp is not None else 0)
         started = True
         n_draw += 1

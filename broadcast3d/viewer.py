@@ -873,6 +873,10 @@ class Viewer(ShowBase):
         # does, leaving space in front of the attack), on a smooth spring - no jerks when the ball's hit - and
         # zooms out a touch when the ball's travelling fast or play's spread, in when it's tight.  After a
         # goal it finds the scorer and moves in on him.
+        if not all(math.isfinite(q) for q in (getattr(self, "cx", 0.0), getattr(self, "cy", 0.0),
+                                              getattr(self, "cam_fov", 36.0), getattr(self, "cam_tilt", 0.0))):
+            self.cx, self.cy, self.cam_fov, self.cam_tilt = bx, by, 36.0, 0.0       # (never lose the camera)
+            self.cam_v = [0.0, 0.0]
         if fr.get("st") in ("halftime", "full_time", "et_break", "et_halftime"):
             self._cam_tv(fr, 0.0, 0.0, dt)                                   # (a break: the whole pitch, not the ball)
         else:
@@ -970,11 +974,13 @@ def _viewer_cam_tv(self, fr, bx, by, dt):
     tx = max(-36.0, min(36.0, tx)) if not cel else max(-46.0, min(46.0, tx))
     # a critically damped spring: smooth to start and to stop
     w = 1.7
+    n = max(1, int(math.ceil(dt / 0.05)))               # (in small steps, however long the frame: steady)
     for i, t in ((0, tx), (1, ty)):
         c = self.cx if i == 0 else self.cy
-        a = (t - c) * w * w - 2 * w * self.cam_v[i]
-        self.cam_v[i] += a * dt
-        c += self.cam_v[i] * dt
+        for _ in range(n):
+            a = (t - c) * w * w - 2 * w * self.cam_v[i]
+            self.cam_v[i] += a * dt / n
+            c += self.cam_v[i] * dt / n
         if i == 0:
             self.cx = c
         else:
