@@ -32,7 +32,8 @@ uniform float night_on;                 // (floodlights: bright over the pitch, 
 uniform float crowd_amt;                // (the crowd: how much they're bobbing about - lots after a goal)
 uniform float osg_FrameTime;
 uniform float kit_on;
-uniform float mud_amt;                  // (a wet day: mud splashed up the boots, socks and the backs of the legs)
+uniform float mud_amt;
+uniform float pitch_churn;              // (0 at kick-off .. 1 by full time: how churned the worn places are)                  // (a wet day: mud splashed up the boots, socks and the backs of the legs)
 uniform vec4 kit_shirt, kit_trim, kit_shorts, kit_socks, kit_socktop, kit_skin, kit_hair, kit_gloves;
 uniform vec4 kit_boots;                 // (rgb, a: 1 = a bright boot with a white sole)
 uniform float kit_cap;
@@ -269,8 +270,17 @@ void main() {
         sky *= mix(0.45, 1.0, flood);
     }
     vec3 light = p3d_LightModel.ambient.rgb * sky + p3d_LightSource[0].diffuse.rgb * lambert * sun_visible() * flood;
-    if (detail_amt > 0.0)
+    if (detail_amt > 0.0) {
         base.rgb *= mix(vec3(1.0), texture(p3d_Texture1, v_uv * detail_scale).rgb * 2.0, detail_amt);
+        if (mud_amt > 0.0) {
+            // A wet day: the worn places (already brownish) churn up into darker, wetter mud as the game goes
+            // on, and the grass everywhere darkens a little with the rain.
+            float brown = clamp((base.r - base.g * 0.75) * 6.0 + 0.2, 0.0, 1.0);
+            float n = vnoise(vec3(v_uv * 60.0, 0.0));
+            float churn = smoothstep(0.15, 0.9, brown + 0.2 * n) * pitch_churn;
+            base.rgb = mix(base.rgb * 0.9, vec3(0.20, 0.15, 0.10), churn * 0.8);
+        }
+    }
     vec3 col = base.rgb * light;
     if (kit_on > 0.5 && kit_on < 1.5 && nl > 0.01) {
         // a soft rim of sky light on the edges facing away from the camera (as a TV camera sees players)

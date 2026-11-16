@@ -815,6 +815,8 @@ class Viewer(ShowBase):
             self.rp_t.show()
         else:
             self.rp_t.hide()
+        if RAIN:                                                            # (a wet day: the pitch cuts up)
+            self.render.setShaderInput("pitch_churn", min(1.0, 0.25 + fr["t"] / 1200.0 * 0.75))
         s = fr["s"]
         self.score_t.setText(f"{self.labels[0]}  {s[0]} - {s[1]}  {self.labels[1]}")
         self._goal_caption(fr)
