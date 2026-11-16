@@ -222,7 +222,10 @@ void main() {
     if (nl > 0.01) {
         vec3 n = v_normal / nl;
         if (!gl_FrontFacing) n = -n;
-        lambert = max(dot(n, normalize(p3d_LightSource[0].position.xyz)), 0.0);
+        float d = dot(n, normalize(p3d_LightSource[0].position.xyz));
+        // On the players, light that wraps a little round the form (skin and cloth both scatter it): softer
+        // shading from lit to shadow instead of a hard line.
+        lambert = kit_on > 0.5 ? max((d + 0.3) / 1.3, 0.0) : max(d, 0.0);
     }
     // Sky light: brighter on what faces up, a little darker on what faces down (the grass bounces less).
     float sky = 1.0;
@@ -242,6 +245,13 @@ void main() {
     if (detail_amt > 0.0)
         base.rgb *= mix(vec3(1.0), texture(p3d_Texture1, v_uv * detail_scale).rgb * 2.0, detail_amt);
     vec3 col = base.rgb * light;
+    if (kit_on > 0.5 && kit_on < 1.5 && nl > 0.01) {
+        // a soft rim of sky light on the edges facing away from the camera (as a TV camera sees players)
+        vec3 n3 = v_normal / nl;
+        if (!gl_FrontFacing) n3 = -n3;
+        float rim = pow(1.0 - abs(dot(n3, normalize(-v_view))), 3.0);
+        col += base.rgb * p3d_LightModel.ambient.rgb * rim * 0.35;
+    }
     float fog = clamp(exp(-length(v_view) * p3d_Fog.density), 0.0, 1.0);
     o_color = vec4(mix(p3d_Fog.color.rgb, col, fog), base.a);
 }
