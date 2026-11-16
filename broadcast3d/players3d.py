@@ -225,7 +225,8 @@ def _pos_group(role, keeper):
     return "cm" if r else None
 
 
-OWN_RUNS = "--oldrun" not in sys.argv          # (--oldrun: the mannequin's own run, to compare)
+OWN_RUNS = "--oldrun" not in sys.argv
+SLIDES = True          # (--oldrun: the mannequin's own run, to compare)
 SPEEDS = [("walk", 1.4), ("jog", 3.0), ("run2", 5.5), ("sprint", 8.0)]
 
 
@@ -442,6 +443,12 @@ class AnimPlayer:
             self.ready = min(1.0, self.ready + 0.06)
         else:
             self.ready = max(0.0, self.ready - 0.08)                        # (...and out)
+        if kind == "tackle" and SLIDES and (self.sp > 4.0 or getattr(self, "sliding", False)) \
+                and self.seed % 3 == 0:                                     # (some players go to ground)
+            kind = "slide"
+            self.sliding = t < 0.9
+        else:
+            self.sliding = False
         name = kind + ("_m" if left and (kind + "_m") in gait.SPANS else "") if kind else None
         if kind == "ready" or (name not in gait.SPANS and self.ready > 0):
             self.cur = ("ready", self.ready * 0.9, 0.0)

@@ -47,7 +47,7 @@ MOVES = {
     "across_r": ("upperarm.r", "z", 1), "across_l": ("upperarm.l", "z", -1),
     "wristy_r": ("hand.r", "y", 1), "wristy_l": ("hand.l", "y", -1),
     "wristz_r": ("hand.r", "z", 1), "wristz_l": ("hand.l", "z", -1),
-    "turn": ("pelvis", "z", 1), "tilt": ("pelvis", "y", 1),
+    "turn": ("pelvis", "z", 1), "tilt": ("pelvis", "y", 1), "pitch": ("pelvis", "x", 1),
     "lean": ("spine_01", "x", 1), "chest": ("spine_02", "x", 1), "twist": ("spine_01", "z", 1),
     "side": ("spine_01", "y", 1),
     "nod": ("neck_01", "x", 1), "head": ("head", "x", 1),
@@ -253,6 +253,22 @@ ACTIONS = {
                (0.15, {"hip_l": 62, "knee_l": 8, "ankle_l": 10, "hipout_l": 22, "hip_r": 32, "knee_r": 60, "ankle_r": 22,
                        "lean": 20, "turn": -16, "out_l": 50, "out_r": 55, "arm_r": 25, "elbow_l": 30, "elbow_r": 30}),
                (0.45, N)],
+    # A slide tackle (left leg): down on his right hip and thigh, the left leg out straight along the ground,
+    # the right tucked under, trunk leaning back, the right arm back to the grass, the left out for balance;
+    # then up again.  (The "abs" arms: set, not shifted.)
+    "slide": [(-0.30, N),
+              (-0.08, {"hip_l": 50, "knee_l": 25, "ankle_l": 5, "hip_r": 40, "knee_r": 70, "ankle_r": 10,
+                       "pitch": -15, "lean": 6, "tilt": -6, "out_r": 40, "arm_r": -20, "elbow_r": 20,
+                       "out_l": 50, "arm_l": 20, "elbow_l": 30}),
+              (0.10, {"hip_l": 42, "knee_l": 4, "ankle_l": 8, "hip_r": 28, "knee_r": 140, "ankle_r": 20,
+                      "hipout_r": 10, "pitch": -48, "lean": 22, "tilt": -14, "nod": 10, "out_r": 45, "arm_r": -35,
+                      "elbow_r": 10, "out_l": 55, "arm_l": 30, "elbow_l": 30}),
+              (0.45, {"hip_l": 40, "knee_l": 8, "ankle_l": 8, "hip_r": 28, "knee_r": 140, "ankle_r": 20,
+                      "hipout_r": 10, "pitch": -45, "lean": 24, "tilt": -14, "nod": 10, "out_r": 45, "arm_r": -35,
+                      "elbow_r": 15, "out_l": 45, "arm_l": 20, "elbow_l": 35}),
+              (0.80, {"hip_l": 60, "knee_l": 100, "hip_r": 40, "knee_r": 120, "ankle_r": 20, "pitch": -10,
+                      "lean": 30, "out_r": 30, "arm_r": 10, "elbow_r": 40, "out_l": 30, "arm_l": 15, "elbow_l": 40}),
+              (1.10, N)],
     # A sharp cut to his left at speed: the right (outside) foot planted wide, knee bent to take the load, body
     # leaning into the new direction and low, then the push-off (e.g. Besier et al. 2001 on sidestep cutting:
     # the plant foot ~0.3-0.5 m out to the side, knee ~40-60 deg; trunk leaning into the cut).
@@ -638,9 +654,14 @@ def build(actor, name, pose_fn, frames, ground=True, base_anim="idle", base_fram
         soles.append(("ball." + sd, LPoint3f(0, 0, 0)))
 
     def feet_z(local):
-        """The lowest point of the soles, in the model, for these local transforms."""
+        """The lowest point of the soles, in the model, for these local transforms - or of his knees or his
+        backside, if he's down on the ground (a slide, a knee slide): as if those were soles."""
         nm = nets(local)
-        return min(nm[j].xformPoint(pt)[2] for j, pt in soles)
+        z = min(nm[j].xformPoint(pt)[2] for j, pt in soles)
+        for j, r in (("calf.r", 0.03), ("calf.l", 0.03), ("pelvis", 0.09)):
+            if j in nm:
+                z = min(z, nm[j].xformPoint(LPoint3f(0, 0, 0))[2] - r)
+        return z
     rest = feet_z(pose_at(idle, 0))
     tables = {j: {k: [] for k in "hprxyz"} for j in order}
     fixed = None if callable(base_frame) else pose_at(base, base_frame)
@@ -795,7 +816,7 @@ def _make(actor):
             _CACHE[name] = build(actor, name, fn, n)
     for name, keys in ACTIONS.items():
         variants = [(name, keys)]
-        if name in ("dive", "recover", "kick", "shot", "touch", "tackle", "punt", "cut", "brake"):
+        if name in ("dive", "recover", "kick", "shot", "touch", "tackle", "punt", "cut", "brake", "slide"):
             variants.append((name + "_m", [(t, mirror(p) if isinstance(p, dict) else p) for t, p in keys]))
         for vn, vk in variants:
             fn, t0, t1 = action_pose(vk)
