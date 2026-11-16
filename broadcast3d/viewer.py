@@ -1066,7 +1066,7 @@ def _viewer_cam_tv(self, fr, bx, by, dt):
     if cel and 0 <= cel[1] < len(fr["p"]):              # (a goal: on to the scorer, closer)
         sx_, sy_ = to_world(fr["p"][cel[1]][0], fr["p"][cel[1]][1])
         tx, ty, fov, tilt = sx_, sy_, 17.0, 1.0
-    tx = max(-36.0, min(36.0, tx)) if not cel else max(-46.0, min(46.0, tx))
+    tx = max(-36.0, min(36.0, tx)) if not cel else max(-(HX - 2.0), min(HX - 2.0, tx))   # (a scorer by the corner flag: right on him)
     # a critically damped spring: smooth to start and to stop
     w = 1.7
     n = max(1, int(math.ceil(dt / 0.05)))               # (in small steps, however long the frame: steady)

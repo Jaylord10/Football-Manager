@@ -76,3 +76,12 @@
   (`_shown_halftime<n>.png` etc.), as well as the engine's.
 - Tested: live flows (NOHUMAN=1 HALF=40, 8x) - card shows at half-time, gone in the second half;
   `viewer.py 9000 1 out --stats --ht` for a still.
+
+### 5. Gantry close-up by the near corner flag - FIXED
+- Re-checked with the sample goal's celebration moved to each near corner (dev/corner_celebration.py), at Kiln
+  Lane, The Mere (Kingsmere) and Northwick's bowl.  The near stand no longer blocks it (the clip from last
+  night works), BUT the camera stopped panning 9 m short of the corner flag, so the scorer was squashed into
+  the edge of the picture (half cut off at the far left/right).  The close-up can now pan right to the flag
+  (2 m in from the goal line), so he's framed properly.  The dark strip along the bottom of those close-ups is
+  the back of the near advertising boards - which is what you see from a real gantry too.
+- Tested: 3 grounds x both corners, pictures looked at.
