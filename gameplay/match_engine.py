@@ -988,9 +988,11 @@ class MatchEngine:
         pic = self.live3d.picture()
         if pic is None:
             self.pitch_renderer.draw_pitch(self.screen)
-            font = self.ui_renderer.normal_font
+            font = self.ui_renderer.med_font
             msg = font.render("Getting the 3D view ready...", True, (255, 255, 255))
-            self.screen.blit(msg, msg.get_rect(center=self.screen.get_rect().center))
+            box = msg.get_rect(center=self.screen.get_rect().center).inflate(40, 24)
+            pygame.draw.rect(self.screen, (18, 20, 24), box, border_radius=8)
+            self.screen.blit(msg, msg.get_rect(center=box.center))
             return list(self.score)
         self.screen.blit(pic, (0, 0))
         shown = self.live3d.shown()

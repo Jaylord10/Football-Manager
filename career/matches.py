@@ -204,6 +204,15 @@ def _view_env(career, home_id):
     except Exception:
         ko = "15:00"
     os.environ["FM_3D_WHEN"] = f"{date}|{ko}|{home_id}"
+    fill = 1.0                                       # (how full the ground is: career/crowds.py's demand)
+    try:
+        from career import crowds
+        club = career["clubs"][home_id] if 0 <= home_id < len(career["clubs"]) else None
+        if club is not None:
+            fill = max(0.1, min(1.0, crowds.demand(career, club) / max(1, club["finance"]["capacity"])))
+    except Exception:
+        pass
+    os.environ["FM_3D_CROWD"] = f"{fill:.2f}"
 
 
 def watch(career, home, away, matchday):

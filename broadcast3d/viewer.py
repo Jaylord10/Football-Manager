@@ -203,17 +203,25 @@ class Stadium:
 
     def build_kiln_lane(self):
         b = self.b
+        home_tex = "crowd_home.png"
+        try:                                            # (a half-empty ground: FM_3D_CROWD, broadcast3d/textures.py)
+            if float(os.environ.get("FM_3D_CROWD", "1") or 1) < 0.97:
+                import textures
+                textures.crowd("crowd_home_live.png", [((200, 40, 45), 6), ((235, 235, 235), 2), ((30, 30, 34), 2)], seed=1)
+                home_tex = "crowd_home_live.png"
+        except Exception as e:
+            print("crowd:", e)
         self.pitch_surround()
         # Haworth Stand (far side): two tiers, flat roof on columns
         f = self.side("far")
-        self.tier(f, -48, 48, 9, 1.4, 25, 11, "crowd_home.png", (200, 40, 45))
-        self.tier(f, -48, 48, 22, 14.5, 36, 25, "crowd_home.png", (240, 240, 240))
+        self.tier(f, -48, 48, 9, 1.4, 25, 11, home_tex, (200, 40, 45))
+        self.tier(f, -48, 48, 22, 14.5, 36, 25, home_tex, (240, 240, 240))
         box(f, -48, 20, 11, 48, 23, 14.4, C((200, 40, 45)))                  # the fascia between the tiers
         self.back_wall(f, -48, 48, 36, 0, 29)
         self.roof(f, -49, 49, 16, 38, 29, columns=6)
         # Weavers' End (left): one steep tier, truss roof
         w = self.side("left")
-        self.tier(w, -30, 30, 8, 1.4, 30, 20, "crowd_home.png", (200, 40, 45))
+        self.tier(w, -30, 30, 8, 1.4, 30, 20, home_tex, (200, 40, 45))
         self.back_wall(w, -30, 30, 30, 0, 24)
         self.roof(w, -31, 31, 9, 32, 24, truss=(235, 235, 235))
         bn = box(w, -14, 9.5, 5, 14, 9.6, 8.5, C((200, 40, 45)))                # the LABORE ET FIDE banner
@@ -228,7 +236,7 @@ class Stadium:
         self.roof(r, -33, 33, 8, 21, 9.5, col=(80, 70, 66), pitched=2.5, columns=4)
         # Main Stand (near, under the camera): front rows only
         n = self.side("near")
-        self.tier(n, -50, 50, 8, 1.2, 20, 8, "crowd_home.png", (200, 40, 45))
+        self.tier(n, -50, 50, 8, 1.2, 20, 8, home_tex, (200, 40, 45))
         self.dugouts(n)
         # ad boards; a brick wall round the outside (the corners are open, old-style)
         self.ad_boards()
@@ -773,7 +781,7 @@ class Viewer(ShowBase):
         cel = fr.get("c")                                                   # (a goal celebration: who scored)
         amts = getattr(self, "_crowd_amts", {})
         for n, (cn, kind) in enumerate(self.crowds):                        # (their fans go up; the others sit)
-            fans = {"crowd_home.png": 0, "crowd_hosts.png": 0, "crowd_away.png": 1, "crowd_visitors.png": 1}.get(kind, -1)
+            fans = {"crowd_home.png": 0, "crowd_home_live.png": 0, "crowd_hosts.png": 0, "crowd_away.png": 1, "crowd_visitors.png": 1}.get(kind, -1)
             want = 1.0 if not cel else (7.0 if fans == cel[0] else 0.4 if fans >= 0 else 3.0)
             cur = amts.get(n, 1.0)
             cur += (want - cur) * min(1.0, dt * 2.0)

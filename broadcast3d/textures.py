@@ -156,12 +156,16 @@ def crowd(name, cols, density=0.93, seed=0, seat=(60, 30, 30)):
     main = [k for k, _ in cols]
     skins = [(232, 192, 162), (214, 168, 134), (196, 146, 112), (150, 104, 76), (104, 70, 50), (78, 52, 38)]
     hairs = [(30, 22, 18), (60, 42, 30), (110, 80, 50), (170, 140, 100), (140, 140, 140), (20, 18, 16)]
+    # How full the ground is (the game's crowd for this match, FM_3D_CROWD - career/matches.py): a full house,
+    # or the fans nearer the front and the back rows emptier, as at a half-empty ground.
+    fill = max(0.05, min(1.0, float(os.environ.get("FM_3D_CROWD", "1") or 1)))
     for r in range(rows):
         y = r * rh
         d.rectangle([0, y + rh - 3 * S, w, y + rh], fill=tuple(max(0, v - 25) for v in seat))   # (the seat backs)
         x = rnd.uniform(0, 6 * S)
+        row_density = density if fill >= 0.97 else density * max(0.02, min(1.0, fill * (0.6 + 0.8 * r / rows)))
         while x < w:
-            if rnd.random() < density:
+            if rnd.random() < row_density:
                 c = rnd.choices(main, [wt for _, wt in cols])[0]
                 c = tuple(max(0, min(255, v + rnd.randint(-18, 18))) for v in c)
                 kid = rnd.random() < 0.08
