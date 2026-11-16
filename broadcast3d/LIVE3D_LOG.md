@@ -85,3 +85,12 @@
   (2 m in from the goal line), so he's framed properly.  The dark strip along the bottom of those close-ups is
   the back of the near advertising boards - which is what you see from a real gantry too.
 - Tested: 3 grounds x both corners, pictures looked at.
+
+### 6. Crowd: people the right width - DONE (found while checking the shoot-out camera)
+- Close up (the shoot-out camera, replays from behind the goal) the fans were thin vertical streaks: one crowd
+  picture (about 80 fans across) was stretched over only 14 m of stand, so each fan was ~0.17 m wide but a
+  whole row (~0.6 m) tall.  Now one picture covers 36 m: a fan every ~0.45 m, the width of a real seat (Green
+  Guide - the Guide to Safety at Sports Grounds, 6th edition, section 12.6: seats at least 0.46 m wide, 0.5 m
+  recommended), and the people are as wide as they are tall in the picture, so they look like people.
+- Tested: the TV view (looks the same from the gantry - a touch chunkier, as a real crowd), and the shoot-out
+  view before/after (picture: crowd_before_after.png).

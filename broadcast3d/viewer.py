@@ -102,7 +102,10 @@ class Stadium:
 
     def tier(self, parent, x0, x1, d0, z0, d1, z1, crowd="crowd_home.png", fascia=(200, 40, 45), wall=(70, 72, 78)):
         m = Mesh("crowd")
-        rep = (x1 - x0) / 14.0
+        # One crowd picture = 36 m of stand: ~80 fans across it, so a fan to every ~0.45 m - a real seat is
+        # 0.45-0.5 m wide (the Green Guide, Guide to Safety at Sports Grounds, 6th ed., 12.6) - and as wide as
+        # he's tall in the picture.  (It was 14 m: thin, stretched people, which showed in close-ups.)
+        rep = (x1 - x0) / 36.0
         m.quad((x0, d0, z0), (x1, d0, z0), (x1, d1, z1), (x0, d1, z1), (1, 1, 1, 1),
                ((0, 0), (rep, 0), (rep, 1), (0, 1)))
         cn = parent.attachNewNode(m.node()); cn.setTexture(self.T(crowd)); cn.setTwoSided(True)
