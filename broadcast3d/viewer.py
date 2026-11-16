@@ -956,6 +956,9 @@ def _viewer_goal_ball(self, fr, dt):
         if pos.z < BALL_R:
             pos.z = BALL_R; vel.z = -vel.z * 0.35
             vel.x *= 0.92; vel.y *= 0.92
+        if pos.z < BALL_R + 0.01:                                           # (rolling on the grass: it slows
+            f = math.exp(-2.0 * st)                                         #  and stops, in the net)
+            vel.x *= f; vel.y *= f
         lx = (pos.x - sx * HX) * sx                                         # (how far behind the goal line)
         if lx > 0 and net is not None:
             roof = h - 0.3 * h * min(1.0, lx / dpt)
@@ -1619,6 +1622,7 @@ class Director:
                     side = 1 if to_world(F[g - 5]["b"][0], F[g - 5]["b"][1])[0] > 0 else -1
                     self.v.replay = side
                     self.v._gp = {}                         # (the replay shows them where they were)
+                    self.v.gball = None                     # (and the ball where it was, not in the net)
                     return F[g - self.BEFORE]
         return F[int(self.t)]
 
@@ -1649,6 +1653,7 @@ def play(v, F, first):
                           scale=0.04, fg=(1, 1, 1, 0.8), mayChange=False)
 
     d = Director(v, F, first)
+    end_t = {"n": None}
     sheet = {"n": v.lineups(v.m) if "--nolineups" not in sys.argv else None, "t": 0.0}
 
     def tick_task(task):
@@ -1661,6 +1666,14 @@ def play(v, F, first):
         if abs(d.t - st["t"]) > 2:                         # (skipped with the arrow keys)
             d.t, d.rp, v.replay = st["t"], None, None
             d.done = {g for g in d.goals if g < st["t"]}
+            v.gball = None
+        at_end = d.t >= len(F) - 1 and v.replay is None     # (the recording's run out: say so)
+        if at_end and end_t["n"] is None:
+            end_t["n"] = OnscreenText(text="End of the recording   (<- to go back, Esc to quit)", pos=(0, 0.55),
+                                      scale=0.06, fg=(1, 1, 1, 1), shadow=(0, 0, 0, 0.9), mayChange=False)
+        elif not at_end and end_t["n"] is not None:
+            end_t["n"].destroy()
+            end_t["n"] = None
         step = 0.0 if st["paused"] else dt * 30.0 * st["speed"]
         fr = d.frame(step)
         st["t"] = d.t
