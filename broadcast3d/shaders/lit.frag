@@ -35,7 +35,8 @@ uniform float kit_on;
 uniform float mud_amt;                  // (a wet day: mud splashed up the boots, socks and the backs of the legs)
 uniform vec4 kit_shirt, kit_trim, kit_shorts, kit_socks, kit_socktop, kit_skin, kit_hair, kit_gloves;
 uniform vec4 kit_boots;                 // (rgb, a: 1 = a bright boot with a white sole)
-uniform float kit_cap;                  // (1: the captain - an armband on his left arm)
+uniform float kit_cap;
+uniform vec4 kit_eye;                   // (his eyes' colour; a = 1 when set)                  // (1: the captain - an armband on his left arm)
 uniform vec4 kit_extra;                 // (collar: 0 round, 1 V-neck, 2 grandad, 3 polo)
 uniform vec4 kit_info;                  // (pattern 0 none 1 hoops 2 stripes 3 pinstripe 4 band 5 halves 6 sash
                                         //  7 sleeves, keeper, has crest, -)
@@ -81,7 +82,9 @@ vec4 head_colour(float x, float y, float z, float ax) {
         float r = length(e);
         if (in_eye < 1.0) {                                         // eyes: mostly iris, a little white, the
             if (r < 0.0017) return vec4(0.02, 0.02, 0.02, 1.0);     //  upper lid's shadow across the top
-            vec3 c = r < 0.0041 ? vec3(0.17, 0.11, 0.07) : vec3(0.80, 0.78, 0.75);
+            vec3 iris = kit_eye.a > 0.5 ? kit_eye.rgb : vec3(0.17, 0.11, 0.07);
+            iris *= 0.75 + 0.35 * smoothstep(0.0041, 0.0018, r);            // (darker at the rim)
+            vec3 c = r < 0.0041 ? iris : vec3(0.80, 0.78, 0.75);
             return vec4(c * (e.y > 0.0026 ? 0.6 : 1.0), 1.0);
         }
         if (in_eye < 1.5 && e.y > 0.0) return vec4(skin * 0.5, 1.0);            // the upper lid's line

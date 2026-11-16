@@ -148,6 +148,7 @@ def shader_defaults(render):
     render.setShaderInput("kit_info", (0.0, 0.0, 0.0, 0.0))
     render.setShaderInput("kit_extra", (0.0, 0.0, 0.0, 0.0))
     render.setShaderInput("kit_cap", 0.0)
+    render.setShaderInput("kit_eye", (0.0, 0.0, 0.0, 0.0))
 
 
 def _back_texture(name, number, colour, outline):
@@ -189,6 +190,8 @@ def _face(name, number, skin):
     r = random.Random(zlib.crc32(f"face-{name}-{number}".encode()))
     sliders = [max(-1.0, min(1.0, r.gauss(0.0, 0.6))) for _ in range(21)]
     sliders[19] *= 0.6                                  # (head shape: gently - his hair sits on it)
+    sliders[12] *= 0.35                                 # (the eyes' size and height: gently - the painted eye
+    sliders[13] *= 0.35                                 #  and lids are made for the eye where it is)
     lum = (0.30 * skin[0] + 0.59 * skin[1] + 0.11 * skin[2]) / 255.0
     af = max(0.0, min(1.0, (0.62 - lum) / 0.30)) * (0.65 + 0.3 * r.random())
     asn = 0.25 * r.random() if 0.45 < lum < 0.75 else 0.0
@@ -315,6 +318,21 @@ class AnimPlayer:
         if self.cfg.get("smooth") and SMOOTH and cut in (0, 2, 3, 4, 6):
             import body
             body.attach_hair(self.a, {0: "crop", 2: "long", 3: "quiff", 4: "curls", 6: "twists"}[cut], "mh" if MHBODY else None)
+        # His eyes: brown for most (and nearly all darker-skinned players); among fairer players a mix of
+        # brown, hazel, green, grey and blue, roughly as across Europe (e.g. ~35% blue/grey in Britain).
+        lum = (0.30 * skin[0] + 0.59 * skin[1] + 0.11 * skin[2]) / 255.0
+        er = (seed // 13) % 100
+        if lum < 0.62 or er < 45:
+            eye = (0.17, 0.11, 0.07) if er % 2 else (0.12, 0.08, 0.05)
+        elif er < 62:
+            eye = (0.35, 0.27, 0.12)                    # (hazel)
+        elif er < 72:
+            eye = (0.25, 0.33, 0.18)                    # (green)
+        elif er < 82:
+            eye = (0.38, 0.42, 0.45)                    # (grey)
+        else:
+            eye = (0.25, 0.40, 0.58)                    # (blue)
+        r.setShaderInput("kit_eye", (*eye, 1.0))
         r.setShaderInput("kit_info", (PATTERNS.get(kit.get("pattern"), 0), 1.0 if kit.get("keeper") else 0.0,
                                       1.0 if crest else 0.0, float(style)))
         # A November game: about a third of outfield players in long sleeves, a few in black gloves too.
