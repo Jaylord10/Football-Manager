@@ -1014,6 +1014,8 @@ def _viewer_keeper_dive(self, i, p, stage, k):
     import math as _m
     F = self.m["frames"]
     st = self.dives.setdefault(i, {})
+    if stage == "recover" and st.get("stage") == "diving" and (k - st["start"]) / 30.0 < 0.62:
+        stage = "diving"                    # (the engine's dive is over in 0.3 s: let him fly and land first)
     if st.get("stage") != stage:
         st.update(stage=stage, start=k)
         if stage == "diving" or "h" not in st:
