@@ -205,8 +205,10 @@ def watch(career, home, away, matchday):
     import gameplay.match_engine as me
     me.RL_ENABLED = False
     me.HALF_DURATION_REAL = HALF_SECONDS
+    os.environ["FM_MATCH_VIEW"] = career.get("match_view", "3d")    # (2D or the 3D TV picture: V switches)
     engine = me.MatchEngine(career=True)
     engine.run()
+    career["match_view"] = engine.view_wanted                        # (remembered for next time)
     if engine.my_team is not None:
         career["assistant_subs"] = engine.subs.auto[engine.my_team]   # remembered for next time
     if engine.match_state != "full_time":
@@ -230,8 +232,10 @@ def watch_friendly(career, f):
     import gameplay.match_engine as me
     me.RL_ENABLED = False
     me.HALF_DURATION_REAL = HALF_SECONDS
+    os.environ["FM_MATCH_VIEW"] = career.get("match_view", "3d")    # (2D or the 3D TV picture: V switches)
     engine = me.MatchEngine(career=True)
     engine.run()
+    career["match_view"] = engine.view_wanted                        # (remembered for next time)
     if engine.my_team is not None:
         career["assistant_subs"] = engine.subs.auto[engine.my_team]
     if engine.match_state != "full_time":
@@ -254,8 +258,10 @@ def watch_playoff(career, m):
     import gameplay.match_engine as me
     me.RL_ENABLED = False
     me.HALF_DURATION_REAL = HALF_SECONDS
+    os.environ["FM_MATCH_VIEW"] = career.get("match_view", "3d")    # (2D or the 3D TV picture: V switches)
     engine = me.MatchEngine(career=True)
     engine.run()
+    career["match_view"] = engine.view_wanted                        # (remembered for next time)
     if engine.my_team is not None:
         career["assistant_subs"] = engine.subs.auto[engine.my_team]
     if engine.match_state != "full_time":
@@ -283,8 +289,10 @@ def watch_cup(career, m):
     import gameplay.match_engine as me
     me.RL_ENABLED = False
     me.HALF_DURATION_REAL = HALF_SECONDS
+    os.environ["FM_MATCH_VIEW"] = career.get("match_view", "3d")    # (2D or the 3D TV picture: V switches)
     engine = me.MatchEngine(career=True)
     engine.run()
+    career["match_view"] = engine.view_wanted                        # (remembered for next time)
     if engine.my_team is not None:
         career["assistant_subs"] = engine.subs.auto[engine.my_team]
     if engine.match_state != "full_time":

@@ -19,7 +19,9 @@ if RAIN:
 SUN_AZ, SUN_EL = 200.0, 22.0               # the sun: degrees round from behind the Main Stand, and up
 SHADOW_MAP = 4096
 ANIM = "--boxes" not in sys.argv          # (animated figures unless --boxes: the old block players)
-loadPrcFileData("", ("window-type offscreen\n" if OFF else "") + "win-size 1280 720\naudio-library-name null\n"
+EMBED = "--embedded" in sys.argv          # (drawn inside the game's match screen: broadcast3d/live.py)
+_SIZE = os.environ.get("FM3D_SIZE", "1280x720").replace("x", " ")
+loadPrcFileData("", ("window-type offscreen\n" if OFF else "") + f"win-size {_SIZE}\naudio-library-name null\n"
                 "framebuffer-multisample 1\nmultisamples 4\ntextures-power-2 none\nsync-video 0")
 from direct.showbase.ShowBase import ShowBase
 from direct.gui.OnscreenText import OnscreenText
@@ -581,20 +583,22 @@ class Viewer(ShowBase):
 
     def hud(self, match):
         from direct.gui.DirectGui import DirectFrame
-        DirectFrame(frameColor=(0.06, 0.07, 0.09, 0.88), frameSize=(0, 0.92, -0.11, 0), pos=(-1.72, 0, 0.94))
+        hp = self.hud_np = self.aspect2d.attachNewNode("scoreboard")
+        DirectFrame(parent=hp, frameColor=(0.06, 0.07, 0.09, 0.88), frameSize=(0, 0.92, -0.11, 0), pos=(-1.72, 0, 0.94))
         for info, kit, x in ((self.home_info, self.kits[0], -1.66), (self.away_info, self.kits[1], -1.04)):
             if info.get("crest"):
-                img = OnscreenImage(image=self.loader.loadTexture(Filename.fromOsSpecific(info["crest"])),
+                img = OnscreenImage(parent=hp, image=self.loader.loadTexture(Filename.fromOsSpecific(info["crest"])),
                                     pos=(x, 0, 0.885), scale=(0.042, 1, 0.044))
                 img.setTransparency(TransparencyAttrib.MAlpha)
             else:                                                       # (no crest yet: a patch of the shirt colour)
-                DirectFrame(frameColor=C(kit["shirt"]), frameSize=(-0.03, 0.03, -0.03, 0.03), pos=(x, 0, 0.885))
+                DirectFrame(parent=hp, frameColor=C(kit["shirt"]), frameSize=(-0.03, 0.03, -0.03, 0.03), pos=(x, 0, 0.885))
         self.labels = (self.home_info["short"][:3].upper(), self.away_info["short"][:3].upper())
-        self.score_t = OnscreenText(text="", pos=(-1.35, 0.87), scale=0.055, fg=(1, 1, 1, 1), align=TextNode.ACenter,
+        self.score_t = OnscreenText(parent=hp, text="", pos=(-1.35, 0.87), scale=0.055, fg=(1, 1, 1, 1), align=TextNode.ACenter,
                                     mayChange=True)
-        self.clock_t = OnscreenText(text="", pos=(-0.88, 0.87), scale=0.05, fg=(0.85, 0.9, 0.85, 1), align=TextNode.ACenter,
+        self.clock_t = OnscreenText(parent=hp, text="", pos=(-0.88, 0.87), scale=0.05, fg=(0.85, 0.9, 0.85, 1), align=TextNode.ACenter,
                                     mayChange=True)
-        DirectFrame(frameColor=(0.06, 0.07, 0.09, 0.0), frameSize=(0, 0.1, -0.1, 0), pos=(-1.7, 0, 0.94))
+        if EMBED:                                       # (in the game: its own score bar is above the picture)
+            hp.hide()
 
     def lineups(self, match):
         """The team sheets, as TV shows them before kick-off: both XIs, numbers and names, in the clubs' colours.
@@ -1511,14 +1515,18 @@ class Events:
         return best if best else (None, 0.0)
 
 
-def find_events(F, keepers=(0, 11)):
+def find_events(F, keepers=(0, 11), ev=None, lo=0):
+    """ev=None: the whole recording.  Live (broadcast3d/live.py): ev = the Events so far, lo = where the last
+    look got up to - the frames since are looked at and added (each frame's "k" is already set)."""
     import math as _m
-    ev = Events(F)
-    for k, fr in enumerate(F):
-        fr["k"] = k
+    live = ev is not None
+    if not live:
+        ev = Events(F)
+        for k, fr in enumerate(F):
+            fr["k"] = k
     sp = lambda a, b: _m.dist(a[:2], b[:2]) / 10.0 * 30.0                  # m/s, from two frames
-    gained = {}
-    for k in range(2, len(F) - 4):
+    gained = ev.__dict__.setdefault("_gained", {})
+    for k in range(max(2, lo), len(F) - 4):
         a, b = F[k - 1]["o"], F[k]["o"]
         if b >= 0 and a != b:
             gained[b] = (k, "r" in F[k - 1] or "r" in F[k - 2])            # (when he got it - from a dead ball?)
@@ -1546,20 +1554,23 @@ def find_events(F, keepers=(0, 11)):
                 if near[0] < 2.0:
                     z = F[k]["b"][2] / 10.0
                     ev.add(near[1], k, "header" if z > 1.3 else "kick")
+    seen = ev.__dict__.setdefault("_despair_seen", set())
     for i, l in list(ev.by_player.items()):                                  # a shot that didn't go in: hands
         for (ke, kind) in list(l):                                           # on head a moment later
-            if kind == "shot" and ke + 75 < len(F) and F[ke + 75]["s"] == F[ke]["s"]:
-                l.append((ke + 24, "despair"))
-    for k in range(2, len(F)):                                               # a free kick: the man fouled goes
+            if kind == "shot" and ke + 75 < len(F) and (i, ke) not in seen:
+                seen.add((i, ke))
+                if F[ke + 75]["s"] == F[ke]["s"]:
+                    l.append((ke + 24, "despair"))
+    for k in range(max(2, lo), len(F)):                                      # a free kick: the man fouled goes
         r = F[k].get("r")                                                    #  down (the taker's team-mate
         if r and r[0] == "free_kick" and F[k - 1].get("r", [None])[0] != "free_kick" and r[1] >= 0:   # nearest
             bx, by = F[k - 1]["b"][0], F[k - 1]["b"][1]                                               # the ball)
             team = r[1] < 11
             near = min(((_m.hypot(p[0] - bx, p[1] - by), j) for j, p in enumerate(F[k - 1]["p"])
                         if (j < 11) == team and j not in keepers), default=(99, -1))
-            if near[0] < 30 and near[1] >= 0:
+            if near[0] < 30 and near[1] >= 0 and (k, "fouled") not in ev.by_player.get(near[1], []):
                 ev.by_player.setdefault(near[1], []).append((k, "fouled"))
-    for k in range(1, len(F) - 4):                                           # dead balls: who took it, and how
+    for k in range(max(1, lo), len(F) - 4):                                  # dead balls: who took it, and how
         r = F[k - 1].get("r")
         if r and "r" not in F[k] and r[1] >= 0:
             v = sp(F[k]["b"], F[k + 3]["b"]) / 3.0

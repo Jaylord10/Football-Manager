@@ -11,6 +11,13 @@ SUR = 8                                     # grass beyond the lines
 MOWING = ("stripes", "wide", "checks", "diagonal", "lengthways")
 
 
+def _save(im, name):
+    """Save a texture whole or not at all (a half-written picture - the game closed mid-way - can't be read)."""
+    tmp = OUT + name + ".part.png"
+    im.save(tmp)
+    os.replace(tmp, OUT + name)
+
+
 def pitch(name="pitch.png", mowing="stripes", wear_amt=1.0, green=(52, 112, 46), seed=1):
     """The pitch.  mowing: the groundsman's pattern - stripes across (the usual), wide stripes, checks,
     diagonals, or lengthways; wear_amt: how worn the goalmouths and the middle are (0 a perfect new hybrid
@@ -73,7 +80,7 @@ def pitch(name="pitch.png", mowing="stripes", wear_amt=1.0, green=(52, 112, 46),
             d.ellipse([xx - 2, yy - 2, xx + 2, yy + 2], fill=(74, 112, 52))
     for cx, cy, a0 in ((0, 0, 0), (L, 0, 90), (L, Wd, 180), (0, Wd, 270)):
         circ(cx, cy, 1, a0, a0 + 90)
-    im.save(OUT + name)
+    _save(im, name)
 
 
 def ground_pitch(slug, prof):
@@ -175,7 +182,7 @@ def crowd(name, cols, density=0.93, seed=0, seat=(60, 30, 30)):
                 elif hat < 0.85:                                              # (hair)
                     d.chord([hx - hr, hy - hr, hx + hr, hy + hr * 0.4], 180, 360, fill=rnd.choice(hairs))
             x += rnd.uniform(11, 14) * S
-    im.save(OUT + name)
+    _save(im, name)
 
 
 def brick():
@@ -189,7 +196,7 @@ def brick():
             x = c * bw + off
             col = (rnd.randint(120, 160), rnd.randint(50, 70), rnd.randint(38, 52))
             d.rectangle([x + 1, r * bh + 1, x + bw - 2, r * bh + bh - 2], fill=col)
-    im.save(OUT + "brick.png")
+    _save(im, "brick.png")
 
 
 def sky():
@@ -208,7 +215,7 @@ def sky():
         g = rnd.randint(120, 175)
         d.ellipse([x - r * 2, y - r * 0.5, x + r * 2, y + r * 0.5], fill=(g, g + 4, g + 10))
     im = im.filter(ImageFilter.GaussianBlur(18))
-    im.save(OUT + "sky.png")
+    _save(im, "sky.png")
 
 
 def moors():
@@ -223,7 +230,7 @@ def moors():
         pts.append((x, y + 40 * math.sin(x / 300.0)))
     pts.append((w, h))
     d.polygon(pts, fill=(88, 98, 82, 255))
-    im.save(OUT + "moors.png")
+    _save(im, "moors.png")
 
 
 if __name__ == "__main__":

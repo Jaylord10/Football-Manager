@@ -1,6 +1,7 @@
 import gameplay.aerial as aerial
 import pygame
 import random
+import os
 from pygame.math import Vector2
 from config.constants import *
 from core.game_objects import Ball
@@ -147,6 +148,37 @@ class MatchEngine:
         self._card_display       = None  # dict: {type, name, until} or None
 
         self._initialize_game()
+
+        # ── The 3D view (broadcast3d/live.py): the same match, drawn as a TV picture ──
+        # Career matches, when chosen (FM_MATCH_VIEW=3d - career/matches.py); V switches 2D / 3D.
+        self.live3d = None
+        self.view3d = False
+        self.view_wanted = os.environ.get("FM_MATCH_VIEW", "2d")   # (what you chose: kept for the next match)
+        if career and self.view_wanted == "3d":
+            self._start_3d()
+
+    def _start_3d(self):
+        """Start the 3D view; if it can't start (no Panda3D, say), the match carries on in 2D."""
+        try:
+            import sys as _sys
+            here = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "broadcast3d")
+            if here not in _sys.path:
+                _sys.path.insert(0, here)
+            import live
+            self.live3d = live.Live3D(self, self.screen.get_size(), self._team_name(0), self._team_name(1))
+            self.view3d = True
+        except Exception as ex:
+            self.live3d = None
+            self.view3d = False
+            try:
+                with open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                       "broadcast3d", "live_3d.log"), "a") as f:
+                    f.write(f"couldn't start the 3D view: {ex!r} - playing in 2D\n")
+            except Exception:
+                pass
+
+    def _3d_on(self):
+        return self.view3d and self.live3d is not None and not self.live3d.failed
 
     # ------------------------------------------------------------------
     # Startup / reset helpers
@@ -415,6 +447,10 @@ class MatchEngine:
                 # so restart timers and cooldowns ran down during a pause).
                 self._render_paused()
                 continue
+            if self._3d_on() and self.live3d.holding():
+                # The 3D view is getting ready, or showing a goal again: the match waits for it
+                self._render()
+                continue
             # The football always runs in fixed 1/60 s steps (exactly like
             # sim.py); watching at 8x just plays 8 steps per drawn frame.
             # (Half-time / full-time screens stay at normal speed.)
@@ -423,9 +459,14 @@ class MatchEngine:
                      min(2, self.match_speed) if self.match_state == "penalties" else 1)
             for _ in range(steps):
                 self.step(1.0 / FPS)
+                if self.live3d is not None:
+                    self.live3d.push(self)
                 if self.match_state not in playing and self.match_state != "penalties":
                     break
             self._render()
+        if self.live3d is not None:
+            self.live3d.close()
+            self.live3d = None
         if not self.career:
             pygame.quit()
 
@@ -470,6 +511,16 @@ class MatchEngine:
                     self._change_speed(+1)
                 if event.key in (pygame.K_MINUS, pygame.K_KP_MINUS, pygame.K_DOWN):
                     self._change_speed(-1)
+                if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER) and self._3d_on() and self.live3d.replaying():
+                    self.live3d.skip()                   # (on with the match: no more of the replay)
+                    continue
+                if event.key == pygame.K_v and self.career:
+                    # 2D <-> 3D (the 3D view starts the first time it's asked for)
+                    if self.live3d is None or self.live3d.failed:
+                        self._start_3d()
+                    else:
+                        self.view3d = not self.view3d
+                    self.view_wanted = "3d" if self.view3d else "2d"
                 if event.key == pygame.K_d:
                     # Positioning debug overlay: off -> both -> Blue -> Red
                     from rendering import debug_overlay
@@ -919,27 +970,46 @@ class MatchEngine:
             "away_name":       self._team_name(1),
             "career":          self.career,
             "can_sub":         self.my_team is not None and self.subs.active,
+            "view3d":          self._3d_on(),
+            "replay3d":        self._3d_on() and self.live3d.replaying(),
         }
 
+    def _draw_3d(self):
+        """The 3D picture on the pitch area -> the score it shows, or None (then draw the 2D pitch)."""
+        if not self._3d_on():
+            return None
+        pic = self.live3d.picture()
+        if pic is None:
+            self.pitch_renderer.draw_pitch(self.screen)
+            font = self.ui_renderer.normal_font
+            msg = font.render("Getting the 3D view ready...", True, (255, 255, 255))
+            self.screen.blit(msg, msg.get_rect(center=self.screen.get_rect().center))
+            return list(self.score)
+        self.screen.blit(pic, (0, 0))
+        shown = self.live3d.shown()
+        return list(shown["s"]) if shown else list(self.score)
+
     def _render(self, flip=True):
-        self.pitch_renderer.draw_pitch(self.screen)
+        score3d = self._draw_3d()
+        if score3d is None:
+            self.pitch_renderer.draw_pitch(self.screen)
 
-        if self.offside_system.offside_detected:
-            self.offside_system.draw_offside_line(
-                self.screen,
-                self.offside_system.offside_line_x,
-                self.offside_system.offside_team
+            if self.offside_system.offside_detected:
+                self.offside_system.draw_offside_line(
+                    self.screen,
+                    self.offside_system.offside_line_x,
+                    self.offside_system.offside_team
+                )
+
+            self.object_renderer.draw_players(
+                self.screen, self.team0 + self.team1, self.ui_renderer.normal_font
             )
-
-        self.object_renderer.draw_players(
-            self.screen, self.team0 + self.team1, self.ui_renderer.normal_font
-        )
-        self.object_renderer.draw_ball(self.screen, self.ball)
-        self._draw_overlay()
+            self.object_renderer.draw_ball(self.screen, self.ball)
+            self._draw_overlay()
 
         match_info = self._build_match_info()
         self.ui_renderer.draw_ui(
-            self.window, self.score, self.time_elapsed, self.ball, match_info
+            self.window, score3d if score3d is not None else self.score, self.time_elapsed, self.ball, match_info
         )
         if match_info.get("rl_agent"):
             self.ui_renderer._draw_rl_panel(self.screen, match_info)
@@ -1003,11 +1073,12 @@ class MatchEngine:
             debug_overlay.draw(self.screen, self.team0 + self.team1, mode)
 
     def _render_paused(self):
-        self.pitch_renderer.draw_pitch(self.screen)
-        self.object_renderer.draw_players(
-            self.screen, self.team0 + self.team1, self.ui_renderer.normal_font
-        )
-        self.object_renderer.draw_ball(self.screen, self.ball)
+        if self._draw_3d() is None:
+            self.pitch_renderer.draw_pitch(self.screen)
+            self.object_renderer.draw_players(
+                self.screen, self.team0 + self.team1, self.ui_renderer.normal_font
+            )
+            self.object_renderer.draw_ball(self.screen, self.ball)
         if getattr(self, "overlay_mode", "off") != "off":
             # Studying the overlay: no dark veil, just a small banner
             self._draw_overlay()
