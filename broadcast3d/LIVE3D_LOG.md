@@ -63,3 +63,16 @@
 - `dev/record_pens.py <copy of game> out.json [seconds]` records a shoot-out (a career match set up as a
   knockout, straight to penalties) for checking; viewed with `viewer.py 40 160 out --match=out.json`.
 - Tested: a 10-kick shoot-out recorded and drawn; pictures looked at.
+
+### 4. Half-time stats card - DONE
+- When the picture reaches half-time (or the half-time of extra time), the 3D view puts up the TV stats card
+  (possession, shots, passes, tackles won, headers, fouls suffered, worked out from the match so far) with a
+  "HALF-TIME  WES 0 - 0 NOR" band on top.  In the game it sits to the right, clear of the game's own
+  "HALF TIME / score / 2nd half starting shortly" in the middle; when your half-time talk panel is up it's
+  behind it, and there once it's gone.  It goes when the second half starts.
+- Team sheets still up at half-time (only in very short test halves) are taken down first.
+- A club in black shirts gets its trim colour for the bar on the card (a black bar didn't show).
+- dev/live3d_flow.py now also saves a picture a second after the PICTURE's own state changes
+  (`_shown_halftime<n>.png` etc.), as well as the engine's.
+- Tested: live flows (NOHUMAN=1 HALF=40, 8x) - card shows at half-time, gone in the second half;
+  `viewer.py 9000 1 out --stats --ht` for a still.

@@ -49,6 +49,17 @@ if __name__ == "__main__":
             cnt["rp_shot"] = n + 120
         if n == cnt.get("rp_shot"):
             pygame.image.save(e.window, f"{OUT}_replay{n}.png")
+        sh_st = (e.live3d.shown() or {}).get("st") if e.live3d else None
+        if sh_st != cnt.get("sh_seen"):                         # (and after the picture's own state changes)
+            cnt["sh_seen"] = sh_st
+            cnt["sh_shot"] = (n + 60, sh_st)
+        if cnt.get("sh_shot") and n == cnt["sh_shot"][0]:
+            pygame.image.save(e.window, f"{OUT}_shown_{cnt['sh_shot'][1]}{n}.png")
+        if e.match_state != cnt.get("st_seen"):                 # (a picture a little after each change of state)
+            cnt["st_seen"] = e.match_state
+            cnt["st_shot"] = (n + 45, e.match_state)
+        if cnt.get("st_shot") and n == cnt["st_shot"][0]:
+            pygame.image.save(e.window, f"{OUT}_{cnt['st_shot'][1]}{n}.png")
         if e.match_state == "full_time" and not cnt.get("ft"):
             cnt["ft"] = n
         if cnt.get("ft") and n == cnt["ft"] + 60:

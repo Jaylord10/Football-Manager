@@ -358,6 +358,7 @@ def _draw_loop(conn, buf, w, h, meta):
     subs_on = [0, 0]
     pending = []
     sheet = {"n": None, "t": 0.0}
+    stats = {"n": None}
     lighter = False
     clock = ClockObject.getGlobalClock()
     last = time.perf_counter()
@@ -413,6 +414,20 @@ def _draw_loop(conn, buf, w, h, meta):
             last = now
             continue
         last = now
+        brk = F[k].get("st") in ("halftime", "et_halftime")
+        if brk and sheet["n"] is not None:              # (the team sheets still up - a short half: they go)
+            sheet["n"].removeNode()
+            sheet["n"] = None
+        if brk and stats["n"] is None:                  # (half-time: the TV stats card, under the game's
+            try:                                        #  half-time screen and there when it's gone)
+                stats["n"] = v.stats_panel(k, "HALF-TIME" if F[k]["st"] == "halftime" else "EXTRA TIME, HALF-TIME")
+            except Exception:
+                print("stats:", traceback.format_exc(), flush=True)
+                stats["n"] = False
+        elif not brk and stats["n"] is not None:
+            if stats["n"]:
+                stats["n"].removeNode()
+            stats["n"] = None
         if sheet["n"] is not None:                      # (the team sheets, for the first few seconds)
             sheet["t"] += real_dt
             if sheet["t"] > 6.0:

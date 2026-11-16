@@ -695,9 +695,10 @@ class Viewer(ShowBase):
                              align=TextNode.ARight)
         return root
 
-    def stats_panel(self, k):
+    def stats_panel(self, k, title=None):
         """The TV stats card (key S live, --stats for pictures): possession, shots, passes... up to frame k,
-        worked out from the recording."""
+        worked out from the recording.  title ("HALF-TIME"): a band on top with it and the score (the live
+        view puts this up at half-time, behind the game's half-time screen)."""
         from direct.gui.DirectGui import DirectFrame
         F = self.m["frames"]
         own = [0, 0]
@@ -718,7 +719,8 @@ class Viewer(ShowBase):
         root = self.aspect2d.attachNewNode("stats")
         DirectFrame(parent=root, frameColor=(0.06, 0.07, 0.09, 0.9), frameSize=(-0.62, 0.62, -0.54, 0.42))
         for side, (kit, x) in enumerate(((self.kits[0], -0.45), (self.kits[1], 0.45))):
-            DirectFrame(parent=root, frameColor=C(kit["shirt"]), frameSize=(-0.15, 0.15, -0.012, 0.012),
+            bar = kit["shirt"] if sum(kit["shirt"]) > 160 else kit.get("trim", kit["shirt"])   # (a black shirt:
+            DirectFrame(parent=root, frameColor=C(bar), frameSize=(-0.15, 0.15, -0.012, 0.012),     #  its trim shows)
                         pos=(x, 0, 0.25))
         OnscreenText(parent=root, text=self.labels[0], pos=(-0.45, 0.3), scale=0.055, fg=(1, 1, 1, 1))
         OnscreenText(parent=root, text=self.labels[1], pos=(0.45, 0.3), scale=0.055, fg=(1, 1, 1, 1))
@@ -728,6 +730,15 @@ class Viewer(ShowBase):
             OnscreenText(parent=root, text=lab, pos=(0, y), scale=0.045, fg=(0.8, 0.85, 0.9, 1))
             OnscreenText(parent=root, text=a, pos=(-0.45, y), scale=0.055, fg=(1, 1, 1, 1))
             OnscreenText(parent=root, text=b, pos=(0.45, y), scale=0.055, fg=(1, 1, 1, 1))
+        if title:
+            sc = F[min(k, len(F) - 1)].get("s", [0, 0]) if F else [0, 0]
+            DirectFrame(parent=root, frameColor=(0.98, 0.85, 0.3, 0.95), frameSize=(-0.62, 0.62, 0.42, 0.56))
+            OnscreenText(parent=root, text=f"{title}    {self.labels[0]}  {sc[0]} - {sc[1]}  {self.labels[1]}",
+                         pos=(0, 0.47), scale=0.06, fg=(0.06, 0.07, 0.09, 1))
+        root.setBin("fixed", 20)
+        if EMBED and title:                             # (in the game: to the right, clear of the game's own
+            root.setScale(0.85)                         #  HALF TIME and score in the middle of the picture)
+            root.setPos(min(0.97, self.getAspectRatio() - 0.56), 0, 0.0)
         return root
 
     def _captain(self, match, team):
@@ -1924,7 +1935,7 @@ def main():
     for _ in range(2):
         v.taskMgr.step()                                  # (draw twice first: the sun's shadow map is a frame behind)
     d = Director(v, F, first)
-    sheet = v.lineups(v.m) if "--lineups" in sys.argv else (v.stats_panel(first) if "--stats" in sys.argv else None)
+    sheet = v.lineups(v.m) if "--lineups" in sys.argv else (v.stats_panel(first, "HALF-TIME" if "--ht" in sys.argv else None) if "--stats" in sys.argv else None)
     for i in range(n):
         if sheet is not None and i == 150:
             sheet.removeNode()
