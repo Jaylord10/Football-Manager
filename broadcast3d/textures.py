@@ -8,23 +8,43 @@ L, Wd = 110, 70                             # the engine's pitch (metres)
 SUR = 8                                     # grass beyond the lines
 
 
-def pitch():
+MOWING = ("stripes", "wide", "checks", "diagonal", "lengthways")
+
+
+def pitch(name="pitch.png", mowing="stripes", wear_amt=1.0, green=(52, 112, 46), seed=1):
+    """The pitch.  mowing: the groundsman's pattern - stripes across (the usual), wide stripes, checks,
+    diagonals, or lengthways; wear_amt: how worn the goalmouths and the middle are (0 a perfect new hybrid
+    pitch, 1 a lower-league pitch in November)."""
     w, h = (L + 2 * SUR) * PX, (Wd + 2 * SUR) * PX
-    im = Image.new("RGB", (w, h), (52, 112, 46))
+    im = Image.new("RGB", (w, h), green)
     d = ImageDraw.Draw(im)
-    stripe = 5.5 * PX                        # mowing stripes across the length
-    for i in range(int(w / stripe) + 1):
-        if i % 2:
-            d.rectangle([i * stripe, 0, (i + 1) * stripe, h], fill=(60, 128, 52))
+    light = (green[0] + 8, green[1] + 16, green[2] + 6)
+    import numpy as np
+    ys, xs = np.mgrid[0:h, 0:w]
+    st = 5.5 * PX
+    if mowing == "wide":
+        band = (xs // (st * 2)) % 2
+    elif mowing == "checks":
+        band = ((xs // st) + (ys // st)) % 2
+    elif mowing == "diagonal":
+        band = ((xs + ys) // (st * 1.2)) % 2
+    elif mowing == "lengthways":
+        band = (ys // (st * 0.9)) % 2
+    else:
+        band = (xs // st) % 2
+    a = np.where(band[..., None] == 1, np.array(light, np.float32), np.array(green, np.float32))
+    im = Image.fromarray(a.astype(np.uint8))
+    d = ImageDraw.Draw(im)
     # subtle noise
-    rnd = random.Random(1)
+    rnd = random.Random(seed)
     px = im.load()
     for _ in range(w * h // 6):
         x, y = rnd.randrange(w), rnd.randrange(h)
         r, g, b = px[x, y]; k = rnd.randint(-9, 9)
         px[x, y] = (max(0, r + k), max(0, g + k), max(0, b + k))
     im = im.filter(ImageFilter.GaussianBlur(0.6))
-    im = wear(im)
+    if wear_amt > 0:
+        im = Image.blend(im, wear(im), min(1.0, wear_amt))
     d = ImageDraw.Draw(im)
     o = SUR * PX
     def P(xm, ym): return (o + xm * PX, o + ym * PX)
@@ -53,7 +73,25 @@ def pitch():
             d.ellipse([xx - 2, yy - 2, xx + 2, yy + 2], fill=(74, 112, 52))
     for cx, cy, a0 in ((0, 0, 0), (L, 0, 90), (L, Wd, 180), (0, Wd, 270)):
         circ(cx, cy, 1, a0, a0 + 90)
-    im.save(OUT + "pitch.png")
+    im.save(OUT + name)
+
+
+def ground_pitch(slug, prof):
+    """This club's own pitch (made once, kept in tex/): its groundsman's mowing pattern, and as worn as its
+    profile says (a "perfect" hybrid pitch hardly at all, an old pitch a lot)."""
+    import zlib
+    name = f"pitch_{slug}.png"
+    if os.path.exists(OUT + name):
+        return name
+    surf = str(((prof or {}).get("ground") or {}).get("pitch", {}).get("surface", "")).lower()
+    h = zlib.crc32(slug.encode())
+    mowing = MOWING[h % len(MOWING)]
+    wear_amt = 0.25 if ("perfect" in surf or "hybrid" in surf) else 1.0 if ("heavy" in surf or "worn" in surf
+                                                                               or "mud" in surf) else 0.65
+    tint = (h // 7) % 3
+    green = ((50, 114, 44), (54, 110, 48), (48, 116, 50))[tint]
+    pitch(name, mowing, wear_amt, green, seed=h % 1000)
+    return name
 
 
 def wear(im):

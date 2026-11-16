@@ -18,3 +18,4 @@ broadcast3d/match.json
 broadcast3d/__pycache__/
 broadcast3d/tex/crowd_visitors.png
 broadcast3d/tex/crowd_hosts.png
+broadcast3d/tex/pitch_*.png

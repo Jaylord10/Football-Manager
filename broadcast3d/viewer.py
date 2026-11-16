@@ -147,7 +147,16 @@ class Stadium:
 
     def pitch_surround(self):
         cm = CardMaker("pitch"); cm.setFrame(-HX - 8, HX + 8, -HY - 8, HY + 8)
-        p = self.root.attachNewNode(cm.generate()); p.setP(-90); p.setTexture(self.T("pitch.png", False)); no_shadow(p)
+        tex_name = "pitch.png"
+        try:                                                                # (each ground its own pitch)
+            import kits as _kk, textures as _tx
+            home = TEAMS[0] if TEAMS else self.b.m.get("home", "Ashvale Rovers")
+            prof, slug = _kk.profile(home)
+            if slug and slug != "ashvale":
+                tex_name = _tx.ground_pitch(slug, prof)
+        except Exception as e:
+            print("pitch:", e)
+        p = self.root.attachNewNode(cm.generate()); p.setP(-90); p.setTexture(self.T(tex_name, False)); no_shadow(p)
         from panda3d.core import TextureStage
         p.setTexture(TextureStage("detail"), self.T("grass_detail.png"))    # (close up: blades of grass, not a flat colour)
         p.setShaderInput("detail_amt", 0.7)
