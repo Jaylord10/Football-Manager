@@ -535,6 +535,7 @@ class AnimPlayer:
         lean_r = -math.degrees(math.atan(self.sp * w / 9.81))
         acc = (sp - self.sp) / max(dt, 1e-3) * min(1.0, dt * 6)
         lean_p = -max(-8.0, min(13.0, acc * 2.4))                          # (driving away: low; braking: back)
+        lean_r += getattr(self, "barge", 0.0)                              # (shoulder to shoulder with a man)
         self.lean_r = getattr(self, "lean_r", 0.0) + (max(-18.0, min(18.0, lean_r)) - getattr(self, "lean_r", 0.0)) * min(1.0, dt * 6)
         self.lean_p = getattr(self, "lean_p", 0.0) + (lean_p - getattr(self, "lean_p", 0.0)) * min(1.0, dt * 5)
         if self.roll > 1:                                                     # (a dive: that tips him over instead)

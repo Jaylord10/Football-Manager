@@ -1141,6 +1141,10 @@ class Viewer(ShowBase):
                 if 8.0 < math.hypot(wx - rbx, wy - rby) < 11.5:                 # (in the wall)
                     kind, t = "wall", 0.5
                     self.__dict__.setdefault("_wall", {})[i] = k
+            if kind is None and not getattr(p, "keeper", False):
+                kind, t = self._contact(i, p, fr, wx, wy, fx, fy, sp, r)        # (jockeying, tugging, barging)
+            else:
+                p.barge = 0.0
             if kind is None and getattr(p, "keeper", False) and fr["o"] == i:    # (a keeper with it in his hands)
                 kind, t = "cradle", 0.5
             if kind is None and getattr(p, "keeper", False) and r and r[0] == "free_kick" and (i < 11) != (r[1] < 11):
@@ -1770,6 +1774,44 @@ def _viewer_run_up(self, i, fr, wx, wy, fx, fy, sp, k, dt):
     return nx, ny, dx, -dy, max(sp, moved * 10.0), pose
 
 
+def _viewer_contact(self, i, p, fr, wx, wy, fx, fy, sp, r):
+    """Off the ball, close to an opponent: a defender near the man on the ball jockeys (low, side-on, not diving
+    in); running shoulder to shoulder with a man, they lean into each other; chasing a man from just behind,
+    some reach out for his shirt; at a corner, they jostle in the box (arms out, holding their ground).
+    -> (pose, t) or (None, 0)."""
+    P = fr["p"]
+    o = fr["o"]
+    best, bj = 99.0, -1
+    for j in (range(11, 22) if i < 11 else range(0, 11)):
+        q = P[j] if j < len(P) else None
+        if q is None or not q[6]:
+            continue
+        d = math.hypot(q[0] - P[i][0], q[1] - P[i][1]) / 10.0
+        if d < best:
+            best, bj = d, j
+    p.barge = 0.0
+    if bj < 0 or best > 3.5 or o == i:
+        return None, 0.0
+    q = P[bj]
+    dx, dy = (q[0] - P[i][0]) / 10.0, -(q[1] - P[i][1]) / 10.0               # (to him, world-way-up)
+    dd = max(0.05, math.hypot(dx, dy))
+    ahead = (dx * fx - dy * fy) / dd                                         # (fx, fy: engine facing, y down)
+    ms, ms_q = sp / 10.0, q[4] / 10.0
+    if r and r[0] == "corner_kick" and best < 1.3 and ms < 2.5:              # (a corner: jostling in the box)
+        bx, by = to_world(fr["b"][0], fr["b"][1])
+        if math.hypot(wx - bx, wy - by) > 6.0:
+            return "shield", 0.5
+    if o == bj and best < 3.5 and ms < 4.5 and ahead > 0.5:                   # (closing the man on the ball down)
+        return "jockey", 0.5
+    if best < 1.1 and ms > 4.0 and ms_q > 4.0 and abs(ahead) < 0.55:          # (side by side: leaning in)
+        side = -(dx * fy + dy * fx)                                          # (+ = he's on my right)
+        p.barge = 7.0 if side > 0 else -7.0
+        return None, 0.0
+    if best < 1.4 and ms > 4.5 and ahead > 0.8 and p.seed % 3 == 1:          # (just behind him: a tug)
+        return "tug", 0.5
+    return None, 0.0
+
+
 def _viewer_throw_dir(self, i, k, t, fx, fy):
     """A throw-in: he faces the way the ball goes (engine directions)."""
     F = self.m["frames"]
@@ -2110,6 +2152,7 @@ Viewer._goal_ball = _viewer_goal_ball
 Viewer._spin_ball = _viewer_spin_ball
 Viewer._throw_dir = _viewer_throw_dir
 Viewer._run_up = _viewer_run_up
+Viewer._contact = _viewer_contact
 Viewer._throw_spot = _viewer_throw_spot
 Viewer.THROW_BACK = 0.35           # m: the thrower's middle this far outside the pitch while he throws
 Viewer._left_foot = _viewer_left_foot

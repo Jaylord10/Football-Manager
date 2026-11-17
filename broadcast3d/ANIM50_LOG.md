@@ -31,6 +31,11 @@ strips from a recorded match (scratch tool: find the moment, follow the player, 
 - 48 Full time: shaking hands with the opponent next to him in the centre circle.
 - 49 The referee's whistle: hand to his mouth when he gives a free kick, then he points which way.
   (No "advantage" signal: the match engine doesn't play advantage.)
+- 15/16 Closing the man on the ball down: within 3.5 m and not sprinting, a defender jockeys - low, knees
+  bent, side-on, arms out a little, eyes on the ball.
+- 27 Running shoulder to shoulder with an opponent: they lean into each other.
+- 30 Chasing a man from just behind: about a third of players reach out for his shirt.
+- 43 Corners: players marking each other in the box jostle, arms out, holding their ground.
 
 ## Already there before tonight
 - 12 Shot follow-through landing on the kicking foot; 13 leaning into bends; 14 leaning forward when setting

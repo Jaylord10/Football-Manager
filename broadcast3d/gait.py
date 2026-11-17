@@ -577,6 +577,15 @@ ACTIONS = {
                 (0.05, {"abs": 1, "arm_r": 70, "across_r": 40, "elbow_r": 140, "out_r": 10, "nod": 4}),
                 (0.50, {"abs": 1, "arm_r": 72, "across_r": 40, "elbow_r": 140, "out_r": 10, "nod": 4}),
                 (0.75, N)],
+    # Jockeying: a defender close to the man on the ball - low, knees bent, side-on, one foot forward, arms out
+    # a little for balance, eyes on the ball (not diving in).
+    "jockey": [(0.0, {"hip_r": 28, "knee_r": 48, "ankle_r": 14, "hip_l": 8, "knee_l": 42, "ankle_l": 12,
+                      "hipout_r": 6, "hipout_l": 8, "lean": 18, "turn": 22, "twist": -8, "nod": 18, "out_r": 35,
+                      "out_l": 35, "arm_r": 15, "arm_l": -5, "elbow_r": 40, "elbow_l": 40}),
+               (1.0, "same")],
+    # A tug at the shirt of the man he's chasing: the right arm reaching out after him.
+    "tug": [(0.0, {"abs": 1, "arm_r": 72, "out_r": 22, "elbow_r": 12, "across_r": -5, "twist": -12, "lean": 6}),
+            (1.0, "same")],
     # A manager on the touchline, arm out, telling them where to go.
     "point": [(-0.4, N),
               (0.0, {"arm_r": 75, "out_r": 30, "elbow_r": 10, "twist": 12, "lean": 4, "nod": -6}),
@@ -594,7 +603,7 @@ for _keys in ACTIONS.values():
                     if _m in _p:
                         _p[_m] += OUT_SHIFT
 # How strongly each blends over the running (a dribbling touch stays light).
-WEIGHT = {"touch": 0.55, "cut": 0.7, "brake": 0.75, "shield": 0.8}
+WEIGHT = {"touch": 0.55, "cut": 0.7, "brake": 0.75, "shield": 0.8, "jockey": 0.7, "tug": 0.6}
 
 
 # --- moods: other ways of standing, walking and running (goal celebrations) -----------------------------------
