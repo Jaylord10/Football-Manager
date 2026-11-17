@@ -794,10 +794,13 @@ class Viewer(ShowBase):
         from direct.gui.DirectGui import DirectFrame
         F = self.m["frames"]
         own = [0, 0]
-        for fr in F[:k + 1]:
-            o = fr["o"]
-            if o is not None and o >= 0:
-                own[0 if o < 11 else 1] += 1
+        if hasattr(F, "own"):                                   # (live: counted as the frames came in)
+            own = list(F.own)
+        else:
+            for fr in F[:k + 1]:
+                o = fr["o"]
+                if o is not None and o >= 0:
+                    own[0 if o < 11 else 1] += 1
         tot = max(1, own[0] + own[1])
         poss = [round(100 * own[0] / tot), 100 - round(100 * own[0] / tot)]
         cnt = {kind: [0, 0] for kind in ("shot", "kick", "tackle", "fouled", "header")}

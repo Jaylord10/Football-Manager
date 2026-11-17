@@ -181,7 +181,7 @@ class Live3D:
         if not force and self._step % 2:
             return
         fr = frame_from_engine(engine)
-        self.frames.append({"s": fr["s"], "t": fr["t"], "st": fr["st"]})
+        self.frames.append((fr["s"][0], fr["s"][1], fr["t"], fr["st"]))     # (small: a whole match of them)
         self.recent.append((len(self.frames) - 1, [(p[0], p[1], p[6]) for p in fr["p"]], fr["b"][:2],
                             fr["o"]))
         try:
@@ -293,7 +293,8 @@ class Live3D:
     def shown(self):
         """The frame the picture shows ({"s": score, "t": time, "st": match state}), or None."""
         if 0 <= self._k < len(self.frames):
-            return self.frames[self._k]
+            s0, s1, t, st = self.frames[self._k]
+            return {"s": [s0, s1], "t": t, "st": st}
         return None
 
     def close(self):
@@ -334,12 +335,14 @@ class _LiveDirector:
         self.goals = []
         self.done = set()
         self.second = set()
+        self.goal_c = {}
         self.rp = None
         v.replay = None
 
     def note(self, F, k):
         if k > 0 and "c" in F[k] and "c" not in F[k - 1]:
             self.goals.append(k)
+            self.goal_c[k] = F[k]["c"]                  # (who scored: kept - the frame itself won't be)
 
     def frame(self, F, real_dt):
         """-> (where in the recording: a frame number with a fraction - the picture is drawn between two frames,
@@ -382,6 +385,43 @@ class _LiveDirector:
                     self.v.gball = None                     # (and the ball where it was, not in the net)
                     return float(g - self.BEFORE), 1 / 30.0
         return self.t, dt
+
+
+class _Frames:
+    """The frames so far, as a list to the 3D view - but only the last few minutes are kept (a whole match of
+    frames is a few hundred megabytes): F[k] for any recent k, len(F) = how many there have been.  It keeps a
+    running count of who's had the ball (the stats card's possession)."""
+    KEEP = 6000                                         # (200 s of football - replays need 10 s, events 3 s)
+
+    def __init__(self):
+        self.buf = [None] * self.KEEP
+        self.n = 0
+        self.own = [0, 0]
+
+    def append(self, fr):
+        self.buf[self.n % self.KEEP] = fr
+        self.n += 1
+        o = fr.get("o", -1)
+        if o is not None and o >= 0:
+            self.own[0 if o < 11 else 1] += 1
+
+    def __len__(self):
+        return self.n
+
+    def __bool__(self):
+        return self.n > 0
+
+    def __getitem__(self, k):
+        if isinstance(k, slice):
+            lo, hi, _ = k.indices(self.n)
+            lo = max(lo, self.n - self.KEEP)
+            return [self[j] for j in range(lo, hi)]
+        if k < 0:
+            k += self.n
+        if k >= self.n or k < 0:
+            raise IndexError(k)
+        k = max(k, self.n - self.KEEP)                  # (long gone: the oldest kept)
+        return self.buf[k % self.KEEP]
 
 
 def _blend(F, t):
@@ -446,7 +486,7 @@ def _draw_loop(conn, buf, w, h, meta):
     import players3d
     viewer.AnimPlayer = players3d.AnimPlayer
     from panda3d.core import ClockObject
-    F = []
+    F = _Frames()
     match = {"home": meta["home"], "away": meta["away"], "names": meta["names"], "frames": F}
     v = viewer.Viewer(match)
     try:
@@ -550,7 +590,7 @@ def _draw_loop(conn, buf, w, h, meta):
             motm_done = True
             scorers = {}
             for g in d.goals:
-                c = F[g].get("c")
+                c = d.goal_c.get(g)
                 if c and (c[0] == 0) == (c[1] < 11):                      # (own goals don't count)
                     scorers[c[1]] = scorers.get(c[1], 0) + 1
             win = 0 if F[k]["s"][0] > F[k]["s"][1] else 1 if F[k]["s"][1] > F[k]["s"][0] else -1
@@ -664,3 +704,6 @@ def _draw_loop(conn, buf, w, h, meta):
         elif n_draw == 300:
             print(f"3D picture: {t_draw / n_draw * 1000:.1f} ms each" + (" (lighter 3D)" if lighter else ""), flush=True)
         clock.tick()
+        spare = 1.0 / 60.0 - (time.perf_counter() - t0)       # (no more than 60 pictures a second: the
+        if spare > 0.001:                                       #  game's window only shows 60, and the
+            time.sleep(spare)                                   #  laptop has the match to run too)
