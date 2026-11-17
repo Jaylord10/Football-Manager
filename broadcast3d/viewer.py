@@ -215,6 +215,37 @@ class Stadium:
             for side, x0, x1, d, z in lamps:
                 strip = box(self.side(side), x0, d - 0.3, z - 0.4, x1, d, z, lamp)
                 strip.setShaderOff(1); strip.setLightOff(1); no_shadow(strip, lit=False)
+                if NIGHT:                                   # (at night: the light glowing in the damp air)
+                    x = x0 + 4.0
+                    while x < x1 - 2.0:
+                        self._glow(self.side(side), (x, d - 0.5, z - 0.2), 7.0, 0.55)
+                        x += 11.0
+
+    def _glow(self, parent, pos, size, strength):
+        """A soft glow round a floodlight (at night): a bright blur that adds to whatever's behind it."""
+        from panda3d.core import ColorBlendAttrib
+        if not os.path.exists(T + "glow.png"):
+            from PIL import Image
+            g = Image.new("L", (128, 128))
+            px = g.load()
+            for yy in range(128):
+                for xx in range(128):
+                    r = math.hypot(xx - 63.5, yy - 63.5) / 63.5
+                    px[xx, yy] = int(255 * max(0.0, 1.0 - r) ** 2.2)
+            Image.merge("RGBA", (g, g, g, g)).save(T + "glow.png")
+        cm = CardMaker("glow"); cm.setFrame(-size / 2, size / 2, -size / 2, size / 2)
+        n = parent.attachNewNode(cm.generate())
+        n.setPos(*pos)
+        n.setBillboardPointEye()
+        n.setTexture(self.T("glow.png", False))
+        n.setColor(1.0, 0.97, 0.88, 1)
+        n.setColorScale(strength, strength, strength, 1)
+        n.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd, ColorBlendAttrib.OIncomingAlpha, ColorBlendAttrib.OOne))
+        n.setDepthWrite(False)
+        n.setBin("fixed", 20)
+        n.setShaderOff(1); n.setLightOff(1)
+        no_shadow(n, lit=False)
+        return n
 
     def build_kiln_lane(self):
         b = self.b
@@ -292,6 +323,8 @@ class Stadium:
         if NIGHT or OVERCAST:                               # (the lamps, lit - at night, or on a dull day)
             gl = box(n, -3.8, -0.62, H + 0.2, 3.8, -0.5, H + 4.8, (2.4, 2.4, 2.3, 1) if NIGHT else (1.7, 1.7, 1.6, 1))
             gl.setShaderOff(1); gl.setLightOff(1)
+            if NIGHT:
+                self._glow(n, (0, -2.0, H + 2.5), 22.0, 0.75)
         for i in range(4):
             for j in range(3):
                 box(n, -3.5 + i * 1.9, -0.75, H + 0.5 + j * 1.5, -2.3 + i * 1.9, -0.5, H + 1.6 + j * 1.5, C((255, 250, 225)))
