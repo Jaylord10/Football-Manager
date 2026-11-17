@@ -250,6 +250,53 @@ ACTIONS = {
              (0.32, {"hip_r": 30, "knee_r": 34, "ankle_r": -5, "hip_l": -10, "knee_l": 30, "turn": 12, "twist": 6,
                      "lean": 6, "out_l": 30, "arm_l": 15, "elbow_l": 30, "out_r": 20, "elbow_r": 30}),
              (0.50, N)],
+    # A short pass with the inside of the right foot: the foot turned out ~40-50 deg so the flat inside of it
+    # meets the ball, a shorter backswing than the instep kick and a smooth push through (Levanon & Dapena
+    # 1998, "Comparison of the kinematics of the full-instep and pass kicks in soccer", Med Sci Sports Exerc
+    # 30(6): the pass kick is slower, with the thigh turned out and a smaller knee swing).
+    "pass": [(-0.26, N),
+             (-0.14, {"hip_l": 24, "knee_l": 14, "ankle_l": 8, "hip_r": -12, "knee_r": 50, "ankle_r": -5,
+                      "toein_r": -30, "turn": -6, "lean": 3, "out_l": 30, "arm_l": 10, "elbow_l": 30, "out_r": 15,
+                      "elbow_r": 25}),
+             (0.00, {"hip_r": 20, "knee_r": 16, "ankle_r": 2, "toein_r": -45, "hipout_r": 10, "hip_l": 8,
+                     "knee_l": 30, "turn": 8, "twist": 4, "lean": 5, "nod": 12, "out_l": 35, "arm_l": 10,
+                     "elbow_l": 30, "out_r": 18, "arm_r": -10, "elbow_r": 25}),
+             (0.12, {"hip_r": 30, "knee_r": 12, "toein_r": -30, "hipout_r": 6, "hip_l": 5, "knee_l": 24,
+                     "turn": 12, "twist": 5, "lean": 3, "nod": 8, "out_l": 28, "elbow_l": 30, "out_r": 15}),
+             (0.32, N)],
+    # A lofted pass / chip: the instep kick, but leaning back with the foot under the ball, and a high finish.
+    "loft": [(-0.32, N),
+             (-0.20, {"hip_l": 30, "knee_l": 14, "ankle_l": 10, "hip_r": -18, "knee_r": 70, "ankle_r": -20,
+                      "turn": -10, "lean": 0, "out_l": 40, "arm_l": 15, "elbow_l": 30, "out_r": 20, "arm_r": -15}),
+             (-0.10, {"hip_r": -28, "knee_r": 100, "ankle_r": -20, "hip_l": 16, "knee_l": 30, "turn": -18,
+                      "twist": -8, "lean": -4, "tilt": -4, "out_l": 60, "arm_l": 15, "elbow_l": 30, "out_r": 30,
+                      "arm_r": -20}),
+             (0.00, {"hip_r": 30, "knee_r": 30, "ankle_r": -15, "hip_l": 12, "knee_l": 34, "turn": 10, "twist": 8,
+                     "lean": -10, "chest": -4, "tilt": -5, "out_l": 60, "arm_l": 20, "elbow_l": 25, "out_r": 40,
+                     "arm_r": -20}),
+             (0.18, {"hip_r": 80, "knee_r": 8, "ankle_r": -20, "hip_l": 4, "knee_l": 26, "turn": 16, "twist": 10,
+                     "lean": -12, "chest": -4, "out_l": 55, "arm_l": 25, "elbow_l": 30, "out_r": 35}),
+             (0.44, N)],
+    # The outside of the right foot: a flick out to his right (and back), the toes turned in, the leg swinging
+    # across and then out.
+    "flick": [(-0.22, N),
+              (-0.10, {"hip_r": 12, "knee_r": 45, "toein_r": 25, "hipout_r": -14, "hip_l": 15, "knee_l": 25,
+                       "ankle_l": 6, "out_l": 30, "elbow_l": 30, "tilt": -2}),
+              (0.00, {"hip_r": 16, "knee_r": 22, "toein_r": 35, "hipout_r": 20, "ankle_r": -20, "hip_l": 10,
+                      "knee_l": 30, "tilt": 4, "twist": -6, "out_l": 38, "elbow_l": 30, "out_r": 12, "nod": 10}),
+              (0.12, {"hip_r": 10, "knee_r": 18, "toein_r": 25, "hipout_r": 26, "hip_l": 8, "knee_l": 26,
+                      "tilt": 5, "out_l": 32, "elbow_l": 30}),
+              (0.30, N)],
+    # A back-heel: the right foot lifted forward over the ball, then the heel brought back into it, leaning
+    # over it a little, the arms out.
+    "backheel": [(-0.26, N),
+                 (-0.12, {"hip_r": 30, "knee_r": 55, "ankle_r": 8, "hip_l": 8, "knee_l": 24, "lean": 6, "nod": 12,
+                          "out_l": 25, "out_r": 15, "elbow_l": 30, "elbow_r": 30}),
+                 (0.00, {"hip_r": -22, "knee_r": 38, "ankle_r": 15, "hip_l": 10, "knee_l": 30, "lean": 10, "nod": 18,
+                         "out_l": 30, "out_r": 22, "elbow_l": 30, "elbow_r": 30}),
+                 (0.14, {"hip_r": -30, "knee_r": 62, "ankle_r": 5, "hip_l": 8, "knee_l": 28, "lean": 8, "nod": 10,
+                         "out_l": 25, "out_r": 18}),
+                 (0.36, N)],
     # A touch while dribbling: a little push with the right foot (blended lightly over the running).
     "touch": [(-0.16, N),
               (-0.06, {"hip_r": -8, "knee_r": 45, "ankle_r": -10, "knee_l": 15}),
@@ -864,7 +911,8 @@ def _make(actor):
             _CACHE[name] = build(actor, name, fn, n)
     for name, keys in ACTIONS.items():
         variants = [(name, keys)]
-        if name in ("dive", "recover", "kick", "shot", "touch", "tackle", "punt", "cut", "brake", "slide", "shield", "fouled"):
+        if name in ("dive", "recover", "kick", "shot", "touch", "tackle", "punt", "cut", "brake", "slide", "shield", "fouled",
+                    "pass", "loft", "flick", "backheel"):
             variants.append((name + "_m", [(t, mirror(p) if isinstance(p, dict) else p) for t, p in keys]))
         for vn, vk in variants:
             fn, t0, t1 = action_pose(vk)

@@ -804,8 +804,10 @@ class Viewer(ShowBase):
         tot = max(1, own[0] + own[1])
         poss = [round(100 * own[0] / tot), 100 - round(100 * own[0] / tot)]
         cnt = {kind: [0, 0] for kind in ("shot", "kick", "tackle", "fouled", "header")}
+        alias = {k: "kick" for k in KICKS}
         for i, l in self.events.by_player.items():
             for ke, kind in l:
+                kind = alias.get(kind, kind)
                 if ke <= k and kind in cnt:
                     cnt[kind][0 if i < 11 else 1] += 1
         rows = [("Possession", f"{poss[0]}%", f"{poss[1]}%"), ("Shots", *map(str, cnt["shot"])),
@@ -1206,7 +1208,8 @@ class Viewer(ShowBase):
                 d_ = 11 if "--near" not in sys.argv else 6.5
                 self.cam.setPos(fx_ + self._sv[0] * d_, fy_ + self._sv[1] * d_, 2.0 if d_ > 7 else 1.2)
             else:
-                self.cam.setPos(fx_ + sx * 9, fy_ - 7 if fy_ > -HY + 1 else fy_ + 9, 3.2)
+                zf = float(os.environ.get("FM3D_FOLLOW_ZOOM", "1"))    # (a check: closer in, e.g. 0.5)
+                self.cam.setPos(fx_ + sx * 9 * zf, (fy_ - 7 * zf) if fy_ > -HY + 1 else (fy_ + 9 * zf), 0.8 + 2.4 * zf)
             self.cam.lookAt(fx_, fy_, 0.8)
         elif getattr(self, "replay", None):                                 # (a replay: see _replay_cam)
             self._replay_cam(bx, by, bz, dt)
@@ -1491,10 +1494,17 @@ def _viewer_ball(self, fr, dt):
         push = min(1.0, max(0.0, (p.sp - 1.0) / 4.0))                    # (standing: at his feet; running: pushed on)
         dist = 0.42 + 0.65 * push * _m.sin(_m.pi * ph)
         kind, t = self.events.action(o, fr.get("k", 0))
-        if kind in ("kick", "shot") and t < 0:                              # (setting it up for the kick)
+        lat = 0.09                                                          # (a touch to his right)
+        if (kind in KICKS or kind == "shot") and t < 0:                    # (setting it up for the kick)
             dist = 0.38 + (dist - 0.38) * min(1.0, -t / 0.3)
+            if kind in ("backheel", "flick"):                               # (under his heel / by the outside
+                u = min(1.0, -t / 0.25)                                     #  of his foot as he plays it)
+                sd = -1.0 if self._left_foot(o, p, kind, t, fr.get("k", 0)) else 1.0
+                d0, s0 = (-0.10, 0.13) if kind == "backheel" else (0.22, 0.24)
+                dist = d0 + (dist - d0) * u
+                lat = s0 * sd + (lat - s0 * sd) * u
         px, py = p.root.getX(), p.root.getY()
-        bx, by, bz = px + fx * dist + fy * 0.09, py + fy * dist - fx * 0.09, BALL_R
+        bx, by, bz = px + fx * dist + fy * lat, py + fy * dist - fx * lat, BALL_R
         if getattr(p, "keeper", False):                                     # (a keeper: in his hands)
             bx, by, bz = p.hands()
     r = fr.get("r")
@@ -1645,11 +1655,19 @@ def _viewer_left_foot(self, i, p, kind, t, k):
     stronger foot (about 1 in 5 players are left-footed)."""
     if kind == "shield":                                            # (the arm out on the man's side)
         return self._shield_left.get(i, True)
-    if kind not in ("kick", "shot", "touch", "tackle"):
+    if kind not in KICKS + ("shot", "touch", "tackle"):
         return False
     F = self.m["frames"]
-    fe = F[max(0, min(len(F) - 1, int(round(k - t * 30))))]
+    ke = max(0, min(len(F) - 1, int(round(k - t * 30))))
+    fe = F[ke]
     x, y, fx, fy = fe["p"][i][:4]
+    if kind in ("pass", "flick", "backheel"):                       # (which way the ball went, against his facing)
+        f3 = F[min(len(F) - 1, ke + 3)]
+        dx, dy = f3["b"][0] - fe["b"][0], f3["b"][1] - fe["b"][1]
+        across = fx * dy - fy * dx                                  # (engine y down: + = to his right)
+        if math.hypot(dx, dy) > 0.1 and abs(_kick_angle(fx, fy, dx, dy)) > 60:
+            # across his body with the inside of the other foot; a flick / back-heel with the foot on that side
+            return across > 0 if kind == "pass" else across < 0
     px, py = to_world(x, y)
     bx, by = to_world(fe["b"][0], fe["b"][1])
     fwx, fwy = fx, -fy
@@ -2016,7 +2034,8 @@ class Events:
         self.by_player = {}
         self.fps = 30.0
 
-    RANK = {"fouled": 8, "despair": 0, "kneeslide": 7, "throwin": 6, "punt": 5, "bowl": 5, "shot": 4, "header": 3, "tackle": 3, "kick": 2, "touch": 1}
+    RANK = {"fouled": 8, "despair": 0, "kneeslide": 7, "throwin": 6, "punt": 5, "bowl": 5, "shot": 4, "header": 3, "tackle": 3,
+            "kick": 2, "pass": 2, "loft": 2, "flick": 2, "backheel": 2, "touch": 1}
 
     def add(self, i, k, kind):
         l = self.by_player.setdefault(i, [])
@@ -2037,6 +2056,35 @@ class Events:
                                   or ((kind == "fouled") == (best[0] == "fouled") and abs(t) < abs(best[1]))):
                 best = (kind, t)                                    # (a fall beats anything else at that moment)
         return best if best else (None, 0.0)
+
+
+KICKS = ("kick", "pass", "loft", "flick", "backheel")
+
+
+def _kick_angle(fx, fy, dx, dy):
+    """Degrees between the way he faces (fx, fy) and the way the ball went (dx, dy)."""
+    a, b = math.hypot(fx, fy), math.hypot(dx, dy)
+    if a < 1e-6 or b < 1e-6:
+        return 0.0
+    return math.degrees(math.acos(max(-1.0, min(1.0, (fx * dx + fy * dy) / (a * b)))))
+
+
+def _kick_kind(F, k, i, v):
+    """Which kick it was, from how the ball left him (v m/s): behind him - a back-heel; back and out to the
+    side - a flick with the outside of the foot; across him or a short one - a side-foot pass; rising fast - a
+    lofted ball; otherwise the instep."""
+    f0, f3 = F[k - 1], F[min(len(F) - 1, k + 3)]
+    p = f0["p"][i]
+    dx, dy = f3["b"][0] - F[k]["b"][0], f3["b"][1] - F[k]["b"][1]
+    ang = _kick_angle(p[2], p[3], dx, dy) if math.hypot(dx, dy) > 0.1 else 0.0
+    vz = (f3["b"][2] - F[k]["b"][2]) / 10.0 * 10.0                          # (m/s up)
+    if ang > 150:
+        return "backheel"
+    if ang > 115:
+        return "flick"
+    if ang > 60 or v < 13.0:
+        return "pass"
+    return "loft" if vz > 3.0 else "kick"
 
 
 def find_events(F, keepers=(0, 11), ev=None, lo=0):
@@ -2061,7 +2109,7 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
             if a in keepers and k - gk <= 15 and not dead and z < 2.5:      # (a keeper, ball just caught: out of his hands)
                 ev.add(a, k, "punt" if v > 17 else "bowl")
                 continue
-            ev.add(a, k, "header" if z > 1.3 else "shot" if v > 21 else "kick")
+            ev.add(a, k, "header" if z > 1.3 else "shot" if v > 21 else _kick_kind(F, k, a, v))
         elif a < 0 and b >= 0:
             z = F[k]["b"][2] / 10.0
             ev.add(b, k, "header" if z > 1.3 else "touch")                  # (the first touch)
@@ -2101,7 +2149,8 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
         r = F[k - 1].get("r")
         if r and "r" not in F[k] and r[1] >= 0:
             v = sp(F[k]["b"], F[k + 3]["b"]) / 3.0
-            kind = {"throw_in": "throwin", "kick_off": "touch", "penalty": "shot"}.get(r[0], "shot" if v > 21 else "kick")
+            kind = {"throw_in": "throwin", "kick_off": "touch", "penalty": "shot"}.get(r[0], "shot" if v > 21 else
+                                                                                         _kick_kind(F, k, r[1], v))
             l = ev.by_player.setdefault(r[1], [])
             l[:] = [(k2, kd) for (k2, kd) in l if abs(k2 - k) > 8]
             l.append((k, kind))
