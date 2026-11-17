@@ -104,3 +104,49 @@
   banks of lamps, one from each corner, 35 degrees up; the pitch and stands are unchanged.
 - Tested: night pictures before/after (night_before_after.png), night close camera, check.py.
 - Source: UEFA Stadium Lighting Guide 2023, https://documents.uefa.com/r/UEFA-Stadium-Lighting-Guide-2023-2023/Overview-of-illuminance-levels-for-UEFA-competitions-Online
+
+## Night of 16-17 November, after midnight: the list of 50 (Jay: "crack on with another list of 50")
+
+All on `live-3d`. The match engine untouched (replay hash 50d079570600bcab322bbb19be341bb2).
+
+Done:
+- 1 Mini pitch in the corner of the 3D picture (M), every player a dot in his shirt colour, the ball - where the
+  picture shows them (half a second behind the engine). Black shirts get a white rim.
+- 2 Names over the players' heads (N). 3 The man on the ball along the bottom, with his club's colour.
+- 4 Camera / map / names / quality remembered between matches (career["camera_3d"], ["radar_3d"], ["names_3d"],
+  ["quality_3d"]).
+- 5 Q: 3D quality auto / high / light. 6 Paused: the camera circles the ball at pitch level.
+- 7 Goal caption with the new score. 8 Substitution caption (ON / OFF) - and in 3D the game's own sub boards
+  are left out (the caption is timed to the picture). 9 Attendance caption after the team sheets
+  (career/crowds.py's demand; the play-off final 85,862 - the 2024 Championship play-off final, Wikipedia).
+  10 Man of the match at full time (goals, touches, the winning side). 13 Club colour on booking captions.
+- 14 Kick-off fly-in: down from over the roofs round to the gantry, 4.5 s, the match waits (Enter skips).
+- 15/16 Set-piece cuts: behind the taker for free kicks within 32 m; high over the corner for corners.
+- 12 Crest swipe into and out of replays. 19 Goals replayed twice (the move, then the finish from the other
+  camera). 20 Half-time / full time: slowly round the ground, high up (no map then). 21 Hand-held drift on the
+  close-ups.
+- 25 Full time: the players walk in to the centre circle, winners happy, losers heads down.
+- 26 The captain's armband passes on when he's subbed off. 28 Kits muddier through a wet match.
+- 31 Dusk: 3 o'clock kick-offs November-January get darker through the second half.
+- 32 Hi-vis winter ball from the clocks going back to the spring (premierleague.com); snow on about 3 in 100
+  December-February matches (white pitch, lines swept clear, flakes; Met Office: snow or sleet falls on ~24 days
+  a year in the UK, mostly high ground).
+- 35 Floodlights glow at night. 36 A misty evening now and then (1 in 8 winter evening games).
+- 37 Flags in the club's colours in the home end; 38 scarves held up at the kick-off and after a home goal.
+- 39 A big screen in the far corner with the score and minute (grounds with their own screen use it).
+- 40 Pitches wear with the season: fresh in August, worst January-February.
+- 43 F: how long each 3D picture takes. 44 Quicker start: 11.3 s -> 6.4 s here (bone mixes worked out once,
+  stewards/warm-ups get the light body only, no painting of the old mannequin) - pictures identical.
+- 45 Memory: the 3D side keeps only the last ~200 s of frames (a whole match was hundreds of MB); at most 60
+  pictures a second.
+- 46 Every key checked in 3D (+ - C M N F V Q S Enter Space). 49 If the 3D side dies mid-match: a note, and the
+  match carries on in 2D (V tries again) - tested by killing it.
+- Already there: 23 celebrations vary, 24 heads drop / despair, 29 keepers' colours never clash, 42 ball boys,
+  22 wider when the ball's flying, 30 walking/jogging by speed, 41 each ground's own mowing.
+
+Not done (and why):
+- 11 Stoppage-time board: the match engine has no added time - an engine change, for Jay to decide.
+- 33 The sun moving with the time of day: changes the look Jay knows (shadows) - ask first.
+- 34 Rain at night: the night and rain lighting don't mix yet - a job for another day.
+- 17 Goal-kick camera, 18 throw-in close-up (the taker close-up already does it), 27 breath on cold days:
+  small, left for later.
