@@ -364,6 +364,41 @@ ACTIONS = {
                (2.20, {"hip_r": 80, "knee_r": 100, "hip_l": 10, "knee_l": 90, "pitch": 35, "lean": 20, "nod": -10,
                        "arm_l": 40, "arm_r": 40, "out_l": 20, "out_r": 20, "elbow_l": 30, "elbow_r": 30}),
                (2.90, N)],
+    # Hurt in the challenge: his standing leg goes, he drops back onto the grass and lies there on his back,
+    # holding his right shin with the knee pulled up - then sits up, gets to a crouch and up, gingerly.
+    "hurt": [(-0.10, N),
+             (0.25, {"hip_r": 40, "knee_r": 70, "hip_l": 20, "knee_l": 60, "lean": 10, "pitch": -20, "nod": 10,
+                     "arm_l": 40, "arm_r": 30, "out_l": 50, "out_r": 50, "elbow_l": 30, "elbow_r": 30}),
+             (0.55, {"hip_r": 70, "knee_r": 100, "hip_l": 40, "knee_l": 60, "lean": 20, "pitch": -50, "nod": 20,
+                     "arm_l": 45, "arm_r": 40, "out_l": 40, "out_r": 40, "elbow_l": 50, "elbow_r": 50}),
+             (0.85, {"hip_r": 75, "knee_r": 120, "hip_l": 20, "knee_l": 40, "pitch": -72, "lean": 25, "tilt": 20,
+                     "nod": 25, "arm_r": 55, "arm_l": 60, "out_r": 10, "out_l": 15, "elbow_r": 70, "elbow_l": 75,
+                     "across_r": 20, "across_l": 25}),
+             (3.40, {"hip_r": 85, "knee_r": 125, "hip_l": 25, "knee_l": 45, "pitch": -70, "lean": 30, "tilt": 15,
+                     "nod": 30, "arm_r": 60, "arm_l": 62, "out_r": 10, "out_l": 15, "elbow_r": 75, "elbow_l": 75,
+                     "across_r": 20, "across_l": 25}),
+             (4.10, {"hip_r": 90, "knee_r": 95, "hip_l": 90, "knee_l": 95, "pitch": -35, "lean": 30, "nod": 10,
+                     "arm_r": 40, "arm_l": 40, "out_r": 25, "out_l": 25, "elbow_r": 30, "elbow_l": 30}),
+             (4.60, {"hip_r": 80, "knee_r": 110, "hip_l": 70, "knee_l": 110, "pitch": 10, "lean": 35, "nod": -5,
+                     "arm_r": 30, "arm_l": 30, "out_r": 20, "out_l": 20, "elbow_r": 30, "elbow_l": 30}),
+             (5.30, N)],
+    # Losing the ball in a tackle: knocked off his stride - a lurch forward, arms flung out, a stumbling step
+    # to stay up, then on his way.
+    "stumble": [(-0.05, N),
+                (0.12, {"lean": 22, "pitch": 6, "hip_r": -12, "knee_r": 35, "hip_l": 32, "knee_l": 45, "out_r": 55,
+                        "out_l": 60, "arm_r": 25, "arm_l": -10, "elbow_r": 30, "elbow_l": 30, "nod": -12}),
+                (0.36, {"lean": 12, "hip_l": 40, "knee_l": 50, "hip_r": 4, "knee_r": 25, "out_r": 42, "out_l": 45,
+                        "arm_r": 10, "elbow_r": 30, "elbow_l": 30, "nod": -6}),
+                (0.70, N)],
+    # The man who gave the foul away: "I got the ball!" - both hands up, palms out, then a shrug.
+    "innocent": [(-0.10, N),
+                 (0.35, {"arm_r": 70, "arm_l": 70, "out_r": 35, "out_l": 35, "elbow_r": 70, "elbow_l": 70,
+                         "lean": -4, "nod": -8}),
+                 (1.20, {"arm_r": 65, "arm_l": 65, "out_r": 38, "out_l": 38, "elbow_r": 65, "elbow_l": 65,
+                         "lean": -4, "nod": -4}),
+                 (1.60, {"arm_r": 20, "arm_l": 20, "out_r": 50, "out_l": 50, "elbow_r": 40, "elbow_l": 40, "lean": 0,
+                         "nod": 6}),
+                 (2.20, N)],
     # A sharp cut to his left at speed: the right (outside) foot planted wide, knee bent to take the load, body
     # leaning into the new direction and low, then the push-off (e.g. Besier et al. 2001 on sidestep cutting:
     # the plant foot ~0.3-0.5 m out to the side, knee ~40-60 deg; trunk leaning into the cut).
@@ -912,7 +947,7 @@ def _make(actor):
     for name, keys in ACTIONS.items():
         variants = [(name, keys)]
         if name in ("dive", "recover", "kick", "shot", "touch", "tackle", "punt", "cut", "brake", "slide", "shield", "fouled",
-                    "pass", "loft", "flick", "backheel"):
+                    "pass", "loft", "flick", "backheel", "hurt", "stumble"):
             variants.append((name + "_m", [(t, mirror(p) if isinstance(p, dict) else p) for t, p in keys]))
         for vn, vk in variants:
             fn, t0, t1 = action_pose(vk)

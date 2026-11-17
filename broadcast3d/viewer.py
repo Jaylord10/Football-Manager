@@ -805,6 +805,7 @@ class Viewer(ShowBase):
         poss = [round(100 * own[0] / tot), 100 - round(100 * own[0] / tot)]
         cnt = {kind: [0, 0] for kind in ("shot", "kick", "tackle", "fouled", "header")}
         alias = {k: "kick" for k in KICKS}
+        alias["hurt"] = "fouled"
         for i, l in self.events.by_player.items():
             for ke, kind in l:
                 kind = alias.get(kind, kind)
@@ -2035,7 +2036,8 @@ class Events:
         self.fps = 30.0
 
     RANK = {"fouled": 8, "despair": 0, "kneeslide": 7, "throwin": 6, "punt": 5, "bowl": 5, "shot": 4, "header": 3, "tackle": 3,
-            "kick": 2, "pass": 2, "loft": 2, "flick": 2, "backheel": 2, "touch": 1}
+            "kick": 2, "pass": 2, "loft": 2, "flick": 2, "backheel": 2, "touch": 1, "hurt": 8, "stumble": 3,
+            "innocent": 5}
 
     def add(self, i, k, kind):
         l = self.by_player.setdefault(i, [])
@@ -2052,8 +2054,8 @@ class Events:
         for (ke, kind) in self.by_player.get(i, ()):
             t = (k - ke) / self.fps
             lo, hi = gait.SPANS.get(kind, (-self.WINDOW, self.WINDOW))
-            if lo <= t <= hi and (best is None or (kind == "fouled") > (best[0] == "fouled")
-                                  or ((kind == "fouled") == (best[0] == "fouled") and abs(t) < abs(best[1]))):
+            down, bdown = kind in ("fouled", "hurt"), best is not None and best[0] in ("fouled", "hurt")
+            if lo <= t <= hi and (best is None or down > bdown or (down == bdown and abs(t) < abs(best[1]))):
                 best = (kind, t)                                    # (a fall beats anything else at that moment)
         return best if best else (None, 0.0)
 
@@ -2116,6 +2118,8 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
         elif a >= 0 and b >= 0 and a != b:
             if (a < 11) != (b < 11):
                 ev.add(b, k, "tackle")
+                if a not in keepers:
+                    ev.add(a, k, "stumble")                                 # (knocked off his stride)
         elif a < 0 and b < 0:                                               # a loose ball changes course
             v0 = [(F[k - 1]["b"][j] - F[k - 2]["b"][j]) * 3.0 for j in range(3)]
             v1 = [(F[k]["b"][j] - F[k - 1]["b"][j]) * 3.0 for j in range(3)]
@@ -2140,11 +2144,19 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
             team = r[1] < 11
             near = min(((_m.hypot(p[0] - bx, p[1] - by), j) for j, p in enumerate(F[k - 1]["p"])
                         if (j < 11) == team and j not in keepers), default=(99, -1))
-            if near[0] < 30 and near[1] >= 0 and (k, "fouled") not in ev.by_player.get(near[1], []):
-                l = ev.by_player.setdefault(near[1], [])
-                l[:] = [(k2, kd) for (k2, kd) in l if abs(k2 - k) > 8 or kd not in ("kick", "touch")]
-                l.append((k, "fouled"))                                      # (not a "kick" too: the ball was
-                                                                             #  taken off him, he didn't play it)
+            j = near[1]
+            if near[0] < 30 and j >= 0 and (k, "fouled") not in ev.by_player.get(j, []) \
+                    and (k, "hurt") not in ev.by_player.get(j, []):
+                l = ev.by_player.setdefault(j, [])
+                l[:] = [(k2, kd) for (k2, kd) in l if abs(k2 - k) > 8 or kd not in KICKS + ("touch", "stumble")]
+                l.append((k, "hurt" if (k + j) % 3 == 0 else "fouled"))      # (not a "kick" too: the ball was
+                                                                             #  taken off him, he didn't play it;
+                                                                             #  about 1 in 3 stay down, hurt)
+                px, py = F[k - 1]["p"][j][:2]                               # (the man who fouled him: hands up)
+                fl = min(((_m.hypot(p[0] - px, p[1] - py), q) for q, p in enumerate(F[k - 1]["p"])
+                          if (q < 11) != team and q not in keepers and p[6]), default=(99, -1))
+                if fl[0] < 40 and fl[1] >= 0:
+                    ev.add(fl[1], k + 6, "innocent")
     for k in range(max(1, lo), len(F) - 4):                                  # dead balls: who took it, and how
         r = F[k - 1].get("r")
         if r and "r" not in F[k] and r[1] >= 0:
