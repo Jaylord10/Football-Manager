@@ -1092,6 +1092,7 @@ class Viewer(ShowBase):
             wx, wy, sp2 = self._gather(i, fr, cel, wx, wy, dt)                  # (team-mates mob the scorer)
             if sp2 is not None:
                 sp = sp2
+            wx, wy, fx, fy, sp, sp_pose = self._run_up(i, fr, wx, wy, fx, fy, sp, k, dt)   # (set pieces)
             px, py = prev.get(i, (wx, wy))
             vel = ((wx - px) / max(dt, 1e-3), (wy - py) / max(dt, 1e-3))
             prev[i] = (wx, wy)
@@ -1099,6 +1100,8 @@ class Viewer(ShowBase):
                 fx, fy = vel[0] / math.hypot(*vel), -vel[1] / math.hypot(*vel)
             p.calling = self._calling(i, fr, wx, wy, sp, k)
             kind, t = self.events.action(i, k)
+            if kind is None and sp_pose is not None:
+                kind, t = sp_pose
             if kind == "shot" and 0.0 <= t < 0.1 and not cel:
                 self._ooh = (0 if i < 11 else 1, k)
             if cel and i == cel[1]:
@@ -1128,6 +1131,7 @@ class Viewer(ShowBase):
                     and (i < 11) != (r[1] < 11) and not getattr(p, "keeper", False):
                 if 8.0 < math.hypot(wx - rbx, wy - rby) < 11.5:                 # (in the wall)
                     kind, t = "wall", 0.5
+                    self.__dict__.setdefault("_wall", {})[i] = k
             if kind is None and getattr(p, "keeper", False) and sp < 25:          # (a keeper, set for a shot)
                 gx = -HX if wx < 0 else HX
                 if math.hypot(rbx - gx, rby) < 30 and fr["o"] not in (range(0, 11) if i < 11 else range(11, 22)):
@@ -1679,6 +1683,76 @@ def _viewer_left_foot(self, i, p, kind, t, k):
     return side < -0.12 or (lefty and side < 0.12)
 
 
+RUNUP = {"free_kick": 2.4, "corner_kick": 2.0, "penalty": 2.6, "goal_kick": 3.0}   # (m he steps back from it)
+
+
+def _viewer_run_up(self, i, fr, wx, wy, fx, fy, sp, k, dt):
+    """Set pieces.  The engine keeps the taker standing on the ball until he kicks it; here, once he's put it
+    down, he walks back a few paces (facing where it's going), and runs up to it as he takes it - a penalty
+    with a stutter in the run-up.  Taking a corner or a free kick out wide, he puts an arm up first.  The men
+    in the wall jump as the free kick is struck.  Returns the place to draw him, his facing and speed, and a
+    pose for him (or None)."""
+    r = fr.get("r")
+    st = self.__dict__.setdefault("_runup", {})
+    pose = None
+    wall = getattr(self, "_wall", {})
+    if i in wall and not r:                                                # (the wall: jump as it's struck)
+        tk = (k - wall[i]) / 30.0
+        if tk < 0.9:
+            pose = ("walljump", tk - 0.3)
+        else:
+            del wall[i]
+    elif i in wall and r and r[0] != "free_kick":
+        del wall[i]
+    if not r or r[1] != i or r[0] not in RUNUP:
+        s = st.get(i)
+        if s is not None and s.get("off") is not None:                     # (just taken: ease the last bit)
+            s["tail"] = s.get("tail", 0.0) + dt
+            f = max(0.0, 1.0 - s["tail"] / 0.2)
+            if f <= 0.0:
+                del st[i]
+            else:
+                return wx + s["off"][0] * f, wy + s["off"][1] * f, fx, fy, sp, pose
+        else:
+            st.pop(i, None)
+        return wx, wy, fx, fy, sp, pose
+    bx, by = to_world(fr["b"][0], fr["b"][1])
+    if math.hypot(wx - bx, wy - by) > 1.5:                                 # (still on his way to it)
+        st.pop(i, None)
+        return wx, wy, fx, fy, sp, pose
+    s = st.setdefault(i, {"at": 0.0, "w": 0.0, "go": None})
+    s["at"] += dt
+    sx = 1.0 if i < 11 else -1.0                                           # (the way his team attacks)
+    tx, ty = {"corner_kick": (sx * (HX - 11.0), 0.0), "goal_kick": (0.0, 0.0)}.get(r[0], (sx * HX, 0.0))
+    dx, dy = tx - bx, ty - by
+    d = max(1e-3, math.hypot(dx, dy))
+    dx, dy = dx / d, dy / d
+    D = RUNUP[r[0]]
+    kind, t = self.events.action(i, k)
+    if kind in KICKS + ("shot",) and t < 0:                                 # (running up to it)
+        if s["go"] is None:
+            s["go"] = (t, s["w"])
+        t0, w0 = s["go"]
+        u = max(0.0, min(1.0, t / t0)) if t0 < 0 else 0.0                  # (1 -> 0 as he gets there)
+        if r[0] == "penalty":                                              # (the stutter: most of the way,
+            g = 1.0 - u                                                    #  a check, then the last strides)
+            g = 0.6 * min(1.0, g / 0.45) if g < 0.7 else 0.6 + 0.4 * (g - 0.7) / 0.3
+            u = 1.0 - g
+        w = w0 * u
+    else:
+        want = min(1.0, max(0.0, (s["at"] - 0.8) / 0.8))                   # (put it down, then walk back)
+        w = s["w"] + (want - s["w"]) * min(1.0, dt * 2.0)
+        if r[0] == "corner_kick" or (r[0] == "free_kick" and d > 22.0):    # (an arm up: it's coming in)
+            if 1.6 < s["at"] < 4.4:
+                pose = ("signal", s["at"] - 1.9)
+    moved = abs(w - s["w"]) * D / max(dt, 1e-3)
+    s["w"] = w
+    back = 0.45 + D * w
+    nx, ny = bx - dx * back, by - dy * back
+    s["off"] = (nx - wx, ny - wy)
+    return nx, ny, dx, -dy, max(sp, moved * 10.0), pose
+
+
 def _viewer_throw_dir(self, i, k, t, fx, fy):
     """A throw-in: he faces the way the ball goes (engine directions)."""
     F = self.m["frames"]
@@ -2012,6 +2086,7 @@ Viewer._officiate = _viewer_officiate
 Viewer._goal_ball = _viewer_goal_ball
 Viewer._spin_ball = _viewer_spin_ball
 Viewer._throw_dir = _viewer_throw_dir
+Viewer._run_up = _viewer_run_up
 Viewer._throw_spot = _viewer_throw_spot
 Viewer.THROW_BACK = 0.35           # m: the thrower's middle this far outside the pitch while he throws
 Viewer._left_foot = _viewer_left_foot

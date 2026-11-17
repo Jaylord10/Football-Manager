@@ -13,6 +13,13 @@ strips from a recorded match (scratch tool: find the moment, follow the player, 
 - 31 About 1 in 3 fouled players stay down hurt: drop back onto the grass holding the shin, knee pulled up, for
   ~3 s, then sit up, crouch and get up.  (The rest: the fall from earlier tonight.)
 - 32 The man who gave the foul away: "I got the ball!" - both hands up, then a shrug.
+- 39/40/41/36 Set pieces: the taker puts the ball down, walks back a few paces facing where it's going
+  (corner 2 m, free kick 2.4 m, penalty 2.6 m, goal kick 3 m), and runs up to it as he takes it - a penalty with
+  a stutter.  Corners and free kicks out wide: an arm up first.  (The engine keeps the taker on the ball; this
+  is drawn only.)
+- 42 The wall jumps as the free kick is struck (knees tucked, hands still crossed).
+- Fixed on the way: the wall's arms came out to the sides (now crossed in front), and the booked player's
+  protest held his arms straight out like a scarecrow (now hands up, elbows bent).
 
 ## Already there before tonight
 - 12 Shot follow-through landing on the kicking foot; 13 leaning into bends; 14 leaning forward when setting

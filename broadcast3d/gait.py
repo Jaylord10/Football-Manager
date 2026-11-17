@@ -494,11 +494,24 @@ ACTIONS = {
                   (1.9, N)],
     # The referee holding up a card; the player booked, arms out ("what was that for?").
     "card": [(0.0, {"arm_r": 172, "out_r": 0, "elbow_r": 0, "nod": -4, "abs": 1}), (1.0, "same")],
-    "protest": [(0.0, {"out_r": 45, "out_l": 45, "arm_r": 35, "arm_l": 35, "elbow_r": 35, "elbow_l": 35,
+    "protest": [(0.0, {"out_r": 25, "out_l": 25, "arm_r": 50, "arm_l": 50, "elbow_r": 70, "elbow_l": 70,
                        "lean": -4, "nod": -6}), (1.0, "same")],
     # In the wall at a free kick: shoulder to shoulder, hands crossed in front of them.
-    "wall": [(0.0, {"arm_r": 0, "arm_l": 0, "across_r": 58, "across_l": 58, "elbow_r": 5, "elbow_l": 5, "out_r": -10, "out_l": -10, "abs": 1,
+    "wall": [(0.0, {"arm_r": 0, "arm_l": 0, "across_r": 40, "across_l": 40, "elbow_r": 15, "elbow_l": 15, "out_r": -72, "out_l": -72, "abs": 1,
                     "lean": 4, "nod": -4, "knee_r": 6, "knee_l": 6}), (1.0, "same")],
+    # In the wall as the free kick is struck: up off both feet, hands still crossed, knees tucked, head down.
+    "walljump": [(-0.30, {"arm_r": 0, "arm_l": 0, "across_r": 40, "across_l": 40, "elbow_r": 15, "elbow_l": 15,
+                          "out_r": -72, "out_l": -72, "abs": 1, "lean": 4, "nod": -4, "knee_r": 6, "knee_l": 6}),
+                 (-0.12, {"arm_r": 0, "arm_l": 0, "across_r": 40, "across_l": 40, "elbow_r": 15, "elbow_l": 15,
+                          "out_r": -72, "out_l": -72, "abs": 1, "lean": 14, "nod": 6, "hip_r": 30, "hip_l": 30,
+                          "knee_r": 55, "knee_l": 55, "ankle_r": 20, "ankle_l": 20}),
+                 (0.00, {"arm_r": 0, "arm_l": 0, "across_r": 40, "across_l": 40, "elbow_r": 15, "elbow_l": 15,
+                         "out_r": -72, "out_l": -72, "abs": 1, "lean": 6, "nod": 18, "hip_r": 25, "hip_l": 25,
+                         "knee_r": 50, "knee_l": 50, "ankle_r": -25, "ankle_l": -25}),
+                 (0.22, {"arm_r": 0, "arm_l": 0, "across_r": 40, "across_l": 40, "elbow_r": 15, "elbow_l": 15,
+                         "out_r": -72, "out_l": -72, "abs": 1, "lean": 10, "nod": 10, "hip_r": 25, "hip_l": 25,
+                         "knee_r": 40, "knee_l": 40}),
+                 (0.55, N)],
     # A manager on the touchline, arm out, telling them where to go.
     "point": [(-0.4, N),
               (0.0, {"arm_r": 75, "out_r": 30, "elbow_r": 10, "twist": 12, "lean": 4, "nod": -6}),
