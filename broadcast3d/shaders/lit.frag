@@ -34,6 +34,7 @@ uniform float osg_FrameTime;
 uniform float kit_on;
 uniform float mud_amt;
 uniform float pitch_churn;
+uniform float snow_amt;                 // (a snowy day: how white the pitch is - the lines swept clear)
 uniform float sweat;                    // (0 fresh .. 1 late in the game: a sheen on the skin)              // (0 at kick-off .. 1 by full time: how churned the worn places are)                  // (a wet day: mud splashed up the boots, socks and the backs of the legs)
 uniform vec4 kit_shirt, kit_trim, kit_shorts, kit_socks, kit_socktop, kit_skin, kit_hair, kit_gloves;
 uniform vec4 kit_boots;                 // (rgb, a: 1 = a bright boot with a white sole)
@@ -300,6 +301,16 @@ void main() {
             float n = vnoise(vec3(v_uv * 60.0, 0.0));
             float churn = smoothstep(0.15, 0.9, brown + 0.2 * n) * pitch_churn;
             base.rgb = mix(base.rgb * 0.9, vec3(0.20, 0.15, 0.10), churn * 0.8);
+        }
+        if (snow_amt > 0.0) {
+            // Snow: a white covering, thinner in places (and where the play's churned it), the painted lines
+            // swept clear by the groundstaff so they show as green strips.
+            float line = smoothstep(0.55, 0.75, min(base.r, min(base.g, base.b)));
+            float n = vnoise(vec3(v_uv * 90.0, 3.0));
+            float cover = clamp(snow_amt * (0.75 + 0.35 * n) - pitch_churn * 0.35 * n, 0.0, 1.0);
+            vec3 snow = vec3(0.90, 0.92, 0.95) * (0.92 + 0.08 * n);
+            base.rgb = mix(base.rgb, snow, cover * (1.0 - line));
+            base.rgb = mix(base.rgb, vec3(0.22, 0.36, 0.17), line * snow_amt);
         }
     }
     vec3 col = base.rgb * light;

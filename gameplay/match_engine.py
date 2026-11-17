@@ -156,6 +156,8 @@ class MatchEngine:
         self.view_wanted = os.environ.get("FM_MATCH_VIEW", "2d")   # (what you chose: kept for the next match)
         self.radar3d = os.environ.get("FM_3D_RADAR", "1") == "1"   # (the mini pitch on the 3D picture: M)
         self.names3d = os.environ.get("FM_3D_NAMES", "0") == "1"   # (names over their heads: N)
+        self.quality3d = os.environ.get("FM_3D_QUALITY", "auto")   # (3D quality: Q)
+        self._q_note_until = -1.0
         try:
             self.camera3d = int(os.environ.get("FM_3D_CAMERA", "0")) % 2   # (TV gantry / close: C)
         except ValueError:
@@ -511,6 +513,8 @@ class MatchEngine:
                     continue
                 if event.key == pygame.K_SPACE:
                     self.paused = not self.paused
+                    if self._3d_on():
+                        self.live3d.paused(self.paused)  # (the 3D camera circles the ball while paused)
                 if event.key == pygame.K_r and not self.career:
                     self._reset_match()
                 if event.key in (pygame.K_PLUS, pygame.K_EQUALS, pygame.K_KP_PLUS, pygame.K_UP):
@@ -519,6 +523,13 @@ class MatchEngine:
                     self._change_speed(-1)
                 if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER) and self._3d_on() and self.live3d.replaying():
                     self.live3d.skip()                   # (on with the match: no more of the replay)
+                    continue
+                if event.key == pygame.K_q and self._3d_on():
+                    order = ["auto", "high", "light"]      # (3D quality: auto / high / light)
+                    self.quality3d = order[(order.index(self.quality3d) + 1) % 3] \
+                        if self.quality3d in order else "auto"
+                    self.live3d.quality(self.quality3d)
+                    self._q_note_until = self.time_elapsed + 2.5 * max(1, getattr(self, "match_speed", 1))
                     continue
                 if event.key == pygame.K_n and self._3d_on():
                     self.names3d = not self.names3d       # (names over their heads)
@@ -1013,6 +1024,14 @@ class MatchEngine:
             self._draw_on_ball()
             if self.radar3d:
                 self._draw_radar()
+            if self.time_elapsed < self._q_note_until:                 # (Q pressed: say which)
+                note = {"auto": "3D quality: auto (lighter if the computer's struggling)",
+                        "high": "3D quality: high (always everything)",
+                        "light": "3D quality: light (less to draw - stays light this match)"}[self.quality3d]
+                t = self.ui_renderer.med_font.render(note, True, (255, 255, 255))
+                box = t.get_rect(midtop=(self.screen.get_width() // 2, 14)).inflate(24, 12)
+                pygame.draw.rect(self.screen, (18, 20, 24), box, border_radius=6)
+                self.screen.blit(t, t.get_rect(center=box.center))
         except Exception:
             pass
         shown = self.live3d.shown()

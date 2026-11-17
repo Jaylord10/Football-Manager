@@ -35,6 +35,10 @@ if __name__ == "__main__":
         real(flip)
         cnt["n"] += 1
         n = cnt["n"]
+        for kv in os.environ.get("KEYS", "").split(","):      # (KEYS=300:space,500:n - press keys at frames)
+            if ":" in kv and int(kv.split(":")[0]) == n:
+                key = getattr(pygame, "K_" + kv.split(":")[1])
+                pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=key, mod=0, unicode=""))
         if n in shots or n == N:
             pygame.image.save(e.window, f"{OUT}_{n}.png")
             sh = e.live3d.shown() if e.live3d else None
@@ -67,6 +71,18 @@ if __name__ == "__main__":
         if n >= N:
             e.running = False
     e._render = render
+    real_p = e._render_paused
+    def render_paused():                                       # (paused frames count too: KEYS can unpause)
+        real_p()
+        cnt["n"] += 1
+        n = cnt["n"]
+        for kv in os.environ.get("KEYS", "").split(","):
+            if ":" in kv and int(kv.split(":")[0]) == n:
+                pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=getattr(pygame, "K_" + kv.split(":")[1]),
+                                                     mod=0, unicode=""))
+        if n in shots:
+            pygame.image.save(e.window, f"{OUT}_{n}.png")
+    e._render_paused = render_paused
     names0 = [p.name for p in e.team0 + e.team1]
     e.run()
     print("subs on:", [(i, a, p.name) for i, (a, p) in enumerate(zip(names0, e.team0 + e.team1)) if a != p.name])

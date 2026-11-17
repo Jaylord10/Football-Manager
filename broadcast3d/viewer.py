@@ -14,11 +14,16 @@ TEAMS = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("-
 OVERCAST = "--overcast" in sys.argv
 NIGHT = "--night" in sys.argv               # (an evening kick-off under the floodlights)
 RAIN = "--rain" in sys.argv                 # (Lancashire drizzle: grey light, rain falling, a wet pitch)
-if RAIN:
+SNOW = "--snow" in sys.argv                 # (a rare snowy day: flakes falling, the pitch white, the lines swept)
+if RAIN or SNOW:
     OVERCAST = True
 SUN_AZ, SUN_EL = 200.0, 22.0               # the sun: degrees round from behind the Main Stand, and up
 SHADOW_MAP = 4096
 ANIM = "--boxes" not in sys.argv          # (animated figures unless --boxes: the old block players)
+# The winter ball (--winterball): from the clocks going back in late October to the spring the Premier League
+# plays with a hi-vis ball, easier to follow under floodlights (premierleague.com, "Why does the Premier League
+# have a hi-vis ball for winter?").  Ours: yellow panels for white.
+WHITE_PANEL = (0.98, 0.86, 0.12, 1) if "--winterball" in sys.argv else (0.97, 0.97, 0.97, 1)
 EMBED = "--embedded" in sys.argv          # (drawn inside the game's match screen: broadcast3d/live.py)
 _SIZE = os.environ.get("FM3D_SIZE", "1280x720").replace("x", " ")
 loadPrcFileData("", ("window-type offscreen\n" if OFF else "") + f"win-size {_SIZE}\naudio-library-name null\n"
@@ -540,6 +545,8 @@ class Viewer(ShowBase):
         self.hud(match)
         if RAIN:
             self.make_rain()
+        if SNOW:
+            self.make_rain(snow=True)
 
     def _shadow_under(self, p):
         """The soft dark patch under a player's feet (and at night, the floodlights' four faint shadows)."""
@@ -676,6 +683,7 @@ class Viewer(ShowBase):
         import sunshadow
         sunshadow.no_sun(self.render)                       # (until the sun's own is made: light_up)
         self.render.setShaderInput("clip_y", -1.0e6)
+        self.render.setShaderInput("snow_amt", 0.85 if SNOW else 0.0)
         self.render.setShaderInput("shadow_bias", 0.0004)
         self.render.setShaderInput("shadow_texel", 1.0 / SHADOW_MAP)
         self.render.setShaderInput("detail_amt", 0.0)
@@ -786,13 +794,29 @@ class Viewer(ShowBase):
                     return j
         return 1
 
-    def make_rain(self):
-        """Rain over the picture: two layers of streaks drifting down at different speeds (near and far)."""
+    def make_rain(self, snow=False):
+        """Rain over the picture: two layers of streaks drifting down at different speeds (near and far).
+        snow=True: soft flakes instead, falling slowly and drifting sideways."""
         from panda3d.core import TextureStage
-        tex = self.loader.loadTexture(pf(T + "rain.png"))
+        if snow:
+            if not os.path.exists(T + "snow.png"):
+                from PIL import Image, ImageDraw, ImageFilter
+                import random as _r
+                rnd = _r.Random(7)
+                im = Image.new("RGBA", (512, 512), (255, 255, 255, 0))
+                dr = ImageDraw.Draw(im)
+                for _ in range(420):
+                    x, y, r = rnd.uniform(0, 512), rnd.uniform(0, 512), rnd.choice((1.2, 1.6, 2.2, 3.0))
+                    dr.ellipse([x - r, y - r, x + r, y + r], fill=(255, 255, 255, rnd.randint(150, 240)))
+                im.filter(ImageFilter.GaussianBlur(0.8)).save(T + "snow.png")
+            tex = self.loader.loadTexture(pf(T + "snow.png"))
+        else:
+            tex = self.loader.loadTexture(pf(T + "rain.png"))
         tex.setWrapU(Texture.WM_repeat); tex.setWrapV(Texture.WM_repeat)
         self.rain = []
-        for scale, alpha, speed in ((1.0, 0.55, 1.9), (2.2, 0.35, 1.1)):
+        layers = ((1.0, 0.55, 1.9), (2.2, 0.35, 1.1)) if not snow else ((1.0, 0.9, 0.22), (2.0, 0.7, 0.12))
+        self.snow_on = snow
+        for scale, alpha, speed in layers:
             cm = CardMaker("rain"); cm.setFrame(-1.9, 1.9, -1, 1); cm.setUvRange((0, 0), (3.8 / scale, 2 / scale))
             n = self.render2d.attachNewNode(cm.generate()) if False else self.aspect2d.attachNewNode(cm.generate())
             n.setTexture(tex); n.setTransparency(TransparencyAttrib.MAlpha); n.setAlphaScale(alpha)
@@ -813,11 +837,13 @@ class Viewer(ShowBase):
                                       mayChange=True)
             self.cap_n = OnscreenText(parent=self.cap, text="", pos=(-0.56, -0.02), scale=0.05, fg=(1, 1, 1, 1),
                                       align=TextNode.ALeft, mayChange=True)
+            self.cap_club = DirectFrame(parent=self.cap, frameColor=(1, 1, 1, 1), frameSize=(0.72, 0.75, -0.075, 0.075))
             self.cap.hide()
         k = fr.get("k", 0)
         if getattr(self, "replay", None):                  # (no captions over a replay)
             self.cap.hide()
             return
+        extra = getattr(self, "extra_caption", None)       # (live.py: a sub, the attendance, man of the match)
         if card and 0 <= card[1] < len(self.m.get("names", [])):
             nm = self.m["names"][card[1]][0]
             short = (nm.split()[0][0] + ". " + nm.split()[-1]) if " " in nm else nm
@@ -827,6 +853,7 @@ class Viewer(ShowBase):
             self.cap_t.setText("")
             word = "RED CARD" if red else "BOOKED"
             self.cap_n.setText(f"{word}   {short}   {self.home_name if team == 0 else self.away_name}")
+            self.cap_club["frameColor"] = C(self.kits[team]["shirt"])           # (the club's colour, at the end)
             self.cap.show()
             return
         if cel and k - self._restart_id(k) < 30 * 9:                        # (the first 9 seconds of it)
@@ -842,7 +869,16 @@ class Viewer(ShowBase):
             self.cap_t.setText("GOAL")
             lum = sum(bar) / 765
             self.cap_t["fg"] = (0.06, 0.07, 0.09, 1) if lum > 0.5 else (1, 1, 1, 1)
-            self.cap_n.setText(f"{short}  {mins}'      {club}")
+            sc = fr.get("s", [0, 0])
+            self.cap_n.setText(f"{short}  {mins}'      {club}      {self.labels[0]} {sc[0]}-{sc[1]} {self.labels[1]}")
+            self.cap_club["frameColor"] = C(kit["shirt"])
+            self.cap.show()
+        elif extra:
+            word, text, col = extra
+            self.cap_bar["frameColor"] = C(col)
+            self.cap_t.setText("")
+            self.cap_n.setText(f"{word}   {text}")
+            self.cap_club["frameColor"] = C(col)
             self.cap.show()
         else:
             self.cap.hide()
@@ -966,7 +1002,13 @@ class Viewer(ShowBase):
             self._cam_tv(fr, 0.0, 0.0, dt)                                   # (a break: the whole pitch, not the ball)
         else:
             self._cam_tv(fr, bx, by, dt)
-        if "--top" in sys.argv:                                             # (a check: the whole ground from above)
+        orbit = getattr(self, "orbit", None)
+        if orbit is not None and not getattr(self, "replay", None):         # (paused: the camera circles the ball)
+            ox, oy = max(-HX + 2, min(HX - 2, bx)), max(-HY + 2, min(HY - 2, by))
+            self.cam.setPos(ox + 15.0 * math.cos(orbit), oy + 15.0 * math.sin(orbit), 5.5)
+            self.cam.lookAt(ox, oy, 0.8)
+            self.camLens.setFov(45)
+        elif "--top" in sys.argv:                                             # (a check: the whole ground from above)
             self.cam.setPos(0, -330, 230); self.cam.lookAt(0, 40, 0)
         elif FOLLOW is not None:                                            # (a close camera on one player)
             if FOLLOW < len(fr["p"]):
@@ -1015,11 +1057,12 @@ class Viewer(ShowBase):
         s = fr["s"]
         self.score_t.setText(f"{self.labels[0]}  {s[0]} - {s[1]}  {self.labels[1]}")
         self._goal_caption(fr)
-        if RAIN:
+        if RAIN or SNOW:
             self.rain_t += dt
             from panda3d.core import TextureStage
             for n, speed in self.rain:
-                n.setTexOffset(TextureStage.getDefault(), 0.06 * self.rain_t * speed, self.rain_t * speed)
+                side = (0.06 * self.rain_t * speed) if not SNOW else 0.15 * math.sin(self.rain_t * 0.4 + speed * 9) * speed
+                n.setTexOffset(TextureStage.getDefault(), side, self.rain_t * speed)
         mins = int(fr["t"] / 600.0 * 45)
         self.clock_t.setText(f"{mins:02d}:{int((fr['t'] / 600.0 * 45 * 60) % 60):02d}")
 
@@ -1380,7 +1423,7 @@ def football(parent, r):
             a, b, c, d = P(i, j), P(i + 1, j), P(i + 1, j + 1), P(i, j + 1)
             mid = Vec3(*[(a[k] + b[k] + c[k] + d[k]) / 4 for k in range(3)]).normalized()
             dark = max(mid.dot(v) for v in ico) > 0.945                    # (~19 degrees round each)
-            col = (0.12, 0.12, 0.14, 1) if dark else (0.97, 0.97, 0.97, 1)
+            col = (0.12, 0.12, 0.14, 1) if dark else WHITE_PANEL
             m.quad(*[(x * r, y * r, z * r) for (x, y, z) in (d, c, b, a)], col)
     return parent.attachNewNode(m.node())
 

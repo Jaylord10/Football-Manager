@@ -200,6 +200,7 @@ def _view_env(career, home_id):
     os.environ["FM_MATCH_VIEW"] = career.get("match_view", "3d")
     os.environ["FM_3D_RADAR"] = "1" if career.get("radar_3d", True) else "0"
     os.environ["FM_3D_NAMES"] = "1" if career.get("names_3d", False) else "0"
+    os.environ["FM_3D_QUALITY"] = career.get("quality_3d", "auto")
     os.environ["FM_3D_CAMERA"] = str(career.get("camera_3d", 0))
     date = career.get("date", "")
     try:
@@ -207,15 +208,19 @@ def _view_env(career, home_id):
     except Exception:
         ko = "15:00"
     os.environ["FM_3D_WHEN"] = f"{date}|{ko}|{home_id}"
-    fill = 1.0                                       # (how full the ground is: career/crowds.py's demand)
+    fill, att = 1.0, 0                               # (how full the ground is: career/crowds.py's demand)
     try:
         from career import crowds
         club = career["clubs"][home_id] if 0 <= home_id < len(career["clubs"]) else None
         if club is not None:
-            fill = max(0.1, min(1.0, crowds.demand(career, club) / max(1, club["finance"]["capacity"])))
+            cap = max(1, club["finance"]["capacity"])
+            want = crowds.demand(career, club)
+            fill = max(0.1, min(1.0, want / cap))
+            att = int(min(cap, want))
     except Exception:
         pass
     os.environ["FM_3D_CROWD"] = f"{fill:.2f}"
+    os.environ["FM_3D_ATTENDANCE"] = str(att)          # (the caption after the team sheets)
     os.environ.pop("FM_3D_GROUND", None)            # (the home club's own ground - watch_playoff: the final)
 
 
@@ -237,6 +242,7 @@ def watch(career, home, away, matchday):
     career["match_view"] = engine.view_wanted                        # (remembered for next time)
     career["radar_3d"] = engine.radar3d
     career["names_3d"] = engine.names3d
+    career["quality_3d"] = engine.quality3d
     career["camera_3d"] = getattr(engine, "camera3d", 0)
     if engine.my_team is not None:
         career["assistant_subs"] = engine.subs.auto[engine.my_team]   # remembered for next time
@@ -267,6 +273,7 @@ def watch_friendly(career, f):
     career["match_view"] = engine.view_wanted                        # (remembered for next time)
     career["radar_3d"] = engine.radar3d
     career["names_3d"] = engine.names3d
+    career["quality_3d"] = engine.quality3d
     career["camera_3d"] = getattr(engine, "camera3d", 0)
     if engine.my_team is not None:
         career["assistant_subs"] = engine.subs.auto[engine.my_team]
@@ -294,11 +301,13 @@ def watch_playoff(career, m):
     if m.get("round") == "final":                      # (the final: the national stadium, full)
         os.environ["FM_3D_GROUND"] = "national"
         os.environ["FM_3D_CROWD"] = "1"
+        os.environ["FM_3D_ATTENDANCE"] = "85862"       # (the 2024 Championship play-off final crowd - Wikipedia)
     engine = me.MatchEngine(career=True)
     engine.run()
     career["match_view"] = engine.view_wanted                        # (remembered for next time)
     career["radar_3d"] = engine.radar3d
     career["names_3d"] = engine.names3d
+    career["quality_3d"] = engine.quality3d
     career["camera_3d"] = getattr(engine, "camera3d", 0)
     if engine.my_team is not None:
         career["assistant_subs"] = engine.subs.auto[engine.my_team]
@@ -333,6 +342,7 @@ def watch_cup(career, m):
     career["match_view"] = engine.view_wanted                        # (remembered for next time)
     career["radar_3d"] = engine.radar3d
     career["names_3d"] = engine.names3d
+    career["quality_3d"] = engine.quality3d
     career["camera_3d"] = getattr(engine, "camera3d", 0)
     if engine.my_team is not None:
         career["assistant_subs"] = engine.subs.auto[engine.my_team]

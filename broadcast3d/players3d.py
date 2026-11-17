@@ -152,6 +152,7 @@ def shader_defaults(render):
     render.setShaderInput("kit_cap", 0.0)
     render.setShaderInput("kit_eye", (0.0, 0.0, 0.0, 0.0))
     render.setShaderInput("clip_y", -1.0e6)
+    render.setShaderInput("snow_amt", 0.0)
 
 
 def _back_texture(name, number, colour, outline):

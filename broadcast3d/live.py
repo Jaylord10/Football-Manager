@@ -13,6 +13,7 @@ up to a shot) are drawn from what happens next.  The score bar shows the same mo
 After a goal the 3D view shows a replay; the engine waits while it does (holding()), so nothing's missed.
 If anything goes wrong in the 3D view the game carries on in 2D (the error is in broadcast3d/live_3d.log).
 """
+import math
 import os
 import sys
 import time
@@ -55,7 +56,10 @@ def weather_flags(when):
     on; and some days it rains.  The Met Office's averages for Woodford, Greater Manchester (1991-2020): about
     15 days a month with 1 mm of rain or more from October to January, 11-14 the rest of the year - but on most
     of those days it isn't raining for the whole afternoon, so rain during the match about one time in four
-    from October to February, one in six the rest of the year.  The same match always gets the same weather."""
+    from October to February, one in six the rest of the year.  Snow now and then in December to February (about 3
+    in 100 matches - the UK sees snow or sleet falling on about 24 days a year, Met Office, mostly on high ground,
+    and a pitch under snow is often called off).  From the clocks going back in late October until spring, the
+    hi-vis winter ball (premierleague.com).  The same match always gets the same weather."""
     import datetime
     import random
     try:
@@ -64,11 +68,17 @@ def weather_flags(when):
         hour = int(ko.split(":")[0])
     except Exception:
         return []
+    ball = []
+    if d.month in (11, 12, 1, 2, 3) or (d.month == 10 and d.day >= 26):     # (the clocks gone back: winter ball)
+        ball = ["--winterball"]
     if hour >= 17:
-        return ["--night"]
-    flags = []
+        return ["--night"] + ball
+    flags = list(ball)
     winter = d.month in (10, 11, 12, 1, 2)
-    if random.Random(f"weather:{date}:{home}").random() < (0.25 if winter else 0.16):
+    r = random.Random(f"weather:{date}:{home}").random()
+    if d.month in (12, 1, 2) and r < 0.03:          # (snow: rare - and a lot of snowy days get called off)
+        flags.append("--snow")
+    elif r < (0.25 if winter else 0.16):
         flags.append("--rain")
     elif d.month in (11, 12, 1):
         flags.append("--overcast")
@@ -195,6 +205,20 @@ class Live3D:
         """Stop the replay: back to the match."""
         try:
             self.conn.send(("skip",))
+        except Exception:
+            self._give_up("the 3D view stopped (sending)")
+
+    def paused(self, on):
+        """The match is paused (the picture circles the ball) or not."""
+        try:
+            self.conn.send(("paused", bool(on)))
+        except Exception:
+            self._give_up("the 3D view stopped (sending)")
+
+    def quality(self, q):
+        """auto (lighter if the computer's slow) / high (never lighter) / light (always)."""
+        try:
+            self.conn.send(("quality", q))
         except Exception:
             self._give_up("the 3D view stopped (sending)")
 
@@ -350,6 +374,11 @@ def _blend(F, t):
     return fr
 
 
+def _short(nm):
+    """J. Bloggs"""
+    return (nm.split()[0][0] + ". " + nm.split()[-1]) if nm and " " in nm else nm
+
+
 def _child(conn, shm_name, w, h, meta, flags):
     """The 3D side (its own process): draw the match as the frames come in."""
     from multiprocessing import shared_memory
@@ -407,6 +436,7 @@ def _draw_loop(conn, buf, w, h, meta):
     d = _LiveDirector(v)
     subs_on = [0, 0]
     pending = []
+    caps, cap_now, touches, last_o, motm_done = [], {"c": None, "left": 0.0}, {}, -1, False
     sheet = {"n": None, "t": 0.0}
     stats = {"n": None}
     lighter = False
@@ -423,6 +453,13 @@ def _draw_loop(conn, buf, w, h, meta):
             msg = conn.recv()
             if msg[0] == "quit":
                 return
+            if msg[0] == "paused":                              # (paused: the camera circles the ball)
+                v.orbit = (-math.pi / 2) if msg[1] else None
+                shown_t = -1.0
+                continue
+            if msg[0] == "quality":                             # (Q: auto / high / light)
+                os.environ["FM_3D_QUALITY"] = msg[1]
+                continue
             if msg[0] == "tags":                                # (N: names over their heads)
                 v.name_tags(msg[1])
                 shown_t = -1.0
@@ -459,10 +496,42 @@ def _draw_loop(conn, buf, w, h, meta):
                 if i < len(v.players) and nm != match["names"][i][0]:
                     team = 0 if i < 11 else 1
                     subs_on[team] += 1
+                    off = match["names"][i][0]
                     try:
                         v.replace_player(i, nm, role, 11 + subs_on[team])
+                        caps.append(("SUBSTITUTION", f"ON  {_short(nm)}    OFF  {_short(off)}    "
+                                     f"{v.home_name if team == 0 else v.away_name}", v.kits[team]["shirt"], 6.0))
                     except Exception:
                         print("sub:", traceback.format_exc(), flush=True)
+        # the TV captions that aren't the match's own: a sub, the attendance, the man of the match
+        o = F[k].get("o", -1)
+        if o >= 0 and o != last_o and d.rp is None:
+            touches[o] = touches.get(o, 0) + 1
+        last_o = o
+        if F[k].get("st") == "full_time" and not motm_done and d.rp is None:
+            motm_done = True
+            scorers = {}
+            for g in d.goals:
+                c = F[g].get("c")
+                if c and (c[0] == 0) == (c[1] < 11):                      # (own goals don't count)
+                    scorers[c[1]] = scorers.get(c[1], 0) + 1
+            win = 0 if F[k]["s"][0] > F[k]["s"][1] else 1 if F[k]["s"][1] > F[k]["s"][0] else -1
+            pick = lambda i: (scorers.get(i, 0) * 10 + touches.get(i, 0) / 40.0
+                              + (2 if win >= 0 and (i < 11) == (win == 0) else 0))
+            best = max(range(len(match["names"])), key=pick)
+            caps.append(("MAN OF THE MATCH", f"{match['names'][best][0]}    "
+                         f"{v.home_name if best < 11 else v.away_name}", v.kits[0 if best < 11 else 1]["shirt"], 12.0))
+        if cap_now["c"] is None and caps:
+            item = caps.pop(0)
+            cap_now["c"], cap_now["left"] = item[:3], item[3]
+        if cap_now["c"] is not None:
+            cap_now["left"] -= real_dt
+            if cap_now["left"] <= 0:
+                cap_now["c"] = None
+        v.extra_caption = cap_now["c"]
+        if getattr(v, "orbit", None) is not None:          # (paused: keep circling, 20 degrees a second)
+            v.orbit += real_dt * math.radians(20)
+            shown_t = -1.0
         if abs(t - shown_t) < 1e-3 and d.rp is None and started:
             time.sleep(0.004)                           # (nothing new to draw: the match is paused or waiting)
             last = now
@@ -487,6 +556,12 @@ def _draw_loop(conn, buf, w, h, meta):
             if sheet["t"] > 6.0:
                 sheet["n"].removeNode()
                 sheet["n"] = None
+                try:                                    # (then the attendance, as on TV)
+                    att = int(os.environ.get("FM_3D_ATTENDANCE", "0") or 0)
+                    if att > 0:
+                        caps.append(("ATTENDANCE", f"{att:,}    {v.home_name}", v.kits[0]["shirt"], 6.0))
+                except ValueError:
+                    pass
         t0 = time.perf_counter()
         v.show(_blend(F, t), min(dt, 0.1) or 1e-3)        # (fast-forwarding at 8x+: the camera and the
                                                           #  animations still move in small steps)
@@ -518,9 +593,11 @@ def _draw_loop(conn, buf, w, h, meta):
         started = True
         n_draw += 1
         t_draw += time.perf_counter() - t0
-        if n_draw == 150 and (t_draw / n_draw > 0.045 or "--light" in sys.argv) and not lighter:
+        quality = os.environ.get("FM_3D_QUALITY", "auto")     # (auto / high / light: Q in the game)
+        if not lighter and (quality == "light" or "--light" in sys.argv or
+                            (n_draw == 150 and t_draw / n_draw > 0.045 and quality != "high")):
             lighter = True                              # (too slow for a smooth picture: less to draw)
-            print(f"3D picture: {t_draw / n_draw * 1000:.1f} ms each - drawing less (lighter 3D)", flush=True)
+            print(f"3D picture: {t_draw / max(1, n_draw) * 1000:.1f} ms each - drawing less (lighter 3D)", flush=True)
             try:
                 v.lighten()
             except Exception:
