@@ -49,6 +49,41 @@ def frame_from_engine(e):
     return fr
 
 
+def missing():
+    """What the 3D view needs that this Python hasn't got (the game can run on a different Python from the
+    'Watch 3D match' launcher - Jay's game runs on Python 3.12, the launcher's on 3.14)."""
+    import importlib.util
+    return [m for m in ("panda3d", "gltf", "numpy", "PIL") if importlib.util.find_spec(m) is None]
+
+
+def install_in_background():
+    """Install what the 3D view needs into the game's own Python, quietly, while the match plays in 2D (once).
+    -> "started", "running" (already going) or "failed".  The log: broadcast3d/install_3d.log"""
+    import subprocess
+    lock = os.path.join(HERE, "install_3d.running")
+    if os.path.exists(lock) and time.time() - os.path.getmtime(lock) < 1200:
+        return "running"
+    try:
+        with open(lock, "w") as f:
+            f.write(time.strftime("%Y-%m-%d %H:%M"))
+        log = open(os.path.join(HERE, "install_3d.log"), "a")
+        log.write(time.strftime("%Y-%m-%d %H:%M ") + f"installing the 3D view's parts into {sys.executable}\n")
+        log.flush()
+        cmd = [sys.executable, "-m", "pip", "install", "panda3d", "panda3d-gltf", "numpy", "pillow"]
+        code = (f"import subprocess, os; r = subprocess.call({cmd!r}); "
+                f"print('pip finished:', r, flush=True); os.remove({lock!r})")
+        flags = 0x08000000 if os.name == "nt" else 0                   # (Windows: no black window popping up)
+        subprocess.Popen([sys.executable, "-c", code], stdout=log, stderr=log, creationflags=flags)
+        return "started"
+    except Exception as ex:
+        try:
+            with open(LOG, "a") as f:
+                f.write(time.strftime("%Y-%m-%d %H:%M ") + f"couldn't install the 3D view's parts: {ex!r}\n")
+        except Exception:
+            pass
+        return "failed"
+
+
 def weather_flags(when):
     """The light and the weather for the 3D picture, from "date|kick-off|home club" (career/matches.py):
     an evening kick-off is under the floodlights; a 3 o'clock kick-off from November to January ends in the

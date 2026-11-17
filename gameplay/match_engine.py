@@ -174,6 +174,15 @@ class MatchEngine:
             if here not in _sys.path:
                 _sys.path.insert(0, here)
             import live
+            need = live.missing()
+            if need:                                   # (this Python hasn't got the 3D parts: install them,
+                how = live.install_in_background()     #  quietly - this match is in 2D, the next in 3D)
+                self.view3d = False
+                self._fail_note_until = self.time_elapsed + 10.0 * max(1, getattr(self, "match_speed", 1))
+                self._fail_note_text = ("Setting up the 3D view - one time only, a few minutes. This match is in 2D, "
+                                        "the next one in 3D." if how in ("started", "running") else
+                                        "The 3D view couldn't be set up - playing in 2D (broadcast3d/live_3d.log)")
+                return
             self.live3d = live.Live3D(self, self.screen.get_size(), self._team_name(0), self._team_name(1))
             self.view3d = True
         except Exception as ex:
@@ -1014,6 +1023,7 @@ class MatchEngine:
         self._shown_t = self.time_elapsed
         if self.view3d and self.live3d is not None and self.live3d.failed:      # (the 3D's stopped: say so,
             self.view3d = False                                                   #  once, and carry on in 2D)
+            self._fail_note_text = None
             self._fail_note_until = self.time_elapsed + 5.0 * max(1, getattr(self, "match_speed", 1))
         if not self._3d_on():
             return None
@@ -1125,7 +1135,8 @@ class MatchEngine:
             self.object_renderer.draw_ball(self.screen, self.ball)
             self._draw_overlay()
             if self.time_elapsed < getattr(self, "_fail_note_until", -1.0):     # (the 3D view's stopped)
-                t = self.ui_renderer.med_font.render("The 3D view stopped - carrying on in 2D (V tries 3D again)",
+                t = self.ui_renderer.med_font.render(getattr(self, "_fail_note_text", None) or
+                                                     "The 3D view stopped - carrying on in 2D (V tries 3D again)",
                                                      True, (255, 255, 255))
                 box = t.get_rect(midtop=(self.screen.get_width() // 2, 14)).inflate(24, 12)
                 pygame.draw.rect(self.screen, (18, 20, 24), box, border_radius=6)
