@@ -544,6 +544,7 @@ class Viewer(ShowBase):
         self.dribble = {}
         self._shield_left = {}
         self.hud(match)
+        self._big_screen()
         if RAIN:
             self.make_rain()
         if SNOW:
@@ -802,6 +803,29 @@ class Viewer(ShowBase):
                 if len(nm) > 1 and nm[1] in want:
                     return j
         return 1
+
+    def _big_screen(self):
+        """The ground's big screen, up in a corner on its frame, with the score and the minute on it."""
+        root = self.render.attachNewNode("big screen")
+        root.setPos(-(HX + 4.5), HY + 4.5, 0.0)
+        root.lookAt(0, 0, 0)
+        root.setH(root.getH() + 180)                            # (its face to the pitch)
+        root.setP(0); root.setR(0)
+        cm = CardMaker("screen frame"); cm.setFrame(-4.2, 4.2, 5.2, 9.6)
+        fr = root.attachNewNode(cm.generate()); fr.setColor(0.08, 0.08, 0.09, 1); fr.setTwoSided(True)
+        for x in (-3.0, 3.0):                                   # (its two legs)
+            cm2 = CardMaker("leg"); cm2.setFrame(x - 0.16, x + 0.16, 0.0, 5.2)
+            leg = root.attachNewNode(cm2.generate()); leg.setColor(0.25, 0.25, 0.27, 1); leg.setTwoSided(True)
+        tn = TextNode("screen text")
+        tn.setAlign(TextNode.ACenter)
+        tn.setTextColor(1.0, 0.92, 0.55, 1)
+        tn.setText("")
+        t = root.attachNewNode(tn)
+        t.setPos(0, -0.06, 7.7)
+        t.setScale(1.3)
+        t.setShaderOff(1); t.setLightOff(1)
+        self.screen_text = tn
+        no_shadow(t, lit=False)
 
     def _swipe(self, replaying):
         """Into and out of a replay, as TV does: a band in the home colours with the crest sweeps across."""
@@ -1155,6 +1179,12 @@ class Viewer(ShowBase):
             self.render.setShaderInput("mud_amt", min(1.0, 0.3 + gone * 0.7))          # muddier as it goes on)
         s = fr["s"]
         self.score_t.setText(f"{self.labels[0]}  {s[0]} - {s[1]}  {self.labels[1]}")
+        if getattr(self, "screen_text", None) is not None:                 # (the big screen in the corner)
+            mins = fr.get("m") or int(fr["t"] / 600.0 * 45) + 1
+            txt = f"{self.labels[0]} {s[0]}-{s[1]} {self.labels[1]}\n{mins}'"
+            if txt != getattr(self, "_screen_was", None):
+                self.screen_text.setText(txt)
+                self._screen_was = txt
         self._goal_caption(fr)
         if RAIN or SNOW:
             self.rain_t += dt
