@@ -805,7 +805,20 @@ class Viewer(ShowBase):
         return 1
 
     def _big_screen(self):
-        """The ground's big screen, up in a corner on its frame, with the score and the minute on it."""
+        """The ground's big screen, up in a corner on its frame, with the score and the minute on it (a ground
+        that has its own - grounds.py, from its profile - gets the score on that one)."""
+        own = self.stadium.root.find("**/screen")
+        if not own.isEmpty():
+            tn = TextNode("screen text")
+            tn.setAlign(TextNode.ACenter)
+            tn.setTextColor(1.0, 0.92, 0.55, 1)
+            t = own.attachNewNode(tn)
+            t.setPos(0, -0.8, 13.6)
+            t.setScale(2.0)
+            t.setShaderOff(1); t.setLightOff(1)
+            no_shadow(t, lit=False)
+            self.screen_text = tn
+            return
         root = self.render.attachNewNode("big screen")
         root.setPos(-(HX + 4.5), HY + 4.5, 0.0)
         root.lookAt(0, 0, 0)
