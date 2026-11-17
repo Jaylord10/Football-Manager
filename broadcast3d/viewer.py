@@ -908,6 +908,29 @@ class Viewer(ShowBase):
             else:
                 p.mood = None
             wx, wy = to_world(x, y)
+            if fr.get("st") == "full_time" and act and not getattr(self, "replay", None):
+                # Full time: they walk in towards the centre circle, the winners happy, the losers heads down
+                # (a draw: neither) - as they come together to shake hands
+                ft = self.__dict__.setdefault("_ft", {})
+                if i not in ft:
+                    a = 2 * math.pi * ((i % 11) + (0.5 if i >= 11 else 0.0)) / 11.0
+                    ft[i] = [wx, wy, math.cos(a) * 8.5, math.sin(a) * 6.5]
+                w = ft[i]
+                dx, dy = w[2] - w[0], w[3] - w[1]
+                dd = math.hypot(dx, dy)
+                if dd > 0.4:
+                    step = min(dd, 1.4 * dt)
+                    w[0] += dx / dd * step; w[1] += dy / dd * step
+                    fx, fy, sp = dx / dd, -dy / dd, 14.0
+                else:
+                    fx, fy, sp = -w[0] / max(0.1, math.hypot(w[0], w[1])), w[1] / max(0.1, math.hypot(w[0], w[1])), 0.0
+                wx, wy = w[0], w[1]
+                s0, s1 = fr["s"]
+                won = (s0 > s1 and i < 11) or (s1 > s0 and i >= 11)
+                lost = (s0 > s1 and i >= 11) or (s1 > s0 and i < 11)
+                p.mood = "joy" if won else "sad" if lost else None
+            elif fr.get("st") != "full_time":
+                self.__dict__.pop("_ft", None) if i == 0 else None
             if not act:                                                     # (sent off: the engine takes him
                 was = self.__dict__.setdefault("_was_on", {})               #  straight off; on TV he walks off,
                 off = self.__dict__.setdefault("_walk_off", {})             #  head down, to the tunnel)
