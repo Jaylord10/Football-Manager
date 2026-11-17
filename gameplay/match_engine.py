@@ -1021,8 +1021,10 @@ class MatchEngine:
             return list(self.score)
         self.screen.blit(pic, (0, 0))
         try:
-            self._draw_on_ball()
-            if self.radar3d:
+            brk = self.match_state in ("halftime", "full_time", "et_break", "et_halftime")
+            if not brk:                                # (at a break the picture's the ground: no map, no name)
+                self._draw_on_ball()
+            if self.radar3d and not brk:
                 self._draw_radar()
             if self.time_elapsed < self._q_note_until:                 # (Q pressed: say which)
                 note = {"auto": "3D quality: auto (lighter if the computer's struggling)",

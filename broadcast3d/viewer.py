@@ -1013,6 +1013,12 @@ class Viewer(ShowBase):
             self.cam.setPos(px_, py_, pz_)
             self.cam.lookAt(self.cx * u, (self.cy * 0.35 + 9) * u, 0.0)
             self.camLens.setFov(34 + 10 * (1 - u))
+        elif fr.get("st") in ("halftime", "full_time", "et_break", "et_halftime") and \
+                getattr(self, "break_a", None) is not None and getattr(self, "cam_mode", 0) == 0 and not CLOSE:
+            a = self.break_a                                                # (a break: slowly round the ground,
+            self.cam.setPos(118 * math.cos(a), 118 * math.sin(a), 52)       #  high up)
+            self.cam.lookAt(0, 0, 0)
+            self.camLens.setFov(42)
         elif orbit is not None and not getattr(self, "replay", None):         # (paused: the camera circles the ball)
             ox, oy = max(-HX + 2, min(HX - 2, bx)), max(-HY + 2, min(HY - 2, by))
             self.cam.setPos(ox + 15.0 * math.cos(orbit), oy + 15.0 * math.sin(orbit), 5.5)

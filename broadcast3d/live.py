@@ -532,6 +532,14 @@ def _draw_loop(conn, buf, w, h, meta):
             if cap_now["left"] <= 0:
                 cap_now["c"] = None
         v.extra_caption = cap_now["c"]
+        if F[min(int(t), len(F) - 1)].get("st") in ("halftime", "full_time", "et_break", "et_halftime") \
+                and d.rp is None:                       # (a break: slowly round the ground, 5 degrees a second)
+            if getattr(v, "break_a", None) is None:
+                v.break_a = -math.pi / 2 - 0.35
+            v.break_a += real_dt * math.radians(5)
+            shown_t = -1.0
+        else:
+            v.break_a = None
         if getattr(v, "orbit", None) is not None:          # (paused: keep circling, 20 degrees a second)
             v.orbit += real_dt * math.radians(20)
             shown_t = -1.0
