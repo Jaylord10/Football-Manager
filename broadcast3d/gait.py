@@ -319,6 +319,63 @@ ACTIONS = {
                (0.30, {"hip_r": 35, "knee_r": 55, "ankle_r": 20, "hip_l": 30, "knee_l": 50, "ankle_l": 18,
                        "lean": 12, "out_l": 30, "out_r": 30, "arm_l": 10, "arm_r": 10, "elbow_l": 40, "elbow_r": 40}),
                (0.50, N)],
+    # Going up for it with the man who wins the header: the same leap, arms up, no ball.
+    "contest": [(-0.40, N),
+               (-0.28, {"hip_r": 40, "knee_r": 70, "ankle_r": 25, "hip_l": 40, "knee_l": 70, "ankle_l": 25,
+                        "lean": 14, "out_l": 15, "out_r": 15, "arm_l": -35, "arm_r": -35, "elbow_l": 30,
+                        "elbow_r": 30}),
+               (-0.10, {"lean": -14, "chest": -8, "nod": -16, "out_l": 60, "out_r": 60, "arm_l": 45, "arm_r": 45,
+                        "elbow_l": 75, "elbow_r": 75, "hip_r": -6, "knee_r": 75, "hip_l": 6, "knee_l": 60,
+                        "ankle_r": -25, "ankle_l": -25}),
+               (0.00, {"lean": 18, "chest": 8, "nod": 22, "out_l": 45, "out_r": 45, "arm_l": 15, "arm_r": 15,
+                       "elbow_l": 60, "elbow_r": 60, "hip_r": 25, "knee_r": 45, "hip_l": 20, "knee_l": 40,
+                       "ankle_r": -15, "ankle_l": -15}),
+               (0.30, {"hip_r": 35, "knee_r": 55, "ankle_r": 20, "hip_l": 30, "knee_l": 50, "ankle_l": 18,
+                       "lean": 12, "out_l": 30, "out_r": 30, "arm_l": 10, "arm_r": 10, "elbow_l": 40, "elbow_r": 40}),
+               (0.50, N)],
+    # A flick-on: the header glanced on behind him - head back as it touches it, not driven through.
+    "flickhead": [(-0.40, N),
+               (-0.28, {"hip_r": 40, "knee_r": 70, "ankle_r": 25, "hip_l": 40, "knee_l": 70, "ankle_l": 25,
+                        "lean": 14, "out_l": 15, "out_r": 15, "arm_l": -35, "arm_r": -35, "elbow_l": 30,
+                        "elbow_r": 30}),
+               (-0.10, {"lean": -14, "chest": -8, "nod": -16, "out_l": 60, "out_r": 60, "arm_l": 45, "arm_r": 45,
+                        "elbow_l": 75, "elbow_r": 75, "hip_r": -6, "knee_r": 75, "hip_l": 6, "knee_l": 60,
+                        "ankle_r": -25, "ankle_l": -25}),
+               (0.00, {"lean": -8, "chest": -6, "nod": -28, "out_l": 45, "out_r": 45, "arm_l": 15, "arm_r": 15,
+                       "elbow_l": 60, "elbow_r": 60, "hip_r": 25, "knee_r": 45, "hip_l": 20, "knee_l": 40,
+                       "ankle_r": -15, "ankle_l": -15}),
+               (0.30, {"hip_r": 35, "knee_r": 55, "ankle_r": 20, "hip_l": 30, "knee_l": 50, "ankle_l": 18,
+                       "lean": 12, "out_l": 30, "out_r": 30, "arm_l": 10, "arm_r": 10, "elbow_l": 40, "elbow_r": 40}),
+               (0.50, N)],
+    # A volley: the ball at knee to hip height - leaning well away, the kicking leg swung up and across.
+    "volley": [(-0.26, N),
+               (-0.12, {"hip_r": -10, "knee_r": 90, "ankle_r": -20, "hip_l": 10, "knee_l": 22, "lean": -8, "tilt": -12,
+                        "out_l": 60, "arm_l": 20, "elbow_l": 30, "out_r": 30}),
+               (0.00, {"hip_r": 72, "knee_r": 22, "ankle_r": -30, "hipout_r": 22, "hip_l": 8, "knee_l": 25, "lean": -12,
+                       "tilt": -18, "twist": 10, "out_l": 65, "arm_l": 25, "elbow_l": 30, "out_r": 35}),
+               (0.18, {"hip_r": 62, "knee_r": 30, "hipout_r": 15, "hip_l": 6, "knee_l": 25, "lean": -6, "tilt": -10,
+                       "out_l": 50, "elbow_l": 30, "out_r": 30}),
+               (0.45, N)],
+    # Controlling a dropping ball on his chest: leaning back, arms out, chest under it, eyes down on it.
+    "chest": [(-0.22, N),
+              (0.00, {"lean": -16, "chest": -10, "nod": 22, "out_l": 50, "out_r": 50, "elbow_l": 40, "elbow_r": 40,
+                      "knee_r": 22, "knee_l": 22, "hip_r": 6, "hip_l": 6}),
+              (0.22, {"lean": -6, "nod": 25, "out_l": 35, "out_r": 35, "elbow_l": 35, "elbow_r": 35, "knee_r": 15,
+                      "knee_l": 15}),
+              (0.45, N)],
+    # ...or on his thigh: the right thigh up level, cushioning it down.
+    "thigh": [(-0.22, N),
+              (0.00, {"hip_r": 58, "knee_r": 85, "ankle_r": 10, "hip_l": 6, "knee_l": 18, "lean": 4, "nod": 25,
+                      "out_l": 40, "out_r": 35, "elbow_l": 30, "elbow_r": 30}),
+              (0.20, {"hip_r": 25, "knee_r": 45, "lean": 6, "nod": 20, "out_l": 30, "out_r": 25}),
+              (0.42, N)],
+    # A step-over: the right leg circling round in front of the ball, the body dipping to sell it.
+    "stepover": [(-0.05, N),
+                 (0.12, {"hip_r": 32, "knee_r": 72, "hipout_r": -16, "toein_r": 15, "hip_l": 8, "knee_l": 30,
+                         "turn": 15, "lean": 12, "tilt": -6, "out_l": 40, "out_r": 25, "nod": 15}),
+                 (0.26, {"hip_r": 22, "knee_r": 58, "hipout_r": 26, "hip_l": 6, "knee_l": 34, "turn": -12, "tilt": 9,
+                         "lean": 14, "out_l": 30, "out_r": 45, "nod": 15}),
+                 (0.46, N)],
     # A block tackle with the left: low, stretching the left leg across, arms out.
     "tackle": [(-0.30, N),
                (-0.06, {"hip_l": 55, "knee_l": 12, "ankle_l": 15, "hipout_l": 20, "hip_r": 30, "knee_r": 55, "ankle_r": 20,
@@ -1034,7 +1091,7 @@ def _make(actor):
     for name, keys in ACTIONS.items():
         variants = [(name, keys)]
         if name in ("dive", "recover", "kick", "shot", "touch", "tackle", "punt", "cut", "brake", "slide", "shield", "fouled",
-                    "pass", "loft", "flick", "backheel", "hurt", "stumble"):
+                    "pass", "loft", "flick", "backheel", "hurt", "stumble", "volley", "thigh", "stepover"):
             variants.append((name + "_m", [(t, mirror(p) if isinstance(p, dict) else p) for t, p in keys]))
         for vn, vk in variants:
             fn, t0, t1 = action_pose(vk)

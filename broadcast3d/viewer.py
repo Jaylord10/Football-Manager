@@ -806,6 +806,8 @@ class Viewer(ShowBase):
         cnt = {kind: [0, 0] for kind in ("shot", "kick", "tackle", "fouled", "header")}
         alias = {k: "kick" for k in KICKS}
         alias["hurt"] = "fouled"
+        alias["flickhead"] = "header"
+        alias["volley"] = "kick"
         for i, l in self.events.by_player.items():
             for ke, kind in l:
                 kind = alias.get(kind, kind)
@@ -1133,6 +1135,8 @@ class Viewer(ShowBase):
                 if near:
                     kind, t = "shield", 0.5
                     self._shield_left[i] = near > 0           # (the pose has the man on his left)
+            if kind is None and fr["o"] == i:
+                kind, t = self._stepover(i, p, fr, fx, fy, k)                    # (a man in front: a trick)
             if kind is None and fr["o"] == i:
                 kind, t = self._dribble_touch(i, p, dt)
             r = fr.get("r")
@@ -1681,7 +1685,7 @@ def _viewer_left_foot(self, i, p, kind, t, k):
     stronger foot (about 1 in 5 players are left-footed)."""
     if kind == "shield":                                            # (the arm out on the man's side)
         return self._shield_left.get(i, True)
-    if kind not in KICKS + ("shot", "touch", "tackle"):
+    if kind not in KICKS + ("shot", "touch", "tackle", "volley"):
         return False
     F = self.m["frames"]
     ke = max(0, min(len(F) - 1, int(round(k - t * 30))))
@@ -1772,6 +1776,30 @@ def _viewer_run_up(self, i, fr, wx, wy, fx, fy, sp, k, dt):
     nx, ny = bx - dx * back, by - dy * back
     s["off"] = (nx - wx, ny - wy)
     return nx, ny, dx, -dy, max(sp, moved * 10.0), pose
+
+
+def _viewer_stepover(self, i, p, fr, fx, fy, k):
+    """Running at a defender with the ball, the trickier players (about half) throw in a step-over when he's 2-4
+    m in front - one every few seconds at most."""
+    st = self.__dict__.setdefault("_so", {})
+    s = st.get(i)
+    if s is not None:
+        t = (k - s) / 30.0
+        if t <= 0.46:
+            return "stepover", t
+        if t < 3.0:
+            return None, 0.0
+    if p.seed % 2 or p.sp < 2.0:
+        return None, 0.0
+    P = fr["p"]
+    for j in (range(11, 22) if i < 11 else range(0, 11)):
+        q = P[j]
+        dx, dy = q[0] - P[i][0], q[1] - P[i][1]
+        d = math.hypot(dx, dy) / 10.0
+        if 2.0 < d < 4.0 and (dx * fx + dy * fy) / (d * 10.0) > 0.7 and q[6]:
+            st[i] = k
+            return "stepover", 0.0
+    return None, 0.0
 
 
 def _viewer_contact(self, i, p, fr, wx, wy, fx, fy, sp, r):
@@ -2153,6 +2181,7 @@ Viewer._spin_ball = _viewer_spin_ball
 Viewer._throw_dir = _viewer_throw_dir
 Viewer._run_up = _viewer_run_up
 Viewer._contact = _viewer_contact
+Viewer._stepover = _viewer_stepover
 Viewer._throw_spot = _viewer_throw_spot
 Viewer.THROW_BACK = 0.35           # m: the thrower's middle this far outside the pitch while he throws
 Viewer._left_foot = _viewer_left_foot
@@ -2178,7 +2207,8 @@ class Events:
 
     RANK = {"fouled": 8, "despair": 0, "kneeslide": 7, "throwin": 6, "punt": 5, "bowl": 5, "shot": 4, "header": 3, "tackle": 3,
             "kick": 2, "pass": 2, "loft": 2, "flick": 2, "backheel": 2, "touch": 1, "hurt": 8, "stumble": 3,
-            "innocent": 5, "catch": 4, "gkthrow": 5, "splitstep": 3, "slap": 6, "applaud": 1}
+            "innocent": 5, "catch": 4, "gkthrow": 5, "splitstep": 3, "slap": 6, "applaud": 1, "contest": 3,
+            "flickhead": 3, "volley": 2, "chest": 1, "thigh": 1, "stepover": 1}
 
     def add(self, i, k, kind):
         l = self.by_player.setdefault(i, [])
@@ -2230,6 +2260,21 @@ def _kick_kind(F, k, i, v):
     return "loft" if vz > 3.0 else "kick"
 
 
+def _head_kind(F, k, i, ev):
+    """A header - glanced on behind him (a flick-on) or met properly; and the nearest opponent within 2 m goes
+    up with him."""
+    f0, f3 = F[k - 1], F[min(len(F) - 1, k + 3)]
+    p = f0["p"][i]
+    dx, dy = f3["b"][0] - F[k]["b"][0], f3["b"][1] - F[k]["b"][1]
+    near = min(((math.hypot(q[0] - p[0], q[1] - p[1]), j) for j, q in enumerate(f0["p"])
+                if (j < 11) != (i < 11) and q[6] and j not in (0, 11)), default=(99, -1))
+    if near[0] < 20 and near[1] >= 0:
+        ev.add(near[1], k, "contest")
+    if math.hypot(dx, dy) > 0.1 and _kick_angle(p[2], p[3], dx, dy) > 100:
+        return "flickhead"
+    return "header"
+
+
 def find_events(F, keepers=(0, 11), ev=None, lo=0):
     """ev=None: the whole recording.  Live (broadcast3d/live.py): ev = the Events so far, lo = where the last
     look got up to - the frames since are looked at and added (each frame's "k" is already set)."""
@@ -2252,7 +2297,8 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
             if a in keepers and k - gk <= 15 and not dead and z < 2.5:      # (a keeper, ball just caught: out of his hands)
                 ev.add(a, k, "punt" if v > 17 else "gkthrow" if v > 12 else "bowl")   # (overarm for a long one)
                 continue
-            ev.add(a, k, "header" if z > 1.3 else "shot" if v > 21 else _kick_kind(F, k, a, v))
+            ev.add(a, k, _head_kind(F, k, a, ev) if z > 1.3 else "shot" if v > 21 else
+                   "volley" if z > 0.35 else _kick_kind(F, k, a, v))
             if v > 21 and z <= 1.3 and len(keepers) > 1:                   # (their keeper: a split step)
                 ev.add(keepers[1] if a < 11 else keepers[0], k - 4, "splitstep")
         elif a < 0 and b >= 0:
@@ -2260,7 +2306,8 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
             if b in keepers and sp(F[k - 2]["b"], F[k - 1]["b"]) > 9.0:       # (a keeper takes a shot / a cross)
                 ev.add(b, k, "catch")
             else:
-                ev.add(b, k, "header" if z > 1.3 else "touch")              # (the first touch)
+                ev.add(b, k, _head_kind(F, k, b, ev) if z > 1.3 else "chest" if z > 1.0 else "thigh" if z > 0.45
+                       else "touch")                                        # (the first touch)
         elif a >= 0 and b >= 0 and a != b:
             if (a < 11) != (b < 11):
                 ev.add(b, k, "tackle")
@@ -2275,7 +2322,7 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
                            default=(99, -1))
                 if near[0] < 2.0:
                     z = F[k]["b"][2] / 10.0
-                    ev.add(near[1], k, "header" if z > 1.3 else "kick")
+                    ev.add(near[1], k, _head_kind(F, k, near[1], ev) if z > 1.3 else "kick")
     for k in range(max(2, lo), len(F)):                                      # a goal: the keeper beaten, on his
         if F[k]["s"] != F[k - 1]["s"] and len(keepers) > 1:                  #  knees, slaps the grass
             who = 1 if F[k]["s"][0] > F[k - 1]["s"][0] else 0                 # (the side that let it in)

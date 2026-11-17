@@ -36,8 +36,15 @@ strips from a recorded match (scratch tool: find the moment, follow the player, 
 - 27 Running shoulder to shoulder with an opponent: they lean into each other.
 - 30 Chasing a man from just behind: about a third of players reach out for his shirt.
 - 43 Corners: players marking each other in the box jostle, arms out, holding their ground.
+- 25 Headers: the nearest opponent within 2 m goes up with him.
+- 26 A header glanced on behind him is a flick-on (head back), not a header driven through.
+- 7/8 Volleys (the ball struck at knee to hip height), and chest and thigh control for a dropping ball.  Rare:
+  this match engine nearly always plays the ball on the ground (none in the 15-minute sample).
+- 9/10 Step-overs: the trickier half of players throw one in running at a defender 2-4 m in front (one every
+  few seconds at most), the body dipping to sell it.
 
 ## Already there before tonight
 - 12 Shot follow-through landing on the kicking foot; 13 leaning into bends; 14 leaning forward when setting
-  off, back when braking; 29 getting up after a sliding tackle (the slide ends kneeling, then up); 50 assistants side-stepping
+  off, back when braking; 2 the plant foot beside the ball (the instep kick); 24 headers with a proper
+  jump (crouch, spring off both feet, arms up, land on bent knees); 45 heads down / hands on knees when they concede; 29 getting up after a sliding tackle (the slide ends kneeling, then up); 50 assistants side-stepping
   along the line level with the second-last defender (they sprint when they must).
