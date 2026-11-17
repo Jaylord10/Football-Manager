@@ -806,6 +806,24 @@ def shuffle_m(u):
     return mirror(m), {"sway": -e["sway"]}
 
 
+def cross(u):
+    """Moving sideways faster (to his right): the crossover step - the right foot leads out and the left swings
+    across in front of it, the hips turning with it, the shoulders staying square to the ball."""
+    m, e = shuffle(u)
+    o_l, l_l = _foot(u + 0.5, SIDE_A, SIDE_DUTY)
+    m["hipout_l"] -= 24 * l_l                                     # (the trailing leg across, in front)
+    m["hip_l"] += 12 * l_l
+    m["turn"] = m.get("turn", 0.0) - 12 * l_l                      # (the hips open towards the way he's going)
+    m["twist"] = m.get("twist", 0.0) + 8 * l_l                     # (the shoulders stay square)
+    m["lean"] = 10
+    return m, e
+
+
+def cross_m(u):
+    m, e = cross(u)
+    return mirror(m), {"sway": -e["sway"]}
+
+
 def backpedal(u):
     """Backing off (a defender backpedalling): low, short quick steps backwards, weight forward, each foot
     planted while it's down."""
@@ -848,7 +866,7 @@ def run_wide(u):
     return ({"out_r": 22, "out_l": 22, "elbow_r": -10, "elbow_l": -10}, {})
 
 
-LOOPS = {"run_call": (run_call, 15, "run"), "run_point": (run_point, 15, "run"), "run_wide": (run_wide, 15, "run"), "shuffle": (shuffle, 30, "idle"), "shuffle_m": (shuffle_m, 30, "idle"),
+LOOPS = {"cross": (cross, 30, "idle"), "cross_m": (cross_m, 30, "idle"), "run_call": (run_call, 15, "run"), "run_point": (run_point, 15, "run"), "run_wide": (run_wide, 15, "run"), "shuffle": (shuffle, 30, "idle"), "shuffle_m": (shuffle_m, 30, "idle"),
          "backpedal": (backpedal, 30, "idle"), "turnstep": (turnstep, 30, "idle"),
          "shift": (shift, 240, "idle"), "rest": (rest, 240, "idle"), "sit": (sit, 90, "idle"), "cheer": (cheer, 30, "idle"), "clap": (clap, 30, "idle"), "hips": (hips, 60, "idle"), "knees": (knees, 60, "idle"),
          "walk_sad": (walk_sad, 30, "idle"), "run_arms": (run_arms, 15, "run"), "run_sky": (run_sky, 15, "run"),

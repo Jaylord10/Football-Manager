@@ -53,6 +53,8 @@ strips from a recorded match (scratch tool: find the moment, follow the player, 
 - 23 His own running style: some run more upright, some lower, all through the match.
 - 19 Runners calling for it: now half of them point into the space ahead instead of an arm up.
 - 11 Running with the ball at speed: arms carried a little wider for balance.
+- 17 Crossover side-steps: moving sideways faster than ~2.2 m/s (before turning to run),
+  the trailing leg swings across in front, hips opening, shoulders square; slower, the old side-step.
 
 ## Already there before tonight
 - 12 Shot follow-through landing on the kicking foot; 13 leaning into bends; 14 leaning forward when setting
@@ -61,9 +63,6 @@ strips from a recorded match (scratch tool: find the moment, follow the player, 
   planted (the stride runs at his speed over the length of his stride); 29 getting up after a sliding tackle (the slide ends kneeling, then up); 50 assistants side-stepping
   along the line level with the second-last defender (they sprint when they must).
 
-## Not done
-- 17 Crossover side-steps: players already side-step (shuffle) and turn and run when they have to go faster;
-  a crossover step in between needs a new movement cycle measured on the model - left for another night.
 
 ## Checks (all on branch anim-50)
 - Match engine replay unchanged: hash 50d079570600bcab322bbb19be341bb2.

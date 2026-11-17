@@ -669,8 +669,13 @@ class AnimPlayer:
             self.a.pose(walk, self.phase * self.nf[walk])
         if self.cfg.get("make_walk"):
             sh = "shuffle" if side > 0 else "shuffle_m"
-            self.loco[sh] = w_move * w_side
+            w_x = min(1.0, max(0.0, (s - 2.2) / 0.8))                        # (faster sideways: crossover steps)
+            self.loco[sh] = w_move * w_side * (1.0 - w_x)
             self.a.pose(sh, self.ph_side * self.nf[sh])
+            if w_x > 0.0:
+                cx = "cross" if side > 0 else "cross_m"
+                self.loco[cx] = w_move * w_side * w_x
+                self.a.pose(cx, self.ph_side * self.nf[cx])
             self.loco["backpedal"] = w_move * w_back
             self.a.pose("backpedal", self.ph_back * self.nf["backpedal"])
         else:
