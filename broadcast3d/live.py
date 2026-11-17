@@ -72,7 +72,9 @@ def weather_flags(when):
     if d.month in (11, 12, 1, 2, 3) or (d.month == 10 and d.day >= 26):     # (the clocks gone back: winter ball)
         ball = ["--winterball"]
     if hour >= 17:
-        return ["--night"] + ball
+        # (a misty evening now and then in winter: fog's commonest on still, cold nights - the Met Office)
+        foggy = d.month in (11, 12, 1, 2) and random.Random(f"fog:{date}:{home}").random() < 0.12
+        return ["--night"] + ball + (["--fog"] if foggy else [])
     flags = list(ball)
     winter = d.month in (10, 11, 12, 1, 2)
     r = random.Random(f"weather:{date}:{home}").random()

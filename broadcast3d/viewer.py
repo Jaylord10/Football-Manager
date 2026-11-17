@@ -16,6 +16,7 @@ NIGHT = "--night" in sys.argv               # (an evening kick-off under the flo
 RAIN = "--rain" in sys.argv                 # (Lancashire drizzle: grey light, rain falling, a wet pitch)
 SNOW = "--snow" in sys.argv                 # (a rare snowy day: flakes falling, the pitch white, the lines swept)
 DUSK = "--dusk" in sys.argv                 # (a 3 o'clock kick-off in midwinter: darker through the second half)
+FOG = "--fog" in sys.argv                   # (a misty winter evening: the far stand softened, the lights hazy)
 if RAIN or SNOW:
     OVERCAST = True
 SUN_AZ, SUN_EL = 200.0, 22.0               # the sun: degrees round from behind the Main Stand, and up
@@ -518,7 +519,11 @@ class Viewer(ShowBase):
         self.stadium = st
         self.light_up()
         fog = Fog("haze"); fog.setColor(*((0.62, 0.66, 0.7) if not NIGHT else (0.04, 0.045, 0.07)))
-        fog.setExpDensity(0.0012 if not RAIN else 0.0035); self.render.setFog(fog)
+        fog.setExpDensity(0.0012 if not RAIN else 0.0035)
+        if FOG:
+            fog.setExpDensity(0.0075)
+            fog.setColor(*((0.62, 0.64, 0.66) if not NIGHT else (0.11, 0.115, 0.13)))
+        self.render.setFog(fog)
         if RAIN:
             self.setBackgroundColor(0.55, 0.58, 0.62, 1)
         # kits (Ashvale home v Northwick home)
