@@ -438,6 +438,7 @@ def _draw_loop(conn, buf, w, h, meta):
     pending = []
     caps, cap_now, touches, last_o, motm_done = [], {"c": None, "left": 0.0}, {}, -1, False
     sheet = {"n": None, "t": 0.0}
+    intro = {"t": None}
     stats = {"n": None}
     lighter = False
     clock = ClockObject.getGlobalClock()
@@ -468,6 +469,9 @@ def _draw_loop(conn, buf, w, h, meta):
                 v.cam_mode = (getattr(v, "cam_mode", 0) + 1) % 2
                 shown_t = -1.0                                  # (draw it, even while paused)
                 continue
+            if msg[0] == "skip" and intro["t"] is not None:     # (Enter: straight to the kick-off)
+                intro["t"] = 1e9
+                continue
             if msg[0] == "skip" and d.rp is not None:           # (Enter: no more of the replay)
                 d.rp = None
                 v.replay = None
@@ -488,7 +492,8 @@ def _draw_loop(conn, buf, w, h, meta):
             viewer.find_events(F, gks, ev=v.events, lo=ev_lo)
             ev_lo = max(ev_lo, len(F) - 4)
         now = time.perf_counter()
-        real_dt = min(0.1, now - last)
+        raw_dt = now - last
+        real_dt = min(0.1, raw_dt)
         t, dt = d.frame(F, real_dt)
         k = min(int(t), len(F) - 1)
         while pending and k >= pending[0][0] and d.rp is None:
@@ -530,7 +535,7 @@ def _draw_loop(conn, buf, w, h, meta):
         if getattr(v, "orbit", None) is not None:          # (paused: keep circling, 20 degrees a second)
             v.orbit += real_dt * math.radians(20)
             shown_t = -1.0
-        if abs(t - shown_t) < 1e-3 and d.rp is None and started:
+        if abs(t - shown_t) < 1e-3 and d.rp is None and intro["t"] is None and started:
             time.sleep(0.004)                           # (nothing new to draw: the match is paused or waiting)
             last = now
             continue
@@ -549,6 +554,17 @@ def _draw_loop(conn, buf, w, h, meta):
             if stats["n"]:
                 stats["n"].removeNode()
             stats["n"] = None
+        if intro["t"] is not None:                      # (the fly-in at kick-off: 4.5 s, by the clock)
+            intro["t"] += min(0.5, raw_dt)
+            v.intro = min(1.0, intro["t"] / 4.5)
+            if v.intro >= 1.0:
+                intro["t"] = None
+                v.intro = None
+                try:
+                    sheet["n"] = v.lineups(match)
+                except Exception:
+                    print("lineups:", traceback.format_exc(), flush=True)
+            shown_t = -1.0
         if sheet["n"] is not None:                      # (the team sheets, for the first few seconds)
             sheet["t"] += real_dt
             if sheet["t"] > 6.0:
@@ -565,11 +581,9 @@ def _draw_loop(conn, buf, w, h, meta):
                                                           #  animations still move in small steps)
         v.taskMgr.step()
         if not started:                                 # (the first time: draw twice - the shadows settle)
-            if k < 30:                                  # (at kick-off: the team sheets)
-                try:
-                    sheet["n"] = v.lineups(match)
-                except Exception:
-                    print("lineups:", traceback.format_exc(), flush=True)
+            if k < 30:                                  # (at kick-off: down from the sky first - the match
+                intro["t"] = 0.0                        #  waits - then the team sheets)
+                v.intro = 0.0
             v.show(_blend(F, t), 1e-3)
             v.taskMgr.step()
         tex = v.win.getScreenshot()
@@ -587,7 +601,8 @@ def _draw_loop(conn, buf, w, h, meta):
         off = HEAD + nxt * size
         buf[off:off + size] = np.ascontiguousarray(img).tobytes()
         slot, count, shown_k, shown_t = nxt, count + 1, k, t
-        _write_head(buf, ready=1, slot=slot, count=count, k=k, replay=1 if d.rp is not None else 0)
+        _write_head(buf, ready=1, slot=slot, count=count, k=k,
+                    replay=1 if (d.rp is not None or intro["t"] is not None) else 0)
         started = True
         n_draw += 1
         t_draw += time.perf_counter() - t0

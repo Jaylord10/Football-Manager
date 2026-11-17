@@ -1003,7 +1003,17 @@ class Viewer(ShowBase):
         else:
             self._cam_tv(fr, bx, by, dt)
         orbit = getattr(self, "orbit", None)
-        if orbit is not None and not getattr(self, "replay", None):         # (paused: the camera circles the ball)
+        intro = getattr(self, "intro", None)
+        if intro is not None and intro < 1.0:                               # (kick-off: down from the sky outside
+            u = intro * intro * (3 - 2 * intro)                             #  the ground to the TV gantry)
+            a = math.radians(135 + 135 * u)                                 # (round from the far corner,
+            R = 150 - (150 - (HY + 62)) * u                                 #  high over the roofs, to the
+            px_, py_, pz_ = R * math.cos(a), R * math.sin(a), 120 - 87 * u  #  gantry)
+            px_ += self.cx * 0.8 * u
+            self.cam.setPos(px_, py_, pz_)
+            self.cam.lookAt(self.cx * u, (self.cy * 0.35 + 9) * u, 0.0)
+            self.camLens.setFov(34 + 10 * (1 - u))
+        elif orbit is not None and not getattr(self, "replay", None):         # (paused: the camera circles the ball)
             ox, oy = max(-HX + 2, min(HX - 2, bx)), max(-HY + 2, min(HY - 2, by))
             self.cam.setPos(ox + 15.0 * math.cos(orbit), oy + 15.0 * math.sin(orbit), 5.5)
             self.cam.lookAt(ox, oy, 0.8)
