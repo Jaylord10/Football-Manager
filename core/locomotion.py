@@ -100,6 +100,7 @@ DEFAULT_SPEED = 0.70             # any other state
 
 from core.stats import stat20 as _stat    # (cached: attributes never change during a match)
 import core.clock as _clock
+import core.kick_angle as _kick_angle
 import core.world as _world
 import core.fatigue as _fatigue
 import core.orientation as _orientation
@@ -341,8 +342,12 @@ def step(player, dt, all_players=None):
 
     # Which way the body faces
     if has_ball:
+        tt = getattr(player, "_turn_to", None)
+        if tt is not None:
+            # Turning to play it behind him (core/kick_angle.py): the body - and the ball - come round
+            _kick_angle.turn_towards(player, tt, dt)
         # On the ball: faces where he's carrying it (turn rate already limited above)
-        if player.vel.length_squared() > 25:          # > 0.5 m/s
+        elif player.vel.length_squared() > 25:          # > 0.5 m/s
             player.facing = player.vel.normalize()
     elif not staggered:
         _orientation.turn(player, face_target, dt, top)

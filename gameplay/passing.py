@@ -64,6 +64,8 @@ def _apply_pass_error(passer, pass_target, speed, dist_m, difficulty=1.0):
             error += PASS_PRESSURE_EXTRA * (1.0 - composure / 20.0) * (1.0 - nearest / PASS_PRESSURE_RADIUS + 0.3)
     if passer.vel.length() > MAX_SPEED * 0.7:
         error += PASS_MOVING_EXTRA
+    import core.kick_angle as ka                     # (not facing it: a back-heel / hooked flick)
+    error *= ka.error_mult(passer, pass_target - passer.pos)
 
     angle_sd = (PASS_ANGLE_BASE + PASS_ANGLE_PER_POINT * (20 - passing)
                 + PASS_ANGLE_PER_M * max(0.0, dist_m - 20.0)) * error * difficulty
