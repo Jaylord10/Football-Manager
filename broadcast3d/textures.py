@@ -142,7 +142,7 @@ def sorted_rect(a, b):
     return [min(a[0], b[0]), min(a[1], b[1]), max(a[0], b[0]), max(a[1], b[1])]
 
 
-def crowd(name, cols, density=0.93, seed=0, seat=(60, 30, 30)):
+def crowd(name, cols, density=0.93, seed=0, seat=(60, 30, 30), flags=0, scarves_up=False):
     """Rows of fans - tiles across a stand.  Each fan: shoulders and a body in a colour (mostly the club's), a
     head (skin tones, hair, a woolly hat on some - it's November), some with a scarf in the club's colours,
     a few smaller (children); empty seats here and there."""
@@ -185,7 +185,27 @@ def crowd(name, cols, density=0.93, seed=0, seat=(60, 30, 30)):
                             fill=rnd.choice(main))
                 elif hat < 0.85:                                              # (hair)
                     d.chord([hx - hr, hy - hr, hx + hr, hy + hr * 0.4], 180, 360, fill=rnd.choice(hairs))
+                if scarves_up and rnd.random() < 0.8:                         # (scarves held up over their heads,
+                    a, b = main[0], (main[1] if len(main) > 1 else (235, 235, 235))     # as at the kick-off)
+                    sy0 = hy - hr - 5.5 * S * k
+                    d.line([x - 1 * S, sy0 + 4 * S, x + 1 * S, sy0], fill=sk, width=int(2 * S))       # (arms up)
+                    d.line([x + bw + 1 * S, sy0 + 4 * S, x + bw - 1 * S, sy0], fill=sk, width=int(2 * S))
+                    for q in range(5):
+                        qx = x - 1 * S + q * (bw + 2 * S) / 5
+                        d.rectangle([qx, sy0 - 1.5 * S, qx + (bw + 2 * S) / 5, sy0 + 1.5 * S], fill=a if q % 2 else b)
             x += rnd.uniform(11, 14) * S
+    for _ in range(flags):                                  # (big flags in the club's colours over the fans)
+        fw, fh = rnd.uniform(170, 260) * S, rnd.uniform(6, 10) * rh
+        fx0, fy0 = rnd.uniform(0, w - fw), rnd.uniform(0, h - fh)
+        a, b = main[0], (main[1] if len(main) > 1 else (235, 235, 235))
+        bands = rnd.choice((2, 3, 4))
+        vertical = rnd.random() < 0.5
+        for q in range(bands):
+            col = a if q % 2 == 0 else b
+            if vertical:
+                d.rectangle([fx0 + q * fw / bands, fy0, fx0 + (q + 1) * fw / bands, fy0 + fh], fill=col)
+            else:
+                d.rectangle([fx0, fy0 + q * fh / bands, fx0 + fw, fy0 + (q + 1) * fh / bands], fill=col)
     _save(im, name)
 
 

@@ -24,3 +24,4 @@ broadcast3d/tex/*.part.png
 broadcast3d/live_3d.log
 broadcast3d/last_live.log
 broadcast3d/tex/snow.png
+broadcast3d/tex/crowd_*_up.png

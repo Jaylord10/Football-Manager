@@ -93,7 +93,10 @@ def build(st, prof, kit):
     eng = g.get("for_the_engine", {})
     shirt, trim = kit["shirt"], kit.get("trim", kit["shirt"])
     dark = sum(shirt) < 200
-    textures.crowd("crowd_hosts.png", [(shirt, 6), (trim, 2), ((30, 30, 34), 2), ((235, 235, 235), 1)], seed=5)
+    textures.crowd("crowd_hosts.png", [(shirt, 6), (trim, 2), ((30, 30, 34), 2), ((235, 235, 235), 1)], seed=5,
+                   flags=2)
+    textures.crowd("crowd_hosts_up.png", [(shirt, 6), (trim, 2), ((30, 30, 34), 2), ((235, 235, 235), 1)], seed=5,
+                   flags=2, scarves_up=True)                       # (scarves up: at the kick-off, after a goal)
     hosts = "crowd_hosts.png"
     visitors = st.visitors()
     away_side, away_part = _away_spec(eng.get("away_fans"), g["stands"])

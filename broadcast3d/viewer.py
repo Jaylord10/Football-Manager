@@ -804,6 +804,23 @@ class Viewer(ShowBase):
                     return j
         return 1
 
+    def _scarves(self, kind):
+        """The home crowd's picture with their scarves held up (textures.crowd scarves_up), or None."""
+        c = self.__dict__.setdefault("_scarf_tex", {})
+        if kind not in c:
+            up = kind.replace(".png", "_up.png")
+            try:
+                if kind in ("crowd_home.png", "crowd_home_live.png"):           # (Kiln Lane: Ashvale's red and white)
+                    import textures
+                    textures.crowd("crowd_home_up.png", [((200, 40, 45), 6), ((235, 235, 235), 2), ((30, 30, 34), 2)],
+                                   seed=1, scarves_up=True)
+                    up = "crowd_home_up.png"
+                c[kind] = self.stadium.T(up) if os.path.exists(T + up) else None
+            except Exception as e:
+                print("scarves:", e)
+                c[kind] = None
+        return c[kind]
+
     def _big_screen(self):
         """The ground's big screen, up in a corner on its frame, with the score and the minute on it (a ground
         that has its own - grounds.py, from its profile - gets the score on that one)."""
@@ -970,6 +987,14 @@ class Viewer(ShowBase):
             ooh = getattr(self, "_ooh", None)                               # (a shot that just missed: up they get)
             near = ooh is not None and 0 <= k - ooh[1] < 45 and fans == ooh[0]
             want = (4.0 if near else 1.0) if not cel else (7.0 if fans == cel[0] else 0.4 if fans >= 0 else 3.0)
+            if fans == 0:                                                   # (the home fans: scarves up for the
+                up = k < 600 or (cel is not None and cel[0] == 0)           #  kick-off, and after a home goal)
+                ups = self.__dict__.setdefault("_ups", {})
+                if up != ups.get(n, False):
+                    tx = self._scarves(kind) if up else self.stadium.T(kind)
+                    if tx is not None:
+                        cn.setTexture(tx, 1)
+                    ups[n] = up
             cur = amts.get(n, 1.0)
             cur += (want - cur) * min(1.0, dt * 2.0)
             amts[n] = cur
