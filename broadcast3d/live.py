@@ -547,7 +547,7 @@ def _draw_loop(conn, buf, w, h, meta):
             item = caps.pop(0)
             cap_now["c"], cap_now["left"] = item[:3], item[3]
         if cap_now["c"] is not None:
-            cap_now["left"] -= real_dt
+            cap_now["left"] -= min(0.5, raw_dt)
             if cap_now["left"] <= 0:
                 cap_now["c"] = None
         v.extra_caption = cap_now["c"]
@@ -593,7 +593,7 @@ def _draw_loop(conn, buf, w, h, meta):
                     print("lineups:", traceback.format_exc(), flush=True)
             shown_t = -1.0
         if sheet["n"] is not None:                      # (the team sheets, for the first few seconds)
-            sheet["t"] += real_dt
+            sheet["t"] += min(0.5, raw_dt)              # (by the clock, however slow the pictures)
             if sheet["t"] > 6.0:
                 sheet["n"].removeNode()
                 sheet["n"] = None
