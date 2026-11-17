@@ -86,7 +86,7 @@ class UIRenderer:
         keys_text = "SPACE pause  +/- speed" + ("  D overlay" if not mi.get("view3d") else "") \
             + ("  S subs" if mi.get("can_sub") else "") \
             + ("  V " + ("2D" if mi.get("view3d") else "3D") if mi.get("career") else "") \
-            + ("  C camera" if mi.get("view3d") else "") \
+            + ("  C camera  M map  N names" if mi.get("view3d") else "") \
             + ("  ENTER skip replay" if mi.get("replay3d") else "") \
             + ("" if mi.get("career") else "  R reset")
         keys_surf = self.normal_font.render(keys_text, True, (140, 140, 140))

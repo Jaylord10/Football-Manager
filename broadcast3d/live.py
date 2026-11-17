@@ -94,6 +94,18 @@ def _write_head(buf, **kw):
     struct.pack_into(_FMT, buf, 0, *cur)
 
 
+_COL = 40                        # (the two shirt colours, RGB + RGB, written by the 3D side: the game's mini pitch)
+
+
+def _write_colours(buf, c0, c1):
+    struct.pack_into("<6B", buf, _COL, *[int(x) for x in list(c0)[:3] + list(c1)[:3]])
+
+
+def _read_colours(buf):
+    v = struct.unpack_from("<6B", buf, _COL)
+    return (v[0], v[1], v[2]), (v[3], v[4], v[5])
+
+
 def _read_head(buf):
     ready, slot, count, k, replay, w, h = struct.unpack_from(_FMT, buf, 0)
     return {"ready": ready, "slot": slot, "count": count, "k": k, "replay": replay, "w": w, "h": h}
@@ -115,6 +127,9 @@ class Live3D:
         self._surf = None
         self._k = -1
         self._names = [p.name for p in engine.team0 + engine.team1]
+        from collections import deque
+        self.recent = deque(maxlen=240)     # (the last 8 s of positions: the mini pitch, the man on the ball)
+        self.names = [p.name for p in engine.team0 + engine.team1]
         self.shm = shared_memory.SharedMemory(create=True, size=HEAD + 2 * self.w * self.h * 3)
         _write_head(self.shm.buf, ready=0, slot=0, count=0, k=-1, replay=0, w=self.w, h=self.h)
         ctx = mp.get_context("spawn")
@@ -139,10 +154,13 @@ class Live3D:
             return
         fr = frame_from_engine(engine)
         self.frames.append({"s": fr["s"], "t": fr["t"], "st": fr["st"]})
+        self.recent.append((len(self.frames) - 1, [(p[0], p[1], p[6]) for p in fr["p"]], fr["b"][:2],
+                            fr["o"]))
         try:
             names = [p.name for p in engine.team0 + engine.team1]
             if names != self._names:                    # (a substitute's come on: his name and number)
                 self._names = names
+                self.names = names
                 self.conn.send(("names", names_from_engine(engine)))
             self.conn.send(("frame", fr))
         except Exception:
@@ -180,6 +198,13 @@ class Live3D:
         except Exception:
             self._give_up("the 3D view stopped (sending)")
 
+    def name_tags(self, on):
+        """Names over the players' heads, on or off."""
+        try:
+            self.conn.send(("tags", bool(on)))
+        except Exception:
+            self._give_up("the 3D view stopped (sending)")
+
     def camera(self):
         """The next camera: the TV gantry, or close to the ball."""
         try:
@@ -200,6 +225,21 @@ class Live3D:
             self._count = h["count"]
             self._k = h["k"]
         return self._surf
+
+    def shown_positions(self):
+        """Where everyone is in the picture: (list of (x, y, on the pitch) in engine units, ball (x, y), who's
+        on the ball (-1: nobody)), or None."""
+        for k, ps, b, o in reversed(self.recent):
+            if k <= self._k:
+                return ps, b, o
+        return None
+
+    def colours(self):
+        """The two teams' shirt colours in the picture."""
+        try:
+            return _read_colours(self.shm.buf)
+        except Exception:
+            return (30, 144, 255), (220, 20, 60)
 
     def shown(self):
         """The frame the picture shows ({"s": score, "t": time, "st": match state}), or None."""
@@ -348,6 +388,16 @@ def _draw_loop(conn, buf, w, h, meta):
     match = {"home": meta["home"], "away": meta["away"], "names": meta["names"], "frames": F}
     v = viewer.Viewer(match)
     try:
+        v.cam_mode = int(os.environ.get("FM_3D_CAMERA", "0")) % 2      # (the camera you last chose: C)
+    except ValueError:
+        pass
+    if os.environ.get("FM_3D_NAMES") == "1":                            # (names over their heads: N)
+        v.name_tags(True)
+    try:
+        _write_colours(buf, v.kits[0]["shirt"], v.kits[1]["shirt"])
+    except Exception:
+        _write_colours(buf, (30, 144, 255), (220, 20, 60))
+    try:
         g = v.win.getGsg()
         print("graphics:", g.getDriverVendor(), "|", g.getDriverRenderer(), "|", g.getDriverVersion(), flush=True)
     except Exception:
@@ -373,6 +423,10 @@ def _draw_loop(conn, buf, w, h, meta):
             msg = conn.recv()
             if msg[0] == "quit":
                 return
+            if msg[0] == "tags":                                # (N: names over their heads)
+                v.name_tags(msg[1])
+                shown_t = -1.0
+                continue
             if msg[0] == "camera":                              # (C: the TV gantry <-> close to the ball)
                 v.cam_mode = (getattr(v, "cam_mode", 0) + 1) % 2
                 shown_t = -1.0                                  # (draw it, even while paused)

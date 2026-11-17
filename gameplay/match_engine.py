@@ -154,6 +154,12 @@ class MatchEngine:
         self.live3d = None
         self.view3d = False
         self.view_wanted = os.environ.get("FM_MATCH_VIEW", "2d")   # (what you chose: kept for the next match)
+        self.radar3d = os.environ.get("FM_3D_RADAR", "1") == "1"   # (the mini pitch on the 3D picture: M)
+        self.names3d = os.environ.get("FM_3D_NAMES", "0") == "1"   # (names over their heads: N)
+        try:
+            self.camera3d = int(os.environ.get("FM_3D_CAMERA", "0")) % 2   # (TV gantry / close: C)
+        except ValueError:
+            self.camera3d = 0
         if career and self.view_wanted == "3d":
             self._start_3d()
 
@@ -514,8 +520,16 @@ class MatchEngine:
                 if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER) and self._3d_on() and self.live3d.replaying():
                     self.live3d.skip()                   # (on with the match: no more of the replay)
                     continue
+                if event.key == pygame.K_n and self._3d_on():
+                    self.names3d = not self.names3d       # (names over their heads)
+                    self.live3d.name_tags(self.names3d)
+                    continue
+                if event.key == pygame.K_m and self._3d_on():
+                    self.radar3d = not self.radar3d       # (the mini pitch on / off)
+                    continue
                 if event.key == pygame.K_c and self._3d_on():
                     self.live3d.camera()                 # (the TV camera, or close to the ball)
+                    self.camera3d = (self.camera3d + 1) % 2
                     continue
                 if event.key == pygame.K_v and self.career:
                     # 2D <-> 3D (the 3D view starts the first time it's asked for)
@@ -995,10 +1009,66 @@ class MatchEngine:
             self.screen.blit(msg, msg.get_rect(center=box.center))
             return list(self.score)
         self.screen.blit(pic, (0, 0))
+        try:
+            self._draw_on_ball()
+            if self.radar3d:
+                self._draw_radar()
+        except Exception:
+            pass
         shown = self.live3d.shown()
         if shown:
             self._shown_t = shown["t"]
         return list(shown["s"]) if shown else list(self.score)
+
+    def _draw_radar(self):
+        """The mini pitch in the corner of the 3D picture: everyone as a dot, where the picture shows them."""
+        got = self.live3d.shown_positions()
+        if not got:
+            return
+        ps, ball, _o = got
+        c0, c1 = self.live3d.colours()
+        W, H = 220, 140
+        sw, sh = self.screen.get_size()
+        x0, y0 = sw - W - 12, sh - H - 12
+        panel = pygame.Surface((W + 8, H + 8), pygame.SRCALPHA)
+        panel.fill((14, 60, 30, 185))
+        line = (235, 245, 235, 150)
+        pygame.draw.rect(panel, line, (4, 4, W, H), 1)
+        pygame.draw.line(panel, line, (4 + W // 2, 4), (4 + W // 2, 4 + H), 1)
+        pygame.draw.circle(panel, line, (4 + W // 2, 4 + H // 2), int(H * 0.13), 1)
+        bw, bh = int(W * 165 / 1100), int(H * 403 / 700)      # (the penalty areas: 16.5 m x 40.3 m)
+        pygame.draw.rect(panel, line, (4, 4 + (H - bh) // 2, bw, bh), 1)
+        pygame.draw.rect(panel, line, (4 + W - bw, 4 + (H - bh) // 2, bw, bh), 1)
+        self.screen.blit(panel, (x0 - 4, y0 - 4))
+        for i, (x, y, on) in enumerate(ps):
+            if not on:
+                continue
+            px, py = x0 + int(x / 1100.0 * W), y0 + int(y / 700.0 * H)
+            col = c0 if i < 11 else c1
+            dark = 0.3 * col[0] + 0.59 * col[1] + 0.11 * col[2] < 70        # (black shirts: a white rim)
+            pygame.draw.circle(self.screen, (235, 235, 235) if dark else (15, 15, 15), (px, py), 5)
+            pygame.draw.circle(self.screen, col, (px, py), 4)
+        bx, by = x0 + int(ball[0] / 1100.0 * W), y0 + int(ball[1] / 700.0 * H)
+        pygame.draw.circle(self.screen, (15, 15, 15), (bx, by), 4)
+        pygame.draw.circle(self.screen, (255, 255, 255), (bx, by), 3)
+
+    def _draw_on_ball(self):
+        """The name of the man on the ball, along the bottom of the 3D picture (as on TV)."""
+        got = self.live3d.shown_positions()
+        if not got or got[2] < 0 or got[2] >= len(self.live3d.names):
+            return
+        i = got[2]
+        name = self.live3d.names[i]
+        col = self.live3d.colours()[0 if i < 11 else 1]
+        font = self.ui_renderer.med_font
+        txt = font.render(name, True, (245, 245, 245))
+        sw, sh = self.screen.get_size()
+        box = pygame.Rect(16, sh - 16 - txt.get_height() - 12, txt.get_width() + 34, txt.get_height() + 12)
+        panel = pygame.Surface(box.size, pygame.SRCALPHA)
+        panel.fill((14, 16, 20, 200))
+        self.screen.blit(panel, box.topleft)
+        pygame.draw.rect(self.screen, col, (box.x, box.y, 8, box.h))
+        self.screen.blit(txt, (box.x + 20, box.y + 6))
 
     def _render(self, flip=True):
         score3d = self._draw_3d()

@@ -559,6 +559,37 @@ class Viewer(ShowBase):
             fl.setLightOff(1); fl.setDepthWrite(False); fl.setBin("fixed", 0); no_shadow(fl, lit=False)
             p.flood = fl
 
+    def name_tags(self, on):
+        """The players' names over their heads (N in the game), small, always facing the camera."""
+        for i, p in enumerate(self.players):
+            tag = getattr(p, "tag", None)
+            if on and tag is None:
+                nm = self.m["names"][i][0] if i < len(self.m["names"]) else ""
+                nm = nm.split()[-1] if nm else ""
+                tn = TextNode(f"tag{i}")
+                tn.setText(nm)
+                tn.setAlign(TextNode.ACenter)
+                tn.setTextColor(1, 1, 1, 1)
+                tn.setShadow(0.06, 0.06)
+                tn.setShadowColor(0, 0, 0, 0.9)
+                tag = p.root.attachNewNode(tn)
+                tag.setPos(0, 0, 2.35)
+                tag.setScale(0.42)
+                tag.setBillboardPointEye()
+                tag.setShaderOff(1)
+                tag.setLightOff(1)
+                tag.setDepthTest(False)
+                tag.setDepthWrite(False)
+                tag.setBin("fixed", 50)
+                no_shadow(tag, lit=False)
+                p.tag = tag
+            if tag is not None:
+                if on:
+                    tag.show()
+                else:
+                    tag.hide()
+        self._tags_on = on
+
     def lighten(self):
         """Less to draw, for a slower computer (live.py, when the pictures take too long): the stewards and the
         subs warming up go, and the sun's shadow picture is made at half the size (softer shadow edges)."""
@@ -599,6 +630,8 @@ class Viewer(ShowBase):
         old.root.removeNode()
         self.players[i] = p
         self.m["names"][i] = [name, role, num]
+        if getattr(self, "_tags_on", False):
+            self.name_tags(True)
 
     def light_up(self):
         """The light.  Default: a bright autumn afternoon - a low sun from behind the Main Stand (the camera's side),
