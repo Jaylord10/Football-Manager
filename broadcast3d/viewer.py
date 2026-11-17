@@ -1132,6 +1132,14 @@ class Viewer(ShowBase):
                 if 8.0 < math.hypot(wx - rbx, wy - rby) < 11.5:                 # (in the wall)
                     kind, t = "wall", 0.5
                     self.__dict__.setdefault("_wall", {})[i] = k
+            if kind is None and getattr(p, "keeper", False) and fr["o"] == i:    # (a keeper with it in his hands)
+                kind, t = "cradle", 0.5
+            if kind is None and getattr(p, "keeper", False) and r and r[0] == "free_kick" and (i < 11) != (r[1] < 11):
+                gx = -HX if i < 11 else HX                                          # (a free kick near his goal:
+                if math.hypot(rbx - gx, rby) < 32:                                   #  setting up the wall)
+                    kind, t = "point", (k % 150) / 30.0 - 0.4
+                    if t > 1.6:
+                        kind = None
             if kind is None and getattr(p, "keeper", False) and sp < 25:          # (a keeper, set for a shot)
                 gx = -HX if wx < 0 else HX
                 if math.hypot(rbx - gx, rby) < 30 and fr["o"] not in (range(0, 11) if i < 11 else range(11, 22)):
@@ -1511,7 +1519,7 @@ def _viewer_ball(self, fr, dt):
         px, py = p.root.getX(), p.root.getY()
         bx, by, bz = px + fx * dist + fy * lat, py + fy * dist - fx * lat, BALL_R
         if getattr(p, "keeper", False):                                     # (a keeper: in his hands)
-            bx, by, bz = p.hands()
+            bx, by, bz = p.hand() if (kind == "gkthrow" and t > -0.45) else p.hands()
     r = fr.get("r")
     if r and r[0] == "throw_in" and r[1] >= 0:                              # (a throw-in: in his hands)
         p = self.players[r[1]]
@@ -2112,7 +2120,7 @@ class Events:
 
     RANK = {"fouled": 8, "despair": 0, "kneeslide": 7, "throwin": 6, "punt": 5, "bowl": 5, "shot": 4, "header": 3, "tackle": 3,
             "kick": 2, "pass": 2, "loft": 2, "flick": 2, "backheel": 2, "touch": 1, "hurt": 8, "stumble": 3,
-            "innocent": 5}
+            "innocent": 5, "catch": 4, "gkthrow": 5, "splitstep": 3, "slap": 6}
 
     def add(self, i, k, kind):
         l = self.by_player.setdefault(i, [])
@@ -2184,12 +2192,17 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
             z = F[k - 1]["b"][2] / 10.0
             gk, dead = gained.get(a, (-99, False))
             if a in keepers and k - gk <= 15 and not dead and z < 2.5:      # (a keeper, ball just caught: out of his hands)
-                ev.add(a, k, "punt" if v > 17 else "bowl")
+                ev.add(a, k, "punt" if v > 17 else "gkthrow" if v > 12 else "bowl")   # (overarm for a long one)
                 continue
             ev.add(a, k, "header" if z > 1.3 else "shot" if v > 21 else _kick_kind(F, k, a, v))
+            if v > 21 and z <= 1.3 and len(keepers) > 1:                   # (their keeper: a split step)
+                ev.add(keepers[1] if a < 11 else keepers[0], k - 4, "splitstep")
         elif a < 0 and b >= 0:
             z = F[k]["b"][2] / 10.0
-            ev.add(b, k, "header" if z > 1.3 else "touch")                  # (the first touch)
+            if b in keepers and sp(F[k - 2]["b"], F[k - 1]["b"]) > 9.0:       # (a keeper takes a shot / a cross)
+                ev.add(b, k, "catch")
+            else:
+                ev.add(b, k, "header" if z > 1.3 else "touch")              # (the first touch)
         elif a >= 0 and b >= 0 and a != b:
             if (a < 11) != (b < 11):
                 ev.add(b, k, "tackle")
@@ -2205,6 +2218,10 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
                 if near[0] < 2.0:
                     z = F[k]["b"][2] / 10.0
                     ev.add(near[1], k, "header" if z > 1.3 else "kick")
+    for k in range(max(2, lo), len(F)):                                      # a goal: the keeper beaten, on his
+        if F[k]["s"] != F[k - 1]["s"] and len(keepers) > 1:                  #  knees, slaps the grass
+            who = 1 if F[k]["s"][0] > F[k - 1]["s"][0] else 0                 # (the side that let it in)
+            ev.add(keepers[who], k + 50, "slap")
     seen = ev.__dict__.setdefault("_despair_seen", set())
     for i, l in list(ev.by_player.items()):                                  # a shot that didn't go in: hands
         for (ke, kind) in list(l):                                           # on head a moment later

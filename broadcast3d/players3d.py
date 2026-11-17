@@ -400,7 +400,7 @@ class AnimPlayer:
     # --- kicks, shots, touches, headers, tackles, a keeper's set position and dives -------------------------
     # Each is a whole-body animation built in gait.py (from real kicking / gait figures), blended over the
     # running: act() picks it and how far into it he is; the keeper's dive also tips his whole body over.
-    JUMP = {"header": (0.40, 0.26), "walljump": (0.30, 0.22)}   # (off the ground - height m, how long either side)
+    JUMP = {"header": (0.40, 0.26), "walljump": (0.30, 0.22), "splitstep": (0.10, 0.12)}   # (off the ground - m, s)
     # The dive: (seconds, degrees tipped over, metres off the ground) - he springs, flies, lands on his side.
     DIVE_ROOT = [(0.00, 0, 0.00), (0.12, 22, 0.28), (0.32, 70, 0.50), (0.50, 84, 0.30), (0.60, 86, 0.06)]
     RECOVER_ROOT = [(0.00, 86, 0.06), (0.25, 70, 0.0), (0.45, 25, 0.0), (0.85, 0, 0.0), (1.20, 0, 0.0)]
@@ -682,6 +682,13 @@ class AnimPlayer:
         hd = math.radians(self.h or 0.0)
         mid = (a + b) * 0.5
         return mid[0] - math.sin(hd) * 0.06, mid[1] + math.cos(hd) * 0.06, mid[2] + 0.04
+
+    def hand(self, left=False):
+        """Where his right (or left) hand is (in the world): a keeper's overarm throw."""
+        if not hasattr(self, "_hj"):
+            self._hj = (self.a.exposeJoint(None, "modelRoot", "hand.r"), self.a.exposeJoint(None, "modelRoot", "hand.l"))
+        q = self._hj[1 if left else 0].getPos(self.root.getParent())
+        return q[0], q[1], q[2] + 0.05
 
     def _watch(self, ball, x, y, dt):
         """Turn his head towards the ball (as far as a neck goes)."""

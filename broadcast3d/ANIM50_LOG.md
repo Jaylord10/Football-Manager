@@ -20,6 +20,11 @@ strips from a recorded match (scratch tool: find the moment, follow the player, 
 - 42 The wall jumps as the free kick is struck (knees tucked, hands still crossed).
 - Fixed on the way: the wall's arms came out to the sides (now crossed in front), and the booked player's
   protest held his arms straight out like a scarecrow (now hands up, elbows bent).
+- 33-38 Keepers: a split step (a little hop onto both feet) as the shot is struck; catching it - hands out
+  behind the ball, then pulled into the chest; holding it tucked into his chest (it used to sit between his
+  hanging hands); long throws overarm, the ball in his right hand behind his head (short ones still rolled);
+  pointing to set up the wall at free kicks near his goal; beaten - down on his knees, a slap of the grass.
+  (Goal kicks: the step-back and run-up above.)
 
 ## Already there before tonight
 - 12 Shot follow-through landing on the kicking foot; 13 leaning into bends; 14 leaning forward when setting
