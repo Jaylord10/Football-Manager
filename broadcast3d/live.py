@@ -499,8 +499,7 @@ def _draw_loop(conn, buf, w, h, meta):
                     off = match["names"][i][0]
                     try:
                         v.replace_player(i, nm, role, 11 + subs_on[team])
-                        caps.append(("SUBSTITUTION", f"ON  {_short(nm)}    OFF  {_short(off)}    "
-                                     f"{v.home_name if team == 0 else v.away_name}", v.kits[team]["shirt"], 6.0))
+                        caps.append(("SUB", f"ON  {_short(nm)}     OFF  {_short(off)}", v.kits[team]["shirt"], 6.0))
                     except Exception:
                         print("sub:", traceback.format_exc(), flush=True)
         # the TV captions that aren't the match's own: a sub, the attendance, the man of the match
@@ -519,8 +518,7 @@ def _draw_loop(conn, buf, w, h, meta):
             pick = lambda i: (scorers.get(i, 0) * 10 + touches.get(i, 0) / 40.0
                               + (2 if win >= 0 and (i < 11) == (win == 0) else 0))
             best = max(range(len(match["names"])), key=pick)
-            caps.append(("MAN OF THE MATCH", f"{match['names'][best][0]}    "
-                         f"{v.home_name if best < 11 else v.away_name}", v.kits[0 if best < 11 else 1]["shirt"], 12.0))
+            caps.append(("MAN OF THE MATCH", match["names"][best][0], v.kits[0 if best < 11 else 1]["shirt"], 12.0))
         if cap_now["c"] is None and caps:
             item = caps.pop(0)
             cap_now["c"], cap_now["left"] = item[:3], item[3]

@@ -1129,7 +1129,8 @@ class MatchEngine:
                 self._card_display["name"]
             )
 
-        boards = [m for m in self.subs.messages.values() if now < m["until"]]
+        boards = [m for m in self.subs.messages.values() if now < m["until"]] if score3d is None else []
+        # (in 3D the TV caption says who's on and off, when the picture gets there)
         for i, msg in enumerate(boards):
             self.ui_renderer.draw_sub_flash(self.screen, msg["text"], msg["team"], row=i,
                                             kind=msg.get("kind", "sub"))

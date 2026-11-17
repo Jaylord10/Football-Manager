@@ -1038,6 +1038,12 @@ class Viewer(ShowBase):
             yw = 0.35 + 0.6 * self.cam_tilt                                 # (close in: right on him)
             self.cam.lookAt(self.cx, self.cy * yw + 9 * (1 - self.cam_tilt), 0.8 * self.cam_tilt)
             self.camLens.setFov(self.cam_fov)
+            sp = self._set_piece_cam(fr, bx, by, dt)                        # (a free kick near the box, a corner:
+            if sp is not None:                                              #  cut to a closer camera, as TV does)
+                (px_, py_, pz_), (lx_, ly_, lz_), f_ = sp
+                self.cam.setPos(px_, py_, pz_)
+                self.cam.lookAt(lx_, ly_, lz_)
+                self.camLens.setFov(f_)
         # A close-up from the gantry (a scorer by the near corner flag, say): the near side of the ground would
         # be in the way - leave it out of the picture while it is
         tv = not getattr(self, "replay", None) and not CLOSE and getattr(self, "cam_mode", 0) == 0 \
@@ -1113,6 +1119,42 @@ def _viewer_pens_cam(self, bx, by, dt):
 
 
 Viewer._pens_cam = _viewer_pens_cam
+
+
+def _viewer_set_piece_cam(self, fr, bx, by, dt):
+    """A free kick within shooting range: behind the taker, looking over the wall at the goal.  A corner: high
+    over the corner of the pitch, looking across the box.  The TV director cuts to it while the kick's set up and
+    holds it a moment after (the ball on its way), then cuts back to the gantry.  -> (pos, look at, fov) or None"""
+    r = fr.get("r")
+    st = getattr(self, "_sp", None)
+    if r and r[0] in ("free_kick", "corner") and not fr.get("c"):
+        if st is None or st["kind"] != r[0] or st.get("done"):
+            sx = 1 if bx > 0 else -1
+            gx = sx * HX
+            if r[0] == "corner":
+                sy = 1 if by > 0 else -1
+                st = {"kind": "corner", "t": 0.0, "after": 0.0,
+                      "pos": (sx * (HX - 1.5), sy * (HY - 1.5), 9.0), "look": (sx * (HX - 13.0), -sy * 2.0, 0.0),
+                      "fov": 40.0}
+            else:
+                d = math.hypot(gx - bx, by)
+                if d > 32.0 or d < 9.0:
+                    self._sp = None
+                    return None
+                ux, uy = (bx - gx) / d, by / d
+                px_ = max(-HX + 0.5, min(HX - 0.5, bx + ux * 8.5))
+                py_ = max(-HY + 0.5, min(HY - 0.5, by + uy * 8.5))
+                st = {"kind": "free_kick", "t": 0.0, "after": 0.0, "pos": (px_, py_, 2.6),
+                      "look": (gx, 0.0, 1.1), "fov": 42.0}
+            self._sp = st
+        st["t"] += dt
+        return (st["pos"], st["look"], st["fov"]) if st["t"] > 1.2 else None
+    if st is not None and not st.get("done"):
+        if st["t"] > 1.2 and st["after"] < 0.8 and not fr.get("c"):       # (the kick's taken: a moment more)
+            st["after"] += dt
+            return st["pos"], st["look"], st["fov"]
+        st["done"] = True
+    return None
 
 
 def _viewer_cam_tv(self, fr, bx, by, dt):
@@ -1719,6 +1761,7 @@ Viewer._left_foot = _viewer_left_foot
 Viewer._shield_side = _viewer_shield_side
 Viewer._gather = _viewer_gather
 Viewer._cam_tv = _viewer_cam_tv
+Viewer._set_piece_cam = _viewer_set_piece_cam
 Viewer._keeper_dive = _viewer_keeper_dive
 Viewer._ball = _viewer_ball
 Viewer._dribble_touch = _viewer_dribble
