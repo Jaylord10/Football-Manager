@@ -1067,6 +1067,13 @@ class Viewer(ShowBase):
                     fx, fy, sp = dx / dd, -dy / dd, 14.0
                 else:
                     fx, fy, sp = -w[0] / max(0.1, math.hypot(w[0], w[1])), w[1] / max(0.1, math.hypot(w[0], w[1])), 0.0
+                    opp = [(math.hypot(q[0] - w[0], q[1] - w[1]), q) for j, q in ft.items() if (j < 11) != (i < 11)]
+                    near = min(opp, default=None, key=lambda e: e[0])
+                    if near is not None and near[0] < 3.2:                   # (shaking hands with the man next
+                        q = near[1]                                          #  to him)
+                        dd2 = max(0.1, near[0])
+                        fx, fy = (q[0] - w[0]) / dd2, -(q[1] - w[1]) / dd2
+                        self.__dict__.setdefault("_shake", {})[i] = True
                 wx, wy = w[0], w[1]
                 s0, s1 = fr["s"]
                 won = (s0 > s1 and i < 11) or (s1 > s0 and i >= 11)
@@ -1102,6 +1109,8 @@ class Viewer(ShowBase):
             kind, t = self.events.action(i, k)
             if kind is None and sp_pose is not None:
                 kind, t = sp_pose
+            if kind is None and getattr(self, "_shake", {}).get(i) and fr.get("st") == "full_time":
+                kind, t = "shake", ((k + i * 17) % 120) / 30.0 - 0.3
             if kind == "shot" and 0.0 <= t < 0.1 and not cel:
                 self._ooh = (0 if i < 11 else 1, k)
             if cel and i == cel[1]:
@@ -2000,7 +2009,9 @@ def _viewer_officiate(self, fr, dt, bx, by):
                 mine = (o["role"] == "ar_near" and bx > 0) or (o["role"] == "ar_far" and bx <= 0)
                 kind = "flag" if mine else ("signal" if o["role"] == "ref" else None)
             elif o["role"] == "ref":
-                kind = "point"
+                kind = "whistle" if t < 0.75 else "point"               # (the whistle, then which way)
+                if kind == "point":
+                    t -= 0.75
         if card and o["role"] == "ref":
             kind, t = "card", 0.5
             self._card_in_hand(o["p"], card[0])
@@ -2056,6 +2067,10 @@ def _viewer_scorer_slide(self, i, sp, k, kind, t):
         s["at"] = k
     if s["at"] is not None and 0 <= (k - s["at"]) / 30.0 <= 1.9:
         return "kneeslide", (k - s["at"]) / 30.0
+    if not s["yes"] and s.get("sig") is None and s["top"] > 50 and sp < 20:   # (the others: his own - kissing
+        s["sig"] = k                                                           #  the badge, or a hand to his ear)
+    if s.get("sig") is not None and 0 <= (k - s["sig"]) / 30.0 <= 2.6 and kind is None:
+        return ("badge" if (rid + i) % 2 else "ear"), (k - s["sig"]) / 30.0
     return kind, t
 
 
@@ -2120,7 +2135,7 @@ class Events:
 
     RANK = {"fouled": 8, "despair": 0, "kneeslide": 7, "throwin": 6, "punt": 5, "bowl": 5, "shot": 4, "header": 3, "tackle": 3,
             "kick": 2, "pass": 2, "loft": 2, "flick": 2, "backheel": 2, "touch": 1, "hurt": 8, "stumble": 3,
-            "innocent": 5, "catch": 4, "gkthrow": 5, "splitstep": 3, "slap": 6}
+            "innocent": 5, "catch": 4, "gkthrow": 5, "splitstep": 3, "slap": 6, "applaud": 1}
 
     def add(self, i, k, kind):
         l = self.by_player.setdefault(i, [])
@@ -2229,6 +2244,12 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
                 seen.add((i, ke))
                 if F[ke + 75]["s"] == F[ke]["s"]:
                     l.append((ke + 24, "despair"))
+                    sx_, sy_ = F[ke + 24]["p"][i][:2]                       # (a team-mate applauds the effort)
+                    mates = [(_m.hypot(p[0] - sx_, p[1] - sy_), j) for j, p in enumerate(F[ke + 24]["p"])
+                             if (j < 11) == (i < 11) and j != i and j not in keepers and p[6]]
+                    near = min(mates, default=(999, -1))
+                    if near[0] < 250 and (ke + i) % 2 == 0:
+                        ev.add(near[1], ke + 30, "applaud")
     for k in range(max(2, lo), len(F)):                                      # a free kick: the man fouled goes
         r = F[k].get("r")                                                    #  down (the taker's team-mate
         if r and r[0] == "free_kick" and F[k - 1].get("r", [None])[0] != "free_kick" and r[1] >= 0:   # nearest

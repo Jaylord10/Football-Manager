@@ -549,6 +549,34 @@ ACTIONS = {
              (1.60, {"hip_r": 5, "hip_l": 5, "knee_r": 100, "knee_l": 100, "ankle_r": -20, "ankle_l": -20, "lean": 38,
                      "nod": 35, "abs": 1, "arm_r": 55, "out_r": 15, "elbow_r": 10, "arm_l": 30, "elbow_l": 30}),
              (2.30, N)],
+    # Goal celebrations, standing: kissing the badge (the shirt pulled up to his lips) ...
+    "badge": [(-0.3, N),
+              (0.3, {"abs": 1, "arm_r": 45, "across_r": 75, "elbow_r": 125, "out_r": 5, "arm_l": 5, "out_l": 12,
+                     "elbow_l": 20, "nod": 25, "lean": 4}),
+              (2.2, {"abs": 1, "arm_r": 48, "across_r": 75, "elbow_r": 128, "out_r": 5, "arm_l": 5, "out_l": 15,
+                     "elbow_l": 20, "nod": 22, "lean": 2}),
+              (2.6, N)],
+    # ... or a hand cupped to his ear for the away fans, the other arm out wide.
+    "ear": [(-0.3, N),
+            (0.3, {"abs": 1, "out_r": 60, "arm_r": 40, "elbow_r": 130, "across_r": 20, "out_l": 65, "arm_l": 10,
+                   "elbow_l": 10, "lean": -6, "nod": -10, "turn": 10}),
+            (2.2, {"abs": 1, "out_r": 62, "arm_r": 40, "elbow_r": 130, "across_r": 20, "out_l": 70, "arm_l": 10,
+                   "elbow_l": 10, "lean": -8, "nod": -12, "turn": 12}),
+            (2.6, N)],
+    # A team-mate applauding a near miss: hands together above his head, a few claps.
+    "applaud": [(-0.2, N)] + [(0.1 + 0.16 * j, {"abs": 1, "arm_r": 150, "arm_l": 150, "elbow_r": 30, "elbow_l": 30,
+                                                "across_r": 12 if j % 2 else -2, "across_l": 12 if j % 2 else -2,
+                                                "out_r": 5, "out_l": 5, "nod": -10})
+                                for j in range(8)] + [(1.6, N)],
+    # Full time: a handshake - the right hand out, a couple of shakes.
+    "shake": [(-0.3, N)] + [(0.1 + 0.18 * j, {"abs": 1, "arm_r": 48 + (6 if j % 2 else 0), "elbow_r": 25,
+                                              "across_r": 12, "out_r": 0, "lean": 4, "nod": 6})
+                            for j in range(5)] + [(1.3, N)],
+    # The referee's whistle: hand to his mouth.
+    "whistle": [(-0.15, N),
+                (0.05, {"abs": 1, "arm_r": 70, "across_r": 40, "elbow_r": 140, "out_r": 10, "nod": 4}),
+                (0.50, {"abs": 1, "arm_r": 72, "across_r": 40, "elbow_r": 140, "out_r": 10, "nod": 4}),
+                (0.75, N)],
     # A manager on the touchline, arm out, telling them where to go.
     "point": [(-0.4, N),
               (0.0, {"arm_r": 75, "out_r": 30, "elbow_r": 10, "twist": 12, "lean": 4, "nod": -6}),

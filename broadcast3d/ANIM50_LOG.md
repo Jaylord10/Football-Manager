@@ -25,7 +25,14 @@ strips from a recorded match (scratch tool: find the moment, follow the player, 
   hanging hands); long throws overarm, the ball in his right hand behind his head (short ones still rolled);
   pointing to set up the wall at free kicks near his goal; beaten - down on his knees, a slap of the grass.
   (Goal kicks: the step-back and run-up above.)
+- 44 Celebrations: scorers who don't knee-slide now finish with their own - kissing the badge, or a hand cupped
+  to the crowd.
+- 46 A near miss: a team-mate nearby applauds the effort, hands together over his head (about half the time).
+- 48 Full time: shaking hands with the opponent next to him in the centre circle.
+- 49 The referee's whistle: hand to his mouth when he gives a free kick, then he points which way.
+  (No "advantage" signal: the match engine doesn't play advantage.)
 
 ## Already there before tonight
 - 12 Shot follow-through landing on the kicking foot; 13 leaning into bends; 14 leaning forward when setting
-  off, back when braking; 29 getting up after a sliding tackle (the slide ends kneeling, then up).
+  off, back when braking; 29 getting up after a sliding tackle (the slide ends kneeling, then up); 50 assistants side-stepping
+  along the line level with the second-last defender (they sprint when they must).
