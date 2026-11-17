@@ -82,6 +82,8 @@ def weather_flags(when):
         flags.append("--rain")
     elif d.month in (11, 12, 1):
         flags.append("--overcast")
+    if d.month in (11, 12, 1) and hour <= 15:      # (3 o'clock: the light going during the second half)
+        flags.append("--dusk")
     return flags
 
 

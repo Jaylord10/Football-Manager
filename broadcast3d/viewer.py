@@ -15,6 +15,7 @@ OVERCAST = "--overcast" in sys.argv
 NIGHT = "--night" in sys.argv               # (an evening kick-off under the floodlights)
 RAIN = "--rain" in sys.argv                 # (Lancashire drizzle: grey light, rain falling, a wet pitch)
 SNOW = "--snow" in sys.argv                 # (a rare snowy day: flakes falling, the pitch white, the lines swept)
+DUSK = "--dusk" in sys.argv                 # (a 3 o'clock kick-off in midwinter: darker through the second half)
 if RAIN or SNOW:
     OVERCAST = True
 SUN_AZ, SUN_EL = 200.0, 22.0               # the sun: degrees round from behind the Main Stand, and up
@@ -651,6 +652,7 @@ class Viewer(ShowBase):
             al = AmbientLight("amb"); al.setColor(Vec4(0.52, 0.53, 0.56, 1) if not RAIN else Vec4(0.46, 0.48, 0.52, 1))
             self.render.setLight(self.render.attachNewNode(al))
             dl = DirectionalLight("sun"); dl.setColor(Vec4(0.62, 0.6, 0.56, 1) if not RAIN else Vec4(0.42, 0.42, 0.42, 1))
+            self._day_lights = (al, tuple(al.getColor()), dl, tuple(dl.getColor()))   # (dusk: dimmed as it goes on)
             sun = self.render.attachNewNode(dl); sun.setPos(-40, -60, 120); sun.lookAt(0, 0, 0)
             self.render.setLight(sun)
             self._shader_inputs()
@@ -1074,8 +1076,19 @@ class Viewer(ShowBase):
             self.rp_t.hide()
         gone = fr["m"] / 90.0 if fr.get("m") else fr["t"] / 1200.0         # (how far into the match)
         self.render.setShaderInput("sweat", min(1.0, 0.25 + gone * 0.6 + (0.3 if RAIN else 0.0)))
-        if RAIN:                                                            # (a wet day: the pitch cuts up)
-            self.render.setShaderInput("pitch_churn", min(1.0, 0.25 + gone * 0.75))
+        if DUSK and getattr(self, "_day_lights", None):                     # (dusk: from about 40 minutes the
+            dk = max(0.0, min(1.0, (gone - 0.45) / 0.55))                   #  daylight goes, the floodlights
+            f = 1.0 - 0.38 * dk                                             #  take over)
+            al, ac, dl, dc = self._day_lights
+            al.setColor(Vec4(ac[0] * f, ac[1] * f, ac[2] * (f + 0.04 * dk), 1))
+            dl.setColor(Vec4(dc[0] * f, dc[1] * f, dc[2] * f, 1))
+            bg = (0.55, 0.58, 0.62) if RAIN else (0.62, 0.66, 0.7)
+            self.setBackgroundColor(bg[0] * f * 0.9, bg[1] * f * 0.92, bg[2] * f, 1)
+            if self.render.hasFog():
+                self.render.getFog().setColor(bg[0] * f * 0.9, bg[1] * f * 0.92, bg[2] * f)
+        if RAIN:                                                            # (a wet day: the pitch cuts up,
+            self.render.setShaderInput("pitch_churn", min(1.0, 0.25 + gone * 0.75))     # and the kits get
+            self.render.setShaderInput("mud_amt", min(1.0, 0.3 + gone * 0.7))          # muddier as it goes on)
         s = fr["s"]
         self.score_t.setText(f"{self.labels[0]}  {s[0]} - {s[1]}  {self.labels[1]}")
         self._goal_caption(fr)
