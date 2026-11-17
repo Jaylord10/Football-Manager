@@ -318,6 +318,7 @@ class _LiveDirector:
         self.t = 0.0
         self.goals = []
         self.done = set()
+        self.second = set()
         self.rp = None
         v.replay = None
 
@@ -333,6 +334,13 @@ class _LiveDirector:
             g, pos = self.rp
             pos += real_dt * 30.0 * self.SLOW
             if pos >= g + self.AFTER:
+                if g not in self.second:                # (and once more, the last moments from the other
+                    self.second.add(g)                  #  camera - as TV does with a goal)
+                    self.v.replay_kind = "side" if self.v.replay_kind == "goal" else "goal"
+                    self.v._rp_cam = None
+                    self.v._gp = {}
+                    self.rp = (g, float(g - 75))
+                    return float(g - 75), 1 / 30.0
                 self.rp = None
                 self.v.replay = None
                 self.v._gp = {}
