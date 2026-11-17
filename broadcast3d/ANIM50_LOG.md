@@ -64,3 +64,11 @@ strips from a recorded match (scratch tool: find the moment, follow the player, 
 ## Not done
 - 17 Crossover side-steps: players already side-step (shuffle) and turn and run when they have to go faster;
   a crossover step in between needs a new movement cycle measured on the model - left for another night.
+
+## Checks (all on branch anim-50)
+- Match engine replay unchanged: hash 50d079570600bcab322bbb19be341bb2.
+- broadcast3d/check.py: all good.  all_screens: only arrange/bid/choose/loan/talks (expected).  season2: no errors.
+- Live 3D (dev/live3d_flow.py): a whole match, kick-off to full time, at 8x - no errors, the 3D on throughout;
+  and again with the last changes.
+- Speed: a 3D picture takes the same time as before tonight (293 ms against 301 ms here, software drawing -
+  the difference is noise); start-up the same.
