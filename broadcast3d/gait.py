@@ -838,7 +838,17 @@ def run_call(u):
     return ({"arm_r": 150, "out_r": 20, "elbow_r": 15, "nod": -8}, {})
 
 
-LOOPS = {"run_call": (run_call, 15, "run"), "shuffle": (shuffle, 30, "idle"), "shuffle_m": (shuffle_m, 30, "idle"),
+def run_point(u):
+    """Making a run and pointing where he wants it played - into the space ahead."""
+    return ({"arm_r": 95, "out_r": 12, "elbow_r": 5, "nod": -6, "twist": 6}, {})
+
+
+def run_wide(u):
+    """Running with the ball at speed: the arms carried a little wider, for balance."""
+    return ({"out_r": 22, "out_l": 22, "elbow_r": -10, "elbow_l": -10}, {})
+
+
+LOOPS = {"run_call": (run_call, 15, "run"), "run_point": (run_point, 15, "run"), "run_wide": (run_wide, 15, "run"), "shuffle": (shuffle, 30, "idle"), "shuffle_m": (shuffle_m, 30, "idle"),
          "backpedal": (backpedal, 30, "idle"), "turnstep": (turnstep, 30, "idle"),
          "shift": (shift, 240, "idle"), "rest": (rest, 240, "idle"), "sit": (sit, 90, "idle"), "cheer": (cheer, 30, "idle"), "clap": (clap, 30, "idle"), "hips": (hips, 60, "idle"), "knees": (knees, 60, "idle"),
          "walk_sad": (walk_sad, 30, "idle"), "run_arms": (run_arms, 15, "run"), "run_sky": (run_sky, 15, "run"),

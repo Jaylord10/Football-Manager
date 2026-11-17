@@ -51,9 +51,16 @@ strips from a recorded match (scratch tool: find the moment, follow the player, 
   midfielders checking their surroundings before receiving).
 - 20 Tired: in the second half more players stand with hands on hips when play's far away.
 - 23 His own running style: some run more upright, some lower, all through the match.
+- 19 Runners calling for it: now half of them point into the space ahead instead of an arm up.
+- 11 Running with the ball at speed: arms carried a little wider for balance.
 
 ## Already there before tonight
 - 12 Shot follow-through landing on the kicking foot; 13 leaning into bends; 14 leaning forward when setting
   off, back when braking; 2 the plant foot beside the ball (the instep kick); 24 headers with a proper
-  jump (crouch, spring off both feet, arms up, land on bent knees); 45 heads down / hands on knees when they concede; 29 getting up after a sliding tackle (the slide ends kneeling, then up); 50 assistants side-stepping
+  jump (crouch, spring off both feet, arms up, land on bent knees); 45 heads down / hands on knees when they concede; 21 walk, jog, run and sprint blended by speed; 22 feet
+  planted (the stride runs at his speed over the length of his stride); 29 getting up after a sliding tackle (the slide ends kneeling, then up); 50 assistants side-stepping
   along the line level with the second-last defender (they sprint when they must).
+
+## Not done
+- 17 Crossover side-steps: players already side-step (shuffle) and turn and run when they have to go faster;
+  a crossover step in between needs a new movement cycle measured on the model - left for another night.

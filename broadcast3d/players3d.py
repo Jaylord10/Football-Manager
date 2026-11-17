@@ -632,7 +632,9 @@ class AnimPlayer:
             special = ("run_arms", "run_sky", "run_fist")[self.seed % 3] if self.mood == "scorer" else None
             w_fwd, w_side, w_back = 1.0, 0.0, 0.0
         if getattr(self, "calling", False) and self.cfg.get("make_walk"):
-            special = "run_call"
+            special = self.calling if isinstance(self.calling, str) else "run_call"   # (arm up, or pointing ahead)
+        elif getattr(self, "wide", False) and self.cfg.get("make_walk") and not special:
+            special = "run_wide"                                                # (on the ball at speed: balance)
         if special:                                                           # (the mannequin's run, arms busy)
             run = special
             w_run += sum(w_runs.values())

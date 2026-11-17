@@ -1112,6 +1112,7 @@ class Viewer(ShowBase):
                 fx, fy = vel[0] / math.hypot(*vel), -vel[1] / math.hypot(*vel)
             p.calling = self._calling(i, fr, wx, wy, sp, k)
             p.late = fr.get("st") in ("second_half", "et_second_half")         # (tired: hands on hips more)
+            p.wide = fr["o"] == i and sp > 55                                    # (on the ball at speed)
             p.scan = self._scan(i, k)                                           # (a look over his shoulder)
             kind, t = self.events.action(i, k)
             if kind is None and sp_pose is not None:
@@ -2219,7 +2220,9 @@ def _viewer_calling(self, i, fr, wx, wy, sp, k):
     d = math.hypot(wx - ox, wy - oy)
     if not 12 < d < 35:
         return False
-    return ((k + i * 37) // 36) % 5 == 0                                    # (about a second in every six)
+    if ((k + i * 37) // 36) % 5 != 0:                                       # (about a second in every six)
+        return False
+    return "run_point" if ((k + i * 37) // 180 + i) % 2 else "run_call"     # (arm up - or pointing into space)
 
 
 def _viewer_card_in_hand(self, p, kind):
