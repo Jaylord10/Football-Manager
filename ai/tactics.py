@@ -164,3 +164,66 @@ def style_for(name, t):
             d.update(_part(ph, PRESS_KEYS))
         _MIXED[key] = d
     return _MIXED[key]
+
+
+# ---------------------------------------------------------------------------
+# The choices as the manager sees them: the career Tactics screen (career/ui.py) and, during a match, the
+# S screen's Tactics page (rendering/sub_panel.py).  t = a team's "tactics" dict.
+# ---------------------------------------------------------------------------
+STYLE_OPTIONS = [("low_block", "Low block", "Sit deep and compact. Hard to break down, but you give them the ball."),
+                 ("mid_block", "Mid block", "Compact around halfway, press once they're in your half."),
+                 ("press", "Press", "Press them in their half, counter-press when you lose it."),
+                 ("high_press", "High press", "Squeeze right up and press everywhere. Wins it high, tiring.")]
+LINE_OPTIONS = [("deep", "Deep", "Never more than ~26 m out."),
+                ("low", "Low", "Up to ~32 m out."),
+                ("standard", "Standard", "Up to ~38 m out."),
+                ("high", "High", "Up to ~46 m - squeezes midfield."),
+                ("very_high", "Very high", "Up to halfway. Space in behind!")]
+PRESS_OPTIONS = [("low", "Low", "Only within ~40 m of your goal."),
+                 ("mid", "Mid", "From just inside their half."),
+                 ("high", "High", "Deep in their half; counter-press."),
+                 ("vhigh", "Very high", "Up to their box - not the keeper."),
+                 ("very_high", "Full", "Everywhere, even their keeper. Tiring.")]
+STYLE_LEVEL = {"low_block": ("deep", "low"), "mid_block": ("standard", "mid"), "press": ("high", "high"),
+               "high_press": ("very_high", "very_high")}
+BUILD_OPTIONS = [("play_out", "Play out", "Keep the ball from the back unless it's really on fire."),
+                 ("mixed", "Mixed", "Play out when it's on, clear it when it isn't."),
+                 ("clear", "Clear to flanks", "Get it away early and out wide, especially under pressure.")]
+
+
+def line_press(t):
+    """(back line, pressing) - the style's own unless they've been set."""
+    dl, dp = STYLE_LEVEL.get(t.get("defence"), ("standard", "mid"))
+    return t.get("line_height") or dl, t.get("press_height") or dp
+
+
+def set_style(t, key):
+    t["defence"] = key
+    t.pop("line_height", None)                       # (the style sets both)
+    t.pop("press_height", None)
+
+
+def set_line_press(t, field, key):
+    """field "line_height" or "press_height".  If the pair is just one of the four styles, it becomes that style."""
+    line, press = line_press(t)
+    t["line_height"], t["press_height"] = (key, press) if field == "line_height" else (line, key)
+    preset = next((st for st, lv in STYLE_LEVEL.items() if lv == (t["line_height"], t["press_height"])), None)
+    if preset:
+        set_style(t, preset)
+
+
+def is_mixed(t):
+    return "line_height" in t or "press_height" in t
+
+
+def summary(t):
+    """A short description, e.g. "High press, play out" or "Line high / press low, mixed"."""
+    if is_mixed(t):
+        line, press = line_press(t)
+        lab = dict((k, l) for k, l, _ in LINE_OPTIONS)
+        pl = dict((k, l) for k, l, _ in PRESS_OPTIONS)
+        out = f"Line {lab.get(line, line).lower()} / press {pl.get(press, press).lower()}"
+    else:
+        out = dict((k, l) for k, l, _ in STYLE_OPTIONS).get(t.get("defence") or DEFAULT_STYLE, "Mid block")
+    build = dict((k, l) for k, l, _ in BUILD_OPTIONS).get(t.get("build_up") or DEFAULT_BUILD_UP, "Mixed")
+    return f"{out}, {build.lower()}"

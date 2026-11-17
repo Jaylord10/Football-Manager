@@ -1504,6 +1504,26 @@ def _viewer_ball(self, fr, dt):
         if kind == "throwin" and t >= -1.5 and _m.hypot(px - bx, py - by) < 2.5:
             bx, by, bz = p.hands()                                          # (between his hands, wherever they are)
             mode = ("throw", r[1])
+    # Thrown: the engine rolls a throw-in along the grass from his feet, so here it flies - out of his hands over
+    # his head, in an arc, down onto the engine's path (about a 10-15 m throw's flight) - unless someone gets to
+    # it first.
+    k_now = fr.get("k", 0)
+    fl = getattr(self, "_flight", None)
+    if isinstance(self.ball_mode, tuple) and self.ball_mode[0] == "throw" and mode != self.ball_mode \
+            and self.last_ball is not None and not r:
+        fl = self._flight = {"i": self.ball_mode[1], "t": 0.0, "k": k_now, "from": tuple(self.last_ball),
+                             "eng": (bx, by)}
+    if fl is not None:
+        fl["t"] += dt
+        u = fl["t"] / self.THROW_FLIGHT
+        if u >= 1.0 or r or (o >= 0 and o != fl["i"]) or k_now < fl["k"] - 1:
+            self._flight = None                                             # (landed, or taken, or a replay)
+        else:
+            (hx, hy, hz), (ex, ey) = fl["from"], fl["eng"]
+            out = (bx + (hx - ex) * (1 - u), by + (hy - ey) * (1 - u),
+                   hz * (1 - u) + BALL_R * u + 4 * self.THROW_ARC * u * (1 - u))
+            self.ball_mode, self.ball_off, self.last_ball = ("flight", fl["i"]), Vec3(0, 0, 0), out
+            return out
     if mode != self.ball_mode:
         if self.last_ball is not None:
             self.ball_off = Vec3(*self.last_ball) - Vec3(bx, by, bz)        # (ease from where it was drawn)
@@ -1966,6 +1986,8 @@ Viewer._cam_tv = _viewer_cam_tv
 Viewer._set_piece_cam = _viewer_set_piece_cam
 Viewer._keeper_dive = _viewer_keeper_dive
 Viewer._ball = _viewer_ball
+Viewer.THROW_FLIGHT = 0.8      # s: a throw-in in the air (a 10-15 m throw at ~13-15 m/s)
+Viewer.THROW_ARC = 0.8         # m: how far it rises above a straight line from his hands to the grass
 Viewer._dribble_touch = _viewer_dribble
 
 
@@ -1995,8 +2017,9 @@ class Events:
         for (ke, kind) in self.by_player.get(i, ()):
             t = (k - ke) / self.fps
             lo, hi = gait.SPANS.get(kind, (-self.WINDOW, self.WINDOW))
-            if lo <= t <= hi and (best is None or abs(t) < abs(best[1])):
-                best = (kind, t)
+            if lo <= t <= hi and (best is None or (kind == "fouled") > (best[0] == "fouled")
+                                  or ((kind == "fouled") == (best[0] == "fouled") and abs(t) < abs(best[1]))):
+                best = (kind, t)                                    # (a fall beats anything else at that moment)
         return best if best else (None, 0.0)
 
 
@@ -2054,7 +2077,10 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
             near = min(((_m.hypot(p[0] - bx, p[1] - by), j) for j, p in enumerate(F[k - 1]["p"])
                         if (j < 11) == team and j not in keepers), default=(99, -1))
             if near[0] < 30 and near[1] >= 0 and (k, "fouled") not in ev.by_player.get(near[1], []):
-                ev.by_player.setdefault(near[1], []).append((k, "fouled"))
+                l = ev.by_player.setdefault(near[1], [])
+                l[:] = [(k2, kd) for (k2, kd) in l if abs(k2 - k) > 8 or kd not in ("kick", "touch")]
+                l.append((k, "fouled"))                                      # (not a "kick" too: the ball was
+                                                                             #  taken off him, he didn't play it)
     for k in range(max(1, lo), len(F) - 4):                                  # dead balls: who took it, and how
         r = F[k - 1].get("r")
         if r and "r" not in F[k] and r[1] >= 0:

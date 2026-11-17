@@ -301,18 +301,22 @@ ACTIONS = {
                       "hipout_r": 8, "hipout_l": 10, "lean": 22, "side": 6, "turn": 18, "twist": 10, "nod": 18,
                       "out_l": 70, "arm_l": -20, "elbow_l": 25, "out_r": 25, "arm_r": 15, "elbow_r": 40}),
                (1.0, "same")],
-    # Fouled: his legs taken, he stumbles and goes down - onto his hands and chest - lies there a moment, then
-    # pushes up onto a knee and gets up.
+    # Fouled: his legs taken, he stumbles, reaches out and goes down - onto his hands and chest - lies there a
+    # moment, then pushes up onto a knee and gets up.  About 0.7 s from losing his balance to hitting the ground,
+    # as people falling from standing take (Hsiao & Robinovitch 1998, quoted in Frontiers in Neurology 2018,
+    # doi 10.3389/fneur.2018.00986: "the pre-impact phase of a fall lasts some 700 ms").
     "fouled": [(-0.10, N),
-               (0.12, {"hip_r": -20, "knee_r": 50, "hip_l": 35, "knee_l": 20, "lean": 30, "pitch": 15,
+               (0.22, {"hip_r": -20, "knee_r": 50, "hip_l": 35, "knee_l": 20, "lean": 30, "pitch": 15,
                        "arm_l": 70, "arm_r": 60, "out_l": 30, "out_r": 30, "elbow_l": 20, "elbow_r": 20, "nod": -20}),
-               (0.40, {"hip_r": 0, "knee_r": 20, "hip_l": 5, "knee_l": 25, "pitch": 78, "lean": 5, "nod": -45,
+               (0.48, {"hip_r": -5, "knee_r": 35, "hip_l": 20, "knee_l": 30, "lean": 18, "pitch": 48, "nod": -35,
+                       "arm_l": 85, "arm_r": 80, "out_l": 35, "out_r": 35, "elbow_l": 15, "elbow_r": 15}),
+               (0.70, {"hip_r": 0, "knee_r": 20, "hip_l": 5, "knee_l": 25, "pitch": 78, "lean": 5, "nod": -45,
                        "arm_l": 80, "arm_r": 80, "out_l": 40, "out_r": 40, "elbow_l": 70, "elbow_r": 70}),
-               (1.30, {"hip_r": 0, "knee_r": 30, "hip_l": 10, "knee_l": 35, "pitch": 82, "lean": 0, "nod": -40,
+               (1.60, {"hip_r": 0, "knee_r": 30, "hip_l": 10, "knee_l": 35, "pitch": 82, "lean": 0, "nod": -40,
                        "arm_l": 60, "arm_r": 90, "out_l": 50, "out_r": 35, "elbow_l": 90, "elbow_r": 60}),
-               (1.90, {"hip_r": 80, "knee_r": 100, "hip_l": 10, "knee_l": 90, "pitch": 35, "lean": 20, "nod": -10,
+               (2.20, {"hip_r": 80, "knee_r": 100, "hip_l": 10, "knee_l": 90, "pitch": 35, "lean": 20, "nod": -10,
                        "arm_l": 40, "arm_r": 40, "out_l": 20, "out_r": 20, "elbow_l": 30, "elbow_r": 30}),
-               (2.60, N)],
+               (2.90, N)],
     # A sharp cut to his left at speed: the right (outside) foot planted wide, knee bent to take the load, body
     # leaning into the new direction and low, then the push-off (e.g. Besier et al. 2001 on sidestep cutting:
     # the plant foot ~0.3-0.5 m out to the side, knee ~40-60 deg; trunk leaning into the cut).

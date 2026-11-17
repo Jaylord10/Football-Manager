@@ -14,6 +14,10 @@ S opens it (the match pauses) and closes it again; Esc closes it too.
   - FORMATION: move your players around the grid (click a player, then a
     spot - an empty one, or another player to swap them) or pick a
     ready-made shape, then Confirm.  Also straight away.
+  - TACTICS: the team instructions - how you defend (the style, or the back
+    line and the pressing set separately) and how you build up.  Straight
+    away, for the rest of this match; the career Tactics screen keeps what
+    you'd picked before it (ai/tactics.py has the choices).
 """
 
 import pygame
@@ -67,24 +71,32 @@ class SubPanel:
 
         # Title line
         used, windows = subs.used[tid], subs.windows[tid]
-        title = self.big.render("Substitutions", True, WHITE)
+        title = self.big.render({"formation": "Formation", "tactics": "Tactics"}.get(self.mode, "Substitutions"),
+                                True, WHITE)
         surface.blit(title, (box.x + 18, box.y + 12))
-        info = (f"Used {used} of {5}    Windows {windows} of 3 (half-time is free)    "
+        info = (f"Subs {used} of 5   Windows {windows} of 3 (half-time free)   "
                 f"Minute {engine.match_minute() if engine.match_state != 'halftime' else 'HT'}")
-        surface.blit(self.font.render(info, True, GREY), (box.x + 200, box.y + 17))
+        surface.blit(self.font.render(info, True, GREY), (box.x + 180, box.y + 17))
         on = subs.auto[tid]
         btn = pygame.Rect(box.right - 230, box.y + 10, 210, 30)
         pygame.draw.rect(surface, (50, 110, 70) if on else ROW, btn, border_radius=5)
-        t = self.font.render(f"Assistant makes changes: {'ON' if on else 'OFF'}", True, WHITE)
+        t = self.font.render(f"Assistant subs: {'ON' if on else 'OFF'}", True, WHITE)
         surface.blit(t, (btn.centerx - t.get_width() // 2, btn.y + 6))
         self.hits.append((btn, "assistant", None))
-        fbtn = pygame.Rect(btn.x - 180, box.y + 10, 160, 30)
+        fbtn = pygame.Rect(btn.x - 130, box.y + 10, 120, 30)
         pygame.draw.rect(surface, ROW_HI if self.mode == "formation" else ROW, fbtn, border_radius=5)
         t = self.font.render("Formation", True, WHITE)
         surface.blit(t, (fbtn.centerx - t.get_width() // 2, fbtn.y + 6))
         self.hits.append((fbtn, "formation", None))
+        tbtn = pygame.Rect(fbtn.x - 120, box.y + 10, 110, 30)
+        pygame.draw.rect(surface, ROW_HI if self.mode == "tactics" else ROW, tbtn, border_radius=5)
+        t = self.font.render("Tactics", True, WHITE)
+        surface.blit(t, (tbtn.centerx - t.get_width() // 2, tbtn.y + 6))
+        self.hits.append((tbtn, "tactics", None))
         if self.mode == "formation":
             return self._draw_formation(surface, engine, box)
+        if self.mode == "tactics":
+            return self._draw_tactics(surface, engine, box)
 
         # Your team (left)
         lx, ty = box.x + 18, box.y + (78 if self.notice else 58)
@@ -225,6 +237,11 @@ class SubPanel:
                     team = engine.team0 if tid == 0 else engine.team1
                     self.mode, self.f_sel = "formation", None
                     self.f_plan = {id(p): p.slot for p in team if p.role != "GK" and getattr(p, "is_active", True)}
+            elif action == "tactics":
+                self.mode = None if self.mode == "tactics" else "tactics"
+                self.role_menu = None
+            elif action == "tactic":
+                self._set_tactic(engine, *data)
             elif action == "f_cell":
                 self._f_cell(engine, data)
             elif action == "f_preset":
@@ -267,6 +284,75 @@ class SubPanel:
             elif action == "close_menu":
                 self.role_menu = None
             return
+
+    # -- the team instructions ---------------------------------------------------
+    @staticmethod
+    def _my_tactics(engine):
+        """Your team's tactics in this match (core/database.py TACTICS - read afresh by ai/tactics.py all the
+        time, so a change works straight away).  Also notes what they were at kick-off, the first time."""
+        import core.database as database
+        tid = engine.my_team
+        t = database.TACTICS.get(tid)
+        if t is None:
+            t = database.TACTICS[tid] = {}
+        engine.__dict__.setdefault("_tactics_kickoff", {}).setdefault(tid, dict(t))
+        return t
+
+    def _set_tactic(self, engine, field, key):
+        import ai.tactics as tac
+        t = self._my_tactics(engine)
+        if field == "style":
+            tac.set_style(t, key)
+        elif field in ("line_height", "press_height"):
+            tac.set_line_press(t, field, key)
+        else:
+            t[field] = key
+        changes = engine.__dict__.setdefault("tactics_changes", [])
+        changes.append((engine.match_minute() if engine.match_state != "halftime" else 45, tac.summary(t)))
+
+    def _draw_tactics(self, surface, engine, box):
+        import ai.tactics as tac
+        t = self._my_tactics(engine)
+        x0, y = box.x + 18, box.y + 58
+        surface.blit(self.font.render("New instructions from the touchline - they work straight away, for the rest "
+                                      "of this match.", True, GREY), (x0, y))
+        y += 36
+        line, press = tac.line_press(t)
+        mixed = tac.is_mixed(t)
+        rows = [("Out of possession", tac.STYLE_OPTIONS, None if mixed else (t.get("defence") or tac.DEFAULT_STYLE),
+                 "style", 150),
+                ("    Back line", tac.LINE_OPTIONS, line, "line_height", 118),
+                ("    Pressing", tac.PRESS_OPTIONS, press, "press_height", 118),
+                ("Build-up", tac.BUILD_OPTIONS, t.get("build_up") or tac.DEFAULT_BUILD_UP, "build_up", 150)]
+        for label, opts, cur, field, bw in rows:
+            surface.blit(self.font.render(label, True, WHITE if label[0] != " " else GREY), (x0, y + 7))
+            bx = x0 + 160
+            for key, lab, desc in opts:
+                r = pygame.Rect(bx, y, bw, 32)
+                pygame.draw.rect(surface, (50, 110, 70) if key == cur else ROW, r, border_radius=5)
+                txt = self.font.render(lab, True, WHITE)
+                surface.blit(txt, (r.centerx - txt.get_width() // 2, r.y + 7))
+                self.hits.append((r, "tactic", (field, key)))
+                bx += bw + 8
+            d = next((d for k, _, d in opts if k == cur), "Your own mix - the back line and the pressing below."
+                     if field == "style" else "")
+            surface.blit(self.small.render(d, True, DIM), (x0 + 160, y + 37))
+            y += 62 if field != "style" else 58
+        y += 8
+        now = tac.summary(t)
+        surface.blit(self.big.render(f"Now: {now}", True, WHITE), (x0, y))
+        start = engine._tactics_kickoff.get(engine.my_team)
+        if start is not None and tac.summary(start) != now:
+            surface.blit(self.font.render(f"At kick-off: {tac.summary(start)}", True, GREY), (x0, y + 32))
+        y += 64
+        for line_ in ("Pressing higher wins the ball nearer their goal, but tires your players and leaves space "
+                      "behind your back line.",
+                      "Sitting deeper is harder to break down, but they'll have more of the ball.",
+                      "Your Tactics screen keeps what you'd picked - this is for this match only."):
+            surface.blit(self.small.render(line_, True, DIM), (x0, y))
+            y += 20
+        msg = self.error or "S or Esc to go back to the match"
+        surface.blit(self.font.render(msg, True, RED if self.error else DIM), (box.x + 18, box.bottom - 30))
 
     # -- the formation board ----------------------------------------------------
     def _f_cell(self, engine, slot):

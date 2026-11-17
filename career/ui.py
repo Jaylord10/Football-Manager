@@ -39,6 +39,7 @@ from career import board as brd
 from career import spain
 from career import loans as lns
 from career import youth
+import ai.tactics as tac_mod
 
 # ---------------------------------------------------------------------------
 # Look
@@ -3022,43 +3023,18 @@ class App:
                   "RAM": "Attacking midfield (right)", "RW": "Right winger", "ST1": "Striker (left)",
                   "ST": "Striker", "ST2": "Striker (right)"}
     PRESETS = ["4-4-2", "4-2-3-1", "4-3-3", "4-1-4-1", "3-4-2-1", "3-5-2", "5-3-2", "4-3-1-2", "5-4-1"]
-    STYLE_OPTIONS = [("low_block", "Low block", "Sit deep and compact. Hard to break down, but you give them the ball."),
-                     ("mid_block", "Mid block", "Compact around halfway, press once they're in your half."),
-                     ("press", "Press", "Press them in their half, counter-press when you lose it."),
-                     ("high_press", "High press", "Squeeze right up and press everywhere. Wins it high, tiring.")]
-    LINE_OPTIONS = [("deep", "Deep", "Never more than ~26 m out."),
-                    ("low", "Low", "Up to ~32 m out."),
-                    ("standard", "Standard", "Up to ~38 m out."),
-                    ("high", "High", "Up to ~46 m - squeezes midfield."),
-                    ("very_high", "Very high", "Up to halfway. Space in behind!")]
-    PRESS_OPTIONS = [("low", "Low", "Only within ~40 m of your goal."),
-                     ("mid", "Mid", "From just inside their half."),
-                     ("high", "High", "Deep in their half; counter-press."),
-                     ("vhigh", "Very high", "Up to their box - not the keeper."),
-                     ("very_high", "Full", "Everywhere, even their keeper. Tiring.")]
-    STYLE_LEVEL = {"low_block": ("deep", "low"), "mid_block": ("standard", "mid"), "press": ("high", "high"),
-                   "high_press": ("very_high", "very_high")}
-    BUILD_OPTIONS = [("play_out", "Play out", "Keep the ball from the back unless it's really on fire."),
-                     ("mixed", "Mixed", "Play out when it's on, clear it when it isn't."),
-                     ("clear", "Clear to flanks", "Get it away early and out wide, especially under pressure.")]
+    STYLE_OPTIONS = tac_mod.STYLE_OPTIONS          # (ai/tactics.py: the same choices as the match's S screen)
+    LINE_OPTIONS = tac_mod.LINE_OPTIONS
+    PRESS_OPTIONS = tac_mod.PRESS_OPTIONS
+    STYLE_LEVEL = tac_mod.STYLE_LEVEL
+    BUILD_OPTIONS = tac_mod.BUILD_OPTIONS
 
     def _line_press(self, club):
         """(back line, pressing) - the style's own unless you've set them."""
-        t = club["tactics"]
-        dl, dp = self.STYLE_LEVEL.get(t.get("defence"), ("standard", "mid"))
-        return t.get("line_height") or dl, t.get("press_height") or dp
+        return tac_mod.line_press(club["tactics"])
 
     def _set_line_press(self, field, key):
-        club = self._my_club()
-        t = club["tactics"]
-        line, press = self._line_press(club)
-        t["line_height"], t["press_height"] = (key, press) if field == "line_height" else (line, key)
-        pair = (t["line_height"], t["press_height"])
-        preset = next((st for st, lv in self.STYLE_LEVEL.items() if lv == pair), None)
-        if preset:                                       # (that's just one of the four styles)
-            t["defence"] = preset
-            t.pop("line_height", None)
-            t.pop("press_height", None)
+        tac_mod.set_line_press(self._my_club()["tactics"], field, key)
         league.save(self.career)
 
     def _line_press_marks(self, club, pr):
@@ -3088,10 +3064,7 @@ class App:
             self._lp_labels.append((t, pygame.Rect(x, y - t.get_height() - 3, t.get_width() + 8, t.get_height() + 2)))
 
     def _set_style(self, key):
-        t = self._my_club()["tactics"]
-        t["defence"] = key
-        t.pop("line_height", None)                       # the style sets both
-        t.pop("press_height", None)
+        tac_mod.set_style(self._my_club()["tactics"], key)
         league.save(self.career)
 
     def _my_club(self):

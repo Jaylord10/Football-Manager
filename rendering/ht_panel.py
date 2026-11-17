@@ -45,7 +45,7 @@ class HTPanel:
         names = (formations.db.home_team_name, formations.db.away_team_name)
         title = self.big.render(f"Half-time:  {names[0]} {engine.score[0]} - {engine.score[1]} {names[1]}", True, WHITE)
         surface.blit(title, (box.x + 20, box.y + 14))
-        surface.blit(self.small.render("S: substitutions (free at half-time)", True, GREY), (box.x + 22, box.y + 50))
+        surface.blit(self.small.render("S: substitutions (free at half-time), formation and tactics", True, GREY), (box.x + 22, box.y + 50))
         given = engine.ht_given
         y = box.y + 84
         if given is None:
