@@ -803,6 +803,36 @@ class Viewer(ShowBase):
                     return j
         return 1
 
+    def _swipe(self, replaying):
+        """Into and out of a replay, as TV does: a band in the home colours with the crest sweeps across."""
+        import time as _t
+        if not hasattr(self, "_sw"):
+            from direct.gui.DirectGui import DirectFrame
+            col = C(self.kits[0]["shirt"])
+            band = DirectFrame(frameColor=col, frameSize=(-0.55, 0.55, -1.2, 1.2), pos=(-3, 0, 0))
+            DirectFrame(parent=band, frameColor=C(self.kits[0].get("trim", (240, 240, 240))),
+                        frameSize=(0.5, 0.55, -1.2, 1.2))
+            if self.home_info.get("crest"):
+                img = OnscreenImage(parent=band, image=self.loader.loadTexture(
+                    Filename.fromOsSpecific(self.home_info["crest"])), scale=(0.28, 1, 0.3))
+                img.setTransparency(TransparencyAttrib.MAlpha)
+            band.setBin("fixed", 100)
+            band.hide()
+            self._sw = {"band": band, "was": replaying, "t0": None}
+        sw = self._sw
+        if replaying != sw["was"]:
+            sw["was"] = replaying
+            sw["t0"] = _t.perf_counter()
+        if sw["t0"] is None:
+            return
+        u = (_t.perf_counter() - sw["t0"]) / 0.55
+        if u >= 1.0:
+            sw["t0"] = None
+            sw["band"].hide()
+            return
+        sw["band"].show()
+        sw["band"].setX(-2.6 + 5.2 * u)
+
     def make_rain(self, snow=False):
         """Rain over the picture: two layers of streaks drifting down at different speeds (near and far).
         snow=True: soft flakes instead, falling slowly and drifting sideways."""
@@ -1084,7 +1114,10 @@ class Viewer(ShowBase):
         else:
             self.cam.setPos(self.cx * 0.8, -HY - 62, 33)
             yw = 0.35 + 0.6 * self.cam_tilt                                 # (close in: right on him)
-            self.cam.lookAt(self.cx, self.cy * yw + 9 * (1 - self.cam_tilt), 0.8 * self.cam_tilt)
+            ht = getattr(self, "_flag_t", 0.0)                              # (close in, a cameraman's hand: the
+            hx = self.cam_tilt * (0.22 * math.sin(ht * 0.71) + 0.09 * math.sin(ht * 1.93))   # picture drifts a
+            hz = self.cam_tilt * (0.12 * math.sin(ht * 0.53 + 1.0) + 0.05 * math.sin(ht * 2.3))  # touch)
+            self.cam.lookAt(self.cx + hx, self.cy * yw + 9 * (1 - self.cam_tilt), 0.8 * self.cam_tilt + hz)
             self.camLens.setFov(self.cam_fov)
             sp = self._set_piece_cam(fr, bx, by, dt)                        # (a free kick near the box, a corner:
             if sp is not None:                                              #  cut to a closer camera, as TV does)
@@ -1104,6 +1137,7 @@ class Viewer(ShowBase):
             self.rp_t.show()
         else:
             self.rp_t.hide()
+        self._swipe(bool(getattr(self, "replay", None)))
         gone = fr["m"] / 90.0 if fr.get("m") else fr["t"] / 1200.0         # (how far into the match)
         self.render.setShaderInput("sweat", min(1.0, 0.25 + gone * 0.6 + (0.3 if RAIN else 0.0)))
         if DUSK and getattr(self, "_day_lights", None):                     # (dusk: from about 40 minutes the
