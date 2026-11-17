@@ -87,7 +87,10 @@ def ground_pitch(slug, prof):
     """This club's own pitch (made once, kept in tex/): its groundsman's mowing pattern, and as worn as its
     profile says (a "perfect" hybrid pitch hardly at all, an old pitch a lot)."""
     import zlib
-    name = f"pitch_{slug}.png"
+    # The time of year (FM_3D_SEASON_WEAR, from the match date - broadcast3d/live.py): a pitch is renovated in the
+    # summer and wears through the winter - fresh in August, at its worst in January and February.
+    season = float(os.environ.get("FM_3D_SEASON_WEAR", "0") or 0)
+    name = f"pitch_{slug}.png" if not season else f"pitch_{slug}_s{int(round(season * 10))}.png"
     if os.path.exists(OUT + name):
         return name
     surf = str(((prof or {}).get("ground") or {}).get("pitch", {}).get("surface", "")).lower()
@@ -95,6 +98,8 @@ def ground_pitch(slug, prof):
     mowing = MOWING[h % len(MOWING)]
     wear_amt = 0.25 if ("perfect" in surf or "hybrid" in surf) else 1.0 if ("heavy" in surf or "worn" in surf
                                                                                or "mud" in surf) else 0.65
+    if season:
+        wear_amt = min(1.3, wear_amt * round(season * 10) / 10.0)
     tint = (h // 7) % 3
     green = ((50, 114, 44), (54, 110, 48), (48, 116, 50))[tint]
     pitch(name, mowing, wear_amt, green, seed=h % 1000)

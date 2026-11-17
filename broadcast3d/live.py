@@ -87,6 +87,17 @@ def weather_flags(when):
     return flags
 
 
+def season_wear(when):
+    """How worn the pitches are at this time of year (x the ground's own wear): renovated over the summer, wearing
+    through the autumn and winter, a little better again in the spring.  0: not known (the ground's own)."""
+    import datetime
+    try:
+        m = datetime.date.fromisoformat(when.split("|")[0]).month
+    except Exception:
+        return 0
+    return {8: 0.3, 9: 0.5, 10: 0.7, 11: 0.85, 12: 1.0, 1: 1.1, 2: 1.15, 3: 1.05, 4: 0.9, 5: 0.8, 6: 0.3, 7: 0.3}[m]
+
+
 def names_from_engine(e):
     return [[p.name, p.role, getattr(p, "number", None) or (i % 11) + 1] for i, p in enumerate(e.team0 + e.team1)]
 
@@ -149,6 +160,8 @@ class Live3D:
         self.conn, child = ctx.Pipe()
         if flags is None:                               # (the day's light and weather: career/matches.py)
             flags = weather_flags(os.environ.get("FM_3D_WHEN", ""))
+        os.environ["FM_3D_SEASON_WEAR"] = str(season_wear(os.environ.get("FM_3D_WHEN", "")))   # (the 3D side
+        #  gets it too - the environment's copied when it starts)
         if os.environ.get("FM_3D_LIGHT"):               # (always the lighter 3D)
             flags = list(flags) + ["--light"]
         meta = {"home": home, "away": away, "names": names_from_engine(engine)}
