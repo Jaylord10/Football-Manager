@@ -69,9 +69,14 @@ def turn_rate(player):
     return max(60.0, rate * TURN_WITH_BALL)
 
 
+import os as _os
+_NO_TURN = _os.environ.get("FM_KA_NOTURN") == "1"     # (tests: switch either half off)
+_NO_ERR = _os.environ.get("FM_KA_NOERR") == "1"
+
+
 def turn_time(player, direction):
     """Extra seconds he needs to get round to kick it that way (0 if he's facing near enough)."""
-    if _exempt(player):
+    if _NO_TURN or _exempt(player):
         return 0.0
     extra = angle_off(player, direction) - KICK_ARC
     return extra / turn_rate(player) if extra > 0 else 0.0
@@ -79,7 +84,7 @@ def turn_time(player, direction):
 
 def error_mult(player, direction):
     """How much less accurate the kick is for the angle he's kicking it at, as he stands now."""
-    if _exempt(player):
+    if _NO_ERR or _exempt(player):
         return 1.0
     extra = angle_off(player, direction) - KICK_ARC
     return 1.0 + AWKWARD_ERROR * extra / (180.0 - KICK_ARC) if extra > 0 else 1.0
