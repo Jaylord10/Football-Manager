@@ -353,6 +353,7 @@ class AnimPlayer:
         if gl:
             r.setShaderInput("kit_gloves", C((28, 28, 30)))
         r.setShaderInput("kit_cap", 1.0 if captain else 0.0)
+        self.captain = bool(captain)
         r.setShaderInput("kit_extra", (float(kit.get("collar", 0)), 1.0 if kit.get("trousers") else 0.0,
                                        1.0 if ls else 0.0, gl))
         self.num = None

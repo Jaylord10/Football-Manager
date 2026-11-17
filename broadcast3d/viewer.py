@@ -638,6 +638,13 @@ class Viewer(ShowBase):
         old.root.removeNode()
         self.players[i] = p
         self.m["names"][i] = [name, role, num]
+        if getattr(old, "captain", False):              # (the captain's off: the armband to a team-mate - the
+            lo = 0 if team == 0 else 11                 #  first defender, or whoever's next)
+            for j in list(range(lo + 1, lo + 11)) + [lo]:
+                if j != i and not getattr(self.players[j], "keeper", False):
+                    self.players[j].root.setShaderInput("kit_cap", 1.0)
+                    self.players[j].captain = True
+                    break
         if getattr(self, "_tags_on", False):
             self.name_tags(True)
 
