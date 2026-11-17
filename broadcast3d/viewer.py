@@ -1107,6 +1107,7 @@ class Viewer(ShowBase):
                 kind = None
             if kind == "throwin":                                           # (facing the way he throws it)
                 fx, fy = self._throw_dir(i, k, t, fx, fy)
+                wy = self._throw_spot(wy, t)                                # (feet on or behind the line)
             p.update(wx, wy, fx, -fy, sp, dt, act, vel=vel, ball=(rbx, rby))
             dv = fr["p"][i][7] if len(fr["p"][i]) > 7 else ""
             if dv in ("diving", "recover") and getattr(p, "keeper", False):    # (a keeper's dive)
@@ -1669,6 +1670,19 @@ def _viewer_throw_dir(self, i, k, t, fx, fy):
     return (dx / d, dy / d) if d > 1e-3 else (fx, fy)
 
 
+def _viewer_throw_spot(self, wy, t):
+    """A throw-in: the engine has the thrower's middle exactly on the touchline (the line is painted just inside
+    the pitch's edge), so with his step forward in the throw his front foot landed on the grass.  The laws
+    (Law 15: part of each foot on the touchline or on the ground outside it): he stands a step back for it -
+    eased in as he picks the ball up, and out again once it's gone."""
+    side = 1.0 if wy > 0 else -1.0
+    if abs(abs(wy) - HY) > 1.5:                                            # (not by a touchline: leave him be)
+        return wy
+    w = min(1.0, max(0.0, (t + 1.6) / 0.4)) * min(1.0, max(0.0, (0.7 - t) / 0.45))
+    w = w * w * (3 - 2 * w)
+    return wy + side * self.THROW_BACK * w
+
+
 def football(parent, r):
     """The ball: white with the classic twelve dark pentagons (so you can see it roll)."""
     from geom import Mesh
@@ -1979,6 +1993,8 @@ Viewer._officiate = _viewer_officiate
 Viewer._goal_ball = _viewer_goal_ball
 Viewer._spin_ball = _viewer_spin_ball
 Viewer._throw_dir = _viewer_throw_dir
+Viewer._throw_spot = _viewer_throw_spot
+Viewer.THROW_BACK = 0.35           # m: the thrower's middle this far outside the pitch while he throws
 Viewer._left_foot = _viewer_left_foot
 Viewer._shield_side = _viewer_shield_side
 Viewer._gather = _viewer_gather
