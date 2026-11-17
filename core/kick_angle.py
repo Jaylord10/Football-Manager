@@ -31,9 +31,10 @@ from config.constants import M_TO_PX
 # ---------------------------------------------------------------------------
 # TUNING (degrees, seconds)
 # ---------------------------------------------------------------------------
-KICK_ARC       = 70.0    # either side of where he faces: a normal kick, no turn needed
-TURN_WITH_BALL = 0.6     # share of his normal body-turn speed with the ball to bring round
-AWKWARD_ERROR  = 2.0     # extra error at a kick 180 deg from his facing (a back-heel)...
+import os as _os0
+KICK_ARC       = float(_os0.environ.get("FM_KA_ARC", 70.0))     # either side of where he faces: a normal kick
+TURN_WITH_BALL = float(_os0.environ.get("FM_KA_TURNK", 0.6))   # share of his normal body-turn speed with the ball
+AWKWARD_ERROR  = float(_os0.environ.get("FM_KA_ERR", 2.0))     # extra error at a kick 180 deg from his facing...
                          # ...scaled down to nothing at KICK_ARC
 SET_PIECE_TIME = 3.0     # s after a restart: the taker lined himself up - no turning
 
