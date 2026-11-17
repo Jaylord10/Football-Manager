@@ -459,6 +459,9 @@ def _load(which=None):
     return _DATA.get(path)
 
 
+_BLENDS = {}
+
+
 def _skinned(char, name, V, N, F, BI, BW, names, paint=None):
     """A mesh that moves with the skeleton: each point follows its bones (BI: which, BW: how much).  Filled
     from whole arrays at once (quick: every player gets his own copy)."""
@@ -483,10 +486,15 @@ def _skinned(char, name, V, N, F, BI, BW, names, paint=None):
     n = len(V)
     vd.uncleanSetNumRows(n)
     # each point's blend of bones: the distinct ones made once each
-    bi = np.where(BW > 0, BI, -1).astype(np.int32)
-    bw = np.where(BW > 0, BW, 0.0).astype(np.float32)
-    key = np.concatenate([bi.view(np.uint8).reshape(n, -1), bw.view(np.uint8).reshape(n, -1)], 1)
-    uniq, first, inv = np.unique(key, axis=0, return_index=True, return_inverse=True)
+    ck = (BI.shape, hash(np.ascontiguousarray(BI).tobytes()), hash(np.ascontiguousarray(BW).tobytes()))
+    hit = _BLENDS.get(ck)
+    if hit is None:                                     # (the same body for everyone: worked out once)
+        bi = np.where(BW > 0, BI, -1).astype(np.int32)
+        bw = np.where(BW > 0, BW, 0.0).astype(np.float32)
+        key = np.concatenate([bi.view(np.uint8).reshape(n, -1), bw.view(np.uint8).reshape(n, -1)], 1)
+        uniq, first, inv = np.unique(key, axis=0, return_index=True, return_inverse=True)
+        hit = _BLENDS[ck] = (bi, bw, uniq, first, inv)
+    bi, bw, uniq, first, inv = hit
     table = TransformBlendTable()
     idx = np.zeros(len(uniq), np.uint16)
     for u, i in enumerate(first):
@@ -555,7 +563,7 @@ def gloved(V, N, D, names):
     return V, N
 
 
-def attach(actor, which=None, face=None, gloves=False):
+def attach(actor, which=None, face=None, gloves=False, lite=False):
     """Swap the mannequin's pieces for the smooth body (skinned to this actor's own skeleton).  Returns the new
     node (None if there's no body.npz yet).  face: (sliders, eth) - his own face (MakeHuman's body).  gloves: a
     keeper's padded gloves."""
@@ -567,6 +575,13 @@ def attach(actor, which=None, face=None, gloves=False):
     names = [str(b) for b in D["bones"]]
     if gloves:
         V, N = gloved(np.array(V, np.float32), N, D, names)
+    if lite and "lod2_idx" in D:                        # (someone at the edge of the picture - a steward, a sub
+        l2 = D["lod2_idx"]                              #  warming up: only the lightest body, a quicker start)
+        lo2 = _skinned(ch.node(), "smooth_body_far2", V[l2], N[l2], D["lod2_faces"], D["bone_idx"][l2],
+                       D["bone_w"][l2], names, D["paint"][l2] if "paint" in D else None)
+        for old in actor.findAllMatches("**/+GeomNode"):
+            old.detachNode()
+        return ch.attachNewNode(lo2)
     gn = _skinned(ch.node(), "smooth_body", V, N, D["faces"], D["bone_idx"], D["bone_w"], names, D.get("paint"))
     if "lod_idx" in D and LOD:
         # near the camera the full body, further off the lighter one (only the one drawn is moved each frame)

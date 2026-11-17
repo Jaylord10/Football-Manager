@@ -276,12 +276,14 @@ class AnimPlayer:
         self.stride_k = k                           # (his strides are as long as he's tall)
         self.height = height
         self.a.setH(180)                    # (the model faces -Y; the root faces the way he's running, +Y)
-        paint(self.a, kit, skin, hair)
+        smooth = None
         if self.cfg.get("smooth") and SMOOTH:                # (a smooth body instead of the mannequin's pieces)
             import body
-            body.attach(self.a, "mh" if MHBODY else None,
-                        _face(name, number, skin) if MHBODY and os.environ.get("FM_FACES") != "0" else None,
-                        gloves=keeper and MHBODY)
+            smooth = body.attach(self.a, "mh" if MHBODY else None,
+                                 _face(name, number, skin) if MHBODY and os.environ.get("FM_FACES") != "0" else None,
+                                 gloves=keeper and MHBODY, lite=str(name or "").startswith(("steward", "warm")))
+        if smooth is None:                                   # (the mannequin's pieces: coloured point by point -
+            paint(self.a, kit, skin, hair)                   #  the smooth body's kit is drawn by the shader)
         # The kit is drawn by the lighting shader, pixel by pixel (crisp stripes, hoops, sock tops), with his
         # name and number on his back and the club crest on his chest.
         r = self.root

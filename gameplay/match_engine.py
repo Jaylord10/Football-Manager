@@ -158,6 +158,7 @@ class MatchEngine:
         self.names3d = os.environ.get("FM_3D_NAMES", "0") == "1"   # (names over their heads: N)
         self.quality3d = os.environ.get("FM_3D_QUALITY", "auto")   # (3D quality: Q)
         self._q_note_until = -1.0
+        self.fps3d = False                                          # (F: the 3D's picture time on screen)
         try:
             self.camera3d = int(os.environ.get("FM_3D_CAMERA", "0")) % 2   # (TV gantry / close: C)
         except ValueError:
@@ -523,6 +524,9 @@ class MatchEngine:
                     self._change_speed(-1)
                 if event.key in (pygame.K_RETURN, pygame.K_KP_ENTER) and self._3d_on() and self.live3d.replaying():
                     self.live3d.skip()                   # (on with the match: no more of the replay)
+                    continue
+                if event.key == pygame.K_f and self._3d_on():
+                    self.fps3d = not self.fps3d
                     continue
                 if event.key == pygame.K_q and self._3d_on():
                     order = ["auto", "high", "light"]      # (3D quality: auto / high / light)
@@ -1026,6 +1030,14 @@ class MatchEngine:
                 self._draw_on_ball()
             if self.radar3d and not brk:
                 self._draw_radar()
+            if self.fps3d:                                             # (F: how fast the 3D's going)
+                ms = self.live3d.picture_ms()
+                t = self.ui_renderer.normal_font.render(
+                    f"3D: {ms:.0f} ms a picture  (about {1000.0 / max(ms, 1.0):.0f} a second)", True, (255, 255, 255))
+                bg = pygame.Surface((t.get_width() + 12, t.get_height() + 6), pygame.SRCALPHA)
+                bg.fill((0, 0, 0, 160))
+                self.screen.blit(bg, (10, 10))
+                self.screen.blit(t, (16, 13))
             if self.time_elapsed < self._q_note_until:                 # (Q pressed: say which)
                 note = {"auto": "3D quality: auto (lighter if the computer's struggling)",
                         "high": "3D quality: high (always everything)",

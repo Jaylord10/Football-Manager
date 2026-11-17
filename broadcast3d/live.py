@@ -107,6 +107,7 @@ def _write_head(buf, **kw):
 
 
 _COL = 40                        # (the two shirt colours, RGB + RGB, written by the 3D side: the game's mini pitch)
+_MS = 48                         # (how long the last pictures took, ms - F in the game)
 
 
 def _write_colours(buf, c0, c1):
@@ -259,6 +260,13 @@ class Live3D:
             if k <= self._k:
                 return ps, b, o
         return None
+
+    def picture_ms(self):
+        """How long the 3D side's pictures are taking (milliseconds, the last couple of seconds' average)."""
+        try:
+            return struct.unpack_from("<f", self.shm.buf, _MS)[0]
+        except Exception:
+            return 0.0
 
     def colours(self):
         """The two teams' shirt colours in the picture."""
@@ -443,6 +451,7 @@ def _draw_loop(conn, buf, w, h, meta):
     intro = {"t": None}
     stats = {"n": None}
     lighter = False
+    avg_ms = None
     clock = ClockObject.getGlobalClock()
     last = time.perf_counter()
     slot, count, shown_k, started = 0, 0, -1, False
@@ -615,7 +624,10 @@ def _draw_loop(conn, buf, w, h, meta):
                     replay=1 if (d.rp is not None or intro["t"] is not None) else 0)
         started = True
         n_draw += 1
-        t_draw += time.perf_counter() - t0
+        took = time.perf_counter() - t0
+        t_draw += took
+        avg_ms = took * 1000.0 if avg_ms is None else avg_ms * 0.95 + took * 1000.0 * 0.05
+        struct.pack_into("<f", buf, _MS, avg_ms)
         quality = os.environ.get("FM_3D_QUALITY", "auto")     # (auto / high / light: Q in the game)
         if not lighter and (quality == "light" or "--light" in sys.argv or
                             (n_draw == 150 and t_draw / n_draw > 0.045 and quality != "high")):
