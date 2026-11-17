@@ -42,6 +42,9 @@ strips from a recorded match (scratch tool: find the moment, follow the player, 
   this match engine nearly always plays the ball on the ground (none in the 15-minute sample).
 - 9/10 Step-overs: the trickier half of players throw one in running at a defender 2-4 m in front (one every
   few seconds at most), the body dipping to sell it.
+- 47 Substitutions: the man coming off no longer vanishes - he walks to the nearest touchline (~1.3 m/s),
+  clapping the fans for the first few seconds, and is gone once he's off.  (Tested by making a change in a
+  recorded match.)
 
 ## Already there before tonight
 - 12 Shot follow-through landing on the kicking foot; 13 leaning into bends; 14 leaning forward when setting

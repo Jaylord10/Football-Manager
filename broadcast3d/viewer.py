@@ -674,7 +674,10 @@ class Viewer(ShowBase):
         self._shadow_under(p)
         if getattr(old, "flood", None) is not None:
             old.flood.removeNode()
-        old.root.removeNode()
+        # The man coming off walks to the nearest touchline, clapping the fans, and is gone once he's off.
+        ox, oy = old.root.getX(), old.root.getY()
+        self.__dict__.setdefault("_leaving", []).append({"p": old, "to": (ox, (HY + 2.5) if oy > 0 else -(HY + 2.5)),
+                                                         "t": 0.0})
         self.players[i] = p
         self.m["names"][i] = [name, role, num]
         if getattr(old, "captain", False):              # (the captain's off: the armband to a team-mate - the
@@ -1163,6 +1166,7 @@ class Viewer(ShowBase):
                     kind, t = "ready", 0.0
             p.act(kind, t, self._left_foot(i, p, kind, t, k))
         self._prev_pos = prev
+        self._walk_offs(dt, rbx, rby)
         self._officiate(fr, dt, rbx, rby)
         if NIGHT:
             for p in self.players + [o["p"] for o in self.officials]:
@@ -1778,6 +1782,24 @@ def _viewer_run_up(self, i, fr, wx, wy, fx, fy, sp, k, dt):
     return nx, ny, dx, -dy, max(sp, moved * 10.0), pose
 
 
+def _viewer_walk_offs(self, dt, bx, by):
+    """Substituted players walking off, clapping the fans (see replace_player)."""
+    for w in list(getattr(self, "_leaving", [])):
+        p, (tx, ty) = w["p"], w["to"]
+        x, y = p.root.getX(), p.root.getY()
+        dx, dy = tx - x, ty - y
+        d = math.hypot(dx, dy)
+        w["t"] += dt
+        if d < 0.3 or w["t"] > 40.0:
+            p.root.removeNode()
+            self._leaving.remove(w)
+            continue
+        st = min(d, 1.3 * dt)                                              # (a walk: ~1.3 m/s)
+        p.update(x + dx / d * st, y + dy / d * st, dx / d, dy / d, 13.0, dt, True, vel=(dx / d * 1.3, dy / d * 1.3),
+                 ball=(bx, by))
+        p.act("clapwalk", 0.1 + w["t"] % 1.65 if w["t"] < 6.0 else 99.0)      # (clapping for the first few s)
+
+
 def _viewer_stepover(self, i, p, fr, fx, fy, k):
     """Running at a defender with the ball, the trickier players (about half) throw in a step-over when he's 2-4
     m in front - one every few seconds at most."""
@@ -2182,6 +2204,7 @@ Viewer._throw_dir = _viewer_throw_dir
 Viewer._run_up = _viewer_run_up
 Viewer._contact = _viewer_contact
 Viewer._stepover = _viewer_stepover
+Viewer._walk_offs = _viewer_walk_offs
 Viewer._throw_spot = _viewer_throw_spot
 Viewer.THROW_BACK = 0.35           # m: the thrower's middle this far outside the pitch while he throws
 Viewer._left_foot = _viewer_left_foot

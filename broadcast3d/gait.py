@@ -643,6 +643,12 @@ ACTIONS = {
     # A tug at the shirt of the man he's chasing: the right arm reaching out after him.
     "tug": [(0.0, {"abs": 1, "arm_r": 72, "out_r": 22, "elbow_r": 12, "across_r": -5, "twist": -12, "lean": 6}),
             (1.0, "same")],
+    # Walking off after being substituted: clapping the fans, hands in front of his chest.
+    "clapwalk": [(0.0, {"abs": 1, "arm_r": 38, "arm_l": 38, "elbow_r": 75, "elbow_l": 75, "across_r": 30,
+                        "across_l": 30, "nod": -4})] +
+                [(0.12 + 0.24 * j, {"abs": 1, "arm_r": 38, "arm_l": 38, "elbow_r": 75, "elbow_l": 75,
+                                    "across_r": 48 if j % 2 == 0 else 30, "across_l": 48 if j % 2 == 0 else 30,
+                                    "nod": -4}) for j in range(8)],
     # A manager on the touchline, arm out, telling them where to go.
     "point": [(-0.4, N),
               (0.0, {"arm_r": 75, "out_r": 30, "elbow_r": 10, "twist": 12, "lean": 4, "nod": -6}),
