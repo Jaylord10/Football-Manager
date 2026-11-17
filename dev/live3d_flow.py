@@ -35,6 +35,8 @@ if __name__ == "__main__":
         real(flip)
         cnt["n"] += 1
         n = cnt["n"]
+        if os.environ.get("KILL3D") and n == int(os.environ["KILL3D"]) and e.live3d:   # (the 3D side dies: 2D?)
+            e.live3d.proc.kill()
         for kv in os.environ.get("KEYS", "").split(","):      # (KEYS=300:space,500:n - press keys at frames)
             if ":" in kv and int(kv.split(":")[0]) == n:
                 key = getattr(pygame, "K_" + kv.split(":")[1])

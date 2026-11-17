@@ -1012,6 +1012,9 @@ class MatchEngine:
         """The 3D picture on the pitch area -> the score it shows, or None (then draw the 2D pitch).
         self._shown_t: the moment of the match the picture shows (half a second behind the engine)."""
         self._shown_t = self.time_elapsed
+        if self.view3d and self.live3d is not None and self.live3d.failed:      # (the 3D's stopped: say so,
+            self.view3d = False                                                   #  once, and carry on in 2D)
+            self._fail_note_until = self.time_elapsed + 5.0 * max(1, getattr(self, "match_speed", 1))
         if not self._3d_on():
             return None
         pic = self.live3d.picture()
@@ -1121,6 +1124,12 @@ class MatchEngine:
             )
             self.object_renderer.draw_ball(self.screen, self.ball)
             self._draw_overlay()
+            if self.time_elapsed < getattr(self, "_fail_note_until", -1.0):     # (the 3D view's stopped)
+                t = self.ui_renderer.med_font.render("The 3D view stopped - carrying on in 2D (V tries 3D again)",
+                                                     True, (255, 255, 255))
+                box = t.get_rect(midtop=(self.screen.get_width() // 2, 14)).inflate(24, 12)
+                pygame.draw.rect(self.screen, (18, 20, 24), box, border_radius=6)
+                self.screen.blit(t, t.get_rect(center=box.center))
 
         match_info = self._build_match_info()
         self.ui_renderer.draw_ui(
