@@ -1111,6 +1111,8 @@ class Viewer(ShowBase):
             if sp2 is not None and math.hypot(*vel) > 0.3:
                 fx, fy = vel[0] / math.hypot(*vel), -vel[1] / math.hypot(*vel)
             p.calling = self._calling(i, fr, wx, wy, sp, k)
+            p.late = fr.get("st") in ("second_half", "et_second_half")         # (tired: hands on hips more)
+            p.scan = self._scan(i, k)                                           # (a look over his shoulder)
             kind, t = self.events.action(i, k)
             if kind is None and sp_pose is not None:
                 kind, t = sp_pose
@@ -1138,6 +1140,8 @@ class Viewer(ShowBase):
                 if near:
                     kind, t = "shield", 0.5
                     self._shield_left[i] = near > 0           # (the pose has the man on his left)
+            if kind is None and fr["o"] == i:
+                kind, t = self._dragback(i, p, fr, fx, fy, k)                    # (turning back with it)
             if kind is None and fr["o"] == i:
                 kind, t = self._stepover(i, p, fr, fx, fy, k)                    # (a man in front: a trick)
             if kind is None and fr["o"] == i:
@@ -1782,6 +1786,45 @@ def _viewer_run_up(self, i, fr, wx, wy, fx, fy, sp, k, dt):
     return nx, ny, dx, -dy, max(sp, moved * 10.0), pose
 
 
+def _viewer_scan(self, i, k):
+    """Players check over their shoulder before the ball reaches them (top players scan several times in the
+    seconds before receiving - Jordet et al., e.g. 2013 "Scanning, contextual factors and association with
+    performance in English Premier League footballers"): a glance round, 1.2-0.7 s before his next touch."""
+    nxt = None
+    l = self.events.by_player.get(i, ())
+    import bisect
+    at = bisect.bisect_right(l, k, key=lambda e: e[0])                     # (they're kept in time order, more
+    for j in range(max(0, at - 6), min(len(l), at + 6)):                   #  or less: look around there)
+        ke, kd = l[j]
+        if ke > k and kd in ("touch", "chest", "thigh"):
+            nxt = ke if nxt is None else min(nxt, ke)
+    if nxt is None:
+        return 0.0
+    t = (nxt - k) / 30.0
+    if 0.7 <= t <= 1.2:
+        u = math.sin(math.pi * (t - 0.7) / 0.5)
+        return u * (60.0 if (i + nxt) % 2 else -60.0)
+    return 0.0
+
+
+def _viewer_dragback(self, i, p, fr, fx, fy, k):
+    """On the ball and turning right round (more than ~110 degrees in under half a second, not at speed): a
+    drag-back, the sole rolling it back as he pivots."""
+    st = self.__dict__.setdefault("_db", {})
+    s = st.setdefault(i, {"hist": [], "at": None})
+    if s["at"] is not None and 0 <= (k - s["at"]) / 30.0 <= 0.55:
+        return "dragback", (k - s["at"]) / 30.0
+    a = math.atan2(fy, fx)
+    s["hist"] = [(k2, a2) for (k2, a2) in s["hist"] if k - k2 <= 14] + [(k, a)]
+    if p.sp < 4.0 and len(s["hist"]) > 3:
+        d = abs((math.degrees(a - s["hist"][0][1]) + 180) % 360 - 180)
+        if d > 110 and (s["at"] is None or k - s["at"] > 45):
+            s["at"] = k
+            s["hist"] = []
+            return "dragback", 0.0
+    return None, 0.0
+
+
 def _viewer_walk_offs(self, dt, bx, by):
     """Substituted players walking off, clapping the fans (see replace_player)."""
     for w in list(getattr(self, "_leaving", [])):
@@ -2205,6 +2248,8 @@ Viewer._run_up = _viewer_run_up
 Viewer._contact = _viewer_contact
 Viewer._stepover = _viewer_stepover
 Viewer._walk_offs = _viewer_walk_offs
+Viewer._scan = _viewer_scan
+Viewer._dragback = _viewer_dragback
 Viewer._throw_spot = _viewer_throw_spot
 Viewer.THROW_BACK = 0.35           # m: the thrower's middle this far outside the pitch while he throws
 Viewer._left_foot = _viewer_left_foot

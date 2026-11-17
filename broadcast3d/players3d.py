@@ -536,6 +536,8 @@ class AnimPlayer:
         lean_r = -math.degrees(math.atan(self.sp * w / 9.81))
         acc = (sp - self.sp) / max(dt, 1e-3) * min(1.0, dt * 6)
         lean_p = -max(-8.0, min(13.0, acc * 2.4))                          # (driving away: low; braking: back)
+        lean_p -= (self.seed % 5) * 0.9 * min(1.0, max(0.0, (sp - 3.0) / 3.0))  # (his own running style: some
+                                                                                #  run more upright than others)
         lean_r += getattr(self, "barge", 0.0)                              # (shoulder to shoulder with a man)
         self.lean_r = getattr(self, "lean_r", 0.0) + (max(-18.0, min(18.0, lean_r)) - getattr(self, "lean_r", 0.0)) * min(1.0, dt * 6)
         self.lean_p = getattr(self, "lean_p", 0.0) + (lean_p - getattr(self, "lean_p", 0.0)) * min(1.0, dt * 5)
@@ -641,7 +643,7 @@ class AnimPlayer:
             # standing about: shifting his weight now and then; and with play far off and nothing to do for a
             # while, some players put their hands on their hips
             far = ball is not None and math.hypot(ball[0] - x, ball[1] - y) > 35.0
-            rester = (self.seed % 3) == 0
+            rester = (self.seed % 3) == 0 or (getattr(self, "late", False) and (self.seed % 3) == 1)   # (tired)
             want_r = 1.0 if (far and rester and self.still_t > 4.0) else 0.0
             self.w_rest = getattr(self, "w_rest", 0.0) + (want_r - getattr(self, "w_rest", 0.0)) * min(1.0, dt * 1.5)
             t_sh = (self.t_idle + (self.seed % 240)) % 240
@@ -713,7 +715,7 @@ class AnimPlayer:
         if abs(want) > 55.0 and self.sp < 2.5 and not self.mood:
             excess = math.copysign(min(70.0, abs(want) - 55.0), want)
         self.body_look = bl + (excess - bl) * min(1.0, dt * 2.5)
-        want = max(-70.0, min(70.0, want - self.body_look))
+        want = max(-70.0, min(70.0, want - self.body_look + getattr(self, "scan", 0.0)))   # (+ a glance round)
         self.look += (want - self.look) * min(1.0, dt * 5)
         c, base = self.head
         _, axis, sign = self.cfg["joints"][key]

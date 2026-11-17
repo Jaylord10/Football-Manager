@@ -45,6 +45,12 @@ strips from a recorded match (scratch tool: find the moment, follow the player, 
 - 47 Substitutions: the man coming off no longer vanishes - he walks to the nearest touchline (~1.3 m/s),
   clapping the fans for the first few seconds, and is gone once he's off.  (Tested by making a change in a
   recorded match.)
+- 1 Turning right round with the ball (over ~110 deg in under half a second, not at speed): a drag-back, the
+  sole rolling it back as he pivots.
+- 18 A glance over the shoulder 0.7-1.2 s before his next touch (scanning: Jordet et al. 2013 on Premier League
+  midfielders checking their surroundings before receiving).
+- 20 Tired: in the second half more players stand with hands on hips when play's far away.
+- 23 His own running style: some run more upright, some lower, all through the match.
 
 ## Already there before tonight
 - 12 Shot follow-through landing on the kicking foot; 13 leaning into bends; 14 leaning forward when setting

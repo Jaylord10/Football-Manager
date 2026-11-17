@@ -649,6 +649,13 @@ ACTIONS = {
                 [(0.12 + 0.24 * j, {"abs": 1, "arm_r": 38, "arm_l": 38, "elbow_r": 75, "elbow_l": 75,
                                     "across_r": 48 if j % 2 == 0 else 30, "across_l": 48 if j % 2 == 0 else 30,
                                     "nod": -4}) for j in range(8)],
+    # A drag-back: the sole of the right foot on top of the ball, rolling it back as he pivots round on the left.
+    "dragback": [(-0.05, N),
+                 (0.12, {"hip_r": 28, "knee_r": 62, "ankle_r": 22, "hip_l": 6, "knee_l": 28, "lean": 8, "nod": 18,
+                         "out_l": 40, "out_r": 30, "elbow_l": 30, "elbow_r": 30}),
+                 (0.30, {"hip_r": -6, "knee_r": 48, "ankle_r": 18, "hip_l": 8, "knee_l": 32, "lean": 10, "turn": 30,
+                         "twist": 20, "nod": 15, "out_l": 45, "out_r": 25, "elbow_l": 30, "elbow_r": 30}),
+                 (0.55, N)],
     # A manager on the touchline, arm out, telling them where to go.
     "point": [(-0.4, N),
               (0.0, {"arm_r": 75, "out_r": 30, "elbow_r": 10, "twist": 12, "lean": 4, "nod": -6}),
@@ -1097,7 +1104,7 @@ def _make(actor):
     for name, keys in ACTIONS.items():
         variants = [(name, keys)]
         if name in ("dive", "recover", "kick", "shot", "touch", "tackle", "punt", "cut", "brake", "slide", "shield", "fouled",
-                    "pass", "loft", "flick", "backheel", "hurt", "stumble", "volley", "thigh", "stepover"):
+                    "pass", "loft", "flick", "backheel", "hurt", "stumble", "volley", "thigh", "stepover", "dragback"):
             variants.append((name + "_m", [(t, mirror(p) if isinstance(p, dict) else p) for t, p in keys]))
         for vn, vk in variants:
             fn, t0, t1 = action_pose(vk)
