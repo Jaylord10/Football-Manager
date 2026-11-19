@@ -2134,6 +2134,12 @@ class App:
         self.inbox_reply = chats.answer_request(self.career, mid, key)
         league.save(self.career)
 
+    def _see_player(self, club_id, p, x, y):
+        """A button to look at the player a message is about (his profile, then back to the message)."""
+        self.buttons.append(Button((x, y, 300, 40), f"See {p['Name']}'s profile",
+                                   lambda: self.view_player(club_id, p["id"]), font="btn_s"))
+        return y + 52
+
     def draw_inbox(self):
         W, H = self.size
         self.sidebar("inbox")
@@ -2203,6 +2209,7 @@ class App:
                 if p.get("sell_on"):
                     y = self._wrap(f"Note: {p['sell_on']['pct']}% of any profit goes to his old club (sell-on "
                                    f"clause).", "small", DRAW, r2.x + 20, y, r2.w - 40) + 4
+                y = self._see_player(me["id"], p, r2.x + 20, y)
             y = self._wrap(f"Offer open until {cal.fmt(d['expires'], False)}. Half of any fee goes into your "
                            f"transfer budget.", "small", MUTED, r2.x + 20, y, r2.w - 40) + 20
             if m["state"] == "open":
@@ -2227,6 +2234,13 @@ class App:
                                            lambda: self._offer_answer(m["id"], "counter")))
                 y += 60
         if m["kind"] == "bid_reply" and d.get("pid") is not None:     # their answer to your bid
+            try:
+                them = self.club(d["cid"])
+            except Exception:
+                them = None
+            p_ = clubs_mod.player_by_id(them, d["pid"]) if them else None
+            if p_ is not None:
+                y = self._see_player(d["cid"], p_, r2.x + 20, y)
             if d.get("agreed"):
                 self.buttons.append(Button((r2.x + 20, y, 260, 46), "Agree personal terms",
                                            lambda: self.open_talks(d["cid"], d["pid"]), primary=True))
@@ -2242,7 +2256,8 @@ class App:
                                f"{round(p.get('mins_avg', 0))} minutes a game lately. His wage "
                                f"{fin.weekly(p.get('wage', 0))} - you'd still pay "
                                f"{fin.weekly(p.get('wage', 0) * (1 - d['terms']['share']))}.", "body", MUTED,
-                               r2.x + 20, y, r2.w - 40) + 20
+                               r2.x + 20, y, r2.w - 40) + 6
+                y = self._see_player(me["id"], p, r2.x + 20, y) + 8
             if m["state"] == "open":
                 self.buttons.append(Button((r2.x + 20, y, 150, 46), "Accept",
                                            lambda: self._loan_answer(m["id"], "accept"), primary=True))
