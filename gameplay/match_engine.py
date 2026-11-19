@@ -479,7 +479,7 @@ class MatchEngine:
             # time to come round is shown DEAD_WAIT_FF times faster: the football (and the
             # clock) is exactly the same, there's just less standing about to watch.
             budget, done = float(steps), 0
-            while budget > 0 and done < 4 * DEAD_WAIT_FF * max(MATCH_SPEEDS):
+            while budget > 0 and done < max(steps, DEAD_WAIT_MAX_STEPS):
                 self.step(1.0 / FPS)
                 done += 1
                 if self.live3d is not None:

@@ -42,7 +42,8 @@ HALFTIME_DURATION  =   5.0   # 5 real seconds of half-time display before 2nd ha
 # Change it during the match with + / - (or the up / down arrow keys).
 MATCH_SPEEDS        = (1, 2, 4, 8, 16, 32)
 DEFAULT_MATCH_SPEED = 8          # a 90-minute match takes ~11 minutes to watch
-DEAD_WAIT_FF        = 4          # a dead ball with everyone in place, just waiting: watched this much faster
+DEAD_WAIT_FF        = 8          # a dead ball with everyone in place, just waiting: watched this much faster...
+DEAD_WAIT_MAX_STEPS = 64         # ...but no more than this many steps of football per drawn frame
 
 # Pitch Areas
 GOAL_WIDTH = 7.32 * M_TO_PX
