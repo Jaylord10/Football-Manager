@@ -2479,6 +2479,13 @@ class App:
         self.text(trf.window_text(c["date"]), "body", ACCENT if trf.in_window(c["date"]) else MUTED,
                   (W - 30, 32), "topright")
         tab = getattr(self, "tr_tab", "search")
+        mf = self._my_club()["finance"]                                 # (what you've got to spend)
+        bill = fin.wage_bill(self._my_club()) / 52
+        wb = mf.get("wage_budget", 0) / 52
+        self.text(f"Transfer budget {fin.money(mf.get('transfer_budget', 0))}", "small", ACCENT, (W - 30, 56),
+                  "topright")
+        self.text(f"Wages {fin.money(bill)} of {fin.money(wb)} a week ({fin.money(max(0, wb - bill))} left)",
+                  "small", TEXT if wb - bill > 0 else LOSS, (W - 30, 76), "topright")
         for i, (key, label) in enumerate((("search", "Find players"), ("free", "Free agents"), ("bids", "Your bids"),
                                           ("loans", "Loans"))):
             self.buttons.append(Button((x0 + i * 150, 70, 144, 34), label, lambda k=key: setattr(self, "tr_tab", k),
@@ -2997,9 +3004,10 @@ class App:
             if p.get("listed"):
                 self.buttons.append(Button((W - 30 - 220, H - 66, 220, 46), "Take off the list",
                                            lambda: self._list_player(p, False)))
-                self.text(f"Transfer listed at {fin.money(p.get('asking', 0))}", "body", DRAW, (W - 30 - 360, H - 112))
-                self.buttons.append(Button((W - 30 - 100, H - 120, 46, 38), "-", lambda: self._asking(p, -1)))
-                self.buttons.append(Button((W - 30 - 46, H - 120, 46, 38), "+", lambda: self._asking(p, 1)))
+                lr = self.text(f"Transfer listed - asking {fin.money(p.get('asking', 0))}", "body", DRAW,
+                               (x0 + 18, H - 112))                      # (in the space under his attributes)
+                self.buttons.append(Button((lr.right + 14, H - 120, 46, 38), "-", lambda: self._asking(p, -1)))
+                self.buttons.append(Button((lr.right + 66, H - 120, 46, 38), "+", lambda: self._asking(p, 1)))
             else:
                 self.buttons.append(Button((W - 30 - 220, H - 66, 220, 46), "Put on transfer list",
                                            lambda: self._list_player(p, True)))
