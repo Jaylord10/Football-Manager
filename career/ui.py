@@ -1319,6 +1319,9 @@ class App:
         p = clubs_mod.player_by_id(club, pid)
         me = self._my_club()
         renewal = cid == self.career["my_club"] or bool(p.get("loan") and p["loan"]["from"] == self.career["my_club"])
+        if not renewal and cid == -1 and con.fa_waiting(self.career, p):
+            self.flash = "You're waiting to hear back from his agent."
+            return
         if not renewal:
             ok, why = trf.will_talk(self.career, cid, p)
             if not ok:
@@ -1374,6 +1377,12 @@ class App:
             return
         if o.get("signing_fee", 0) + o.get("agent_fee", 0) > me["finance"]["balance"]:
             tk["reply"] = "The club can't afford those fees."
+            return
+        if tk["cid"] == -1 and not tk["renewal"]:            # (a free agent: his agent will come back to you)
+            con.fa_offer(self.career, p, o)
+            tk["reply"] = "Thanks - we'll be in touch. His agent will let you know tomorrow."
+            tk["done"] = True
+            league.save(self.career)
             return
         # Free agents negotiate against your club (where they'd be going)
         target = (me if p.get("loan") else club) if tk["renewal"] else me
@@ -2256,6 +2265,17 @@ class App:
                 self.buttons.append(Button((r2.x + 20, y, 220, 46), "Back to the talks",
                                            lambda: self.open_bid(d["cid"], d["pid"]), primary=True))
             y += 66
+        if m["kind"] == "agent" and d.get("pid") is not None:        # a free agent's agent (career/contracts.py)
+            try:
+                p_ = clubs_mod.player_by_id(self.club(d["cid"]), d["pid"])
+            except Exception:
+                p_ = None
+            if p_ is not None:
+                y = self._see_player(d["cid"], p_, r2.x + 20, y)
+                if d["cid"] == -1 and not d.get("agreed") and not con.fa_waiting(c, p_):
+                    self.buttons.append(Button((r2.x + 20, y, 220, 46), "Back to the talks",
+                                               lambda: self.open_talks(-1, d["pid"]), primary=True))
+                    y += 66
         if m["kind"] == "loan":
             me = self._my_club()
             p = clubs_mod.player_by_id(me, d.get("pid"))

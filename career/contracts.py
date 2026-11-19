@@ -537,14 +537,15 @@ def sign_free_agent(career, c, mine=False):
     """A club short of players signs the best free agent it can afford, where it's shortest."""
     from career import availability as av
     fa = free_agents(career)
-    if not fa["players"]:
+    pool = [q for q in fa["players"] if not q.get("_yours")]       # (not one who's agreed to join you)
+    if not pool:
         return None
     have = {}
     for q in c["players"]:
         have[clubs_mod.family(q["Pos"])] = have.get(clubs_mod.family(q["Pos"]), 0) + 1
     from career.ageing import MIN_BY_POS
     need = min(MIN_BY_POS, key=lambda pos: have.get(pos, 0) - MIN_BY_POS[pos])
-    cands = [q for q in fa["players"] if clubs_mod.family(q["Pos"]) == need] or fa["players"]
+    cands = [q for q in pool if clubs_mod.family(q["Pos"]) == need] or pool
     room = wage_room(career, c)
     best = max(cands, key=lambda q: clubs_mod.overall(q) - (10 if demands(career, c, q, False)["wage"] > room
                                                              else 0))
@@ -572,5 +573,74 @@ def sign_free_agent(career, c, mine=False):
 def trim_free_agents(career, keep=150):
     """Nobody stays unemployed for ever: the oldest / weakest drift away."""
     fa = free_agents(career)
-    fa["players"].sort(key=lambda p: -clubs_mod.overall(p) + max(0, p.get("Age", 26) - 30) * 2)
+    fa["players"].sort(key=lambda p: (not p.get("_yours"), -clubs_mod.overall(p) + max(0, p.get("Age", 26) - 30) * 2))
     fa["players"] = fa["players"][:keep]
+
+
+# ---------------------------------------------------------------------------
+# Signing a free agent takes a couple of days (as it does): you make your offer - "thanks, we'll be in
+# touch" - his agent comes back the next day (yes, or what he wants instead), and if it's yes he arrives the day
+# after for his medical and signs.
+# ---------------------------------------------------------------------------
+def fa_pending(career):
+    return career.setdefault("fa_pending", [])
+
+
+def fa_waiting(career, p):
+    """Waiting to hear from his agent (or for him to arrive)?"""
+    return any(x["pid"] == p["id"] and x["name"] == p["Name"] for x in fa_pending(career))
+
+
+def fa_offer(career, p, offer):
+    """Your offer to a free agent, sent to his agent."""
+    due = (cal.parse(career["date"]) + dt.timedelta(days=1)).isoformat()
+    fa_pending(career).append({"pid": p["id"], "name": p["Name"], "offer": dict(offer), "stage": "waiting",
+                               "due": due})
+
+
+def fa_day(career, iso):
+    """Each day: agents' answers, and players arriving."""
+    from career import transfers as trf
+
+    class _T:                                                  # (news, not waiting for an answer from you)
+        @staticmethod
+        def _message(career, kind, text, data, stop=False):
+            mid = trf._message(career, kind, text, data, stop=stop)
+            if not data or data.get("agreed") or data.get("signed"):
+                next(m for m in trf.inbox(career) if m["id"] == mid)["state"] = "info"
+            return mid
+    left = []
+    for x in fa_pending(career):
+        if cal.parse(iso) < cal.parse(x["due"]):
+            left.append(x)
+            continue
+        fa = free_agents(career)
+        p = next((q for q in fa["players"] if q["id"] == x["pid"] and q["Name"] == x["name"]), None)
+        me = career["clubs"][career["my_club"]]
+        if p is None:                                         # (gone - another club, or out of the game)
+            _T._message(career, "agent", f"{x['name']}'s agent: sorry, he's gone elsewhere.", {}, stop=True)
+            continue
+        if x["stage"] == "waiting":
+            ok, reply = make_offer(career, me, p, x["offer"], False)
+            if ok:
+                p["_yours"] = True
+                x["stage"], x["due"] = "arriving", (cal.parse(iso) + dt.timedelta(days=1)).isoformat()
+                left.append(x)
+                _T._message(career, "agent", f"{p['Name']}'s agent: he'll sign. He'll be with you tomorrow for "
+                                              f"his medical.", {"cid": -1, "pid": p["id"], "agreed": True}, stop=True)
+            else:
+                trf._message(career, "agent", f"{p['Name']}: his agent's answer - {reply}", {"cid": -1, "pid": p["id"]},
+                             stop=True)
+        else:                                                 # (arriving: the medical, the paperwork)
+            p.pop("_yours", None)
+            room = wage_room(career, me)
+            if x["offer"]["wage"] > room or x["offer"].get("signing_fee", 0) + x["offer"].get("agent_fee", 0) > \
+                    me["finance"]["balance"]:
+                _T._message(career, "agent", f"{p['Name']} came in, but the board stopped the deal: the club can't "
+                                              f"afford it now.", {}, stop=True)
+                continue
+            name = p["Name"]
+            trf.complete(career, -1, p, {"fee": 0}, x["offer"])
+            _T._message(career, "agent", f"{name} has passed his medical and signed - welcome to the club.",
+                         {"cid": me["id"], "pid": p["id"], "signed": True}, stop=True)
+    career["fa_pending"] = left

@@ -736,6 +736,8 @@ def on_day(career, iso, rng):
     career["_on_day"] = iso
     registration.deadline(career, iso)
     pay_due(career, iso)
+    from career import contracts as _con
+    _con.fa_day(career, iso)                            # free agents: agents' answers, players arriving
     from career import loans
     loans.day(career, iso, rng)                         # loans ending; the AI's loans; requests for yours
     market_day(career, iso, rng)
