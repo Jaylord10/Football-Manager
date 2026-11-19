@@ -561,6 +561,12 @@ class AnimPlayer:
         ang = math.degrees(math.atan2(rgt, fwd))                             # (0 ahead, +90 to his right)
         lim = 2.0 if abs(ang) > 120 else 2.4                                  # (faster than a backpedal or a
         self.turned = s > lim - (0.3 if getattr(self, "turned", False) else 0.0)  #  jockey: he turns and runs)
+        # Going any distance sideways or backwards, a player turns and walks (looking back at the ball) - he only
+        # side-steps or backs off a step or two, or when he's defending close to the ball (the viewer says).
+        lateral = abs(ang) > 50 and s > 0.5
+        self.lat_t = (getattr(self, "lat_t", 0.0) + dt) if lateral else max(0.0, getattr(self, "lat_t", 0.0) - 2 * dt)
+        if self.lat_t > 0.7 and not getattr(self, "defending", False):
+            self.turned = True
         want_off = ang if (self.turned and abs(ang) > 30) else 0.0
         self.off = getattr(self, "off", 0.0)
         self.off += ((want_off - self.off + 180) % 360 - 180) * min(1.0, dt * 5)
@@ -676,7 +682,11 @@ class AnimPlayer:
                 cx = "cross" if side > 0 else "cross_m"
                 self.loco[cx] = w_move * w_side * w_x
                 self.a.pose(cx, self.ph_side * self.nf[cx])
-            self.loco["backpedal"] = w_move * w_back
+            relax = 0.0 if getattr(self, "defending", False) else min(1.0, max(0.0, (1.8 - s) / 0.8))
+            self.loco["backpedal"] = w_move * w_back * (1.0 - relax)
+            if relax > 0.0:
+                self.loco["backwalk"] = w_move * w_back * relax
+                self.a.pose("backwalk", self.ph_back * self.nf["backwalk"])
             self.a.pose("backpedal", self.ph_back * self.nf["backpedal"])
         else:
             self.loco[run] += w_run * (w_side + w_back)
@@ -721,6 +731,8 @@ class AnimPlayer:
         excess = 0.0
         if abs(want) > 55.0 and self.sp < 2.5 and not self.mood:
             excess = math.copysign(min(70.0, abs(want) - 55.0), want)
+            excess *= max(0.0, 1.0 - self.sp / 0.8)                      # (walking: his head turns, not his body -
+                                                                         #  or he'd walk along sideways)
         self.body_look = bl + (excess - bl) * min(1.0, dt * 2.5)
         want = max(-70.0, min(70.0, want - self.body_look + getattr(self, "scan", 0.0)))   # (+ a glance round)
         self.look += (want - self.look) * min(1.0, dt * 5)

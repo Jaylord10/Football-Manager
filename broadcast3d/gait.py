@@ -840,6 +840,18 @@ def backpedal(u):
     return m, {"sway": 0.008 * (l_l - l_r)}
 
 
+def backwalk(u):
+    """Walking backwards, relaxed (not defending): upright, small steps back, arms loose."""
+    o_r, l_r = _foot(u, BACK_A, BACK_DUTY)
+    o_l, l_l = _foot(u + 0.5, BACK_A, BACK_DUTY)
+    deg = lambda o: math.degrees(math.asin(max(-0.9, min(0.9, -o / LEG_FWD))))
+    c = math.cos(2 * math.pi * u)
+    m = {"hip_r": 6 + deg(o_r) + 12 * l_r, "hip_l": 6 + deg(o_l) + 12 * l_l,
+         "knee_r": 10 + 34 * l_r, "knee_l": 10 + 34 * l_l, "ankle_r": 4 + 8 * l_r, "ankle_l": 4 + 8 * l_l,
+         "lean": 3, "arm_r": 6 + 8 * c, "arm_l": 6 - 8 * c, "out_r": 6, "out_l": 6, "elbow_r": 18, "elbow_l": 18}
+    return m, {"sway": 0.006 * (l_l - l_r)}
+
+
 def turnstep(u):
     """Turning on the spot: little steps, one foot then the other, instead of spinning on the spot."""
     m = {}
@@ -866,7 +878,7 @@ def run_wide(u):
     return ({"out_r": 22, "out_l": 22, "elbow_r": -10, "elbow_l": -10}, {})
 
 
-LOOPS = {"cross": (cross, 30, "idle"), "cross_m": (cross_m, 30, "idle"), "run_call": (run_call, 15, "run"), "run_point": (run_point, 15, "run"), "run_wide": (run_wide, 15, "run"), "shuffle": (shuffle, 30, "idle"), "shuffle_m": (shuffle_m, 30, "idle"),
+LOOPS = {"backwalk": (backwalk, 30, "idle"), "cross": (cross, 30, "idle"), "cross_m": (cross_m, 30, "idle"), "run_call": (run_call, 15, "run"), "run_point": (run_point, 15, "run"), "run_wide": (run_wide, 15, "run"), "shuffle": (shuffle, 30, "idle"), "shuffle_m": (shuffle_m, 30, "idle"),
          "backpedal": (backpedal, 30, "idle"), "turnstep": (turnstep, 30, "idle"),
          "shift": (shift, 240, "idle"), "rest": (rest, 240, "idle"), "sit": (sit, 90, "idle"), "cheer": (cheer, 30, "idle"), "clap": (clap, 30, "idle"), "hips": (hips, 60, "idle"), "knees": (knees, 60, "idle"),
          "walk_sad": (walk_sad, 30, "idle"), "run_arms": (run_arms, 15, "run"), "run_sky": (run_sky, 15, "run"),

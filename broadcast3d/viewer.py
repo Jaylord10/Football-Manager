@@ -1113,6 +1113,9 @@ class Viewer(ShowBase):
             p.calling = self._calling(i, fr, wx, wy, sp, k)
             p.late = fr.get("st") in ("second_half", "et_second_half")         # (tired: hands on hips more)
             p.wide = fr["o"] == i and sp > 55                                    # (on the ball at speed)
+            o_ = fr["o"]                                                         # (defending close to the ball in
+            p.defending = (not fr.get("r") and o_ >= 0 and (o_ < 11) != (i < 11)  #  open play: side-steps and
+                           and math.hypot(wx - rbx, wy - rby) < 15.0)            #  backing off are right)
             p.scan = self._scan(i, k)                                           # (a look over his shoulder)
             kind, t = self.events.action(i, k)
             if kind is None and sp_pose is not None:
