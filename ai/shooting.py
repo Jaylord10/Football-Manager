@@ -40,6 +40,11 @@ def evaluate_shoot_decision(carrier, opponents, teammates):
         nearest_def_now = 999
         if opponents:
             nearest_def_now = min(distance(carrier.pos, o.pos) for o in opponents)
+        # ...but a man CLEAN THROUGH doesn't hit it from the edge of the box: he takes it on
+        # towards the penalty spot (a calmer man a bit closer) unless a defender is about to
+        # catch him or the keeper comes rushing out at him.
+        if dist_m > _close_in(carrier) and _clean_through(carrier, opponents, goal_pos, nearest_def_now):
+            return False, 0.0
         if nearest_def_now > 1.5 * M_TO_PX:
             return True, 100.0
 
@@ -139,6 +144,27 @@ BREAKAWAY_SHOOT = 16.5    # m: clean through, he carries it on until he's this c
 BREAKAWAY_FREE  = 8.0     # ...if no outfield defender is within this of him...
 BREAKAWAY_CATCH = 1.0     # ...and none will be on him within this many seconds...
 KEEPER_RUSH_M   = 9.0     # ...and the keeper isn't charging out within this of him
+
+
+BREAKAWAY_CLOSE = 11.0    # m: clean through inside the box, he goes on to about the penalty spot...
+CLOSE_PER_COMPOSURE = 0.3 # ...a metre closer for every ~3 points of Composure above 10 (8-14 m)
+
+
+def _close_in(carrier):
+    comp = carrier.attributes.get("Composure", 10)
+    return clamp(BREAKAWAY_CLOSE - (comp - 10) * CLOSE_PER_COMPOSURE, 8.0, 14.0)
+
+
+def _clean_through(carrier, opponents, goal_pos, nearest_def):
+    """Nobody to beat but the keeper: no defender near him, between him and the goal or catching him,
+    and the keeper isn't rushing out at him."""
+    if opponents and nearest_def <= BREAKAWAY_FREE * M_TO_PX:
+        return False
+    if any(is_in_cone(carrier.pos, goal_pos, o.pos) for o in (opponents or [])):
+        return False
+    if any(_closing_on(o, carrier, BREAKAWAY_CATCH) for o in (opponents or [])):
+        return False
+    return not _keeper_rushing(carrier, goal_pos)
 
 
 def _closing_on(o, carrier, within_s):
