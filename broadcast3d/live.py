@@ -405,8 +405,9 @@ class _LiveDirector:
         gap = want - self.t
         if gap > 90:                                    # (far behind - back to 3D after a while in 2D: jump)
             self.t = want - 1.0
-        elif gap > 0:                                   # (follow the newest frames smoothly)
-            self.t += min(gap, max(gap * min(1.0, real_dt * 8.0), real_dt * 15.0))
+        elif gap > 0:                                   # (follow the newest frames smoothly - faster when
+            gain = 8.0 + max(0.0, gap - 30.0) * 0.5     #  they come quickly: 32x, or a dead-ball wait sped up)
+            self.t += min(gap, max(gap * min(1.0, real_dt * gain), real_dt * 15.0))
         dt = max(0.0, (self.t - was) / 30.0)
         for g in self.goals:
             if g not in self.done and self.t >= g + self.WAIT:

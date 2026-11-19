@@ -475,12 +475,18 @@ class MatchEngine:
             playing = ("first_half", "second_half", "et_first", "et_second")
             steps = (self.match_speed if self.match_state in playing else
                      min(2, self.match_speed) if self.match_state == "penalties" else 1)
-            for _ in range(steps):
+            # A dead ball where everyone's in place and they're only waiting for the restart's
+            # time to come round is shown DEAD_WAIT_FF times faster: the football (and the
+            # clock) is exactly the same, there's just less standing about to watch.
+            budget, done = float(steps), 0
+            while budget > 0 and done < 4 * DEAD_WAIT_FF * max(MATCH_SPEEDS):
                 self.step(1.0 / FPS)
+                done += 1
                 if self.live3d is not None:
                     self.live3d.push(self)
                 if self.match_state not in playing and self.match_state != "penalties":
                     break
+                budget -= 1.0 / DEAD_WAIT_FF if self.match_state in playing and self._dead_wait() else 1.0
             self._render()
         if self.live3d is not None:
             self.live3d.close()
@@ -566,6 +572,24 @@ class MatchEngine:
                     # Positioning debug overlay: off -> both -> Blue -> Red
                     from rendering import debug_overlay
                     self.overlay_mode = debug_overlay.next_mode(getattr(self, "overlay_mode", "off"))
+
+    def _dead_wait(self):
+        """A dead ball with nothing going on: the taker's on the ball and both teams are in place, and
+        it's only waiting for the restart's time (no goal celebration, booking or substitution)."""
+        b = self.ball
+        t = getattr(b, "restart_taker", None)
+        if not b.is_dead or t is None or b.restart_type in (None, "kick_off"):
+            return False
+        if self.time_elapsed < getattr(b, "sub_hold_until", 0.0):
+            return False
+        cd = getattr(self, "_card_display", None)
+        if cd and self.time_elapsed < cd.get("until", 0):
+            return False
+        if (t.pos - b.pos).length() > 0.4 * M_TO_PX:
+            return False
+        mine = [p for p in self.team0 + self.team1 if p.team == t.team and getattr(p, "is_active", True)]
+        theirs = [p for p in self.team0 + self.team1 if p.team != t.team and getattr(p, "is_active", True)]
+        return self.ai._team_set(mine, b) and self.ai._team_set(theirs, b)
 
     def _change_speed(self, direction):
         speeds = list(MATCH_SPEEDS)
