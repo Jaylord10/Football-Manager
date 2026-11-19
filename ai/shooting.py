@@ -126,12 +126,10 @@ def evaluate_shoot_decision(carrier, opponents, teammates):
     # from 25-30 m.)  Through on goal, a real player carries it on and shoots
     # from inside the box (the fast track above) - unless a defender is about
     # to catch him or the keeper is rushing out at him, then he hits it now.
-    if dist_m > BREAKAWAY_SHOOT and (not opponents or nearest_def_dist > BREAKAWAY_FREE * M_TO_PX):
-        goal_side = [o for o in opponents if is_in_cone(carrier.pos, goal_pos, o.pos)] if opponents else []
-        catching = any(_closing_on(o, carrier, BREAKAWAY_CATCH) for o in (opponents or []))
-        keeper_out = _keeper_rushing(carrier, goal_pos)
-        if not goal_side and not catching and not keeper_out:
-            return False, 0.0
+    # ("Clean through" used to need no defender within 8 m - so a man with a defender trailing
+    # 3-4 m behind him, never going to catch him, still fired from 20-25 m.)
+    if dist_m > BREAKAWAY_SHOOT and _clean_through(carrier, opponents, goal_pos, nearest_def_dist):
+        return False, 0.0
 
     # --- 4. VERDICT ---
     final_score = clamp(score, 0.0, 100.0)
@@ -140,10 +138,11 @@ def evaluate_shoot_decision(carrier, opponents, teammates):
     return should_shoot, final_score
 
 
-BREAKAWAY_SHOOT = 16.5    # m: clean through, he carries it on until he's this close (inside the box)...
-BREAKAWAY_FREE  = 8.0     # ...if no outfield defender is within this of him...
-BREAKAWAY_CATCH = 1.0     # ...and none will be on him within this many seconds...
-KEEPER_RUSH_M   = 9.0     # ...and the keeper isn't charging out within this of him
+# Clean through (_clean_through): no defender within THROUGH_ROOM of him, none goal-side in his way,
+# none who'll be on him within BREAKAWAY_CATCH seconds, and the keeper not within KEEPER_RUSH_M of him.
+BREAKAWAY_SHOOT = 16.5    # m: outside the box, clean through, he doesn't shoot - he carries it on...
+BREAKAWAY_CATCH = 1.0     # s
+KEEPER_RUSH_M   = 9.0     # m
 
 
 BREAKAWAY_CLOSE = 11.0    # m: clean through inside the box, he goes on to about the penalty spot...
