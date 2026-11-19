@@ -156,15 +156,25 @@ def _close_in(carrier):
 
 
 def _clean_through(carrier, opponents, goal_pos, nearest_def):
-    """Nobody to beat but the keeper: no defender near him, between him and the goal or catching him,
-    and the keeper isn't rushing out at him."""
-    if opponents and nearest_def <= BREAKAWAY_FREE * M_TO_PX:
+    """Nobody to beat but the keeper: no defender on him, none goal-side of him (nearer the goal and
+    roughly in his way) and none about to catch him from behind - and the keeper isn't rushing out."""
+    if opponents and nearest_def <= THROUGH_ROOM * M_TO_PX:
         return False
-    if any(is_in_cone(carrier.pos, goal_pos, o.pos) for o in (opponents or [])):
+    to_goal = goal_pos - carrier.pos
+    d_goal = to_goal.length()
+    if d_goal < 1e-6:
         return False
-    if any(_closing_on(o, carrier, BREAKAWAY_CATCH) for o in (opponents or [])):
-        return False
+    for o in (opponents or []):
+        rel = o.pos - carrier.pos
+        ahead = rel.dot(to_goal) / d_goal                       # how far towards the goal he is
+        if ahead > -1.0 * M_TO_PX and abs(rel.cross(to_goal)) / d_goal < max(3.0 * M_TO_PX, ahead * 0.7):
+            return False                                        # goal-side, in his way
+        if _closing_on(o, carrier, BREAKAWAY_CATCH):
+            return False
     return not _keeper_rushing(carrier, goal_pos)
+
+
+THROUGH_ROOM = 3.0        # m: no defender closer than this...
 
 
 def _closing_on(o, carrier, within_s):
