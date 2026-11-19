@@ -264,3 +264,70 @@ def take_job(career, club_id):
     career["inbox"] = [m for m in career.get("inbox", []) if m["kind"] != "offer"]
     av._news(career, career["date"], club_id, f"You are the new manager of {new['name']}. The board's objective: "
                                               f"{b['objective'].lower()}.", "squad")
+
+
+# ---------------------------------------------------------------------------
+# Asking the board for more transfer money (the Finances screen).  Once every couple of months.  How much they
+# find depends on how happy they are with you (confidence), the cash not already promised to you, the owner,
+# and the squad cost rules (career/ffp.py) - near the limit, they won't.
+# ---------------------------------------------------------------------------
+ASK_GAP_DAYS = 60
+ASK_MIN_CONFIDENCE = 45
+ASK_SHARE = 0.15             # at most this share of the spare cash in the bank
+
+
+def ask_for_money(career):
+    """You ask for more transfer money.  Returns (amount granted, the board's reply)."""
+    from career import owners, ffp
+    me = career["clubs"][career["my_club"]]
+    f = me["finance"]
+    b = state(career)
+    today = career["date"]
+    last = b.get("asked")
+    if last and (cal.parse(today) - cal.parse(last)).days < ASK_GAP_DAYS:
+        back = cal.parse(last) + __import__("datetime").timedelta(days=ASK_GAP_DAYS)
+        return 0, (f"\"We talked about this on {cal.fmt(last, False)}. Come back to us after "
+                   f"{cal.fmt(back.isoformat(), False)}.\"")
+    b["asked"] = today
+    conf = b["confidence"]
+    if conf < ASK_MIN_CONFIDENCE:
+        return 0, "\"Results first. Win us some games and then we'll talk about money.\""
+    if f.get("balance", 0) <= 0:
+        return 0, "\"There's nothing to give - the club's in the red.\""
+    try:
+        if fin.league_of(me) in ffp.LEAGUES and ffp.projected(career, me) > ffp.LIMIT * 0.95:
+            return 0, (f"\"We can't. We're close to the league's squad cost limit ({ffp.LIMIT:.0%} of income on "
+                       f"the squad) - any more and we'd be fined.\"")
+    except Exception:
+        pass
+    spare = max(0.0, f["balance"] - f.get("transfer_budget", 0))
+    factor = min(1.0, (conf - ASK_MIN_CONFIDENCE) / 40.0)
+    grant = round(spare * ASK_SHARE * max(0.25, factor) * owners.budget_factor(me), -5)
+    if grant < 500_000:
+        return 0, "\"We've given you all we can for now.\""
+    f["transfer_budget"] = f.get("transfer_budget", 0) + grant
+    return grant, f"\"We'll find you another {fin.money(grant)}. Spend it wisely.\""
+
+
+# ---------------------------------------------------------------------------
+# Moving money between the transfer budget and the wage budget.  A transfer fee is paid once but counts over
+# the length of the contract (the squad cost rules spread it over ffp.SPREAD seasons - a typical contract), so
+# £4 of transfer budget buys £1 a year of wages, and back.  The wage budget can't go below the wage bill.
+# ---------------------------------------------------------------------------
+def move_budget(career, to_wages, amount):
+    """Move `amount` of transfer budget into wages (to_wages) or the wage budget's spare room back into
+    transfers.  Returns the amount of transfer budget actually moved."""
+    from career import ffp
+    me = career["clubs"][career["my_club"]]
+    f = me["finance"]
+    years = ffp.SPREAD
+    if to_wages:
+        amount = min(amount, f.get("transfer_budget", 0))
+        f["transfer_budget"] = f.get("transfer_budget", 0) - amount
+        f["wage_budget"] = f.get("wage_budget", 0) + amount / years
+    else:
+        room = max(0.0, f.get("wage_budget", 0) - fin.wage_bill(me))
+        amount = min(amount, room * years)
+        f["wage_budget"] = f.get("wage_budget", 0) - amount / years
+        f["transfer_budget"] = f.get("transfer_budget", 0) + amount
+    return amount

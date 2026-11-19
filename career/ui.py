@@ -1092,6 +1092,7 @@ class App:
     def go(self, screen):
         if screen != self.screen:
             self.flash = None
+            self.board_reply = None
         self.screen = screen
         if screen == "fixtures" and self.career:
             self.fixtures_md = min(self.career["matchday"], len(self.career["fixtures"]))
@@ -2778,10 +2779,49 @@ class App:
         r3 = pygame.Rect(r2.x, r2.bottom + 14, r2.w, H - r2.bottom - 34)
         self.panel(r3, "Top earners")
         y = r3.y + 50
-        for p in sorted(club["players"], key=lambda p: -p.get("wage", 0))[:8]:
+        for p in sorted(club["players"], key=lambda p: -p.get("wage", 0))[:5]:
             self.text(f"{p['Name']} ({p['Pos']})", "body", TEXT, (r3.x + 16, y))
             self.text(fin.weekly(p.get("wage", 0)), "body", TEXT, (r3.right - 20, y), "topright")
             y += 28
+        # The board: moving money between the budgets, and asking for more (career/board.py)
+        from career import board, ffp
+        y = max(y + 10, r3.bottom - 232)
+        pygame.draw.line(self.win, PANEL_2, (r3.x + 16, y), (r3.right - 16, y), 2)
+        y += 12
+        self.text("Move money between the budgets", "h3", TEXT, (r3.x + 16, y)); y += 30
+        step = 4 * fin.M if f.get("transfer_budget", 0) < 40 * fin.M else 10 * fin.M
+        self.text(f"{fin.money(ffp.SPREAD * fin.M)} of transfer money = {fin.money(fin.M)} a year of wages",
+                  "tiny", MUTED, (r3.x + 16, y)); y += 22
+        bw = (r3.w - 44) // 2
+        self.buttons.append(Button((r3.x + 16, y, bw, 36), f"{fin.money(step)} into wages",
+                                   lambda: self._budget_move(True, step), font="btn_s",
+                                   enabled=f.get("transfer_budget", 0) > 0))
+        room = max(0.0, f.get("wage_budget", 0) - bill)
+        self.buttons.append(Button((r3.x + 28 + bw, y, bw, 36), f"{fin.money(step)} into transfers",
+                                   lambda: self._budget_move(False, step), font="btn_s", enabled=room > 0))
+        y += 48
+        self.buttons.append(Button((r3.x + 16, y, r3.w - 32, 40), "Ask the board for more transfer money",
+                                   self._ask_board, font="btn_s"))
+        y += 48
+        msg = getattr(self, "board_reply", None)
+        if msg:
+            self._wrap(msg, "small", ACCENT if msg.startswith("+") else DRAW, r3.x + 16, y, r3.w - 32)
+
+    def _budget_move(self, to_wages, amount):
+        from career import board
+        from career import ffp
+        moved = board.move_budget(self.career, to_wages, amount)
+        self.board_reply = (f"Moved {fin.money(moved)} of transfer money into wages ({fin.money(moved / ffp.SPREAD)} a "
+                            f"year)."
+                            if to_wages else f"Moved {fin.money(moved)} into the transfer budget.") if moved else \
+            "Nothing to move."
+        league.save(self.career)
+
+    def _ask_board(self):
+        from career import board
+        got, reply = board.ask_for_money(self.career)
+        self.board_reply = (f"+{fin.money(got)}  " if got else "") + "The board: " + reply
+        league.save(self.career)
 
     # -- player profile -------------------------------------------------------
     ATTR_GROUPS = [
