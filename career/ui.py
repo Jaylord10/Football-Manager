@@ -203,6 +203,7 @@ class App:
             stadium.sync(self.career)                   # (the ground's real capacity - career/stadium.py)
         self.screen = "title"
         self.buttons = []
+        self.links = []
         self.running = True
         self.fixtures_md = 1
         self.bg = None                 # BackgroundMatches: the matchday's other matches
@@ -220,7 +221,80 @@ class App:
         surf = self.fonts[font].render(str(s), True, col)
         r = surf.get_rect(**{anchor: pos})
         self.win.blit(surf, r)
+        if self.career and self.screen not in NO_LINKS:
+            self._name_links(str(s), font, col, r)
         return r
+
+    # Player names: wherever one is written, it can be clicked to see his profile (and is underlined under the
+    # mouse).  A click goes to an ordinary button first, so a list where clicking a man picks him (the Tactics
+    # screen) still does that.
+    def _name_index(self):
+        """{"First Last": (club id, player id)} for everyone in the world - rebuilt each day."""
+        c = self.career
+        key = (id(c), c.get("date"), len(c.get("transfer_log", [])))
+        if getattr(self, "_names_key", None) == key:
+            return self._names
+        idx = {}
+        groups = []
+        try:
+            groups.append((-1, con.free_agents(c)))
+            groups.append((-2, trf.abroad(c)))
+            groups += [(x["id"], x) for x in trf.spain_clubs(c)]
+        except Exception:
+            pass
+        groups += [(x["id"], x) for x in c["clubs"]]
+        mine = c.get("my_club")
+        if mine is not None:
+            groups.append((mine, c["clubs"][mine]))          # (your own players win a clash of names)
+        for cid, club in groups:
+            for p in list(club.get("players", [])) + list(club.get("academy", []) if cid == mine else []):
+                n = p.get("Name")
+                if n and " " in n:
+                    idx[n] = (cid, p["id"])
+        self._names, self._names_key = idx, key
+        return idx
+
+    def _name_links(self, s, font, col, r):
+        if " " not in s or not s[:1]:
+            return
+        idx = self._name_index()
+        toks = [(m.start(), m.group()) for m in _TOKEN.finditer(s)]
+        i = 0
+        f = self.fonts[font]
+        while i < len(toks):
+            hit = None
+            for k in (3, 2):                                    # (longest first: "Jan van Dijk")
+                if i + k > len(toks):
+                    continue
+                part = toks[i:i + k]
+                if any(part[j + 1][0] != part[j][0] + len(part[j][1]) + 1 for j in range(k - 1)):
+                    continue
+                words = [t for _, t in part]
+                if words[-1].endswith("'s"):
+                    words[-1] = words[-1][:-2]
+                name = " ".join(words)
+                if name in idx:
+                    hit = (k, name)
+                    break
+            if hit is None:
+                i += 1
+                continue
+            k, name = hit
+            st = toks[i][0]
+            x0 = r.x + f.size(s[:st])[0]
+            w = f.size(name)[0]
+            link = pygame.Rect(x0, r.y, w, r.h)
+            self.links.append((link, idx[name], col))
+            i += k
+
+    def _link_hover(self, mouse):
+        """Underline the name under the mouse - if clicking there would go to him (no button on top)."""
+        if any(b.hit(mouse) for b in self.buttons):
+            return
+        for link, _, col in getattr(self, "links", []):
+            if link.collidepoint(mouse):
+                pygame.draw.line(self.win, col, (link.x, link.bottom - 1), (link.right, link.bottom - 1), 1)
+                break
 
     def club(self, cid):
         """A club - or the free agent pool (id -1)."""
@@ -267,6 +341,11 @@ class App:
                         if b.hit(e.pos):
                             b.action()
                             break
+                    else:                                       # (no button there: a player's name?)
+                        for rect, (cid, pid), _c in list(getattr(self, "links", [])):
+                            if rect.collidepoint(e.pos):
+                                self.view_player(cid, pid)
+                                break
                 elif e.type == pygame.KEYDOWN:
                     self.key(e.key, getattr(e, "unicode", ""))
             if not self.running:
@@ -274,11 +353,13 @@ class App:
             self._keep_running()
             self.win.fill(BG)
             self.buttons = []
+            self.links = []
             getattr(self, "draw_" + self.screen)()
             if getattr(self, "preview", False) and self.screen != "preview":
                 self._preview_filter()
             for b in self.buttons:
                 b.draw(self.win, self.fonts, mouse)
+            self._link_hover(mouse)
             pygame.display.flip()
             self.clock.tick(30)
         pygame.quit()
@@ -2153,10 +2234,8 @@ class App:
         league.save(self.career)
 
     def _see_player(self, club_id, p, x, y):
-        """A button to look at the player a message is about (his profile, then back to the message)."""
-        self.buttons.append(Button((x, y, 300, 40), f"See {p['Name']}'s profile",
-                                   lambda: self.view_player(club_id, p["id"]), font="btn_s"))
-        return y + 52
+        """(His name in the message can be clicked to see him - see _name_links.)"""
+        return y
 
     def draw_inbox(self):
         W, H = self.size
@@ -5371,6 +5450,11 @@ class _Probe:
         self.team = -1
         self._club = club
 
+
+
+NO_LINKS = {"newname", "player", "talks"}              # (no name links: typing, or you're looking at him)
+import re as _re
+_TOKEN = _re.compile(r"[^\s,.;:()\"!?\[\]/]+")
 
 
 class _Invisible(Button):
