@@ -591,6 +591,19 @@ def _setup_penalty(mechanics, attacking_team_id, team0, team1, ball, ai_system, 
 # CORNER KICK
 # ===========================================================================
 
+CORNER_DEF_STAY_UP = 1    # the defending team leaves this many up (its quickest striker)...
+CORNER_UP_A        = 50.0 # ...about here (m from the attacking team's own goal: just past halfway)
+CORNER_REST_MIN    = 2    # the attacking team keeps at least this many back - one more than they leave up
+CORNER_MARK_GAP    = 2.5  # m: a man kept back stands this far goal-side of the man he's minding
+CORNER_EDGE        = 2    # on the edge of the box for the second ball, and one screening the counter
+_BACK_PREF = {"FB": 0, "WB": 0, "DM": 1, "CB": 2, "CM": 2, "WM": 3}
+
+
+def _kind(p):
+    from config import slots
+    return slots.kind(getattr(p, "slot", None) or p.role)
+
+
 def _setup_corner_kick(mechanics, team_id, team0, team1, ball, ai_system, current_time):
     """
     Set up a corner kick for team_id.
@@ -602,6 +615,7 @@ def _setup_corner_kick(mechanics, team_id, team0, team1, ball, ai_system, curren
     corner flag the ball is at).  GK is explicitly placed on the line.
     """
 
+    from ai.team_shape import to_frame, to_world
     # ── Ball at corner arc ────────────────────────────────────────────────
     corner_x = WIDTH - 3 if team_id == 0 else 3
     corner_y = 5.0 if ball.pos.y < HEIGHT / 2 else HEIGHT - 5.0
@@ -654,10 +668,46 @@ def _setup_corner_kick(mechanics, team_id, team0, team1, ball, ai_system, curren
         Vector2(goal_x + sign * 16.5 * M_TO_PX, mid_y - spread * 7.0 * M_TO_PX),
     ]
 
-    runners = [p for p in field_att if p != taker]
-    for i, runner in enumerate(runners[:len(att_targets)]):
-        runner.target = Vector2(att_targets[i])
+    # Who stays up the other end?  The defending team leaves its quickest striker on halfway; the
+    # attacking team keeps one more than that back ("rest defence") so a cleared corner isn't a free
+    # run at goal - the best in the air go into the box, a shooter waits on the edge of the box.
+    defend_field = [p for p in defend_team if p.role != "GK" and getattr(p, 'is_active', True)]
+    fwd = [p for p in defend_field if _kind(p) in ("ST", "W", "AM")] or defend_field
+    stay_up = sorted(fwd, key=lambda p: -p.attributes.get("Top Speed", 50))[:CORNER_DEF_STAY_UP] \
+        if len(defend_field) > 4 else []
+    for i, p in enumerate(stay_up):
+        p.target = to_world(team_id, CORNER_UP_A, (-6.0 if i == 0 else 8.0) * spread)
+        p.state = "support"
+        p.pos_reason = "corner: stay up for the counter"
+
+    others = [p for p in field_att if p is not taker]
+    n_back = min(len(others) // 2, max(CORNER_REST_MIN, len(stay_up) + 1))
+    headers = sorted(others, key=lambda p: -_air(p))[:2]           # the two best in the air always go up
+    back = sorted((p for p in others if p not in headers),
+                  key=lambda p: (_BACK_PREF.get(_kind(p), 4), -p.attributes.get("Top Speed", 50)))[:n_back]
+    rest = [p for p in others if p not in back]
+    edge = sorted((p for p in rest if p not in headers),
+                  key=lambda p: -p.attributes.get("Long Shots", 50))[:min(CORNER_EDGE, max(0, len(rest) - 3))]
+    box = sorted((p for p in rest if p not in edge), key=lambda p: -_air(p))
+    for i, runner in enumerate(box):
+        runner.target = Vector2(att_targets[i % 5])
         runner.state  = "support"
+        runner.pos_reason = "corner: attack the ball"
+    for i, p in enumerate(edge):
+        p.target = Vector2(att_targets[5]) if i == 0 else Vector2(goal_x + sign * 24.0 * M_TO_PX, mid_y)
+        p.state = "support"
+        p.pos_reason = "corner: edge of the box (second ball)" if i == 0 else "corner: screen the counter"
+    # Rest defence: one goal-side of each man they've left up, the others covering behind
+    for i, p in enumerate(back):
+        if i < len(stay_up):
+            fa, fl = to_frame(team_id, stay_up[i].target)
+            p.target = to_world(team_id, fa - CORNER_MARK_GAP, fl)
+            p.pos_reason = "corner: stay back (marking)"
+        else:
+            p.target = to_world(team_id, CORNER_UP_A - 8.0 - 3.0 * (i - len(stay_up)),
+                                (4.0 - 10.0 * (i - len(stay_up))) * spread)
+            p.pos_reason = "corner: stay back (cover)"
+        p.state = "support"
 
     # ── GK: on goal line, central between the posts ───────────────────────
     gk = next((p for p in defend_team if p.role == "GK"), None)
@@ -683,12 +733,16 @@ def _setup_corner_kick(mechanics, team_id, team0, team1, ball, ai_system, curren
         Vector2(goal_x + sign * 10.0 * M_TO_PX, mid_y + spread * 3.5 * M_TO_PX),
         # 18-yard line — deal with clearances
         Vector2(goal_x + sign * 16.5 * M_TO_PX, mid_y),
+        # Edge of the box, near side - the short corner / the cut-back
+        Vector2(goal_x + sign * 18.0 * M_TO_PX, mid_y - spread * 9.0 * M_TO_PX),
     ]
-
-    defend_field = [p for p in defend_team if p.role != "GK" and getattr(p, 'is_active', True)]
-    for i, dp in enumerate(defend_field[:len(def_targets)]):
-        dp.target = Vector2(def_targets[i])
+    # The best in the air in the middle of the six-yard box, the rest outwards
+    order = [3, 2, 4, 5, 6, 0, 1, 7, 8]
+    markers = sorted((p for p in defend_field if p not in stay_up), key=lambda p: -_air(p))
+    for i, dp in enumerate(markers):
+        dp.target = Vector2(def_targets[order[i % len(order)]])
         dp.state  = "defend"
+        dp.pos_reason = "corner: defend the box"
 
     # ── Dead-ball setup ───────────────────────────────────────────────────
     ball.owner         = None   # clear stale owner before locking dead ball
