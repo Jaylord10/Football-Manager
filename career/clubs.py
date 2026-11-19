@@ -519,25 +519,55 @@ BENCH_ORDER = ["GK", "CB", "LB", "LWB", "RB", "RWB", "DM", "CM", "AM", "LM", "LW
 
 def bench(club, exclude=()):
     """
-    The substitutes (up to 9): a keeper, then cover for each part of the
-    team - the best centre-back, full-back, central midfielder, wide man and
-    striker not starting - then the best of the rest.
+    The substitutes (up to 9).  The manager's own picks first (club["bench_pick"], from the Squad screen), never
+    anyone he's taken off it (club["bench_drop"]); the rest of the places filled the usual way: a keeper, then
+    cover for each part of the team - the best centre-back, full-back, central midfielder, wide man and striker
+    not starting - then the best of the rest.
     """
     starting = set((club.get("lineup") or {}).values())
     rest = [p for p in club["players"] if p["id"] not in starting and p["id"] not in exclude]
-    if len(rest) <= BENCH_SIZE:
-        picks = rest
+    by_id = {p["id"]: p for p in rest}
+    forced = [by_id[pid] for pid in club.get("bench_pick", []) if pid in by_id][:BENCH_SIZE]
+    drop = set(club.get("bench_drop", []))
+    pool = [p for p in rest if p not in forced and p["id"] not in drop]
+    need = BENCH_SIZE - len(forced)
+    if len(pool) <= need:
+        auto = pool
     else:
-        picks = []
+        auto = []
         cover = (("GK",), ("CB",), ("LB", "RB"), ("CM",), ("LM", "RM"), ("ST",))
+        have = {family(p["Pos"]) for p in forced}
         for group in cover:
-            cands = [p for p in rest if family(p["Pos"]) in group and p not in picks]
+            if len(auto) >= need:
+                break
+            if any(g in have for g in group):                 # (he's already picked one there)
+                continue
+            cands = [p for p in pool if family(p["Pos"]) in group and p not in auto]
             if cands:
-                picks.append(max(cands, key=overall))
-        others = sorted([p for p in rest if p not in picks and p["Pos"] != "GK"], key=lambda p: -overall(p))
-        picks += others[:BENCH_SIZE - len(picks)]
+                auto.append(max(cands, key=overall))
+        others = sorted([p for p in pool if p not in auto and p["Pos"] != "GK"], key=lambda p: -overall(p))
+        auto += others[:max(0, need - len(auto))]
+    picks = forced + auto
     picks.sort(key=lambda p: (BENCH_ORDER.index(p["Pos"]) if p["Pos"] in BENCH_ORDER else 99, -overall(p)))
     return picks
+
+
+def toggle_bench(club, pid, exclude=()):
+    """The manager puts a man on the bench, or takes him off it.  Returns None, or a reason it can't be done."""
+    on = {p["id"] for p in bench(club, exclude)}
+    pick = [x for x in club.get("bench_pick", []) if x != pid]
+    drop = [x for x in club.get("bench_drop", []) if x != pid]
+    if pid in on:
+        drop.append(pid)                                      # (off - someone else fills the place)
+    else:
+        if pid in exclude:
+            return "He's not available."
+        live = [x for x in pick if x in on]
+        if len(live) >= BENCH_SIZE:
+            return f"The bench is full ({BENCH_SIZE}) with your picks - take someone off first."
+        pick.append(pid)                                      # (on - the weakest automatic pick makes way)
+    club["bench_pick"], club["bench_drop"] = pick, drop
+    return None
 
 
 def match_squad(club, exclude=()):

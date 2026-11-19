@@ -1113,8 +1113,8 @@ class App:
         if mine:
             self.text("Squad", "h1", TEXT, (x0, 24))
             self.text(f"Their {len(c['players'])} players - click one to see his profile." if getattr(self, "preview", False)
-                      else f"Your {len(c['players'])} players - click one to see his profile. Pick the XI on the "
-                           f"Tactics screen; SUB = on the bench (9).", "body", MUTED, (x0, 76))
+                      else f"Click a player for his profile. The XI is picked on Tactics; click the XI column to "
+                           f"put a man on the bench (SUB) or take him off.", "small", MUTED, (x0, 80))
         else:
             _badge(self.win, self.colour(cid), (x0 + 18, 48), 18, self._club_of(cid))
             self.text(c["name"], "h1", TEXT, (x0 + 48, 24))
@@ -1211,8 +1211,16 @@ class App:
             if st:
                 age_x = next(x_ for l_, x_ in cols if l_ == "Age")
                 self.text(st, "small", LOSS if st.startswith("INJ") else DRAW, (r.x + 20 + age_x - 10, y + 2), "topright")
+            if mine and p["id"] not in in_xi and not getattr(self, "preview", False):   # (the bench: click the XI
+                xi_x = next(x_ for l_, x_ in cols if l_ == "XI")                         #  column)
+                cell = pygame.Rect(r.x + 20 + xi_x - 10, y - 3, 64, step - 3)
+                if cell.collidepoint(mouse):
+                    pygame.draw.rect(self.win, ACCENT, cell, 1, border_radius=5)
+                self.buttons.append(_Invisible(cell, lambda pid=p["id"]: self._toggle_bench(pid)))
             self.buttons.append(_Invisible(row, lambda pid=p["id"]: self.view_player(cid, pid)))
             y += step
+        if mine and getattr(self, "flash", None):
+            self.text(self.flash, "small", LOSS, (x0, H - 22))
 
     def _toggle_reg(self, c, p):
         regd = reg.registered_ids(c)
@@ -3140,6 +3148,13 @@ class App:
         for k in path[:-1]:
             d = d.setdefault(k, {})
         d[path[-1]] = value
+        league.save(self.career)
+
+    def _toggle_bench(self, pid):
+        club = self._my_club()
+        today = self.career.get("date") or ""
+        out = avail.unavailable_ids(club, today) if today else set()
+        self.flash = clubs_mod.toggle_bench(club, pid, out)
         league.save(self.career)
 
     def _pick_player(self, slot, pid):
