@@ -344,104 +344,44 @@ def _compute(team, opponents, ball, in_possession, now, restart=None):
             _defending([p], tid, pa, pl, st, out, now, restart)
             spot, why = out[id(p)]
             out[id(p)] = (reading.hold_zone(p, spot, now), why)
+        if restart is None:
+            _cover_absent(team, tid, out)
     return out
 
 
-def _defending(team, tid, ba, bl, st, out, now=None, restart=None):
-    # How high the block sits comes from the team's defensive style (ai/tactics.py)
-    back = _clamp(st["line_ratio"] * ba + st["line_offset"], DEF_LINE_MIN, st["line_max"])
-    # Ball out wide in our final third (a cross is on): the back line drops into
-    # the box to protect the space in front of goal - from the edge of the box
-    # down to about the penalty spot as the ball gets closer.  (It used to hold
-    # just outside the box, leaving it empty for the cross.)
-    if ba < BOX_DROP_FROM and abs(bl) >= BOX_DROP_WIDE:
-        q = _clamp((BOX_DROP_FROM - ba) / (BOX_DROP_FROM - BOX_DROP_FULL), 0.0, 1.0)
-        back = min(back, BOX_EDGE - (BOX_EDGE - BOX_LINE) * q)
-    mid = max(back + 5.0, min(back + LINE_GAP, ba - MID_GOALSIDE))
-    front = mid + st["front_gap"]
-    if restart == "goal_kick":
-        # Their goal kick: each style has its own set-up (ai/tactics.py)
-        back = st["gk_back"]
-        mid = back + LINE_GAP
-        front = max(mid + 6.0, st["gk_front"])
-    near = _clamp((PITCH_L * 0.75 - ba) / (PITCH_L * 0.5), 0.0, 1.0)    # 1 = ball in our half
-    shift = DEF_SHIFT_FAR + (DEF_SHIFT - DEF_SHIFT_FAR) * near
-    c = _clamp(bl * shift, -(HALF_W - BACK_HALF_WIDTH - EDGE), HALF_W - BACK_HALF_WIDTH - EDGE)
+COVER_ABSENT = 20.0      # m: a back-line man this far up the pitch from his spot isn't there (still up from
+                         # a corner, or bombing on) - the rest of the back line closes up across the middle
 
-    def lateral(slot, half_width):
-        l = c + slot * half_width
-        if (l - c) * bl < 0:                    # far side of the ball: tuck in
-            l = c + (l - c) * FAR_SIDE_TUCK
-        return l
 
-    gen = _generic(tid)
-    for p in team:
-        if p.role == "GK":
-            continue
-        s = settings(p)
-        side = LEFT.get(p.role, 0)
-        if gen:
-            band, frac, n = _band_info(_team_of(p)).get(id(p), {}).get("d", ("mid", 0.0, 1))
-            if band == "back":
-                a, l, why = back, lateral(frac, G_BACK_HALF.get(n, 19.0)), "back line"
-            elif band == "screen":
-                a, l, why = max(back + 3.0, mid - SCREEN_BELOW), lateral(frac, G_SCREEN_HALF.get(n, 8.0)), \
-                    "screen the back line"
-            elif band == "mid":
-                tb = s.get("track_back", 1.0) if p.role in ("LM", "RM") else 1.0
-                a = mid + (1.0 - tb) * 6.0
-                l = lateral(frac, G_MID_HALF.get(n, 21.0))
-                why = "midfield line" if tb >= 0.99 else "midfield line (stays higher)"
-            elif band == "am":
-                a = min(front, mid + AM_ABOVE)
-                l = c + frac * G_AM_HALF.get(n, 10.0)
-                why = "between midfield and attack"
-            else:
-                a = front
-                if s.get("stay_up", True) and restart != "goal_kick":
-                    a = max(a, min(st["stay_up"], ba + 15.0))
-                l = c + frac * G_FRONT_HALF.get(n, 12.0)
-                why = "front line"
-            across = max(0.0, abs(l - bl) - DIAG_FROM)
-            if band == "back":
-                a -= min(DIAG_BACK_MAX, DIAG_BACK * across)
-            elif band != "front":
-                a -= min(DIAG_MID_MAX, DIAG_MID * across)
-            if now is not None:
-                import ai.reading as reading
-                da, dl = reading.habit(p, now)
-                a, l = a + da, l + dl
-            out[id(p)] = (to_world(tid, a, l), why)
-            continue
-        if p.role in ("LB", "RB"):
-            a, l, why = back, lateral(side * 1.0, BACK_HALF_WIDTH), "back line"
-        elif p.role in ("LCB", "RCB"):
-            a, l, why = back, lateral(side / 3.0, BACK_HALF_WIDTH), "back line"
-        elif p.role in ("LM", "RM"):
-            tb = s.get("track_back", 1.0)
-            a = mid + (1.0 - tb) * 6.0
-            l = lateral(side * 1.0, MID_HALF_WIDTH)
-            why = "midfield line" if tb >= 0.99 else "midfield line (stays higher)"
-        elif p.role in ("LCM", "RCM"):
-            a, l, why = mid, lateral(side / 3.0, MID_HALF_WIDTH), "midfield line"
-        else:                                   # strikers
-            a = front
-            if s.get("stay_up", True) and restart != "goal_kick":
-                a = max(a, min(st["stay_up"], ba + 15.0))
-            l = c + side * FRONT_HALF_WIDTH
-            why = "front two"
-        # Cover and balance: further across from the ball = a bit deeper
-        across = max(0.0, abs(l - bl) - DIAG_FROM)
-        if p.role in ("LB", "RB", "LCB", "RCB"):
-            a -= min(DIAG_BACK_MAX, DIAG_BACK * across)
-        elif p.role in ("LM", "RM", "LCM", "RCM"):
-            a -= min(DIAG_MID_MAX, DIAG_MID * across)
-        # His own positioning habits (ai/reading.py): Defensive Positioning / Teamwork
-        if now is not None:
-            import ai.reading as reading
-            da, dl = reading.habit(p, now)
-            a, l = a + da, l + dl
-        out[id(p)] = (to_world(tid, a, l), why)
+def _is_back(p):
+    if _generic(p.team):
+        return _band_info(_team_of(p)).get(id(p), {}).get("d", ("mid",))[0] == "back"
+    return p.role in ("LB", "RB", "LCB", "RCB")
+
+
+def _cover_absent(team, tid, out):
+    """Real defenders don't hold their own wide spots while the middle's empty: with a centre-back still up
+    the other end, the full-back nearest tucks in, the line squeezes in towards the middle."""
+    backs = [p for p in team if p.role != "GK" and getattr(p, "is_active", True) and id(p) in out and _is_back(p)]
+    n = len(backs)
+    if n < 2:
+        return
+    here, lanes = [], []
+    for p in backs:
+        sa, sl = to_frame(tid, out[id(p)][0])
+        pa, _pl = to_frame(tid, p.pos)
+        lanes.append(sl)
+        if pa - sa <= COVER_ABSENT:
+            here.append((p, sa, sl))
+    k = len(here)
+    if k == n or k == 0:
+        return
+    c = sum(lanes) / n                                   # (the middle of the whole line, where it should be)
+    half = (max(lanes) - min(lanes)) / 2.0 * (k - 1) / (n - 1)
+    here.sort(key=lambda h: h[2])
+    for i, (p, sa, sl) in enumerate(here):
+        l = c + (half * (2.0 * i / (k - 1) - 1.0) if k > 1 else 0.0)
+        out[id(p)] = (to_world(tid, sa, l), "back line: tuck in (a defender's up the pitch)")
 
 
 def _attacking(team, opponents, ball, tid, ba, bl, st, now, out):
