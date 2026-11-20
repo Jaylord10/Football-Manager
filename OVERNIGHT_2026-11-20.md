@@ -15,3 +15,13 @@ Nothing here is on Jay's PC.  Each item is its own commit.
   dive at a ball that's going over his head on the way - he can only stretch up and watch.
 - Test: 150 clean-through one-on-ones (the real AI): 35% scored; dinks 15 of 19.  Strips checked in 3D.
 - Checks: broadcast3d/check.py all good; replay runs (hash 229e6a3f... - unchanged from main in the first 60 s).
+
+## 2. Shot styles you can see (3D only)
+- A shot close in (under 17 m) that isn't struck flat out (under 27 m/s) is now a side-foot placed finish:
+  a fuller backswing than a pass, the foot turned out and locked, body over it, a follow-through to the corner.
+- A dink (soft, 9-20 m/s, rising steeply towards goal from inside 25 m): a short soft backswing, leaning
+  back, the toe under it, a little lifted finish.
+- Struck behind him (he hadn't turned - the turning fix): the back-heel / flick, as for passes.
+- Otherwise the full laces drive, as before.
+- In 16 one-on-ones: 4 finishes, 3 dinks, 3 drives (and the scruffy back-heels when he hadn't got round).
+- Checks: check.py all good; the engine's untouched by this one.

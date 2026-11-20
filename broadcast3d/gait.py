@@ -250,6 +250,28 @@ ACTIONS = {
              (0.32, {"hip_r": 30, "knee_r": 34, "ankle_r": -5, "hip_l": -10, "knee_l": 30, "turn": 12, "twist": 6,
                      "lean": 6, "out_l": 30, "arm_l": 15, "elbow_l": 30, "out_r": 20, "elbow_r": 30}),
              (0.50, N)],
+    # A placed finish: the side-foot, but struck - a fuller backswing than a pass, the foot turned out and
+    # locked, body over the ball to keep it down, and a follow-through towards the corner he's picked.
+    "finish": [(-0.30, N),
+               (-0.16, {"hip_l": 30, "knee_l": 12, "ankle_l": 10, "hip_r": -24, "knee_r": 78, "ankle_r": -8,
+                        "toein_r": -35, "turn": -10, "lean": 8, "out_l": 40, "arm_l": 12, "elbow_l": 30,
+                        "out_r": 22, "arm_r": -15, "elbow_r": 25}),
+               (0.00, {"hip_r": 22, "knee_r": 20, "ankle_r": 4, "toein_r": -48, "hipout_r": 12, "hip_l": 10,
+                       "knee_l": 34, "turn": 10, "twist": 6, "lean": 10, "nod": 14, "out_l": 45, "arm_l": 10,
+                       "elbow_l": 30, "out_r": 25, "arm_r": -15, "elbow_r": 25}),
+               (0.16, {"hip_r": 48, "knee_r": 14, "toein_r": -35, "hipout_r": 8, "hip_l": 5, "knee_l": 28,
+                       "turn": 16, "twist": 8, "lean": 6, "nod": 10, "out_l": 38, "elbow_l": 30, "out_r": 20}),
+               (0.40, N)],
+    # A dink: a short, soft backswing, leaning back, the toe under the ball to scoop it up - and a little
+    # lifted finish (no follow-through to speak of).
+    "dink": [(-0.24, N),
+             (-0.12, {"hip_l": 26, "knee_l": 16, "ankle_l": 10, "hip_r": -10, "knee_r": 62, "ankle_r": -5,
+                      "turn": -6, "lean": 0, "out_l": 35, "arm_l": 12, "elbow_l": 30, "out_r": 22}),
+             (0.00, {"hip_r": 26, "knee_r": 34, "ankle_r": 12, "hip_l": 12, "knee_l": 36, "turn": 6, "lean": -12,
+                     "chest": -6, "nod": 6, "out_l": 50, "arm_l": 20, "elbow_l": 30, "out_r": 35, "arm_r": -10}),
+             (0.14, {"hip_r": 58, "knee_r": 22, "ankle_r": 14, "hip_l": 6, "knee_l": 30, "turn": 8, "lean": -14,
+                     "chest": -6, "nod": -10, "out_l": 50, "arm_l": 25, "elbow_l": 30, "out_r": 35}),
+             (0.36, N)],
     # A short pass with the inside of the right foot: the foot turned out ~40-50 deg so the flat inside of it
     # meets the ball, a shorter backswing than the instep kick and a smooth push through (Levanon & Dapena
     # 1998, "Comparison of the kinematics of the full-instep and pass kicks in soccer", Med Sci Sports Exerc
@@ -1166,7 +1188,8 @@ def _make(actor):
     for name, keys in ACTIONS.items():
         variants = [(name, keys)]
         if name in ("dive", "recover", "kick", "shot", "touch", "tackle", "punt", "cut", "brake", "slide", "shield", "fouled",
-                    "pass", "loft", "flick", "backheel", "hurt", "stumble", "volley", "thigh", "stepover", "dragback"):
+                    "pass", "loft", "flick", "backheel", "hurt", "stumble", "volley", "thigh", "stepover", "dragback",
+                    "finish", "dink"):
             variants.append((name + "_m", [(t, mirror(p) if isinstance(p, dict) else p) for t, p in keys]))
         for vn, vk in variants:
             fn, t0, t1 = action_pose(vk)

@@ -809,6 +809,7 @@ class Viewer(ShowBase):
         cnt = {kind: [0, 0] for kind in ("shot", "kick", "tackle", "fouled", "header")}
         alias = {k: "kick" for k in KICKS}
         alias["hurt"] = "fouled"
+        alias["finish"] = alias["dink"] = "shot"
         alias["flickhead"] = "header"
         alias["volley"] = "kick"
         for i, l in self.events.by_player.items():
@@ -1122,7 +1123,7 @@ class Viewer(ShowBase):
                 kind, t = sp_pose
             if kind is None and getattr(self, "_shake", {}).get(i) and fr.get("st") == "full_time":
                 kind, t = "shake", ((k + i * 17) % 120) / 30.0 - 0.3
-            if kind == "shot" and 0.0 <= t < 0.1 and not cel:
+            if kind in ("shot", "finish", "dink") and 0.0 <= t < 0.1 and not cel:
                 self._ooh = (0 if i < 11 else 1, k)
             if cel and i == cel[1]:
                 kind, t = self._scorer_slide(i, sp, k, kind, t)
@@ -1540,7 +1541,7 @@ def _viewer_ball(self, fr, dt):
         dist = 0.42 + 0.65 * push * _m.sin(_m.pi * ph)
         kind, t = self.events.action(o, fr.get("k", 0))
         lat = 0.09                                                          # (a touch to his right)
-        if (kind in KICKS or kind == "shot") and t < 0:                    # (setting it up for the kick)
+        if (kind in KICKS or kind in SHOTS) and t < 0:                     # (setting it up for the kick)
             dist = 0.38 + (dist - 0.38) * min(1.0, -t / 0.3)
             if kind in ("backheel", "flick"):                               # (under his heel / by the outside
                 u = min(1.0, -t / 0.25)                                     #  of his foot as he plays it)
@@ -1718,7 +1719,7 @@ def _viewer_left_foot(self, i, p, kind, t, k):
     stronger foot (about 1 in 5 players are left-footed)."""
     if kind == "shield":                                            # (the arm out on the man's side)
         return self._shield_left.get(i, True)
-    if kind not in KICKS + ("shot", "touch", "tackle", "volley"):
+    if kind not in KICKS + SHOTS + ("touch", "tackle", "volley"):
         return False
     F = self.m["frames"]
     ke = max(0, min(len(F) - 1, int(round(k - t * 30))))
@@ -1787,7 +1788,7 @@ def _viewer_run_up(self, i, fr, wx, wy, fx, fy, sp, k, dt):
     dx, dy = dx / d, dy / d
     D = RUNUP[r[0]]
     kind, t = self.events.action(i, k)
-    if kind in KICKS + ("shot",) and t < 0:                                 # (running up to it)
+    if kind in KICKS + SHOTS and t < 0:                                     # (running up to it)
         if s["go"] is None:
             s["go"] = (t, s["w"])
         t0, w0 = s["go"]
@@ -2305,7 +2306,7 @@ class Events:
             "kick": 2, "pass": 2, "loft": 2, "flick": 2, "backheel": 2, "touch": 1, "hurt": 8, "stumble": 3,
             "innocent": 5, "catch": 4, "gkthrow": 5, "splitstep": 3, "slap": 6, "applaud": 1, "contest": 3,
             "flickhead": 3, "volley": 2, "chest": 1, "thigh": 1, "stepover": 1, "spread": 4, "reachup": 4,
-            "smother": 6}
+            "smother": 6, "finish": 4, "dink": 4}
 
     def add(self, i, k, kind):
         l = self.by_player.setdefault(i, [])
@@ -2329,6 +2330,7 @@ class Events:
 
 
 KICKS = ("kick", "pass", "loft", "flick", "backheel")
+SHOTS = ("shot", "finish", "dink")
 
 
 def _kick_angle(fx, fy, dx, dy):
@@ -2355,6 +2357,43 @@ def _kick_kind(F, k, i, v):
     if ang > 60 or v < 13.0:
         return "pass"
     return "loft" if vz > 3.0 else "kick"
+
+
+def _goal_dist(F, k, i, keepers):
+    """Metres from him to the goal he's attacking (the end the other keeper is at)."""
+    if len(keepers) < 2:
+        return 99.0
+    gk = keepers[1] if i < 11 else keepers[0]
+    gx = 1100.0 if F[k]["p"][gk][0] > 550.0 else 0.0
+    p = F[k - 1]["p"][i]
+    return math.hypot(p[0] - gx, p[1] - 340.0) / 10.0
+
+
+FINISH_WITHIN = 17.0    # m: a shot from closer than this, not struck flat out, is a side-foot placed finish
+FINISH_SPEED = 27.0     # m/s: ...harder than this is the laces
+
+
+def _shot_kind(F, k, i, v, keepers):
+    """Which shot: struck behind him (not turned) - a back-heel or a flick; close in and not flat out - a
+    side-foot placed finish; otherwise a drive with the laces."""
+    kind = _kick_kind(F, k, i, v)
+    if kind in ("backheel", "flick"):
+        return kind
+    return "finish" if v < FINISH_SPEED and _goal_dist(F, k, i, keepers) < FINISH_WITHIN else "shot"
+
+
+def _dink(F, k, i, v, keepers):
+    """A dink: a soft one (9-20 m/s) rising steeply, towards goal from inside 25 m."""
+    if not 9.0 <= v <= 20.0 or _goal_dist(F, k, i, keepers) > 25.0:
+        return None
+    f3 = F[min(len(F) - 1, k + 3)]
+    vz = (f3["b"][2] - F[k]["b"][2]) / 10.0 * 10.0
+    if vz < 4.0:
+        return None
+    gk = keepers[1] if i < 11 else keepers[0]
+    gx = 1100.0 if F[k]["p"][gk][0] > 550.0 else 0.0
+    dx = f3["b"][0] - F[k]["b"][0]
+    return "dink" if dx * (gx - F[k]["b"][0]) > 0 else None
 
 
 def _head_kind(F, k, i, ev):
@@ -2404,8 +2443,8 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
             if a in keepers and k - gk <= 15 and not dead and z < 2.5:      # (a keeper, ball just caught: out of his hands)
                 ev.add(a, k, "punt" if v > 17 else "gkthrow" if v > 12 else "bowl")   # (overarm for a long one)
                 continue
-            ev.add(a, k, _head_kind(F, k, a, ev) if z > 1.3 else "shot" if v > 21 else
-                   "volley" if z > 0.35 else _kick_kind(F, k, a, v))
+            ev.add(a, k, _head_kind(F, k, a, ev) if z > 1.3 else _shot_kind(F, k, a, v, keepers) if v > 21 else
+                   "volley" if z > 0.35 else _dink(F, k, a, v, keepers) or _kick_kind(F, k, a, v))
             if v > 21 and z <= 1.3 and len(keepers) > 1:                   # (their keeper: a split step -
                 gk = keepers[1] if a < 11 else keepers[0]                       #  or, rushed out to him, the starfish)
                 pa, pg = F[k - 1]["p"][a], F[k - 1]["p"][gk]
@@ -2457,7 +2496,7 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
     seen = ev.__dict__.setdefault("_despair_seen", set())
     for i, l in list(ev.by_player.items()):                                  # a shot that didn't go in: hands
         for (ke, kind) in list(l):                                           # on head a moment later
-            if kind == "shot" and ke + 75 < len(F) and (i, ke) not in seen:
+            if kind in SHOTS and ke + 75 < len(F) and (i, ke) not in seen:
                 seen.add((i, ke))
                 if F[ke + 75]["s"] == F[ke]["s"]:
                     l.append((ke + 24, "despair"))
