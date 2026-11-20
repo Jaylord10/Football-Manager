@@ -64,11 +64,21 @@ class UIRenderer:
         clock_surf = self.med_font.render(clock_str, True, WHITE)
         surface.blit(clock_surf, (60, 7))
 
+        # The fourth official's board: added time
+        x_after = 60 + clock_surf.get_width() + 12
+        if mi.get("added"):
+            board = self.med_font.render(f"+{mi['added']}", True, (255, 60, 60))
+            r = pygame.Rect(x_after - 4, 4, board.get_width() + 10, 26)
+            pygame.draw.rect(surface, (10, 10, 10), r)
+            pygame.draw.rect(surface, (255, 60, 60), r, 1)
+            surface.blit(board, (x_after + 1, 7))
+            x_after += r.width + 8
+
         # Watching speed (+ / - to change)
         speed = mi.get("speed")
         if speed:
             sp_surf = self.normal_font.render(f"{speed}x", True, (150, 200, 255))
-            surface.blit(sp_surf, (60 + clock_surf.get_width() + 12, 10))
+            surface.blit(sp_surf, (x_after, 10))
 
         # Score  (centre)
         score_str  = f"{score[0]}  –  {score[1]}"

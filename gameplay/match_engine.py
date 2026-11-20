@@ -14,6 +14,14 @@ from gameplay.mechanics import GameMechanics
 from gameplay.offside import OffsideSystem
 from gameplay.cards import apply_card, reset_cards
 
+TEMPO_FROM = 75           # minute: from here the side ahead slows its restarts down...
+TEMPO_AHEAD = 1.35        # ...this much longer (x the usual time)...
+TEMPO_AHEAD_ONE = 0.15    # ...more still if it's only one goal...
+TEMPO_BEHIND = 0.7        # ...and the side behind hurries
+LOST_AFTER = {"throw_in": 25.0, "goal_kick": 40.0, "corner_kick": 45.0, "free_kick": 45.0, "offside": 25.0}
+ADDED_BASE = {"first_half": 1.5, "second_half": 2.5}   # (minutes on top: the injuries, bookings and checks
+                          #  that aren't counted above - and the referee rounds up)
+ADDED_RANGE = {"first_half": (1, 6), "second_half": (2, 10)}
 ADVANTAGE_FROM = 0.5      # the fouled man this far up the pitch (0..1, the halfway line = 0.5) or further...
 ADVANTAGE_CHANCE = 0.6    # ...still on the ball: the referee plays advantage this often...
 ADVANTAGE_WINDOW = 3.0    # ...and if it's come to nothing within this many seconds, brings it back
@@ -639,10 +647,16 @@ class MatchEngine:
         self.half_elapsed += delta_time
 
         # Check for end of each half
-        if self.match_state == "first_half" and self.half_elapsed >= HALF_DURATION_REAL:
+        if self.match_state in ("first_half", "second_half") and self.half_elapsed >= HALF_DURATION_REAL \
+                and getattr(self, "_added", None) is None:
+            self._announce_added()
+        end = HALF_DURATION_REAL + (getattr(self, "_added", 0) or 0) * 60.0 * HALF_DURATION_REAL / 2700.0
+        if self.match_state == "first_half" and self.half_elapsed >= end:
+            self._added = None
+            self._lost = 0.0
             self._start_halftime()
             return
-        if self.match_state == "second_half" and self.half_elapsed >= HALF_DURATION_REAL:
+        if self.match_state == "second_half" and self.half_elapsed >= end:
             if self._tie_level():
                 self._start_et_break()                  # (a knockout tie, still level: extra time)
             else:
@@ -671,6 +685,8 @@ class MatchEngine:
         # every frame.  (Thinking 60 times a second was more than half the
         # cost of simulating a match, for no real difference: players' own
         # decisions already run on human timing - tenths of a second.)
+        self._tempo()
+        self._lost_time(delta_time)
         self.ai.make_team_decisions(first, second, self.ball, self.time_elapsed, self.mechanics)
 
         _tackle_success, _foul_info = self.mechanics.handle_tackles(self.team0, self.team1, self.ball, self.time_elapsed)
@@ -986,6 +1002,57 @@ class MatchEngine:
             return
         self._give_foul(fouler, card_type, foul_pos, attacking_team, fouled, in_box)
 
+    # ------------------------------------------------------------------
+    # Game management and added time
+    # ------------------------------------------------------------------
+    def _tempo(self):
+        """From 75 minutes: the side ahead takes its time over its restarts, the side behind hurries them."""
+        import ai.decision_maker as dm
+        dm.TEMPO[0] = dm.TEMPO[1] = 1.0
+        if self.match_state != "second_half" or self.match_minute() < TEMPO_FROM:
+            return
+        d = self.score[0] - self.score[1]
+        if d == 0:
+            return
+        ahead = 0 if d > 0 else 1
+        dm.TEMPO[ahead] = TEMPO_AHEAD + (TEMPO_AHEAD_ONE if abs(d) == 1 else 0.0)
+        dm.TEMPO[1 - ahead] = TEMPO_BEHIND
+
+    def _lost_time(self, dt):
+        """Time lost at dead balls, as Premier League referees count it (2024-25): a goal's celebration past
+        30 seconds, penalties in full, and any restart that takes longer than it should (time-wasting,
+        substitutions, injuries - the typical time for that restart is "football", the rest is added on)."""
+        if self.match_state not in ("first_half", "second_half"):
+            return
+        b = self.ball
+        key = (b.restart_type, round(b.restart_time or 0.0, 2)) if b.is_dead and b.restart_type else None
+        cur = getattr(self, "_dead", None)
+        if key is not None:
+            if cur is None or cur[0] != key:
+                self._dead = [key, 0.0, getattr(b, "_celebration", None) is not None]
+            self._dead[1] += dt
+            return
+        if cur is not None:
+            (kind, _), d, after_goal = cur
+            if kind == "kick_off":                       # (dead balls take real seconds even when the halves
+                lost = max(0.0, d - 30.0) if after_goal else 0.0   # are shortened for a test)
+            elif kind == "penalty":
+                lost = d
+            else:
+                lost = max(0.0, d - LOST_AFTER.get(kind, 30.0))
+            self._lost = getattr(self, "_lost", 0.0) + lost
+            self._dead = None
+
+    def _announce_added(self):
+        """45 or 90 minutes: the fourth official's board."""
+        scale = HALF_DURATION_REAL / 2700.0
+        lo, hi = ADDED_RANGE[self.match_state]
+        subs = len(self.subs.log) - getattr(self, "_subs_at_half", 0)        # (each substitution: ~30 s)
+        self._subs_at_half = len(self.subs.log)
+        mins = round(getattr(self, "_lost", 0.0) / 60.0 + ADDED_BASE[self.match_state] + 0.5 * subs)
+        self._added = max(lo, min(hi, mins))
+        self._added_shown_until = self.time_elapsed + 8.0 * getattr(self, "match_speed", 1)
+
     def _in_their_half(self, p, frac):
         """Is he this far (0..1) up the pitch towards the goal he's attacking?"""
         x = p.pos.x / WIDTH
@@ -1071,7 +1138,11 @@ class MatchEngine:
 
         # 1 real second → scale game-minutes (0–45 per half)
         scale = 45.0 / HALF_DURATION_REAL
-        if self.match_state == "first_half":
+        over = self.half_elapsed - HALF_DURATION_REAL
+        if self.match_state in ("first_half", "second_half") and over >= 0:
+            gm = f"{45 if self.match_state == 'first_half' else 90}+{int(over * scale) + 1}"
+            half_label = "1ST" if self.match_state == "first_half" else "2ND"
+        elif self.match_state == "first_half":
             gm         = min(45, int(self.half_elapsed * scale) + 1)
             half_label = "1ST"
         elif self.match_state == "halftime":
@@ -1090,6 +1161,8 @@ class MatchEngine:
             half_label = "FT"
 
         return {
+            "added":           self._added if getattr(self, "_added", None) and
+                               self.time_elapsed < getattr(self, "_added_shown_until", 0) else None,
             "match_state":     self.match_state,
             "half_label":      half_label,
             "game_minute":     gm,

@@ -41,6 +41,11 @@ CELEBRATE_JOIN  = 45.0     # m: teammates this close to the scorer run over to c
 KICKOFF_SET     = 2.5      # m: everyone this close to his kick-off spot before kick-off
 
 
+# Game management: set by the match engine each frame (gameplay/match_engine.py _tempo) - a team protecting a
+# lead late on takes its time over its restarts, one chasing the game hurries them.
+TEMPO = {0: 1.0, 1: 1.0}
+
+
 def _restart_timing(ball):
     """(minimum, maximum, quick) for this restart - picked once per restart."""
     key = (ball.restart_type, ball.restart_time)
@@ -50,6 +55,9 @@ def _restart_timing(ball):
         if kind == "free_kick":
             kind = "free_kick_" + str(getattr(ball, "_fk_zone", "long"))
         lo, hi = _RESTART_TIMING.get(kind, _RESTART_TIMING.get(ball.restart_type, _DEFAULT_TIMING))
+        tk = getattr(ball, "restart_taker", None)
+        f = TEMPO.get(tk.team, 1.0) if tk is not None else 1.0      # (protecting a lead late on / chasing it)
+        lo, hi = lo * f, hi * max(1.0, f)
         quick = ball.restart_type == "throw_in" and random.random() < QUICK_THROW
         ball._timing_for = key
         ball._timing = (QUICK_THROW_MIN if quick else random.uniform(lo, lo * _MIN_SPREAD), hi, quick)

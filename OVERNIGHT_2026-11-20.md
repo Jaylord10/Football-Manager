@@ -75,3 +75,15 @@ Nothing here is on Jay's PC.  Each item is its own commit.
 - Two real-club matches: 13 + 6 free kicks/penalties given, advantage played 3 + 2 times (2 + 1 came to
   something, 1 + 1 brought back).
 - Checks: check.py all good; replay runs (the engine changes, as intended).
+
+## 18. Game management and added time (match engine + the match screen)
+- From 75 minutes the side ahead takes its time over its restarts (x1.35 the usual time, x1.5 if it's only one
+  goal), the side behind hurries them (x0.7).  Three real-club matches: restarts by the side ahead averaged
+  25-32 s, by the side behind 16-29 s.
+- Added time, as Premier League referees count it in 2024-25 (premierleague.com, "Updates for season
+  2024/2025"): a goal's celebration past 30 seconds, penalties in full, substitutions (~30 s each), and any
+  restart that takes longer than it should (time-wasting, injuries) - plus a little for the stoppages that
+  aren't measured.  At 45 and 90 minutes the board goes up ("+3" in a red box by the clock), the clock runs on
+  as 45+1, 45+2..., and the half ends when it's up.  (First half 1-6 minutes, second 2-10.)
+  Three matches: +1/+2, +1/+2, +3/+7.
+- Checks: check.py all good; all_screens only the expected five.
