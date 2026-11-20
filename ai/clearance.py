@@ -259,6 +259,8 @@ def execute(p, ball, now, kind, aim, pressured=False, first_time=False):
         to_aim = _world(p, 60.0, 0.0) - p.pos
     sd = (ANGLE_SD[0] + ANGLE_SD[1] * (20.0 - _stat(p, "Passing")))
     sd *= (PRESSURE_ERROR if pressured else 1.0) * (FIRST_TIME_ERROR if first_time else 1.0)
+    import core.kick_angle as ka                              # (not facing it: hooked away)
+    sd *= ka.error_mult(p, to_aim)
     direction = to_aim.normalize().rotate(random.gauss(0.0, sd))
     speed = (SPEED[0] + SPEED[1] * _stat(p, "Strength")) * random.uniform(1 - SPEED_SPREAD, 1 + SPEED_SPREAD)
     p_slice = (SLICE[0] + SLICE[1] * (20.0 - _stat(p, "Control"))) * (PRESSURE_ERROR if pressured else 1.0)

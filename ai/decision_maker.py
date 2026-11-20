@@ -120,6 +120,8 @@ class AIDecisionMaker:
                     ball.is_dead = False
                     ball.restart_type = None
                     ball.restart_taker = None
+                    import core.kick_angle as _ka
+                    taker._set_piece_until = current_time + _ka.SET_PIECE_TIME   # (lined up: no turning)
                     ball.owner = taker
                     taker.has_ball = True
                     self.last_possession_team = team_id

@@ -110,6 +110,8 @@ def execute_cross(passer, receiver, ball, now, opponents=None, kind="cross"):
     if to_t.length_squared() < 1.0:
         to_t = Vector2(1.0 if passer.team == 0 else -1.0, 0.0)
     d = to_t.length() / M_TO_PX
+    import core.kick_angle as ka                      # (not facing it: hooked round)
+    err *= ka.error_mult(passer, to_t)
 
     # Execution error
     direction = to_t.normalize().rotate(random.gauss(0.0, (ANGLE_SD[0] + ANGLE_SD[1] * (20 - crossing)) * err))

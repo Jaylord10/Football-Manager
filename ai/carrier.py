@@ -65,6 +65,7 @@ def make_ball_carrier_decision(carrier, team, opponents, ball, current_time, mec
         st = {"spell": spell, "pending": None,
               "next": current_time + timing.first_decision(carrier, pressured, picture)}
         carrier._timing = st
+        carrier._turn_to = None                # (core/kick_angle.py: nothing left over from last time)
         carrier._busy_until = st["next"]       # controlling it: not a take-on (gameplay/duels.py)
         # How good is his first touch?  A clean one protects the ball; a heavy
         # one leaves it there to be nicked (gameplay/duels.py)
@@ -80,6 +81,7 @@ def make_ball_carrier_decision(carrier, team, opponents, ball, current_time, mec
     if pending is not None:
         if current_time >= pending["at"]:
             st["pending"] = None
+            carrier._turn_to = None
             st["next"] = current_time + timing.redecide_gap(carrier)
             if pending["kind"] == "pass":
                 mechanics.execute_pass(*pending["args"])
@@ -104,8 +106,12 @@ def make_ball_carrier_decision(carrier, team, opponents, ball, current_time, mec
     if deferred.queued is not None:
         st["pending"] = deferred.queued
         carrier._busy_until = deferred.queued["at"]
-        # Setting the pass / shot: he slows right down
-        ahead = carrier.pos + (carrier.facing * (1.0 * M_TO_PX) if carrier.facing.length_squared() > 0 else Vector2())
+        # Setting the pass / shot: he slows right down - and if it's going behind him, he stops and turns
+        # with it first (core/kick_angle.py; the turning is done in core/locomotion.py)
+        if getattr(carrier, "_turn_to", None) is not None:
+            ahead = Vector2(carrier.pos)
+        else:
+            ahead = carrier.pos + (carrier.facing * (1.0 * M_TO_PX) if carrier.facing.length_squared() > 0 else Vector2())
         mechanics.execute_dribble(carrier, ahead, ball, current_time, speed_mult=_SETUP_SPEED)
     return result
 

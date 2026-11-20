@@ -192,6 +192,8 @@ def execute_shot(player, ball, current_time, opponents=None, shot_type=None):
             pressure += 0.25
     if player.vel.length() > MAX_SPEED * 0.7:
         pressure += 0.15
+    import core.kick_angle as ka                        # (not facing the goal: an awkward one)
+    pressure *= ka.error_mult(player, aim - player.pos)
 
     angle_sd = (ANGLE_ERROR_BASE + ANGLE_ERROR_PER_POINT * (20 - skill)
                 + ANGLE_ERROR_PER_M * max(0.0, dist_m - 16.0)) * pressure

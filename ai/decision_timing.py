@@ -128,6 +128,16 @@ class Deferred:
     def __getattr__(self, name):
         return getattr(self._m, name)
 
+    def _turn(self, player, delay, target):
+        """Add the time to turn and face `target` (core/kick_angle.py); note the way he's turning."""
+        import core.kick_angle as ka
+        face = target - player.pos
+        extra = ka.turn_time(player, face)
+        if extra > 0:
+            delay += extra
+        player._turn_to = face if extra > 0 else None
+        return delay
+
     def execute_pass(self, passer, receiver, ball, current_time, opponents=None, through_plan=None):
         d = (receiver.pos - passer.pos).length()
         from config.constants import M_TO_PX
@@ -137,6 +147,8 @@ class Deferred:
             passer._hurried = True
         else:
             passer._hurried = False
+        from pygame.math import Vector2
+        delay = self._turn(passer, delay, Vector2(through_plan["point"]) if through_plan else receiver.pos)
         self.queued = {"kind": "pass", "args": (passer, receiver, ball, current_time, opponents, through_plan),
                        "at": self._now + delay}
         return True
@@ -147,6 +159,7 @@ class Deferred:
         delay = setup_time(passer, "pass", d / M_TO_PX)
         if _closing(passer, delay):
             delay *= HURRY_SETUP
+        delay = self._turn(passer, delay, receiver.pos)
         self.queued = {"kind": "cross", "args": (passer, receiver, ball, opponents, kind),
                        "at": self._now + delay}
         return True
@@ -156,12 +169,16 @@ class Deferred:
         delay = clearance.setup_time(player)
         if _closing(player, delay):
             delay *= HURRY_SETUP
+        delay = self._turn(player, delay, aim)
         self.queued = {"kind": "clear", "args": (player, ball, kind, aim, pressured),
                        "at": self._now + delay}
         return True
 
     def execute_shot(self, player, ball, current_time, opponents=None, shot_type=None):
         delay = setup_time(player, "shot")
+        from pygame.math import Vector2
+        from config.constants import WIDTH, HEIGHT
+        delay = self._turn(player, delay, Vector2(float(WIDTH) if player.team == 0 else 0.0, HEIGHT / 2))
         self.queued = {"kind": "shot", "args": (player, ball, current_time, opponents),
                        "kw": {"shot_type": shot_type} if shot_type else {}, "at": self._now + delay}
         return True
