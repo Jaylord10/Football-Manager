@@ -25,3 +25,11 @@ Nothing here is on Jay's PC.  Each item is its own commit.
 - Otherwise the full laces drive, as before.
 - In 16 one-on-ones: 4 finishes, 3 dinks, 3 drives (and the scruffy back-heels when he hadn't got round).
 - Checks: check.py all good; the engine's untouched by this one.
+
+## 8. Second balls (match engine)
+- A loose ball on the ground used to be chased by ONE man - whoever was nearest, from either team - running at
+  where the ball was.  Now each team sends its man who'll get there first, to the point where he can meet it
+  (the ball's still rolling), and both go for it if the second one's within 1.5 s of the first.
+- 20 minutes of a real-club match (Lydmouth-style fixture rc3): samples of a loose ball with nobody chasing
+  from the side that last touched it - 151 of 286 before, 29 of 195 after; the other side - 110 of 286 before,
+  none after.
