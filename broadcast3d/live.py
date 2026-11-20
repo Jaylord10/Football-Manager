@@ -46,6 +46,9 @@ def frame_from_engine(e):
     cel = getattr(b, "_celebration", None)
     if cel and e.time_elapsed < cel.get("until", 0) and cel.get("scorer") in everyone:   # (a goal celebration)
         fr["c"] = [cel["team"], everyone.index(cel["scorer"])]
+    adv = getattr(e, "_advantage", None)                                           # (advantage being played)
+    if adv and e.time_elapsed - adv["at"] < 2.0:
+        fr["adv"] = adv["team"]
     return fr
 
 

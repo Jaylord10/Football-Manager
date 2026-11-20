@@ -664,6 +664,14 @@ ACTIONS = {
             (2.2, {"abs": 1, "out_r": 62, "arm_r": 40, "elbow_r": 130, "across_r": 20, "out_l": 70, "arm_l": 10,
                    "elbow_l": 10, "lean": -8, "nod": -12, "turn": 12}),
             (2.6, N)],
+    # The referee playing advantage: both arms swept forward and out, palms up, towards the side attacking
+    # ("play on").
+    "advantage": [(-0.1, N),
+                  (0.30, {"abs": 1, "arm_r": 75, "arm_l": 75, "out_r": 28, "out_l": 28, "elbow_r": 8, "elbow_l": 8,
+                          "lean": 4}),
+                  (1.50, {"abs": 1, "arm_r": 70, "arm_l": 70, "out_r": 30, "out_l": 30, "elbow_r": 10, "elbow_l": 10,
+                          "lean": 3}),
+                  (1.90, N)],
     # An appeal: a free kick or offside given his side's way (or about to be) - one arm straight up to the
     # referee, the other out a little, leaning back to look at him.
     "appeal": [(-0.1, N),

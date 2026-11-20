@@ -1650,6 +1650,15 @@ APPEAL_WITHIN = 18.0     # m from the ball: the side given the free kick appeals
 APPEAL_FOR = 1.45        # s from the whistle
 
 
+def _viewer_adv_id(self, k):
+    """The frame this spell of advantage started on."""
+    F = self.m["frames"]
+    j = k
+    while j > 0 and F[j - 1].get("adv") is not None:
+        j -= 1
+    return j
+
+
 def _viewer_appeal(self, i, fr, wx, wy, rbx, rby, r, k):
     """A free kick / offside / penalty given: about two in three of the side it's given to, near the ball, put
     an arm up to the referee as the whistle goes."""
@@ -2193,6 +2202,9 @@ def _viewer_officiate(self, fr, dt, bx, by):
                 kind = "whistle" if t < 0.75 else "point"               # (the whistle, then which way)
                 if kind == "point":
                     t -= 0.75
+        if fr.get("adv") is not None and o["role"] == "ref":              # (advantage: arms out, play on)
+            start = o.setdefault("adv_start", {}).setdefault(self._adv_id(k), k)
+            kind, t = "advantage", (k - start) / 30.0
         if card and o["role"] == "ref":
             kind, t = "card", 0.5
             self._card_in_hand(o["p"], card[0])
@@ -2308,6 +2320,7 @@ Viewer._set_piece_cam = _viewer_set_piece_cam
 Viewer._keeper_dive = _viewer_keeper_dive
 Viewer._smother = _viewer_smother
 Viewer._appeal = _viewer_appeal
+Viewer._adv_id = _viewer_adv_id
 Viewer._ball = _viewer_ball
 Viewer.THROW_FLIGHT = 0.8      # s: a throw-in in the air (a 10-15 m throw at ~13-15 m/s)
 Viewer.THROW_ARC = 0.8         # m: how far it rises above a straight line from his hands to the grass

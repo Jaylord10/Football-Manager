@@ -13,6 +13,10 @@ from rendering.ui_renderer import UIRenderer
 from gameplay.mechanics import GameMechanics
 from gameplay.offside import OffsideSystem
 from gameplay.cards import apply_card, reset_cards
+
+ADVANTAGE_FROM = 0.5      # the fouled man this far up the pitch (0..1, the halfway line = 0.5) or further...
+ADVANTAGE_CHANCE = 0.6    # ...still on the ball: the referee plays advantage this often...
+ADVANTAGE_WINDOW = 3.0    # ...and if it's come to nothing within this many seconds, brings it back
 import core.fatigue as fatigue
 import core.locomotion as locomotion
 from ai.rl_agent import RLAgent
@@ -672,6 +676,8 @@ class MatchEngine:
         _tackle_success, _foul_info = self.mechanics.handle_tackles(self.team0, self.team1, self.ball, self.time_elapsed)
         if _foul_info is not None:
             self._handle_foul(_foul_info)
+        if getattr(self, "_advantage", None) is not None:
+            self._check_advantage()
         self.mechanics.handle_loose_balls(self.team0 + self.team1, self.ball)
         # A lofted ball: the right men go to where it's coming down (gameplay/aerial.py)
         aerial.update_movement(self.team0, self.team1, self.ball, self.time_elapsed)
@@ -961,12 +967,72 @@ class MatchEngine:
         attacking_team = foul_info["attacking_team"]
 
         self.stats.foul(fouler.team)
+        fouled = foul_info.get("fouled")
+        if attacking_team == 0:
+            in_box = foul_pos.x > WIDTH - 16.5 * M_TO_PX
+        else:
+            in_box = foul_pos.x < 16.5 * M_TO_PX
+        # ADVANTAGE: the fouled man's still got it, going forward in their half - the referee lets it run (arms
+        # out), and comes back to book the man at the next stoppage.  If the attack breaks down straight away,
+        # he brings it back for the free kick (Law 5: "advantage ... if the anticipated advantage does not
+        # ensue at that time or within a few seconds").  Not for a red card (the man goes off now), not in the box.
+        if (not in_box and card_type != "red" and fouled is not None and self.ball.owner is fouled
+                and self._in_their_half(fouled, ADVANTAGE_FROM) and random.random() < ADVANTAGE_CHANCE
+                and not (card_type == "yellow" and getattr(fouler, "yellow_cards", 0) >= 1)):
+            self._advantage = {"team": attacking_team, "pos": Vector2(foul_pos), "at": self.time_elapsed,
+                               "fouler": fouler, "card": card_type, "fouled": fouled}
+            fouler.last_foul_time = self.time_elapsed
+            self.subs.fouled(fouled, self.match_minute())
+            return
+        self._give_foul(fouler, card_type, foul_pos, attacking_team, fouled, in_box)
+
+    def _in_their_half(self, p, frac):
+        """Is he this far (0..1) up the pitch towards the goal he's attacking?"""
+        x = p.pos.x / WIDTH
+        return (x if p.team == 0 else 1.0 - x) >= frac
+
+    def _check_advantage(self):
+        """Each frame while advantage is being played: did it come to anything?"""
+        a = self._advantage
+        b = self.ball
+        dt_ = self.time_elapsed - a["at"]
+        lost = b.owner is not None and b.owner.team != a["team"]
+        if (lost or b.is_dead) and dt_ < ADVANTAGE_WINDOW and not (b.is_dead and b.restart_type == "corner_kick"
+                                                                    and b.restart_taker.team == a["team"]):
+            if b.is_dead and getattr(b, "_celebration", None) is not None:
+                self._advantage = None                   # (they scored from it!)
+                self._book_later(a)
+                return
+            self._advantage = None                       # it broke down: back for the free kick
+            self._give_foul(a["fouler"], a["card"], a["pos"], a["team"], a["fouled"], False, recorded=True)
+            return
+        if dt_ >= ADVANTAGE_WINDOW:
+            self._advantage = None
+            self._book_later(a)
+
+    def _book_later(self, a):
+        """Advantage played: the booking's shown now (the referee goes back to him)."""
+        if a["card"] in ("yellow",):
+            fouler = a["fouler"]
+            fouler_team = self.team0 if fouler.team == 0 else self.team1
+            display_card = apply_card(fouler, a["card"], fouler_team, self.time_elapsed)
+            if display_card != "none":
+                self._card_display = {"type": display_card, "name": getattr(fouler, "name", fouler.role),
+                                      "until": self.time_elapsed + 3.5 * getattr(self, "match_speed", 1),
+                                      "at": self.time_elapsed}
+                if fouler.red_card:
+                    self.subs.sent_off(fouler, self.match_minute(), display_card)
+        else:
+            a["fouler"].last_foul_time = self.time_elapsed
+
+    def _give_foul(self, fouler, card_type, foul_pos, attacking_team, fouled, in_box, recorded=False):
         # Issue the card
         fouler_team = self.team0 if fouler.team == 0 else self.team1
         display_card = apply_card(fouler, card_type, fouler_team, self.time_elapsed)
         if fouler.red_card:
             self.subs.sent_off(fouler, self.match_minute(), display_card)
-        self.subs.fouled(foul_info.get("fouled"), self.match_minute())     # hurt? (career matches)
+        if not recorded:
+            self.subs.fouled(fouled, self.match_minute())     # hurt? (career matches)
 
         # Schedule UI messages
         self._foul_display_until = self.time_elapsed + 2.0 * getattr(self, "match_speed", 1)   # 2 s of watching time
@@ -982,11 +1048,6 @@ class MatchEngine:
         # Decide penalty vs free kick
         # Attacking team 0 attacks right (toward x=WIDTH); their penalty box is the right end.
         # Attacking team 1 attacks left (toward x=0); their penalty box is the left end.
-        if attacking_team == 0:
-            in_box = foul_pos.x > WIDTH - 16.5 * M_TO_PX
-        else:
-            in_box = foul_pos.x < 16.5 * M_TO_PX
-
         if in_box:
             self.mechanics.setup_penalty(
                 attacking_team, self.team0, self.team1, self.ball, self.ai, self.time_elapsed

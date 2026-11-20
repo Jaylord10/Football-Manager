@@ -65,3 +65,13 @@ Nothing here is on Jay's PC.  Each item is its own commit.
   put an arm straight up to the referee as the whistle goes (not all at the same instant) for ~1.5 s.
 - Already there from the 50-animation night: hands on head after a miss, applauding a near miss, the fouler's
   "I got the ball!", the booked man's protest, keepers on their knees when beaten, heads down when conceding.
+
+## 17. Advantage (match engine + 3D)
+- A foul where the fouled man still has the ball, in the other team's half: the referee lets play go on (60% of
+  the time - real referees use their judgement) and the 3D referee sweeps both arms forward, "play on".  If the
+  attack breaks down within 3 seconds (they lose it, or it goes out), he brings it back for the free kick
+  (Law 5: advantage that "does not ensue at that time or within a few seconds").  If it came to something, a
+  yellow card is shown then.  Never for a red card (the man goes off at once) or a foul in the box (penalty).
+- Two real-club matches: 13 + 6 free kicks/penalties given, advantage played 3 + 2 times (2 + 1 came to
+  something, 1 + 1 brought back).
+- Checks: check.py all good; replay runs (the engine changes, as intended).
