@@ -58,7 +58,9 @@ PENALTY_AIM_INSIDE   = (0.90, 0.55)
 
 PRESSURE_RADIUS = 2.5            # a defender this close counts as pressure
 PLACED_MAX_DIST = 16.0           # beyond this, shots are driven
-CHIP_KEEPER_OFF_LINE = 6.0       # keeper this far off his line can be chipped
+CHIP_KEEPER_OFF_LINE = 4.5       # keeper this far off his line can be chipped...
+CHIP_CHANCE          = 0.15      # ...and a man with average Composure tries it this often (was 60%: real
+CHIP_PER_COMPOSURE   = 0.015     #    strikers mostly slot it low - the dink is the cool head's finish)
 
 
 def _stat(player, name, default=10):
@@ -141,7 +143,7 @@ def execute_shot(player, ball, current_time, opponents=None, shot_type=None):
     if shot_type is None:
         keeper_off_line = abs(keeper.pos.x - goal_x) / M_TO_PX if keeper else 0.0
         if (keeper and keeper_off_line > CHIP_KEEPER_OFF_LINE and 10.0 < dist_m < 25.0
-                and random.random() < 0.6):
+                and random.random() < clamp(CHIP_CHANCE + CHIP_PER_COMPOSURE * (composure - 10), 0.05, 0.3)):
             shot_type = "chip"
         elif dist_m <= PLACED_MAX_DIST:
             shot_type = "placed"

@@ -51,6 +51,8 @@ SAVE_STRETCH_PENALTY = 0.25      # x (distance / reach): fingertip saves are har
 SAVE_TIME_BONUS      = 0.40      # per second of flight beyond SAVE_TIME_FREE (time to set & read it)
 SAVE_TIME_FREE       = 0.45      # s
 SAVE_TIME_BONUS_MAX  = 0.20
+SAVE_QUICK           = 0.60      # s: a shot on him quicker than this hasn't given him time to set...
+SAVE_QUICK_PENALTY   = 1.00      # ...this much off the save chance per second short (0.4 s: -0.2)
 
 LET_GO_MARGIN = 0.25             # m: keeper leaves shots heading this far outside the frame
 
@@ -241,7 +243,8 @@ def resolve_keeper_contact(keeper, ball, current_time, ai_system):
 
     flight = current_time - getattr(ball, "last_kick_time", current_time)
     time_bonus = clamp(SAVE_TIME_BONUS * (flight - SAVE_TIME_FREE), 0.0, SAVE_TIME_BONUS_MAX)
-    p_save = (SAVE_BASE + SAVE_PER_POINT * ss + time_bonus
+    quick = SAVE_QUICK_PENALTY * max(0.0, SAVE_QUICK - flight)
+    p_save = (SAVE_BASE + SAVE_PER_POINT * ss + time_bonus - quick
               - SAVE_SPEED_PENALTY * max(0.0, speed_ms - SAVE_SPEED_FREE)
               - SAVE_STRETCH_PENALTY * (d_m / reach))
     shot = getattr(ball, "shot_info", None)

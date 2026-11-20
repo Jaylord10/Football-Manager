@@ -142,7 +142,7 @@ def evaluate_shoot_decision(carrier, opponents, teammates):
 # none who'll be on him within BREAKAWAY_CATCH seconds, and the keeper not within KEEPER_RUSH_M of him.
 BREAKAWAY_SHOOT = 16.5    # m: outside the box, clean through, he doesn't shoot - he carries it on...
 BREAKAWAY_CATCH = 1.0     # s
-KEEPER_RUSH_M   = 9.0     # m
+KEEPER_RUSH_M   = 6.5     # m (keeper this close: hit it now)
 
 
 BREAKAWAY_CLOSE = 11.0    # m: clean through inside the box, he goes on to about the penalty spot...
@@ -154,7 +154,7 @@ def _close_in(carrier):
     return clamp(BREAKAWAY_CLOSE - (comp - 10) * CLOSE_PER_COMPOSURE, 8.0, 14.0)
 
 
-def _clean_through(carrier, opponents, goal_pos, nearest_def):
+def _clean_through(carrier, opponents, goal_pos, nearest_def, keeper_check=True):
     """Nobody to beat but the keeper: no defender on him, none goal-side of him (nearer the goal and
     roughly in his way) and none about to catch him from behind - and the keeper isn't rushing out."""
     if opponents and nearest_def <= THROUGH_ROOM * M_TO_PX:
@@ -170,7 +170,13 @@ def _clean_through(carrier, opponents, goal_pos, nearest_def):
             return False                                        # goal-side, in his way
         if _closing_on(o, carrier, BREAKAWAY_CATCH):
             return False
-    return not _keeper_rushing(carrier, goal_pos)
+    return not (keeper_check and _keeper_rushing(carrier, goal_pos))
+
+
+def clean_through(carrier, outfield_opponents, goal_pos):
+    """(For the keeper: is this man through on me with nobody else to beat?)"""
+    nd = min((distance(carrier.pos, o.pos) for o in outfield_opponents), default=999.0)
+    return _clean_through(carrier, outfield_opponents, goal_pos, nd, keeper_check=False)
 
 
 THROUGH_ROOM = 3.0        # m: no defender closer than this...

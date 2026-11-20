@@ -8,6 +8,11 @@ import ai.recycle as recycle
 import ai.actions as actions
 import ai.movement as movement
 
+RUSH_FROM = 18.0   # m: a man clean through closer than this - the keeper comes out to meet him...
+RUSH_MEET = 5.0    # ...getting to about this far from him...
+RUSH_MAX  = 6.0    # ...but no more than this far off his line
+
+
 def update_goalkeeper(keeper, ball, current_time, team_has_possession, ball_cell, opponents, team, mechanics):
     keeper.pos_reason = "keeper"          # (debug overlay label; loose-ball chases overwrite it)
     # Dive recovery
@@ -43,6 +48,13 @@ def update_goalkeeper(keeper, ball, current_time, team_has_possession, ball_cell
             dist_m = to_ball.length() / M_TO_PX
             if 0 < dist_m < 30.0:
                 come_out_m = clamp(6.0 - 0.15 * dist_m, 1.5, 4.0)
+                # Clean through on him: he comes off his line to meet the man - closing the angle and
+                # making him decide (slot it early, dink it over him, or try to go round)
+                if dist_m < RUSH_FROM:
+                    import ai.shooting as _sh
+                    field = [p for p in team if p.role != "GK" and getattr(p, "is_active", True)]
+                    if _sh.clean_through(ball.owner, field, goal_centre):
+                        come_out_m = max(come_out_m, clamp(dist_m - RUSH_MEET, 1.5, RUSH_MAX))
                 come_out_m = min(come_out_m, dist_m - 1.5)
                 if come_out_m > 0:
                     base_pos = goal_centre + to_ball.normalize() * (come_out_m * M_TO_PX)
