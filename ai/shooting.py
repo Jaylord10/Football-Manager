@@ -51,19 +51,26 @@ def evaluate_shoot_decision(carrier, opponents, teammates):
     # --- 3. DEDUCTIONS (Start at 100) ---
     score = 100.0
     
-    # A. DISTANCE (Reduced penalties - shooting from 15m is normal!)
-    if dist_m < 8.0: 
-        deduction = 0.0  # Close range - perfect!
-    elif dist_m < 16.0: 
-        deduction = 10.0  # Mid range - still good!
-    elif dist_m < 22.0: 
-        deduction = 25.0  # Long range - harder
-    elif dist_m < 28.0:
-        deduction = 40.0  # Very long - risky
-    else: 
-        deduction = 50.0  # Extremely long - desperate shot
+    # A. DISTANCE.  From outside the box it takes a real shooter (Long Shots) and a reason not to do
+    # something better: about a third of real shots come from outside the box (Opta, Premier League
+    # 2024-25: 31.7%) - here it was over half, because almost anyone with a sight of goal from 20-25 m hit it.
+    if dist_m < 8.0:
+        deduction = 0.0
+    elif dist_m < 16.5:
+        deduction = 10.0
+    elif dist_m < 20.0:
+        deduction = LONG_DED[0]
+    elif dist_m < 25.0:
+        deduction = LONG_DED[1]
+    else:
+        deduction = LONG_DED[2]
     score -= deduction
-    
+    if dist_m >= 16.5:
+        ls = carrier.attributes.get("Long Shots", finishing)
+        if ls > 25:
+            ls /= 5.0
+        score += (ls - 12.0) * LONG_SKILL
+
     # B. ANGLE (Same as before)
     if angle_deviation > 45: 
         score -= 25.0  # Very wide
@@ -108,10 +115,14 @@ def evaluate_shoot_decision(carrier, opponents, teammates):
     is_opposed = nearest_def_dist < 3.0 * M_TO_PX
     bad_angle = angle_deviation > 25
     
-    # Only suggest passing if you're in a BAD position
-    if (is_opposed or bad_angle) and check_sweaty_option(carrier, teammates, opponents, goal_pos):
+    # Only suggest passing if you're in a BAD position - or a long way out with a man better placed
+    if (is_opposed or bad_angle or dist_m >= 16.5) and check_sweaty_option(carrier, teammates, opponents, goal_pos):
         pass_penalty = 10.0 + (teamwork * 0.5)  # Reduced penalty
         score -= pass_penalty
+
+    # 2. Room to run: a long way out with nobody in front of him, he drives on into the box instead
+    if dist_m >= LONG_DRIVE_FROM and not _blocked_ahead(carrier, goal_pos, opponents):
+        score -= LONG_DRIVE_ON
 
     # E. 🔧 FIXED: Finishing Stat Bonus (was dividing by 100, should be 20!)
     finishing_bonus = (finishing / 20.0) * 10.0  # Now gives up to +10 points!
@@ -136,6 +147,27 @@ def evaluate_shoot_decision(carrier, opponents, teammates):
     should_shoot = final_score >= 62.0
 
     return should_shoot, final_score
+
+
+LONG_DED       = (28.0, 42.0, 55.0)  # off the score from 16.5-20 m, 20-25 m, 25-30 m (was 25 / 40 / 50 from 16 m)
+LONG_SKILL     = 1.5                 # per point of Long Shots above 12 (below 12: less keen)
+LONG_DRIVE_FROM = 18.0               # m: further out than this with room in front of him...
+LONG_DRIVE_ON  = 15.0                # ...he'd rather carry it on
+AHEAD_M        = 7.0                 # (room: no defender within this, goal-side of him...
+AHEAD_WIDE     = 4.0                 #  ...and this far either side of his line to goal)
+
+
+def _blocked_ahead(carrier, goal_pos, opponents):
+    to_goal = goal_pos - carrier.pos
+    d = to_goal.length()
+    if d < 1e-6:
+        return True
+    for o in (opponents or []):
+        rel = o.pos - carrier.pos
+        ahead = rel.dot(to_goal) / d
+        if 0 < ahead < AHEAD_M * M_TO_PX and abs(rel.cross(to_goal)) / d < AHEAD_WIDE * M_TO_PX:
+            return True
+    return False
 
 
 # Clean through (_clean_through): no defender within THROUGH_ROOM of him, none goal-side in his way,
