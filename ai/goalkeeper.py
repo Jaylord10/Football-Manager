@@ -8,6 +8,14 @@ import ai.recycle as recycle
 import ai.actions as actions
 import ai.movement as movement
 
+GK_SPOT_RATE = 5.0       # m/s: how fast his spot moves as play moves...
+GK_SPOT_RATE_RUSH = 9.0  # ...coming out to meet a man through on him
+
+
+def goal_line_centre(keeper):
+    return Vector2(0.0 if keeper.team == 0 else float(WIDTH), HEIGHT / 2)
+
+
 RUSH_FROM = 18.0   # m: a man clean through closer than this - the keeper comes out to meet him...
 RUSH_MEET = 5.0    # ...getting to about this far from him...
 RUSH_MAX  = 6.0    # ...but no more than this far off his line
@@ -33,8 +41,9 @@ def update_goalkeeper(keeper, ball, current_time, team_has_possession, ball_cell
         base_pos = next((cell_center(col, row) for r, col, row in formation if r == "GK"), keeper.pos)
         base_pos.y = HEIGHT / 2
 
-        # Track ball vertically (small shift only)
-        if ball.owner:
+        # Track ball vertically (small shift only) - all the time, not only when someone has it (between
+        # passes he used to snap back to the middle and then out again: a keeper twitching about)
+        if not ball.is_dead:
             y_shift = (ball.pos.y - HEIGHT / 2) * 0.3
             base_pos.y += y_shift
             base_pos.y = clamp(base_pos.y, HEIGHT / 2 - 40, HEIGHT / 2 + 40)
@@ -42,7 +51,9 @@ def update_goalkeeper(keeper, ball, current_time, team_has_possession, ball_cell
         # Narrow the angle: when an opponent has the ball within 30 m of goal,
         # stand on the line between the ball and the centre of goal and come
         # off the line - further the closer the shooter is.
-        if ball.owner is not None and ball.owner.team != keeper.team:
+        theirs = (ball.owner is not None and ball.owner.team != keeper.team) or \
+            (ball.owner is None and not ball.is_dead and getattr(ball, "last_toucher_team", keeper.team) != keeper.team)
+        if theirs:
             goal_centre = Vector2(0.0 if keeper.team == 0 else float(WIDTH), HEIGHT / 2)
             to_ball = ball.pos - goal_centre
             dist_m = to_ball.length() / M_TO_PX
@@ -50,7 +61,7 @@ def update_goalkeeper(keeper, ball, current_time, team_has_possession, ball_cell
                 come_out_m = clamp(6.0 - 0.15 * dist_m, 1.5, 4.0)
                 # Clean through on him: he comes off his line to meet the man - closing the angle and
                 # making him decide (slot it early, dink it over him, or try to go round)
-                if dist_m < RUSH_FROM:
+                if dist_m < RUSH_FROM and ball.owner is not None:
                     import ai.shooting as _sh
                     field = [p for p in team if p.role != "GK" and getattr(p, "is_active", True)]
                     if _sh.clean_through(ball.owner, field, goal_centre):
@@ -59,6 +70,17 @@ def update_goalkeeper(keeper, ball, current_time, team_has_possession, ball_cell
                 if come_out_m > 0:
                     base_pos = goal_centre + to_ball.normalize() * (come_out_m * M_TO_PX)
 
+        # His spot moves smoothly (a keeper shuffles across and steps out - his spot used to jump about as
+        # the ball changed hands, and he twitched back and forth after it)
+        last = getattr(keeper, "_gk_spot", None)
+        lt = getattr(keeper, "_gk_spot_t", None)
+        if last is not None and lt is not None and 0.0 < current_time - lt < 0.5:
+            step = (GK_SPOT_RATE_RUSH if theirs and base_pos.distance_to(goal_line_centre(keeper)) > 4.5 * M_TO_PX
+                    else GK_SPOT_RATE) * M_TO_PX * (current_time - lt)
+            move = base_pos - last
+            if move.length() > step:
+                base_pos = last + move.normalize() * step
+        keeper._gk_spot, keeper._gk_spot_t = Vector2(base_pos), current_time
         keeper.target = base_pos
         keeper.state = "guard"
         to_ball = ball.pos - keeper.pos

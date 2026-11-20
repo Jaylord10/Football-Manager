@@ -33,3 +33,17 @@ Nothing here is on Jay's PC.  Each item is its own commit.
 - 20 minutes of a real-club match (Lydmouth-style fixture rc3): samples of a loose ball with nobody chasing
   from the side that last touched it - 151 of 286 before, 29 of 195 after; the other side - 110 of 286 before,
   none after.
+
+## 10. The oddity checker (dev/oddities.py) - and the worst thing it found
+- `python dev/oddities.py <match config> [minutes] [seed]` plays a match and lists anything that would look odd:
+  bodies through each other, a player stood dead still with the ball near, running back and forth, running
+  backwards fast (the moonwalk), teleporting, wandering off the pitch, the ball too fast / too high / away from
+  the man who "has" it.
+- First run (45 min, a real-club fixture): 63 "back and forth" moments - every one of them a KEEPER.  Cause: his
+  spot only followed the ball across when someone had it - between passes it snapped back to the middle, and the
+  "narrow the angle" spot switched on and off as the ball changed hands, so he twitched about.
+  Fix (match engine): he follows the ball across all the time, narrows the angle while the other lot have it or
+  it's loose off them, and his spot moves smoothly (5 m/s, 9 m/s coming out to a man through on him).
+  After: 2 in 45 min (and the keepers' "moonwalks" 2 -> 0).
+- A full 90 on another fixture: nothing else of note (9 players standing still for 8 s - all straight after the
+  second-half kick-off).
