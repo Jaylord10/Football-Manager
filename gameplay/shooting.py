@@ -59,6 +59,9 @@ PENALTY_AIM_INSIDE   = (0.90, 0.55)
 PRESSURE_RADIUS = 2.5            # a defender this close counts as pressure
 PLACED_MAX_DIST = 16.0           # beyond this, shots are driven
 CHIP_KEEPER_OFF_LINE = 4.5       # keeper this far off his line can be chipped...
+CHIP_OVER_KEEPER     = 2.9       # m: a dink is this high as it goes over the keeper...
+CHIP_UNDER_BAR       = (0.4, 2.2) # ...and comes down between these heights at the goal line...
+CHIP_DROP_TO         = 1.5       # ...about this high, ideally
 CHIP_CHANCE          = 0.15      # ...and a man with average Composure tries it this often (was 60%: real
 CHIP_PER_COMPOSURE   = 0.015     #    strikers mostly slot it low - the dink is the cool head's finish)
 
@@ -227,6 +230,22 @@ def execute_shot(player, ball, current_time, opponents=None, shot_type=None):
     dist_to_line_px = max(1.0, to_aim.length())
 
     vz = _launch_vz_for_height(dist_to_line_px, speed_px, target_height_m * M_TO_PX)
+    if shot_type == "chip" and keeper is not None:
+        # A dink has to get OVER the keeper rushing out (above his reach where he stands) and still come down
+        # under the bar: the softest strike that does both (aimed at the target height, with his error).
+        dk = max(1.0, (keeper.pos - player.pos).dot(direction))
+        over = (CHIP_OVER_KEEPER + height_err * 0.5) * M_TO_PX
+        best = None
+        for s_ms in [x * 0.5 for x in range(18, 36)]:                    # 9 - 17.5 m/s
+            sp = s_ms * M_TO_PX
+            vz_k = _launch_vz_for_height(dk, sp, over)
+            zg = _height_at_goal(dist_to_line_px, sp, vz_k)
+            if CHIP_UNDER_BAR[0] * M_TO_PX <= zg <= CHIP_UNDER_BAR[1] * M_TO_PX:
+                miss = abs(zg / M_TO_PX - CHIP_DROP_TO)                  # (dropping in at about this height)
+                if best is None or miss < best[0]:
+                    best = (miss, s_ms, sp, vz_k)
+        if best is not None:
+            _, speed_ms, speed_px, vz = best
     elevation = vz / (speed_px * 0.8)     # Ball.kick sets vz = speed * elevation * 0.8
 
     player.state = "shoot"

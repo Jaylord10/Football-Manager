@@ -1139,6 +1139,9 @@ class Viewer(ShowBase):
             if dv in ("diving", "recover") and getattr(p, "keeper", False):    # (a keeper's dive)
                 self._keeper_dive(i, p, dv, k)
                 continue
+            if kind == "smother" and getattr(p, "keeper", False):              # (down at a man's feet)
+                self._smother(i, p, t, k)
+                continue
             if kind is None and fr["o"] == i and sp < 22:                   # (on the ball, a man tight on him:
                 near = self._shield_side(i, fr, wx, wy, fx, -fy)              #  he shields it)
                 if near:
@@ -1634,6 +1637,24 @@ def _viewer_keeper_dive(self, i, p, stage, k):
             right = (_m.cos(hd), _m.sin(hd))                               # (his right, facing +Y at h = 0)
             st["side"] = 1 if (mx - ox) * right[0] + (my - oy) * right[1] >= 0 else -1
     p.dive(stage, (k - st["start"]) / 30.0, st.get("side", 1))
+    p.h = st["h"]
+    p.root.setPos(p.root.getX(), p.root.getY(), p.lift)
+    p.root.setHpr(p.h, 0, p.roll * p.roll_side)
+
+
+def _viewer_smother(self, i, p, t, k):
+    """Down at the man's feet: to whichever side of him the ball was, facing the way he came out."""
+    import math as _m
+    st = self.__dict__.setdefault("_smo", {}).get(i)
+    if st is None or abs(st["k"] - (k - t * 30.0)) > 3:
+        F = self.m["frames"]
+        hd = _m.radians(p.h or 0.0)
+        g, b = F[k]["p"][i], F[k]["b"]
+        gx, gy = to_world(g[0], g[1])
+        bx, by = to_world(b[0], b[1])
+        side = 1 if (bx - gx) * _m.cos(hd) + (by - gy) * _m.sin(hd) >= 0 else -1
+        st = self._smo[i] = {"k": k - t * 30.0, "side": side, "h": p.h or 0.0}
+    p.smother(t, st["side"])
     p.h = st["h"]
     p.root.setPos(p.root.getX(), p.root.getY(), p.lift)
     p.root.setHpr(p.h, 0, p.roll * p.roll_side)
@@ -2264,6 +2285,7 @@ Viewer._gather = _viewer_gather
 Viewer._cam_tv = _viewer_cam_tv
 Viewer._set_piece_cam = _viewer_set_piece_cam
 Viewer._keeper_dive = _viewer_keeper_dive
+Viewer._smother = _viewer_smother
 Viewer._ball = _viewer_ball
 Viewer.THROW_FLIGHT = 0.8      # s: a throw-in in the air (a 10-15 m throw at ~13-15 m/s)
 Viewer.THROW_ARC = 0.8         # m: how far it rises above a straight line from his hands to the grass
@@ -2282,7 +2304,8 @@ class Events:
     RANK = {"fouled": 8, "despair": 0, "kneeslide": 7, "throwin": 6, "punt": 5, "bowl": 5, "shot": 4, "header": 3, "tackle": 3,
             "kick": 2, "pass": 2, "loft": 2, "flick": 2, "backheel": 2, "touch": 1, "hurt": 8, "stumble": 3,
             "innocent": 5, "catch": 4, "gkthrow": 5, "splitstep": 3, "slap": 6, "applaud": 1, "contest": 3,
-            "flickhead": 3, "volley": 2, "chest": 1, "thigh": 1, "stepover": 1}
+            "flickhead": 3, "volley": 2, "chest": 1, "thigh": 1, "stepover": 1, "spread": 4, "reachup": 4,
+            "smother": 6}
 
     def add(self, i, k, kind):
         l = self.by_player.setdefault(i, [])
@@ -2349,6 +2372,16 @@ def _head_kind(F, k, i, ev):
     return "header"
 
 
+SPREAD_WITHIN = 6.0     # m: the shooter this close to the keeper as he strikes it - the starfish
+SMOTHER_NEAR = 2.5      # m: the keeper gets the ball with an opponent this close - down at his feet
+
+
+def _opp_near(F, k, gk, within):
+    g = F[k]["p"][gk]
+    return any(math.hypot(q[0] - g[0], q[1] - g[1]) / 10.0 < within
+               for j, q in enumerate(F[k]["p"]) if (j < 11) != (gk < 11) and q[6])
+
+
 def find_events(F, keepers=(0, 11), ev=None, lo=0):
     """ev=None: the whole recording.  Live (broadcast3d/live.py): ev = the Events so far, lo = where the last
     look got up to - the frames since are looked at and added (each frame's "k" is already set)."""
@@ -2373,17 +2406,24 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
                 continue
             ev.add(a, k, _head_kind(F, k, a, ev) if z > 1.3 else "shot" if v > 21 else
                    "volley" if z > 0.35 else _kick_kind(F, k, a, v))
-            if v > 21 and z <= 1.3 and len(keepers) > 1:                   # (their keeper: a split step)
-                ev.add(keepers[1] if a < 11 else keepers[0], k - 4, "splitstep")
+            if v > 21 and z <= 1.3 and len(keepers) > 1:                   # (their keeper: a split step -
+                gk = keepers[1] if a < 11 else keepers[0]                       #  or, rushed out to him, the starfish)
+                pa, pg = F[k - 1]["p"][a], F[k - 1]["p"][gk]
+                close = _m.hypot(pa[0] - pg[0], pa[1] - pg[1]) / 10.0 < SPREAD_WITHIN
+                ev.add(gk, k - (1 if close else 4), "spread" if close else "splitstep")
         elif a < 0 and b >= 0:
             z = F[k]["b"][2] / 10.0
-            if b in keepers and sp(F[k - 2]["b"], F[k - 1]["b"]) > 9.0:       # (a keeper takes a shot / a cross)
+            if b in keepers and z < 0.6 and _opp_near(F, k, b, SMOTHER_NEAR):  # (a keeper going down at a
+                ev.add(b, k, "smother")                                          #  man's feet for it)
+            elif b in keepers and sp(F[k - 2]["b"], F[k - 1]["b"]) > 9.0:     # (a keeper takes a shot / a cross)
                 ev.add(b, k, "catch")
             else:
                 ev.add(b, k, _head_kind(F, k, b, ev) if z > 1.3 else "chest" if z > 1.0 else "thigh" if z > 0.45
                        else "touch")                                        # (the first touch)
         elif a >= 0 and b >= 0 and a != b:
-            if (a < 11) != (b < 11):
+            if (a < 11) != (b < 11) and b in keepers:
+                ev.add(b, k, "smother")                                     # (the keeper takes it off his toe)
+            elif (a < 11) != (b < 11):
                 ev.add(b, k, "tackle")
                 if a not in keepers:
                     ev.add(a, k, "stumble")                                 # (knocked off his stride)
@@ -2397,6 +2437,19 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
                 if near[0] < 2.0:
                     z = F[k]["b"][2] / 10.0
                     ev.add(near[1], k, _head_kind(F, k, near[1], ev) if z > 1.3 else "kick")
+    for k in range(max(2, lo), len(F) - 1):                                  # a dink looping over a keeper: he
+        if F[k]["o"] >= 0 or "r" in F[k]:                                    #  stretches up for it
+            continue
+        bx, by, bz = F[k]["b"][0], F[k]["b"][1], F[k]["b"][2] / 10.0
+        if not 1.9 < bz < 3.6:
+            continue
+        for gk in keepers:
+            g = F[k]["p"][gk]
+            if _m.hypot(g[0] - bx, g[1] - by) / 10.0 < 1.6 and (len(g) < 8 or g[7] not in ("diving", "recover")):
+                last = ev.__dict__.setdefault("_reach", {}).get(gk, -99)
+                if k - last > 45:
+                    ev._reach[gk] = k
+                    ev.add(gk, k, "reachup")
     for k in range(max(2, lo), len(F)):                                      # a goal: the keeper beaten, on his
         if F[k]["s"] != F[k - 1]["s"] and len(keepers) > 1:                  #  knees, slaps the grass
             who = 1 if F[k]["s"][0] > F[k - 1]["s"][0] else 0                 # (the side that let it in)

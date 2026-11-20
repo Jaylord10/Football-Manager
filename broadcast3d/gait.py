@@ -578,6 +578,28 @@ ACTIONS = {
                           "out_r": 8, "out_l": 8, "elbow_r": 30, "elbow_l": 30}),
                   (0.15, {"hip_r": 28, "knee_r": 50, "ankle_r": 18, "hip_l": 28, "knee_l": 50, "ankle_l": 18, "hipout_r": 6, "hipout_l": 6, "lean": 18, "chest": 6, "nod": -14, "abs": 1, "arm_r": 22, "arm_l": 22, "out_r": 0,
                           "out_l": 0, "elbow_r": 30, "elbow_l": 30})],
+    # One-on-ones.  The starfish: a keeper rushed out to the shooter, close in as he strikes it - a jump into
+    # a big X, legs and arms spread wide to fill as much of the goal as he can (the "star jump" keepers like
+    # Schmeichel made famous, still taught for close-range one-on-ones).
+    "spread": [(-0.20, {"hip_r": 28, "knee_r": 50, "ankle_r": 18, "hip_l": 28, "knee_l": 50, "ankle_l": 18,
+                        "hipout_r": 6, "hipout_l": 6, "lean": 18, "chest": 6, "nod": -14, "abs": 1, "arm_r": 22,
+                        "arm_l": 22, "out_r": 0, "out_l": 0, "elbow_r": 30, "elbow_l": 30}),
+               (0.00, {"hip_r": 10, "knee_r": 22, "ankle_r": 6, "hip_l": 10, "knee_l": 22, "ankle_l": 6,
+                       "hipout_r": 32, "hipout_l": 32, "lean": 10, "nod": -10, "abs": 1, "arm_r": 15, "arm_l": 15,
+                       "out_r": 105, "out_l": 105, "elbow_r": 10, "elbow_l": 10}),
+               (0.35, {"hip_r": 14, "knee_r": 30, "ankle_r": 10, "hip_l": 14, "knee_l": 30, "ankle_l": 10,
+                       "hipout_r": 28, "hipout_l": 28, "lean": 12, "nod": -8, "abs": 1, "arm_r": 15, "arm_l": 15,
+                       "out_r": 95, "out_l": 95, "elbow_r": 15, "elbow_l": 15}),
+               (0.70, N)],
+    # Beaten by a dink: the ball looped over him - he stretches up and back for it with one hand, head
+    # turned up to watch it go over.
+    "reachup": [(-0.25, N),
+                (0.00, {"abs": 1, "arm_r": 165, "out_r": 15, "elbow_r": 5, "arm_l": 40, "out_l": 25, "elbow_l": 30,
+                        "lean": -14, "chest": -8, "nod": -35, "hip_r": 5, "knee_r": 15, "hip_l": 20, "knee_l": 30}),
+                (0.30, {"abs": 1, "arm_r": 150, "out_r": 20, "elbow_r": 10, "arm_l": 35, "out_l": 25, "elbow_l": 30,
+                        "lean": -10, "chest": -6, "nod": -40, "turn": 20, "hip_r": 5, "knee_r": 20, "hip_l": 15,
+                        "knee_l": 25}),
+                (0.80, N)],
     # Catching it: hands out to meet the ball, fingers up behind it, then pulled into the chest, body over it.
     "catch": [(-0.25, {"abs": 1, "arm_r": 40, "arm_l": 40, "elbow_r": 40, "elbow_l": 40, "lean": 10, "knee_r": 20,
                        "knee_l": 20, "hip_r": 12, "hip_l": 12}),
@@ -1086,7 +1108,7 @@ def _pta(vals):
 
 
 _CACHE = {}
-SPANS = {}          # action -> (first second, last second)
+SPANS = {"smother": (-0.15, 1.7)}   # action -> (first second, last second)  (smother: drawn as a low dive)
 
 
 # The mannequin's own standing and running animations hold the arms ~15 degrees further out from the body

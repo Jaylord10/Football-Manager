@@ -401,10 +401,31 @@ class AnimPlayer:
     # Each is a whole-body animation built in gait.py (from real kicking / gait figures), blended over the
     # running: act() picks it and how far into it he is; the keeper's dive also tips his whole body over.
     JUMP = {"header": (0.40, 0.26), "walljump": (0.30, 0.22), "splitstep": (0.10, 0.12), "contest": (0.34, 0.26),
-            "flickhead": (0.30, 0.24)}   # (off the ground - m, s)
+            "flickhead": (0.30, 0.24), "spread": (0.14, 0.20), "reachup": (0.22, 0.22)}   # (off the ground - m, s)
     # The dive: (seconds, degrees tipped over, metres off the ground) - he springs, flies, lands on his side.
     DIVE_ROOT = [(0.00, 0, 0.00), (0.12, 22, 0.28), (0.32, 70, 0.50), (0.50, 84, 0.30), (0.60, 86, 0.06)]
     RECOVER_ROOT = [(0.00, 86, 0.06), (0.25, 70, 0.0), (0.45, 25, 0.0), (0.85, 0, 0.0), (1.20, 0, 0.0)]
+    # Diving at a man's feet (a one-on-one, the ball nicked off his toe): low and quick, along the ground -
+    # then up again.
+    SMOTHER_ROOT = [(-0.15, 0, 0.0), (0.00, 35, 0.10), (0.18, 80, 0.14), (0.35, 88, 0.04), (0.90, 88, 0.0),
+                    (1.30, 40, 0.0), (1.70, 0, 0.0)]
+
+    def smother(self, t, side):
+        """A keeper going down at a man's feet: t seconds from the moment he gets to the ball, side +1 = he
+        goes down to his right."""
+        import gait
+        dive = "dive" + ("" if side > 0 else "_m")
+        rec = "recover" + ("" if side > 0 else "_m")
+        self.roll, self.lift = self._curve(self.SMOTHER_ROOT, t)
+        self.roll_side = side
+        self.ready = 0.0
+        if t < 0.9:
+            t0, t1 = gait.SPANS[dive]
+            self.cur = (dive, 1.0, max(0.0, min(t1 - t0, t + 0.2 - t0)) * 30.0)
+        else:
+            t0, t1 = gait.SPANS[rec]
+            self.cur = (rec, 1.0, max(0.0, min(t1 - t0, (t - 0.9) * 1.6 - t0)) * 30.0)
+        self._mix()
 
     def _mix(self):
         """Set the blend: the action (if any) at its weight, the walk / run / stand sharing the rest."""
@@ -475,6 +496,8 @@ class AnimPlayer:
         import gait
         self.roll = 0.0
         self.lift = 0.0
+        if kind == "smother":                                               # (drawn by smother(), not here)
+            kind = None
         if kind == "ready":                                                 # (a keeper's set position: eases in)
             self.ready = min(1.0, self.ready + 0.06)
         else:

@@ -100,6 +100,14 @@ def evaluate_dive(keeper, ball, current_time):
     if intercept_z > GOAL_HEIGHT + KEEPER_PARRY_RADIUS:
         return
 
+    # Going over HIS head on the way (a dink over a keeper who's come out): nothing to dive at - he can only
+    # stretch up and watch it
+    t_k = (keeper.pos.x - ball.pos.x) / ball.vel.x
+    if 0.0 < t_k < time_to_goal:
+        z_k = ball.z + ball.vz * t_k - 0.5 * GRAVITY * t_k ** 2
+        if z_k > 2.5 * M_TO_PX:
+            return
+
     # Ball heading well wide of the posts – don't bother diving
     goal_top    = HEIGHT / 2.0 - GOAL_WIDTH / 2.0
     goal_bottom = HEIGHT / 2.0 + GOAL_WIDTH / 2.0
