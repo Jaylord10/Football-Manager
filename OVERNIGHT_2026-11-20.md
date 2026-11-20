@@ -59,3 +59,9 @@ Nothing here is on Jay's PC.  Each item is its own commit.
 - A full real-club match: 664 v 710 passes at 86-87%, 117-120 km run, fastest 34.2 km/h (real Premier League:
   ~82-85% pass accuracy, ~105-115 km a team - so we run a little far; the record speed is 37.4 km/h).
 - Doesn't change the match engine (replay hash the same as the commit before).
+
+## 4. Reactions: appeals (3D only)
+- A free kick, offside or penalty given: about two in three of the side it's given to, within 18 m of the ball,
+  put an arm straight up to the referee as the whistle goes (not all at the same instant) for ~1.5 s.
+- Already there from the 50-animation night: hands on head after a miss, applauding a near miss, the fouler's
+  "I got the ball!", the booked man's protest, keepers on their knees when beaten, heads down when conceding.

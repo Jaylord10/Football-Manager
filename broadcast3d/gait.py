@@ -664,6 +664,14 @@ ACTIONS = {
             (2.2, {"abs": 1, "out_r": 62, "arm_r": 40, "elbow_r": 130, "across_r": 20, "out_l": 70, "arm_l": 10,
                    "elbow_l": 10, "lean": -8, "nod": -12, "turn": 12}),
             (2.6, N)],
+    # An appeal: a free kick or offside given his side's way (or about to be) - one arm straight up to the
+    # referee, the other out a little, leaning back to look at him.
+    "appeal": [(-0.1, N),
+               (0.25, {"abs": 1, "arm_r": 172, "out_r": 8, "elbow_r": 4, "arm_l": 10, "out_l": 30, "elbow_l": 25,
+                       "lean": -6, "nod": -14}),
+               (1.10, {"abs": 1, "arm_r": 168, "out_r": 10, "elbow_r": 6, "arm_l": 10, "out_l": 28, "elbow_l": 25,
+                       "lean": -5, "nod": -12}),
+               (1.45, N)],
     # A team-mate applauding a near miss: hands together above his head, a few claps.
     "applaud": [(-0.2, N)] + [(0.1 + 0.16 * j, {"abs": 1, "arm_r": 150, "arm_l": 150, "elbow_r": 30, "elbow_l": 30,
                                                 "across_r": 12 if j % 2 else -2, "across_l": 12 if j % 2 else -2,

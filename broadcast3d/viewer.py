@@ -1160,6 +1160,9 @@ class Viewer(ShowBase):
                 if 8.0 < math.hypot(wx - rbx, wy - rby) < 11.5:                 # (in the wall)
                     kind, t = "wall", 0.5
                     self.__dict__.setdefault("_wall", {})[i] = k
+            if kind is None and r and r[0] in ("free_kick", "offside", "penalty") and 0 <= r[1] < len(fr["p"]) \
+                    and not getattr(p, "keeper", False) and sp < 40:
+                kind, t = self._appeal(i, fr, wx, wy, rbx, rby, r, k)            # (claiming it / it's ours, ref)
             if kind is None and not getattr(p, "keeper", False):
                 kind, t = self._contact(i, p, fr, wx, wy, fx, fy, sp, r)        # (jockeying, tugging, barging)
             else:
@@ -1641,6 +1644,23 @@ def _viewer_keeper_dive(self, i, p, stage, k):
     p.h = st["h"]
     p.root.setPos(p.root.getX(), p.root.getY(), p.lift)
     p.root.setHpr(p.h, 0, p.roll * p.roll_side)
+
+
+APPEAL_WITHIN = 18.0     # m from the ball: the side given the free kick appeals for it (some of them)...
+APPEAL_FOR = 1.45        # s from the whistle
+
+
+def _viewer_appeal(self, i, fr, wx, wy, rbx, rby, r, k):
+    """A free kick / offside / penalty given: about two in three of the side it's given to, near the ball, put
+    an arm up to the referee as the whistle goes."""
+    start = self._restart_id(k)
+    t = (k - start) / 30.0
+    if t > APPEAL_FOR:
+        return None, 0.0
+    ours = (i < 11) == (r[1] < 11)
+    if not ours or i == r[1] or math.hypot(wx - rbx, wy - rby) > APPEAL_WITHIN or (i * 7 + start) % 3 == 0:
+        return None, 0.0
+    return "appeal", t - 0.05 * ((i * 3) % 4)                                # (not all at once)
 
 
 def _viewer_smother(self, i, p, t, k):
@@ -2287,6 +2307,7 @@ Viewer._cam_tv = _viewer_cam_tv
 Viewer._set_piece_cam = _viewer_set_piece_cam
 Viewer._keeper_dive = _viewer_keeper_dive
 Viewer._smother = _viewer_smother
+Viewer._appeal = _viewer_appeal
 Viewer._ball = _viewer_ball
 Viewer.THROW_FLIGHT = 0.8      # s: a throw-in in the air (a 10-15 m throw at ~13-15 m/s)
 Viewer.THROW_ARC = 0.8         # m: how far it rises above a straight line from his hands to the grass
