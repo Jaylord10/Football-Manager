@@ -346,7 +346,49 @@ def _compute(team, opponents, ball, in_possession, now, restart=None):
             out[id(p)] = (reading.hold_zone(p, spot, now), why)
         if restart is None:
             _cover_absent(team, tid, out)
+        elif restart == "goal_kick":
+            _goal_kick_press(team, opponents, tid, st, out)
     return out
+
+
+GK_PRESS_FRONT = 90.0    # their goal kick: a style whose front men go this high (the press, the high press)...
+GK_PRESS_OFF   = 3.0     # ...sends its wide men onto their full-backs: this far off him, on his inside
+GK_PRESS_IN    = 3.5
+BOX_A  = PITCH_L - 16.5  # their penalty area (in our frame): we're not allowed in it until the kick's taken
+BOX_HW = 20.16
+
+
+def _wide_man(p):
+    """A wide midfielder or winger (the man who'd press their full-back)."""
+    if _generic(p.team):
+        band, frac, n = _band_info(_team_of(p)).get(id(p), {}).get("d", ("mid", 0.0, 1))
+        return abs(frac) > 0.99 and ((band == "mid" and n >= 4) or (band == "front" and n >= 3))
+    return p.role in ("LM", "RM")
+
+
+def _goal_kick_press(team, opponents, tid, st, out):
+    """Their goal kick.  Pressing teams push their wide men right up onto the full-backs (Jay: on the high
+    press they sat back in midfield), and nobody stands in their penalty area (the law since 2019: the
+    taking side can be in there, the other side can't until the kick's taken)."""
+    press = st.get("gk_front", 0.0) >= GK_PRESS_FRONT
+    theirs = [to_frame(tid, o.pos) for o in (opponents or []) if o.role != "GK" and getattr(o, "is_active", True)]
+    for p in team:
+        if p.role == "GK" or id(p) not in out:
+            continue
+        spot, why = out[id(p)]
+        a, l = to_frame(tid, spot)
+        if press and _wide_man(p):
+            side = 1.0 if l >= 0 else -1.0
+            fbs = [(oa, ol) for oa, ol in theirs if oa > PITCH_L - 35.0 and ol * side > 12.0]
+            if fbs:
+                oa, ol = max(fbs, key=lambda x: x[1] * side)             # their widest man on my side
+                a, l = oa - GK_PRESS_OFF, ol - side * GK_PRESS_IN
+            else:
+                a, l = st["gk_front"] - 4.0, side * 24.0
+            why = "press their full-back (goal kick)"
+        if a > BOX_A - 0.5 and abs(l) < BOX_HW + 0.5:
+            a = BOX_A - 0.5                                               # (out of their box)
+        out[id(p)] = (to_world(tid, a, _clamp(l, -(HALF_W - EDGE), HALF_W - EDGE)), why)
 
 
 COVER_ABSENT = 20.0      # m: a back-line man this far up the pitch from his spot isn't there (still up from
