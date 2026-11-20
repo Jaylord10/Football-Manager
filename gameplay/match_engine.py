@@ -134,6 +134,8 @@ class MatchEngine:
         self.possession_frames = [0, 0]   # frames each team had the ball
         self.shots             = [0, 0]   # total shots
         self.shots_on_target   = [0, 0]   # saved + goals
+        from gameplay.match_stats import MatchStats
+        self.stats = MatchStats()         # the half-time / full-time stats (gameplay/match_stats.py)
 
         # ── RL per-step tracking ──────────────────────────────────────────
         self._prev_ball_owner  = None     # used to detect when Neo wins the ball
@@ -267,6 +269,8 @@ class MatchEngine:
         self.possession_frames = [0, 0]
         self.shots             = [0, 0]
         self.shots_on_target   = [0, 0]
+        from gameplay.match_stats import MatchStats
+        self.stats = MatchStats()
         # NOTE: time_elapsed is deliberately NOT reset to 0 here.  Players and
         # the ball store timestamps (last pass, last tackle, restart time...)
         # and rewinding the clock made them look like they were in the future,
@@ -501,6 +505,7 @@ class MatchEngine:
         self.time_elapsed += delta_time
         game_clock.set_time(self.time_elapsed)
         self._update_game(delta_time)
+        self.stats.update(self, delta_time)
 
     def _handle_events(self):
         for event in pygame.event.get():
@@ -855,6 +860,7 @@ class MatchEngine:
             "subs": list(self.subs.log),
             "players": self.subs.finish(),
             "ht_talk": self.ht_given,
+            "stats": self.stats.as_dict([round(100 * f / total) for f in self.possession_frames]),
         }
 
     # ------------------------------------------------------------------
@@ -954,6 +960,7 @@ class MatchEngine:
         foul_pos       = foul_info["pos"]
         attacking_team = foul_info["attacking_team"]
 
+        self.stats.foul(fouler.team)
         # Issue the card
         fouler_team = self.team0 if fouler.team == 0 else self.team1
         display_card = apply_card(fouler, card_type, fouler_team, self.time_elapsed)
@@ -1028,7 +1035,7 @@ class MatchEngine:
             "speed":           getattr(self, "match_speed", 1),
             "possession":      poss,
             "shots":           self.shots,
-            "shots_on_target": self.shots_on_target,
+            "shots_on_target": self.stats.on_target,
             "rl_agent":        self.rl_agent,
             "rl_player":       self.rl_player,
             "messi_agent":     self.messi_agent,
@@ -1197,8 +1204,10 @@ class MatchEngine:
         if self.match_state == "penalties" and self.shootout is not None:
             self.shootout.draw(self.screen, self.ui_renderer, names)
         if self.match_state in ("halftime", "full_time", "et_break", "et_halftime") and self.sub_panel is None:
+            total = sum(self.possession_frames) or 1
             self.ui_renderer.draw_match_event_overlay(
-                self.screen, self.match_state, self.score, names, self.career, extra=self._extra_line()
+                self.screen, self.match_state, self.score, names, self.career, extra=self._extra_line(),
+                stats=self.stats.as_dict([round(100 * f / total) for f in self.possession_frames])
             )
 
         if flip:

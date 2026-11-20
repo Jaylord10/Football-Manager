@@ -47,3 +47,15 @@ Nothing here is on Jay's PC.  Each item is its own commit.
   After: 2 in 45 min (and the keepers' "moonwalks" 2 -> 0).
 - A full 90 on another fixture: nothing else of note (9 players standing still for 8 s - all straight after the
   second-half kick-off).
+
+## 9. Match stats at half time and full time
+- New gameplay/match_stats.py counts, from what actually happens: shots, on target (scored or the keeper had to
+  save it - "shots on target" used to count only goals), big chances (inside 12 m, no defender within 2 m, or a
+  penalty), passes and pass accuracy (where the ball went next - tackles don't count), corners, fouls, cards,
+  distance run (km) and the fastest anyone went (km/h).
+- Shown on the half-time and full-time screens as a TV-style table with a bar per row; also in the match result
+  ("stats") for later (player ratings, the papers, your "no numbers" idea).  The top bar's "shots on target" uses
+  it too.
+- A full real-club match: 664 v 710 passes at 86-87%, 117-120 km run, fastest 34.2 km/h (real Premier League:
+  ~82-85% pass accuracy, ~105-115 km a team - so we run a little far; the record speed is 37.4 km/h).
+- Doesn't change the match engine (replay hash the same as the commit before).

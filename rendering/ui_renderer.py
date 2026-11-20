@@ -201,8 +201,9 @@ class UIRenderer:
     # Overlay screens
     # ------------------------------------------------------------------
 
-    def draw_match_event_overlay(self, surface, match_state, score, names=("Blue", "Red"), career=False, extra=None):
-        """Semi-transparent overlay for HALF TIME and FULL TIME."""
+    def draw_match_event_overlay(self, surface, match_state, score, names=("Blue", "Red"), career=False, extra=None,
+                                 stats=None):
+        """Semi-transparent overlay for HALF TIME and FULL TIME (stats: the match stats - gameplay/match_stats.py)."""
         overlay = pygame.Surface(
             (WIDTH + FIELD_MARGIN * 2, HEIGHT + FIELD_MARGIN * 2), pygame.SRCALPHA
         )
@@ -232,12 +233,51 @@ class UIRenderer:
         score_surf = self.large_font.render(f"{score[0]}  –  {score[1]}", True, YELLOW)
         sub_surf   = self.normal_font.render(sub, True, (180, 180, 180))
 
-        surface.blit(title_surf, (cx - title_surf.get_width() // 2, cy - 60))
-        surface.blit(score_surf, (cx - score_surf.get_width() // 2, cy))
-        surface.blit(sub_surf,   (cx - sub_surf.get_width() // 2,   cy + 48))
+        top = cy - 60 if not stats else cy - 250
+        surface.blit(title_surf, (cx - title_surf.get_width() // 2, top))
+        surface.blit(score_surf, (cx - score_surf.get_width() // 2, top + 60))
+        surface.blit(sub_surf,   (cx - sub_surf.get_width() // 2,   top + 108))
+        y = top + 138
         if extra:
             ex = self.med_font.render(extra, True, YELLOW)
-            surface.blit(ex, (cx - ex.get_width() // 2, cy + 78))
+            surface.blit(ex, (cx - ex.get_width() // 2, y))
+            y += 30
+        if stats:
+            self._draw_stats_table(surface, cx, y + 8, stats, names)
+
+    def _draw_stats_table(self, surface, cx, y, stats, names):
+        """The TV-style stats: home on the left, away on the right, a bar showing who had more of each."""
+        rows, fastest = stats.get("rows", []), stats.get("fastest")
+        f = self.normal_font
+        panel = pygame.Surface((560, 28 + 27 * len(rows) + 40), pygame.SRCALPHA)
+        panel.fill((0, 0, 0, 150))
+        surface.blit(panel, (cx - 280, y - 8))
+        hn = f.render(names[0], True, (150, 190, 255))
+        an = f.render(names[1], True, (255, 150, 150))
+        surface.blit(hn, (cx - 200 - hn.get_width() // 2, y))
+        surface.blit(an, (cx + 200 - an.get_width() // 2, y))
+        y += 28
+        for label, h, a in rows:
+            lab = f.render(label, True, (200, 200, 200))
+            hs, as_ = f.render(h, True, WHITE), f.render(a, True, WHITE)
+            surface.blit(lab, (cx - lab.get_width() // 2, y))
+            surface.blit(hs, (cx - 200 - hs.get_width() // 2, y))
+            surface.blit(as_, (cx + 200 - as_.get_width() // 2, y))
+            try:
+                hv = float(h.split()[0].rstrip("%")); av = float(a.split()[0].rstrip("%"))
+            except ValueError:
+                hv = av = 0.0
+            if hv + av > 0:
+                w = 300
+                hw = int(w * hv / (hv + av))
+                pygame.draw.rect(surface, (90, 140, 230), (cx - w // 2, y + 21, hw, 3))
+                pygame.draw.rect(surface, (220, 90, 90), (cx - w // 2 + hw, y + 21, w - hw, 3))
+            y += 27
+        if fastest:
+            nm, team, kmh = fastest
+            col = (150, 190, 255) if team == 0 else (255, 150, 150)
+            ft = f.render(f"Fastest: {nm} {kmh:.1f} km/h", True, col)
+            surface.blit(ft, (cx - ft.get_width() // 2, y + 6))
 
     def draw_paused_message(self, surface):
         overlay = pygame.Surface(
