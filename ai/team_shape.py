@@ -346,9 +346,66 @@ def _compute(team, opponents, ball, in_possession, now, restart=None):
             out[id(p)] = (reading.hold_zone(p, spot, now), why)
         if restart is None:
             _cover_absent(team, tid, out)
+            _squeeze(team, opponents, tid, st, out)
         elif restart == "goal_kick":
             _goal_kick_press(team, opponents, tid, st, out)
     return out
+
+
+# Squeezing up behind the press (Jay, 21 Nov: "the opposition keeper has it so all 3 of my forwards are up there
+# but the midfield don't squeeze up to mark the opposition too, so you end up with a massive gap").  A pressing
+# team is compact: real high-pressing sides keep ~35-40 m from their back line to their front men, and the
+# midfield picks up the men in front of it so the ball can't just be played through the press.
+SQUEEZE_PRESS_FROM = 80.0    # styles that press this high up (press_from: "press", "high press") squeeze
+SQUEEZE_FROM_A     = 68.0    # m from our goal: our men pressing up here count as "the press is on"
+SQUEEZE_MID_GAP    = 11.0    # m: the midfield line comes up to this far behind our deepest presser...
+SQUEEZE_BACK_GAP   = 12.0    # ...the back line to this far behind the midfield...
+SQUEEZE_BACK_EXTRA = {True: 10.0, False: 5.0}   # ...but no higher than the style's line_max + this
+                                                # (cb_beyond_half - the high press - goes over halfway)
+SQUEEZE_PICK_UP    = 11.0    # m: a midfielder picks up an opponent this close to his squeezed spot...
+SQUEEZE_GOALSIDE   = 2.0     # ...standing this far goal-side of him
+
+
+def _squeeze(team, opponents, tid, st, out):
+    if st.get("press_from", 0.0) < SQUEEZE_PRESS_FROM:
+        return
+    pressing = [to_frame(tid, p.pos)[0] for p in team
+                if p.role != "GK" and p.state == "press" and getattr(p, "is_active", True)]
+    pressing = [a for a in pressing if a >= SQUEEZE_FROM_A]
+    if not pressing:
+        return
+    mid_line = min(pressing) - SQUEEZE_MID_GAP
+    back_cap = st.get("line_max", 46.0) + SQUEEZE_BACK_EXTRA[bool(st.get("cb_beyond_half", False))]
+    back_line = min(mid_line - SQUEEZE_BACK_GAP, back_cap)
+    theirs = [(o, to_frame(tid, o.pos)) for o in (opponents or [])
+              if o.role != "GK" and getattr(o, "is_active", True)]
+    taken = set()
+    mids = []
+    for p in team:
+        if p.role == "GK" or id(p) not in out or p.state == "press":
+            continue
+        spot, why = out[id(p)]
+        a, l = to_frame(tid, spot)
+        if _is_back(p):
+            if a < back_line:
+                out[id(p)] = (to_world(tid, back_line, l), "squeeze up behind the press")
+        elif a < mid_line:
+            mids.append((p, mid_line, l))
+    # The midfield: up to the line, and each picks up the nearest free man in front of him there
+    for p, a, l in sorted(mids, key=lambda m: m[1]):
+        best = None
+        for o, (oa, ol) in theirs:
+            if id(o) in taken or oa < back_line + 4.0:
+                continue
+            d = ((oa - a) ** 2 + (ol - l) ** 2) ** 0.5
+            if d < SQUEEZE_PICK_UP and (best is None or d < best[0]):
+                best = (d, o, oa, ol)
+        if best is not None:
+            _, o, oa, ol = best
+            taken.add(id(o))
+            out[id(p)] = (to_world(tid, oa - SQUEEZE_GOALSIDE, ol), f"squeeze up: pick up {o.role}")
+        else:
+            out[id(p)] = (to_world(tid, a, l), "squeeze up behind the press")
 
 
 GK_PRESS_FRONT = 90.0    # their goal kick: a style whose front men go this high (the press, the high press)...
