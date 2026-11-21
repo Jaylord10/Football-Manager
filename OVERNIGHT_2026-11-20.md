@@ -110,4 +110,7 @@ Nothing here is on Jay's PC.  Each item is its own commit.
   allows 8) - unless a quick counter's on (a really good pass available): then at once.
 - While he holds it, standing, he bounces it every 1.5 s (3D: the ball dropped to the grass and back to his
   hands).
-- Checks: check.py all good; 45 minutes: nothing odd.
+- Caught by the oddity checker: my first version re-started his "hold" every frame, so he held it for ever and
+  the whole team stood still (161 "frozen" moments in 45 minutes).  Fixed - a hold starts once per spell with
+  the ball - then 0 in 45 minutes, and in a recorded match keepers held it 11 times for 1-5 s.
+- Checks: check.py all good.

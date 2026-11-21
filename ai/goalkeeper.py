@@ -185,11 +185,12 @@ def handle_goalkeeper_with_ball(keeper, teammates, opponents, ball, current_time
     # Holding it a few seconds while his team gets out (real keepers take 4-6 s - the law allows 8) - unless
     # there's a quick counter on: then he lets it go at once.
     import random
-    rt = getattr(keeper, "last_received_time", current_time)
-    if getattr(keeper, "_hold_key", None) != rt:
-        keeper._hold_key = rt
+    if current_time - getattr(keeper, "_hold_last", -99.0) > 0.5:      # (a new spell with it in his hands)
+        keeper._hold_start = current_time
         keeper._hold_for = random.uniform(*GK_HOLD)
-    if current_time - rt < keeper._hold_for and not (prog_type == "pass" and prog_score > GK_COUNTER_SCORE):
+    keeper._hold_last = current_time
+    if current_time - keeper._hold_start < keeper._hold_for and \
+            not (prog_type == "pass" and prog_score > GK_COUNTER_SCORE):
         keeper.target = keeper.pos
         keeper.state = "guard"
         return keeper.team
