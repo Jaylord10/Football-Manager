@@ -39,6 +39,8 @@ RUN_THROUGH = {"cut", "brake"}          # (our figure's sharp cuts and stops: th
 OWN_LOOPS = {"shift", "rest", "shuffle", "shuffle_m", "backpedal", "backwalk", "turnstep"}
 CM = 100.0                                   # (the capture is in centimetres)
 BRIGHT = 1.2
+SLEEVE_END = 0.34          # (how far a short sleeve reaches along his arm, from the middle of him, in metres - in
+                           #  his rest pose, arms out: shoulder about 0.18, elbow about 0.45)
 
 _info = None
 
@@ -161,6 +163,20 @@ def kit_texture(actor, kit, number, name, keeper, skin):
     collar = torso & (zs > 1.47) & (axs < 0.11)
     col[collar] = trim
     out[m] = col * shade[m][:, None]
+    # Sleeves: the same November choice as our figures (players3d.py) - about a third of outfield players in long
+    # sleeves (and a few of them in gloves); the rest short-sleeved, a hem in the trim colour, bare arms below.
+    import zlib
+    hs = zlib.crc32(f"hair{name}{number}".encode())
+    ls, gl = kit.get("long_sleeves"), False
+    if ls is None:
+        ls = keeper or not name or str(name).startswith(("sub", "steward")) or (hs // 100) % 10 < 3
+        gl = (not keeper and bool(name) and not str(name).startswith(("sub", "steward"))
+              and ((hs // 1000) % 10 < 1 or (ls and (hs // 1000) % 10 < 4)))
+    if not ls:
+        hem = m & (ax > SLEEVE_END - 0.03) & (ax <= SLEEVE_END)
+        out[hem] = trim * shade[hem][:, None]
+        arm = m & (ax > SLEEVE_END)
+        out[arm] = C(skin) * np.clip(shade[arm], 0.8, 1.1)[:, None]
     for pid, key in ((2, "shorts"), (3, "socks")):
         mm = part == pid
         out[mm] = C(kit.get(key, kit["shirt"])) * shade[mm][:, None]
@@ -171,12 +187,11 @@ def kit_texture(actor, kit, number, name, keeper, skin):
     sk = part == 4
     tone = C(skin) / np.maximum(1e-3, b["skin_ref"])
     out[sk] = np.clip(raw[sk] * tone, 0, 1)
-    if keeper:                                                   # (gloves)
+    if keeper or gl:                                             # (gloves: a keeper's, or a cold outfielder's)
         g = sk & (ax > 0.60)
-        gc = C((235, 235, 235) if sum(kit["shirt"]) < 600 else (40, 40, 44))
+        gc = C((28, 28, 30)) if not keeper else C((235, 235, 235) if sum(kit["shirt"]) < 600 else (40, 40, 44))
         out[g] = gc * np.clip(raw[g].mean(axis=1) / max(1e-3, float(np.median(raw[g].mean(axis=1)))), 0.6, 1.2)[:, None]
     # Boots: the same choice as our figures (players3d.py) - half in black, the rest white or a bright colour
-    import zlib
     bs = zlib.crc32(f"boots{name}{number}".encode()) % 20
     bright = [(240, 240, 240), (240, 240, 240), (255, 120, 30), (40, 200, 190), (190, 240, 60), (230, 50, 60),
               (60, 120, 240), (250, 220, 50), (245, 90, 170), (240, 240, 240)]
