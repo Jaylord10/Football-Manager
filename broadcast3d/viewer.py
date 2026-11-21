@@ -680,6 +680,12 @@ class Viewer(ShowBase):
                                                          "t": 0.0})
         self.players[i] = p
         self.m["names"][i] = [name, role, num]
+        # The man coming on comes on at the halfway line, from the benches' side, and jogs to his place (the law:
+        # the substitute enters at the halfway line; the man off leaves by the nearest point - above)
+        if not keeper:
+            sx, sy = (-1.2 if team == 0 else 1.2), -HY - 0.6
+            p.root.setPos(sx, sy, 0)
+            self.__dict__.setdefault("_arriving", {})[i] = [sx, sy, 0.0]
         if getattr(old, "captain", False):              # (the captain's off: the armband to a team-mate - the
             lo = 0 if team == 0 else 11                 #  first defender, or whoever's next)
             for j in list(range(lo + 1, lo + 11)) + [lo]:
@@ -1105,6 +1111,18 @@ class Viewer(ShowBase):
             wx, wy, sp2 = self._gather(i, fr, cel, wx, wy, dt)                  # (team-mates mob the scorer)
             if sp2 is not None:
                 sp = sp2
+            arr = getattr(self, "_arriving", {}).get(i)                        # (a substitute jogging on)
+            if arr is not None:
+                dx, dy = wx - arr[0], wy - arr[1]
+                dd = math.hypot(dx, dy)
+                arr[2] += dt
+                if dd < 0.4 or arr[2] > 15.0:
+                    del self._arriving[i]
+                else:
+                    stp = min(dd, SUB_JOG * dt)
+                    arr[0] += dx / dd * stp; arr[1] += dy / dd * stp
+                    wx, wy, sp = arr[0], arr[1], SUB_JOG * 10.0
+                    fx, fy = dx / dd, -dy / dd
             hb = self._handbags(i, fr, wx, wy, dt, k)                            # (a bad foul: handbags)
             if hb is not None:
                 wx, wy, sp2, hb_kind = hb
@@ -1678,6 +1696,7 @@ APPEAL_WITHIN = 18.0     # m from the ball: the side given the free kick appeals
 APPEAL_FOR = 1.45        # s from the whistle
 
 
+SUB_JOG = 4.0            # m/s: a substitute jogging on to his place
 HANDBAGS = (0.3, 3.8)    # s after a booking: team-mates of the man fouled go for the fouler; one of his pulls
 HANDBAGS_NEAR = 18.0     # them apart (m: those within this of it)
 

@@ -120,3 +120,9 @@ Nothing here is on Jay's PC.  Each item is its own commit.
   in the chest, the other protests - and one of his own team-mates gets between them, arms out wide.  About
   3.5 s, then they drift back to where the match has them.  (The referee already walks over to show the card.)
 - Checks: check.py all good.
+
+## 19. Substitutes coming on (3D only)
+- The man coming on now enters at the halfway line on the benches' side and jogs (4 m/s) to his place, instead
+  of appearing where the man going off was.  (The law since 2019: the sub comes on at halfway, the player going
+  off leaves by the nearest point - which he already did, clapping the fans.)
+- Tested by making a substitution in a recorded match; check.py all good.
