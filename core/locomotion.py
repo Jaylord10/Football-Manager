@@ -139,7 +139,7 @@ def intent_speed_ms(player, dist_m):
     if state == "hold":
         return top * HOLD_SPEED
     if state == "press":
-        return top * min(1.0, PRESS_BASE + PRESS_PER_WR * _stat(player, "Work Rate"))
+        return top * min(1.0, PRESS_BASE + PRESS_PER_WR * _stat(player, "Work Rate")) * _fatigue.press_factor(player)
     if state == "walk":
         return min(top, WALK_BASE + WALK_PER_M * dist_m, WALK_MAX)
     if state == "celebrate":

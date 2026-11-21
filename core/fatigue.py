@@ -44,8 +44,14 @@ RECOVER_JOG_TAU    = 50.0    # s: ...and while jogging (2-4 m/s); no recovery fa
 JOG_LIMIT          = 4.0
 WALK_LIMIT         = 2.0
 
-# Match stamina (wear and tear) - per MATCH second
-WEAR_PER_LOAD      = 0.000185   # stamina lost per match-second at load 1 (load = (speed/5)^2)
+# Match stamina (wear and tear) - per MATCH second.  Tuned (21 Nov) to what real players lose: in top-level
+# matches high-intensity running in the last 15 minutes is 35-45% down on the first 15 (Mohr, Krustrup &
+# Bangsbo 2003, J Sports Sci 21(7), doi 10.1080/0264041031000071182).  Before, a side pressing flat out all game
+# lost ~13% and one sitting off lost nothing.  Hard running now costs far more than jogging (HI_LOAD), and a
+# worn-out man is clearly slower and less willing (the Effects below).
+WEAR_PER_LOAD      = 0.00024    # (was 0.000185) stamina lost per match-second at load 1 (load = (speed/5)^2 + HI_LOAD x ...)
+HI_FROM            = 5.5        # m/s: running faster than this...
+HI_LOAD            = 0.9        # ...adds this x (speed - 5.5)^2 to the load: high-intensity running wears you out
 WEAR_BASE_LOAD     = 0.03       # even standing around costs a little
 HALF_TIME_RECOVERY = 0.06       # stamina back at half-time (capped at 1)
 MATCH_SECONDS_PER_HALF = 45 * 60
@@ -56,11 +62,12 @@ STAT_RECOVERY      = 0.03       # energy recovery x (1 + 0.03 x (Stamina - 10))
 
 # Effects
 TOP_SPEED_ENERGY   = 0.12       # top speed x (1 - 0.12 x (1 - energy))
-TOP_SPEED_STAMINA  = 0.15       # top speed x (1 - 0.15 x (1 - stamina))
+TOP_SPEED_STAMINA  = 0.22       # top speed x (1 - 0.22 x (1 - stamina))   (was 0.15)
 ACCEL_ENERGY       = 0.35       # acceleration x (1 - 0.35 x (1 - energy))
 RECOVERY_STAMINA   = 1.0        # energy recovery x (1 - 1.0 x (1 - stamina)): worn-out legs recover slowly
 WILL_ENERGY        = 0.30       # urgency x (1 - 0.30 x (1 - energy)): gassed players pick their moments
-WILL_STAMINA       = 0.50       # urgency x (1 - 0.50 x (1 - stamina))
+WILL_STAMINA       = 0.85       # urgency x (1 - 0.85 x (1 - stamina))   (was 0.50)
+PRESS_STAMINA      = 0.45       # pressing pace x (1 - 0.45 x (1 - stamina)): a worn-out forward closes down slower
 
 
 from core.stats import stat20 as _stat    # (cached: attributes never change during a match)
@@ -118,6 +125,8 @@ def update(player, dt):
     if player.role == "GK":
         return          # keepers barely tire (and their simple movement code is jumpy)
     load = WEAR_BASE_LOAD + (v / 5.0) ** 2
+    if v > HI_FROM:
+        load += HI_LOAD * (v - HI_FROM) ** 2
     wear = WEAR_PER_LOAD * load * (1.0 - STAT_WEAR * (st - 10)) * dt * _time_scale()
     player.stamina = max(0.0, player.stamina - wear)
 
@@ -149,3 +158,8 @@ def willingness(player):
 def condition(player):
     """Overall freshness 0-1 for AI choices (pressing, runs): the worse of the two."""
     return min(getattr(player, "energy", 1.0), getattr(player, "stamina", 1.0))
+
+
+def press_factor(player):
+    """Pressing pace multiplier: worn-out legs close down slower (core/locomotion.py)."""
+    return 1.0 - PRESS_STAMINA * (1.0 - getattr(player, "stamina", 1.0))

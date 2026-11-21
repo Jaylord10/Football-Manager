@@ -69,6 +69,7 @@ CB_ENGAGE_DIST      = 28.0   # m from our goal: centre-backs only press inside t
 CB_PENALTY          = 1.2    # s: ...otherwise they count as this much further away
 TIRED_STAMINA       = 0.45   # below this condition (worse of sprint energy / match stamina)...
 TIRED_PENALTY       = 0.6    # s: ...he's reluctant
+TIRED_SLOPE         = 1.5    # s more per unit of match stamina lost (half spent: +0.75 s) - tired legs press less
 WORK_RATE_BONUS     = 0.03   # s cheaper per Work Rate point above 10
 KEEP_MARGIN         = 0.4    # s: someone must be this much better to take over
 JOCKEY_DIST         = 1.8    # m goal-side of the carrier: close enough to tackle, far enough not to be skinned
@@ -117,6 +118,7 @@ def _cost(p, carrier, d_goal_m):
     import core.fatigue as fatigue
     if fatigue.condition(p) < TIRED_STAMINA:
         t += TIRED_PENALTY
+    t += TIRED_SLOPE * max(0.0, 1.0 - getattr(p, "stamina", 1.0))   # (the more worn out, the less keen)
     t -= WORK_RATE_BONUS * (_stat(p, "Work Rate") - 10.0)
     return t
 
