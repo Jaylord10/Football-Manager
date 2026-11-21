@@ -1468,6 +1468,10 @@ def _viewer_set_piece_cam(self, fr, bx, by, dt):
     return None
 
 
+TV_FOV = 30.0       # degrees: the TV camera's picture (was 34: a touch closer in - the players bigger, easier to
+TV_WIDER = 4.5      #  follow), and up to this much wider while the ball's flying about
+
+
 def _viewer_cam_tv(self, fr, bx, by, dt):
     """Where the TV camera points (self.cx, self.cy) and how wide (self.cam_fov)."""
     if not hasattr(self, "cam_v"):
@@ -1484,7 +1488,7 @@ def _viewer_cam_tv(self, fr, bx, by, dt):
     self.bv = [self.bv[0] + (vx - self.bv[0]) * k, self.bv[1] + (vy - self.bv[1]) * k]
     tx = bx + max(-9.0, min(9.0, self.bv[0] * 0.7))     # (a little ahead of the play)
     ty = by + max(-5.0, min(5.0, self.bv[1] * 0.4))
-    fov = 34.0 + min(5.0, math.hypot(*self.bv) * 0.35)  # (wider while the ball's flying about)
+    fov = TV_FOV + min(TV_WIDER, math.hypot(*self.bv) * 0.35)  # (wider while the ball's flying about)
     tilt = 0.0
     cel = fr.get("c")
     r = fr.get("r")
@@ -2043,6 +2047,9 @@ def _viewer_run_up(self, i, fr, wx, wy, fx, fy, sp, k, dt):
             del wall[i]
     elif i in wall and r and r[0] != "free_kick":
         del wall[i]
+    if i in getattr(self, "_down_at", {}) or i in getattr(self, "_arriving", {}):   # (fouled, he's down - or up
+        st.pop(i, None)                                                          #  and on his way back to it)
+        return wx, wy, fx, fy, sp, pose
     if not r or r[1] != i or r[0] not in RUNUP:
         s = st.get(i)
         if s is not None and s.get("off") is not None:                     # (just taken: ease the last bit)
