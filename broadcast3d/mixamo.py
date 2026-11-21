@@ -37,7 +37,7 @@ KICKS = ("kick", "shot", "finish", "pass", "cross", "clear", "dink", "volley", "
 # backpedalling) - anything else of ours (celebrating, clapping, hands on hips / knees, calling for it) is copied
 OWN_LOOPS = {"shift", "rest", "shuffle", "shuffle_m", "backpedal", "backwalk", "turnstep"}
 CM = 100.0                                   # (the capture is in centimetres)
-BRIGHT = 1.5
+BRIGHT = 1.2
 
 _info = None
 
@@ -82,6 +82,149 @@ def info():
             dist = max(abs(v) for v in d["drift"].values()) / CM if d["drift"] else 0.0
             _info[nm] = {"dur": dur, "dist": dist, "speed": dist / dur, "frames": int(f1 - f0) + 1}
     return _info
+
+
+_base = None
+
+
+def _base_maps(actor):
+    """His body picture (as numbers, 0-1) and where each pixel sits on him (dev/mixamo_posmap.py)."""
+    global _base
+    if _base is None:
+        import numpy as np
+        tex = None
+        for t in actor.findAllTextures():
+            if t.getXSize() >= 512 and "Diffuse" in t.getName() and "1002" not in t.getName():
+                tex = t
+                break
+        if tex is None:
+            tex = max(actor.findAllTextures(), key=lambda t: t.getXSize())
+        w, h = tex.getXSize(), tex.getYSize()
+        raw = np.frombuffer(bytes(tex.getRamImageAs("RGB")), np.uint8).reshape(h, w, 3)[::-1].astype(np.float32) / 255
+        pm = np.load(os.path.join(HERE, "models", "mixamo_posmap.npz"))
+        pos, part = pm["pos"].astype(np.float32), pm["part"]
+        if pos.shape[0] != h:
+            raise RuntimeError("posmap size")
+        L = raw.mean(axis=2)
+        shade = np.ones_like(L)
+        for pid in (1, 2, 3):
+            m = part == pid
+            if m.any():
+                shade[m] = np.clip(L[m] / max(1e-3, float(np.median(L[m]))), 0.55, 1.25)
+        x, y, z = pos[..., 0], pos[..., 1], pos[..., 2]
+        # (the model's own number 7 on his back and badge on his chest: smoothed away - we print our own)
+        flat = (part == 1) & (np.abs(x) < 0.2) & (z > 1.02) & (z < 1.5) & (y > 0.0)
+        flat |= (part == 1) & (np.abs(x) < 0.2) & (z > 1.25) & (z < 1.45) & (y < 0.0)
+        shade[flat] = np.clip(shade[flat], 0.92, 1.05)
+        skin = part == 4
+        skin_ref = np.median(raw[skin & (np.abs(x) < 0.4)], axis=0) if skin.any() else np.array([0.8, 0.6, 0.5])
+        _base = {"raw": raw, "pos": pos, "part": part, "shade": shade, "skin_ref": skin_ref, "w": w, "h": h, "tex": tex}
+    return _base
+
+
+def kit_texture(actor, kit, number, name, keeper, skin):
+    """His own picture: the club's kit (with its pattern - the same rules as our figures), his name and number on
+    his back, his skin tone, a keeper's gloves."""
+    import numpy as np
+    from panda3d.core import Texture
+    import players3d
+    b = _base_maps(actor)
+    raw, pos, part, shade = b["raw"], b["pos"], b["part"], b["shade"]
+    out = raw.copy()
+    x, y, z = pos[..., 0], pos[..., 1], pos[..., 2]
+    ax = np.abs(x)
+    C = lambda c: np.array(c[:3], np.float32) / 255.0
+    shirt, trim = C(kit["shirt"]), C(kit.get("trim", kit["shirt"]))
+    m = part == 1
+    col = np.empty((int(m.sum()), 3), np.float32)
+    col[:] = shirt
+    pat = kit.get("pattern")
+    xs, ys, zs, axs = x[m], y[m], z[m], ax[m]
+    torso = axs < 0.24
+    if pat == "sleeves":
+        col[~torso] = trim
+    elif pat == "hoops":
+        col[torso & ((((zs - 0.97) / 0.105).astype(int) % 2) == 1)] = trim
+    elif pat == "stripes":
+        col[torso & ((((xs + 0.5) / 0.075).astype(int) % 2) == 1)] = trim
+    elif pat == "pinstripe":
+        k = (torso & (((xs + 0.5) % 0.07) < 0.018))[:, None] * 0.22
+        col = col * (1 - k) + trim * k
+    elif pat == "band":
+        col[torso & (zs > 1.24) & (zs < 1.33)] = trim
+    elif pat == "halves":
+        col[torso & (xs > 0)] = trim
+    elif pat == "sash":
+        sgn = np.where(ys < 0, 1.0, -1.0)
+        col[torso & (np.abs(xs * sgn - (zs - 1.18) * 0.85) < 0.07)] = trim
+    collar = torso & (zs > 1.47) & (axs < 0.11)
+    col[collar] = trim
+    out[m] = col * shade[m][:, None]
+    for pid, key in ((2, "shorts"), (3, "socks")):
+        mm = part == pid
+        out[mm] = C(kit.get(key, kit["shirt"])) * shade[mm][:, None]
+    if kit.get("socktop"):
+        mm = (part == 3) & (z > 0.30)
+        out[mm] = C(kit["socktop"]) * shade[mm][:, None]
+    # Skin: his own tone, keeping the model's shading and features
+    sk = part == 4
+    tone = C(skin) / np.maximum(1e-3, b["skin_ref"])
+    out[sk] = np.clip(raw[sk] * tone, 0, 1)
+    if keeper:                                                   # (gloves)
+        g = sk & (ax > 0.60)
+        gc = C((235, 235, 235) if sum(kit["shirt"]) < 600 else (40, 40, 44))
+        out[g] = gc * np.clip(raw[g].mean(axis=1) / max(1e-3, float(np.median(raw[g].mean(axis=1)))), 0.6, 1.2)[:, None]
+    # Name and number on his back (the same picture our figures use, the same place)
+    num_col = kit.get("number", (255, 255, 255))
+    bt = players3d._back_texture(name, number, num_col, None)
+    from PIL import Image
+    import io
+    from panda3d.core import StringStream, PNMImage
+    pi = PNMImage(); bt.store(pi)
+    ss = StringStream(); pi.write(ss, "x.png")
+    img = np.asarray(Image.open(io.BytesIO(ss.getData())).convert("RGBA"), np.float32) / 255.0
+    H, W = img.shape[:2]
+    back = (part == 1) & (y > 0.0) & (ax < 0.15) & (z > 1.10) & (z < 1.44)
+    u = np.clip(((0.15 - x[back]) / 0.30 * (W - 1)).astype(int), 0, W - 1)
+    v = np.clip(((1.0 - (z[back] - 1.10) / 0.34) * (H - 1)).astype(int), 0, H - 1)
+    a = img[v, u, 3:4]
+    out[back] = out[back] * (1 - a) + img[v, u, :3] * a * shade[back][:, None]
+    data = (np.clip(out, 0, 1)[::-1] * 255).astype(np.uint8)
+    t = Texture(f"kit{number}")
+    t.setup2dTexture(b["w"], b["h"], Texture.T_unsigned_byte, Texture.F_rgb)
+    t.setRamImageAs(data.tobytes(), "RGB")
+    t.setMinfilter(Texture.FT_linear_mipmap_linear)
+    t.setMagfilter(Texture.FT_linear)
+    t.setAnisotropicDegree(4)
+    return t
+
+
+_hair = {}
+
+
+def hair_texture(actor, colour):
+    """His hair in his own colour (the model's is dark brown): the same strands, re-coloured."""
+    import numpy as np
+    from panda3d.core import Texture
+    key = tuple(colour)
+    if key in _hair:
+        return _hair[key]
+    src = next((t for t in actor.findAllTextures() if "1002" in t.getName() and "Diffuse" in t.getName()), None)
+    if src is None:
+        return None
+    w, h = src.getXSize(), src.getYSize()
+    raw = np.frombuffer(bytes(src.getRamImageAs("RGBA")), np.uint8).reshape(h, w, 4).astype(np.float32) / 255
+    L = raw[..., :3].mean(axis=2)
+    ref = max(1e-3, float(np.median(L[raw[..., 3] > 0.5]))) if (raw[..., 3] > 0.5).any() else 0.2
+    c = np.array(colour[:3], np.float32) / 255.0
+    out = raw.copy()
+    out[..., :3] = np.clip(c * np.clip(L / ref, 0.35, 1.8)[..., None], 0, 1)
+    t = Texture("hair")
+    t.setup2dTexture(w, h, Texture.T_unsigned_byte, Texture.F_rgba)
+    t.setRamImageAs((out * 255).astype(np.uint8).tobytes(), "RGBA")
+    t.setMinfilter(Texture.FT_linear_mipmap_linear)
+    _hair[key] = t
+    return t
 
 
 class Retarget:
@@ -217,7 +360,7 @@ def _arc(a, b):
 
 
 class Mix:
-    def __init__(self, ap, kit, keeper=False):
+    def __init__(self, ap, kit, keeper=False, number="", name=None, skin=None, hair=None):
         from direct.actor.Actor import Actor
         from panda3d.core import Filename, OmniBoundingVolume
         self.ap = ap
@@ -233,8 +376,24 @@ class Mix:
         self.a.setShaderInput("kit_on", 0.0, priority=10)      # (our lighting shader, but his own pictures - not
                                                                #  our painted kits; skinned on the graphics card)
         self.a.setColorScale(BRIGHT, BRIGHT, BRIGHT, 1.0)      # (our lighting is set up for our painted kits,
-        self._kit(kit, keeper)                                 #  which it wraps light round - his pictures need
-        self.a.enableBlend()                                   #  a lift to sit alongside)
+        try:                                                   #  which it wraps light round - his pictures need
+            tex = kit_texture(self.a, kit, number, name, keeper, skin or (200, 150, 120))
+            ts = self.a.findTextureStage("Base Color")         #  a lift to sit alongside)
+            for np_ in self.a.findAllMatches("**/Ch38_*"):
+                if "Hair" not in np_.getName() and "Eyelash" not in np_.getName():
+                    if ts is not None:
+                        np_.setTexture(ts, tex, 1)
+                    else:
+                        np_.setTexture(tex, 1)
+            if hair is not None:
+                ht = hair_texture(self.a, hair)
+                if ht is not None:
+                    for np_ in self.a.findAllMatches("**/Ch38_Hair*"):
+                        np_.setTexture(ts, ht, 1) if ts is not None else np_.setTexture(ht, 1)
+        except Exception as ex:                                # (no position map: just the colours)
+            print("mixamo kit picture:", ex)
+            self._kit(kit, keeper)
+        self.a.enableBlend()
         self.anims = self.a.getAnimNames()
         self.w = {n: 0.0 for n in self.anims}
         self.phase = 0.0
@@ -326,9 +485,9 @@ class Mix:
             self.a.setControlEffect(n, max(0.0, self.w[n]))
 
 
-def attach(ap, kit, keeper=False):
+def attach(ap, kit, keeper=False, number="", name=None, skin=None, hair=None):
     """Give an AnimPlayer the Mixamo body: wraps his update so the new body follows it."""
-    m = Mix(ap, kit, keeper)
+    m = Mix(ap, kit, keeper, number, name, skin, hair)
     orig = ap.update
 
     def update(x, y, fx, fy, speed, dt, active=True, vel=None, ball=None):

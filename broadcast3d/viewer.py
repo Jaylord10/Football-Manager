@@ -550,7 +550,7 @@ class Viewer(ShowBase):
                 self.players[-1].kit = kit
                 if MIXAMO:                                                # (test: the Mixamo footballer -
                     import mixamo                                         #  broadcast3d/mixamo.py)
-                    mixamo.attach(self.players[-1], kit, keeper)
+                    mixamo.attach(self.players[-1], kit, keeper, num or (i % 11) + 1, name, skin, hair)
             else:
                 self.players.append(Player(self.render, kit, (i % 11) + 1, skin, hair, keeper))
         self.officials = []
@@ -676,7 +676,7 @@ class Viewer(ShowBase):
         p.kit = kit
         if MIXAMO:
             import mixamo
-            mixamo.attach(p, kit, keeper)
+            mixamo.attach(p, kit, keeper, num, name, skin, hair)
         p.root.setPos(old.root.getPos()); p.root.setH(old.root.getH())
         self._shadow_under(p)
         if getattr(old, "flood", None) is not None:
