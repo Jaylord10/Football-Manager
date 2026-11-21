@@ -18,6 +18,39 @@ names = ["offensive idle", "Idle", "Idle (1)", "Breathing Idle", "jog forward", 
 ACTION = {"kick soccerball (2)": 5, "strike foward jog": 12, "Chip": 14, "header soccerball": 22, "throw in": 47,
           "goalkeeper overhand throw": 47, "goalkeeper drop kick": 62}
 names += list(ACTION)
+# Right-footed moves also made left-footed: every frame mirrored, left to right (each bone takes its opposite
+# number's pose, reflected across the middle of him) - saved as "<move>_M"
+MIRROR = ("kick soccerball (2)", "strike foward jog", "Chip")
+
+
+def mirrored(arm, act, nm):
+    """A copy of act played the other way round (left <-> right)."""
+    from mathutils import Matrix
+    S = Matrix.Diagonal((-1.0, 1.0, 1.0, 1.0))
+    sc = bpy.context.scene
+    f0, f1 = int(act.frame_range[0]), int(act.frame_range[1])
+    arm.animation_data.action = act
+    pbs = sorted(arm.pose.bones, key=lambda b: len(b.parent_recursive))
+    other = lambda n: n.replace("Left", "@").replace("Right", "Left").replace("@", "Right")
+    mats = {}
+    for f in range(f0, f1 + 1):
+        sc.frame_set(f)
+        mats[f] = {b.name: b.matrix.copy() for b in pbs}
+    arm.animation_data.action = None
+    am = bpy.data.actions.new(nm)
+    am.use_fake_user = True
+    arm.animation_data.action = am
+    for f in range(f0, f1 + 1):
+        for b in pbs:
+            src = other(b.name) if other(b.name) in mats[f] else b.name
+            b.matrix = S @ mats[f][src] @ S
+            bpy.context.view_layer.update()
+            b.keyframe_insert("rotation_quaternion", frame=f)
+            b.keyframe_insert("location", frame=f)
+    arm.animation_data.action = None
+    for b in pbs:                                                   # (back to his rest pose)
+        b.rotation_quaternion = (1, 0, 0, 0); b.location = (0, 0, 0)
+    return am
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.fbx(filepath=f"{U}/Ch38_nonPBR.fbx")
 arm = next(o for o in bpy.context.scene.objects if o.type == "ARMATURE")
@@ -70,6 +103,13 @@ for n in names:
     track = arm.animation_data.nla_tracks.new(); track.name = nm
     track.strips.new(nm, int(act.frame_range[0]), act)
     track.mute = True
+    if n in MIRROR:
+        am = mirrored(arm, act, nm + "_M")
+        tm = arm.animation_data.nla_tracks.new(); tm.name = nm + "_M"
+        tm.strips.new(nm + "_M", int(am.frame_range[0]), am)
+        tm.mute = True
+        info[nm + "_M"] = dict(info[nm])
+        print("MIRRORED", nm)
     for o in new:
         bpy.data.objects.remove(o, do_unlink=True)
     print("ACT", nm, act.frame_range[:], drift)

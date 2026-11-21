@@ -39,7 +39,8 @@ KICKS = ("kick", "shot", "finish", "pass", "cross", "clear", "dink", "volley", "
 RUN_THROUGH = {"cut", "brake"}          # (our figure's sharp cuts and stops: the motion capture just runs on)
 # Our moves with the ball that the motion capture has itself: played straight from it, lined up so its moment (the
 # ball struck, headed, thrown - "moment" in the .json) falls on ours.  (move, on the run?) -> his move; on the run =
-# going faster than SWING_FROM m/s.  Left-footed and anything else: he copies our figure (Retarget).
+# going faster than SWING_FROM m/s.  Left-footed: the same move mirrored ("_M", made in dev/mixamo_build.py) where
+# there is one.  Anything else: he copies our figure (Retarget).
 CLIPS = {("kick", False): "kick_soccerball_2", ("pass", False): "kick_soccerball_2",
          ("kick", True): "strike_foward_jog", ("pass", True): "strike_foward_jog",
          ("shot", False): "strike_foward_jog", ("shot", True): "strike_foward_jog",
@@ -459,7 +460,7 @@ class Mix:
         idles = [n for n in IDLES if n in self.anims] or [self.anims[0]]
         self.idle = idles[(ap.seed // 3) % len(idles)]
         self.still = set(IDLES) | {"kick_soccerball", "Victory"}
-        self.clips = set(CLIPS.values())
+        self.clips = set(CLIPS.values()) | set(c + "_M" for c in CLIPS.values())
         self.clip_for = None
         self.rt = Retarget(self)                               # (in the rest pose: before anything moves)
         self.w_rt = 0.0                                        # (how much he's copying our figure: 0-1)
@@ -504,9 +505,13 @@ class Mix:
         base = name.split("_")[0] if name else None
         # A move with the ball the motion capture has (right foot, header, throw): his own, lined up on ours
         act = None
-        if name is not None and wgt > 0.02 and not name.endswith("_m"):
+        if name is not None and wgt > 0.02:
             if self.clip_for is None or self.clip_for[0] != name or frame < self.clip_for[1]:
-                self.clip_for = (name, frame, CLIPS.get((name, ap.sp > SWING_FROM)))   # (chosen as it starts)
+                left = name.endswith("_m")                      # (left-footed: the move mirrored, if we have it)
+                clip = CLIPS.get((name[:-2] if left else name, ap.sp > SWING_FROM))
+                if left:
+                    clip = clip + "_M" if clip and clip + "_M" in self.anims else None
+                self.clip_for = (name, frame, clip)             # (chosen as it starts)
             clip = self.clip_for[2]
             if clip in self.anims and info()[clip]["moment"] is not None:
                 import gait
