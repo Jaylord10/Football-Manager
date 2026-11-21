@@ -1568,6 +1568,12 @@ def _viewer_ball(self, fr, dt):
         bx, by, bz = px + fx * dist + fy * lat, py + fy * dist - fx * lat, BALL_R
         if getattr(p, "keeper", False):                                     # (a keeper: in his hands)
             bx, by, bz = p.hand() if (kind == "gkthrow" and t > -0.45) else p.hands()
+            gk_ = getattr(self.events, "_gained", {}).get(o)
+            held = (fr.get("k", 0) - gk_[0]) / 30.0 if gk_ else 0.0
+            if kind in (None, "cradle") and p.sp < 8 and held > BOUNCE_AFTER:  # (waiting for his team to get
+                u = ((held - BOUNCE_AFTER) % BOUNCE_EVERY) / BOUNCE_EVERY    #  out: bouncing the ball)
+                if u < 0.32:
+                    bz = BALL_R + (bz - BALL_R) * abs(_m.cos(_m.pi * u / 0.32))
     r = fr.get("r")
     if r and r[0] == "throw_in" and r[1] >= 0:                              # (a throw-in: in his hands)
         p = self.players[r[1]]
@@ -1658,6 +1664,8 @@ def _viewer_keeper_dive(self, i, p, stage, k):
     p.root.setHpr(p.h, 0, p.roll * p.roll_side)
 
 
+BOUNCE_AFTER = 1.6       # s holding it (standing about): a keeper bounces the ball...
+BOUNCE_EVERY = 1.5       # ...once every this many seconds
 LATE_KNEES_FROM = 75     # minute: from here, at a dead ball, about a quarter stand bent over, hands on knees
 APPEAL_WITHIN = 18.0     # m from the ball: the side given the free kick appeals for it (some of them)...
 APPEAL_FOR = 1.45        # s from the whistle

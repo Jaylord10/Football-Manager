@@ -8,6 +8,8 @@ import ai.recycle as recycle
 import ai.actions as actions
 import ai.movement as movement
 
+GK_HOLD = (1.5, 5.0)     # s a keeper holds it, with the ball in his hands, while his team gets out...
+GK_COUNTER_SCORE = 80.0  # ...unless a pass this good is on (a quick counter): then at once
 GK_SPOT_RATE = 5.0       # m/s: how fast his spot moves as play moves...
 GK_SPOT_RATE_RUSH = 9.0  # ...coming out to meet a man through on him
 
@@ -180,6 +182,18 @@ def handle_goalkeeper_with_ball(keeper, teammates, opponents, ball, current_time
         prog_type, prog_target, prog_score = prog_result
 
     # Only act on pass suggestions — never let the GK dribble
+    # Holding it a few seconds while his team gets out (real keepers take 4-6 s - the law allows 8) - unless
+    # there's a quick counter on: then he lets it go at once.
+    import random
+    rt = getattr(keeper, "last_received_time", current_time)
+    if getattr(keeper, "_hold_key", None) != rt:
+        keeper._hold_key = rt
+        keeper._hold_for = random.uniform(*GK_HOLD)
+    if current_time - rt < keeper._hold_for and not (prog_type == "pass" and prog_score > GK_COUNTER_SCORE):
+        keeper.target = keeper.pos
+        keeper.state = "guard"
+        return keeper.team
+
     if prog_type == "pass" and prog_target and prog_score > 55.0:
         mechanics.execute_pass(keeper, prog_target, ball, current_time)
         return keeper.team

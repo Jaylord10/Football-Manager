@@ -103,3 +103,11 @@ Nothing here is on Jay's PC.  Each item is its own commit.
   line (11 m on), one infield (13 m across) - and the other side's nearest men mark them, 1.5 m goal-side (never
   inside the 2 m the law gives the thrower).  It used to be both teams standing in their normal shape.
 - (Quick throws, 20% of them, were already there.)  45 minutes on a real-club fixture: nothing odd.
+
+## 13. Keepers with the ball (match engine + 3D)
+- In 90 minutes of a recorded match a keeper had the ball in his hands for 7 frames in total - he let it go the
+  instant he caught it.  Now he holds it 1.5-5 s while his team gets out (real keepers take 4-6 s; the law
+  allows 8) - unless a quick counter's on (a really good pass available): then at once.
+- While he holds it, standing, he bounces it every 1.5 s (3D: the ball dropped to the grass and back to his
+  hands).
+- Checks: check.py all good; 45 minutes: nothing odd.
