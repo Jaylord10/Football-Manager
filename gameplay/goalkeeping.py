@@ -40,6 +40,21 @@ REACH_DIVING    = (1.00, 0.03)   # m from the keeper's centre            (13 -> 
 REACH_STANDING  = 1.00           # m when not diving (shot straight at him: body, legs, arms)
 REACH_SPREAD    = 1.15           # m when the shot came from close range (keeper spreads himself)
 SPREAD_RANGE    = 9.0            # m: shots struck closer than this to the keeper
+# The dive itself (a committed spring across - he can't change it once he's off the ground).  Spratford,
+# Mellifont & Burkett 2009 (Sports Biomechanics 8(3), doi 10.1080/14763140903229526): elite keepers' centre of
+# mass at 3.5-4.2 m/s when they reach the ball, dives of ~0.5 s (low) to ~0.65 s (high); Ibrahim et al. 2019
+# (J Sports Sci 37(3), doi 10.1080/02640414.2018.1499413): reaction ~0.21 s, a high dive ~0.07 s slower than a
+# low one, the ball ~0.7 m inside the post at full stretch.
+DIVE_COM_MAX    = (1.30, 0.04)   # m his middle travels at full stretch: base + per Shot Stopping point (13 -> 1.8)
+DIVE_TIME       = (0.28, 0.30)   # s in the air: base + x the share of a full-stretch dive  (full: 0.58 s)
+DIVE_HIGH_EXTRA = 0.07           # s more for a high one (above DIVE_HIGH)
+DIVE_HIGH       = 1.3            # m
+DIVE_FORWARD    = 0.4            # m: he attacks it a little - across and slightly forward, never back
+DIVE_NEEDED     = 0.55           # m: a ball passing closer than this to him: no dive, it's at him
+DOWN_TIME       = 0.35           # s on the grass after he lands...
+GETUP_TIME      = 1.0            # s ...then getting back up (he can't move till he's up)
+DIVE_CATCH_WITHIN = 0.75         # m from his middle: diving, he can only hold one this close (into his body);
+                                 # further out - at full stretch, a hand to it - he parries or tips it
 MAX_HEIGHT_DIVING   = 2.5        # m: highest ball a diving keeper can touch
 MAX_HEIGHT_STANDING = 2.3
 
@@ -111,7 +126,10 @@ def init_keeper(keeper):
     keeper.dive_reaction = max(0.08, REACTION_TIME[0] + REACTION_TIME[1] * ss)
     keeper.reach_diving  = REACH_DIVING[0] + REACH_DIVING[1] * ss
     keeper.reach_standing = REACH_STANDING
+    keeper.dive_com_max  = DIVE_COM_MAX[0] + DIVE_COM_MAX[1] * ss
+    keeper.recover_time  = GETUP_TIME
     keeper._last_save_roll = None
+    keeper._dive = None
 
 
 def _claim(keeper, ball, current_time, ai_system):
@@ -259,7 +277,9 @@ def resolve_keeper_contact(keeper, ball, current_time, ai_system):
                - CATCH_SPEED_PENALTY * max(0.0, speed_ms - CATCH_SPEED_FREE)
                - CATCH_STRETCH_PENALTY * stretch
                - (CATCH_HIGH_PENALTY if high else 0.0))
-    if random.random() < clamp(p_catch, 0.05, 0.9):
+    if diving and d_m > DIVE_CATCH_WITHIN:
+        p_catch = 0.0                     # (at full stretch, one hand to it: he can't hold it)
+    if random.random() < clamp(p_catch, 0.0 if diving else 0.05, 0.9):
         _claim(keeper, ball, current_time, ai_system)
         return True
     p_tip = TIP_BASE + TIP_STRETCH * stretch + (TIP_HIGH if high else 0.0) + TIP_PER_POINT * (ss - 10)
@@ -267,4 +287,51 @@ def resolve_keeper_contact(keeper, ball, current_time, ai_system):
         _tip_behind(keeper, ball, current_time, speed_ms, z_m)
     else:
         _parry(keeper, ball, current_time, speed_ms)
+    return True
+
+
+def take_off(keeper, current_time):
+    """The end of his reaction: he springs.  Across (and a little forward - never back towards his own goal) to
+    where the ball will pass him, as far as he can get at full stretch; the dive is fixed from here."""
+    start = Vector2(keeper.pos)
+    vec = keeper.dive_target - start
+    fwd = 1.0 if keeper.team == 0 else -1.0                     # (team 0 defends x = 0)
+    if vec.x * fwd < 0:
+        vec.x = 0.0
+    full = keeper.dive_com_max * M_TO_PX
+    d = vec.length()
+    if d > full:
+        vec *= full / d
+        d = full
+    high = getattr(keeper, "dive_height", 0.0) > DIVE_HIGH
+    T = DIVE_TIME[0] + DIVE_TIME[1] * (d / full) + (DIVE_HIGH_EXTRA if high else 0.0)
+    keeper._dive = {"from": start, "vec": vec, "T": T, "t": 0.0}
+    keeper.dive_state = "diving"
+    keeper.dive_start_time = current_time
+
+
+def dive_states(keeper, current_time):
+    """In the air -> lands ("down", on the grass) -> gets up ("recover") -> back to normal (ai/goalkeeper.py)."""
+    dv = getattr(keeper, "_dive", None)
+    if keeper.dive_state == "diving" and (dv is None or dv["t"] >= dv["T"]):
+        keeper.dive_state = "down"
+        keeper.last_dive_time = current_time
+    elif keeper.dive_state == "down" and current_time - keeper.last_dive_time >= DOWN_TIME:
+        keeper.dive_state = "recover"
+        keeper.last_dive_time = current_time
+
+
+def dive_move(keeper, dt):
+    """Where his dive has him: pushing off, flying, landing (and lying there till he's up).  -> True while it's
+    the dive that moves him."""
+    dv = getattr(keeper, "_dive", None)
+    if dv is None or keeper.dive_state in ("idle", "preparing"):
+        keeper._dive = None
+        return False
+    dv["t"] += dt
+    u = min(1.0, dv["t"] / max(0.05, dv["T"]))
+    f = u * u * (3.0 - 2.0 * u)                                  # (off the mark, through the air, down)
+    new = dv["from"] + dv["vec"] * f
+    keeper.vel = (new - keeper.pos) / max(dt, 1e-6)
+    keeper.pos = new
     return True

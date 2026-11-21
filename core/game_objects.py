@@ -174,9 +174,10 @@ class Player:
     def update(self, delta_time, all_players=None):
         if not self.is_active:
             return                       # sent off - he's left the pitch
-        if self.role == "GK" and self.dive_state == "diving":
-            self._update_diving_movement(delta_time)
-            return
+        if self.role == "GK":
+            from gameplay.goalkeeping import dive_move
+            if dive_move(self, delta_time):           # (diving, down on the grass, getting up: the dive moves him)
+                return
         self._update_normal_movement(delta_time, all_players)
 
     def _update_diving_movement(self, delta_time):

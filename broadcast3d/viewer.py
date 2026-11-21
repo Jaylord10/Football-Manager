@@ -1172,7 +1172,7 @@ class Viewer(ShowBase):
                 wy = self._throw_spot(wy, t)                                # (feet on or behind the line)
             p.update(wx, wy, fx, -fy, sp, dt, act, vel=vel, ball=(rbx, rby))
             dv = fr["p"][i][7] if len(fr["p"][i]) > 7 else ""
-            if dv in ("diving", "recover") and getattr(p, "keeper", False):    # (a keeper's dive)
+            if dv in ("diving", "down", "recover") and getattr(p, "keeper", False):    # (a keeper's dive)
                 self._keeper_dive(i, p, dv, k)
                 continue
             if kind == "smother" and getattr(p, "keeper", False):              # (down at a man's feet)
@@ -1694,10 +1694,19 @@ def _viewer_keeper_dive(self, i, p, stage, k):
     import math as _m
     F = self.m["frames"]
     st = self.dives.setdefault(i, {})
-    if stage == "recover" and st.get("stage") == "diving" and (k - st["start"]) / 30.0 < 0.62:
-        stage = "diving"                    # (the engine's dive is over in 0.3 s: let him fly and land first)
+    if stage == "down":
+        stage = "diving"                    # (landed: the dive's last pose - lying there - until he gets up)
+    if stage == "recover" and st.get("stage") == "diving" and (k - st["start"]) / 30.0 * st.get("pace", 1.0) < 0.62:
+        stage = "diving"                    # (saved in mid-air: he still flies and lands first)
     if st.get("stage") != stage:
         st.update(stage=stage, start=k)
+        if stage == "diving":               # (the engine's flight - till he lands - sets the animation's pace:
+            e = k                           #  a short dive is quicker than one at full stretch)
+            while e + 1 < len(F) and e - k < 30 and (F[e + 1]["p"][i][7] if len(F[e + 1]["p"][i]) > 7 else "") \
+                    == "diving":
+                e += 1
+            fl = (e + 1 - k) / 30.0
+            st["pace"] = max(0.85, min(1.8, 0.6 / fl)) if e + 1 < len(F) and fl > 0.15 else 1.0
         if stage == "diving" or "h" not in st:
             st["h"] = p.h or 0.0                                            # (he keeps facing the shot through it)
             a, b = F[k]["p"][i], F[min(len(F) - 1, k + 8)]["p"][i]
@@ -1706,7 +1715,7 @@ def _viewer_keeper_dive(self, i, p, stage, k):
             hd = _m.radians(st["h"])
             right = (_m.cos(hd), _m.sin(hd))                               # (his right, facing +Y at h = 0)
             st["side"] = 1 if (mx - ox) * right[0] + (my - oy) * right[1] >= 0 else -1
-    p.dive(stage, (k - st["start"]) / 30.0, st.get("side", 1))
+    p.dive(stage, (k - st["start"]) / 30.0 * (st.get("pace", 1.0) if stage == "diving" else 1.0), st.get("side", 1))
     p.h = st["h"]
     p.root.setPos(p.root.getX(), p.root.getY(), p.lift)
     p.root.setHpr(p.h, 0, p.roll * p.roll_side)

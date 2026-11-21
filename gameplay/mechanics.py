@@ -383,18 +383,13 @@ class GameMechanics:
             if not keeper:
                 continue
 
+            from gameplay.goalkeeping import take_off, dive_states
             if keeper.dive_state == "preparing":
                 time_preparing = current_time - keeper.dive_start_time
                 if time_preparing >= keeper.dive_reaction:
-                    keeper.dive_state = "diving"
-
-            elif keeper.dive_state == "diving":
-                # dive_start_time is when "preparing" began; subtract reaction to get
-                # how long we have been in the actual dive phase.
-                actual_dive_duration = (current_time - keeper.dive_start_time) - keeper.dive_reaction
-                if actual_dive_duration > DIVE_MAX_DURATION:
-                    keeper.dive_state = "recover"
-                    keeper.last_dive_time = current_time
+                    take_off(keeper, current_time)                # (he springs: the dive is fixed now)
+            else:
+                dive_states(keeper, current_time)                 # (lands, then gets up)
 
     def handle_goalkeeper_interactions(self, team0, team1, ball, current_time, ai_system):
         """

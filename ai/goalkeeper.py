@@ -103,6 +103,10 @@ def evaluate_dive(keeper, ball, current_time):
         return  # ball barely moving horizontally – no dive needed
 
     goal_x = 0.0 if keeper.team == 0 else float(WIDTH)
+    if getattr(ball, "last_toucher_team", None) == keeper.team and keeper.dive_state == "idle":
+        from gameplay.ricochet import is_ricochet
+        if not is_ricochet(ball):
+            return                                          # (one of his own playing it back to him)
 
     # Ball must be heading TOWARD this keeper's goal
     if keeper.team == 0 and ball.vel.x >= 0:
@@ -139,11 +143,18 @@ def evaluate_dive(keeper, ball, current_time):
     if not (goal_top - save_margin <= intercept_y <= goal_bottom + save_margin):
         return
 
-    # Target: goal-line position at the predicted y intercept
-    dive_target = Vector2(
-        goal_x,
-        clamp(intercept_y, goal_top - save_margin, goal_bottom + save_margin)
-    )
+    # Target: where it will pass HIM - level with where he's standing - not where it crosses the goal line (he
+    # used to dive back to the line from a few yards out, into his own net).  He goes across, a touch forward.
+    from gameplay.goalkeeping import DIVE_NEEDED, DIVE_FORWARD
+    if not 0.02 < t_k:
+        return                                               # (level with him already, or past him)
+    y_k = ball.pos.y + ball.vel.y * t_k
+    z_kk = max(0.0, ball.z + ball.vz * t_k - 0.5 * GRAVITY * t_k ** 2)
+    if abs(y_k - keeper.pos.y) < DIVE_NEEDED * M_TO_PX and keeper.dive_state == "idle":
+        return                                               # (it's at him: no need to dive)
+    fwd = 1.0 if keeper.team == 0 else -1.0
+    dive_target = Vector2(keeper.pos.x + fwd * DIVE_FORWARD * M_TO_PX, y_k)
+    keeper.dive_height = z_kk / M_TO_PX
 
     # Check keeper can physically reach dive_target before ball arrives
     dist_to_target  = (dive_target - keeper.pos).length()
