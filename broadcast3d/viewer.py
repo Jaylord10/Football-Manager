@@ -1123,6 +1123,9 @@ class Viewer(ShowBase):
                     arr[0] += dx / dd * stp; arr[1] += dy / dd * stp
                     wx, wy, sp = arr[0], arr[1], SUB_JOG * 10.0
                     fx, fy = dx / dd, -dy / dd
+            lie = self._lier(fr, k)                                              # (behind the wall, lying down)
+            if lie is not None and lie[0] == i:
+                wx, wy, sp = lie[1][0], lie[1][1], 0.0
             hb = self._handbags(i, fr, wx, wy, dt, k)                            # (a bad foul: handbags)
             if hb is not None:
                 wx, wy, sp2, hb_kind = hb
@@ -1168,6 +1171,12 @@ class Viewer(ShowBase):
                 continue
             if kind == "smother" and getattr(p, "keeper", False):              # (down at a man's feet)
                 self._smother(i, p, t, k)
+                continue
+            if lie is not None and lie[0] == i:                                  # (lying behind the wall)
+                p.lie(1)
+                p.h = lie[2]
+                p.root.setPos(p.root.getX(), p.root.getY(), p.lift)
+                p.root.setHpr(p.h, 0, p.roll * p.roll_side)
                 continue
             if kind is None and fr["o"] == i and sp < 22:                   # (on the ball, a man tight on him:
                 near = self._shield_side(i, fr, wx, wy, fx, -fy)              #  he shields it)
@@ -1800,6 +1809,47 @@ def _viewer_stepping_up(self, fr, k):
                 out[who] = 0.0
     c["out"] = out
     return out
+
+
+LIE_FROM_GOAL = 30.0     # m: a free kick this close to goal, a wall of 3 or more: one of them lies behind it
+
+
+def _viewer_lier(self, fr, k):
+    """A free kick within shooting range: one of the wall lies down behind it (to stop a shot under the jumping
+    wall - most Premier League sides do it now).  The last man of the wall to get there; until a moment after
+    it's struck.  -> (player, (x, y), heading) or None."""
+    r = fr.get("r")
+    if not r or r[0] != "free_kick" or not 0 <= r[1] < len(fr["p"]):
+        return None
+    c = self.__dict__.setdefault("_lie", {})
+    rid = self._restart_id(k)
+    if rid in c and c[rid] is not None and c[rid][3] == k:
+        return c[rid][:3]
+    bx, by = to_world(fr["b"][0], fr["b"][1])
+    ok_ = fr["p"][11 if r[1] < 11 else 0]                               # (the goal they're shooting at: where
+    gx = HX if to_world(ok_[0], ok_[1])[0] > 0 else -HX                  #  the other keeper is)
+    if math.hypot(bx - gx, by) > LIE_FROM_GOAL:
+        c[rid] = None
+        return None
+    wall = []
+    for j, q in enumerate(fr["p"]):
+        if (j < 11) == (r[1] < 11) or not q[6] or j in (0, 11):
+            continue
+        x, y = to_world(q[0], q[1])
+        d1, d2 = math.hypot(x - bx, y - by), math.hypot(gx - bx, -by)
+        if 8.0 < d1 < 11.5 and ((x - bx) * (gx - bx) + (y - by) * (-by)) / max(1e-6, d1 * d2) > 0.82:
+            wall.append((j, x, y))
+    if len(wall) < 3:
+        c[rid] = None
+        return None
+    who = max(wall)[0] if c.get(rid) is None else c[rid][0]
+    cx, cy = sum(w[1] for w in wall) / len(wall), sum(w[2] for w in wall) / len(wall)
+    dx, dy = cx - bx, cy - by
+    d = math.hypot(dx, dy) or 1.0
+    spot = (cx + dx / d * 1.1, cy + dy / d * 1.1)
+    head = math.degrees(math.atan2(-dx, dy))                          # (facing the ball: lying across its path)
+    c[rid] = (who, spot, head, k)
+    return who, spot, head
 
 
 def _viewer_offside_man(self, fr, r, k):
@@ -2491,6 +2541,7 @@ Viewer._adv_id = _viewer_adv_id
 Viewer._offside_man = _viewer_offside_man
 Viewer._handbags = _viewer_handbags
 Viewer._stepping_up = _viewer_stepping_up
+Viewer._lier = _viewer_lier
 Viewer._ball = _viewer_ball
 Viewer.THROW_FLIGHT = 0.8      # s: a throw-in in the air (a 10-15 m throw at ~13-15 m/s)
 Viewer.THROW_ARC = 0.8         # m: how far it rises above a straight line from his hands to the grass

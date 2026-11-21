@@ -411,6 +411,16 @@ class AnimPlayer:
     SMOTHER_ROOT = [(-0.15, 0, 0.0), (0.00, 35, 0.10), (0.18, 80, 0.14), (0.35, 88, 0.04), (0.90, 88, 0.0),
                     (1.30, 40, 0.0), (1.70, 0, 0.0)]
 
+    def lie(self, side=1):
+        """Lying on his side on the grass (behind the wall at a free kick, to stop one under it)."""
+        import gait
+        rec = "recover" + ("" if side > 0 else "_m")
+        self.roll, self.lift = 86.0, 0.02
+        self.roll_side = side
+        self.ready = 0.0
+        self.cur = (rec, 1.0, 0.0)
+        self._mix()
+
     def smother(self, t, side):
         """A keeper going down at a man's feet: t seconds from the moment he gets to the ball, side +1 = he
         goes down to his right."""

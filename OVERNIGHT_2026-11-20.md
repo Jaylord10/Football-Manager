@@ -133,3 +133,10 @@ Nothing here is on Jay's PC.  Each item is its own commit.
 - Already there from before: runners pointing into space or calling with an arm up, keepers pointing to set the
   wall, managers pointing from the touchline.
 - Checks: check.py all good.
+
+## 16. Free kicks: a man lying behind the wall (3D only)
+- A free kick within 30 m of goal with a wall of three or more: the last man of the wall lies down on his side
+  behind it, across the line of the shot, to stop one being drilled under the jumping wall (most Premier League
+  sides do it now).  Drawn only - the match engine's wall is unchanged.
+- Already there: the wall jumping as it's struck, the keeper pointing to set it up, the taker's run-up.
+- Checks: check.py all good.
