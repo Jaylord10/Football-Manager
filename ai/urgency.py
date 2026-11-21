@@ -85,8 +85,9 @@ MOOD_RANGE        = 0.07   # +/- this on his urgency...
 MOOD_CHANGE       = (2.0, 5.0)  # ...re-picked every this many seconds
 
 # Attacking
-ATT_BASE          = 0.20
-ATT_PROGRESS      = 0.30   # + this x how far up the pitch the ball is
+ATT_BASE          = 0.26   # (was 0.20: Jay, 21 Nov - "a touch more quick and progressive" showing for it)
+ATT_PROGRESS      = 0.34   # + this x how far up the pitch the ball is (was 0.30)
+STEP_UP_RUN       = 0.20   # + this while he's stepping up into space further forward (ai/spot_value.py)
 COUNTER_FORWARD   = 0.70   # + this x transition when his spot is ahead of him
 COUNTER_OTHER     = 0.20   # + this x transition otherwise
 FORWARD_MIN       = 3.0    # m: spot counts as "ahead" if it's this far forward
@@ -179,6 +180,8 @@ def update_team(team, ball, in_possession, since_change, now=None):
         if in_possession:
             u = ATT_BASE + ATT_PROGRESS * progress + ball_moving
             u += trans * (COUNTER_FORWARD if ahead_of_spot > FORWARD_MIN else COUNTER_OTHER)
+            if getattr(p, "_stepped_up", False) and ahead_of_spot > 1.0:
+                u += STEP_UP_RUN                       # (into the space ahead: he gets there before the pass)
             # Keep up with the attack: the play has moved on and left him behind
             akey = _att_key(p)
             if akey in CATCH_UP_ROLES:

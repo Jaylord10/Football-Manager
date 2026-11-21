@@ -64,7 +64,7 @@ W_BREAK = 0.8         # per defender a pass there takes out (max 3)
 W_SUPPORT = 1.0       # nearest supporters at a good distance from the ball
 W_PROGRESS = 1.2      # being ahead of the ball (an outlet that moves us up the pitch)...
 PROGRESS_SPAN = 20.0  # ...counted up to this many metres ahead / behind
-PROGRESS_WEIGHT = {"FB": 0.5, "CM": 0.6, "WM": 1.3, "ST": 1.0}
+PROGRESS_WEIGHT = {"FB": 0.7, "CM": 0.9, "WM": 1.3, "ST": 1.0}   # (FB 0.5, CM 0.6 before 21 Nov)
 SUPPORT_KINDS = ("FB", "CM")   # who drops in close to support the ball (wingers/strikers stay up)
 W_CROWD = 1.5         # too close to a teammate
 W_LANE_SHARE = 0.6    # same vertical lane and similar height as a teammate
@@ -83,6 +83,19 @@ CROWD_DIST = 7.0      # m
 LANE_WIDTH = 14.0     # five vertical lanes of 14 m across a 70 m pitch
 SAME_HEIGHT = 10.0    # m
 SUPPORTERS = 3        # this many nearest the ball care about support distance
+
+# Stepping up (Jay, 21 Nov: "a player would simply wait in space to receive the ball when he could have done the
+# same thing 5-10 yards further ahead").  Once he's picked his spot he looks further up the pitch from it: if the
+# space there is just as open - the ball can still get to him, he'd still have time on it, he's not on top of a
+# team-mate - he takes that instead.  The furthest such step wins.
+STEP_UP = (4.5, 6.75, 9.0)         # m forward of his spot he looks (5, 7.5, 10 yards)
+STEP_UP_LANE = 0.75                # the pass there must still be this open...
+STEP_UP_TIME = 0.6                 # ...he'd still have this long on the ball (s)...
+STEP_UP_TIME_LOSS = 0.8            # ...and not much less than where he was
+STEP_UP_CROWD = 0.35               # ...nor crowding a team-mate more than this
+STEP_UP_LIMIT = {"FB": 9.0, "CM": 9.0, "WM": 9.0, "ST": 9.0}   # m: the most each kind steps up
+STEP_UP_HOLD = 4.5                 # m: a holding midfielder (cm_forward < 0.3) only steps up this far
+STEP_UP_SEE = (0.45, 1.0)          # chance he spots it: Off The Ball 1 -> 20 (re-judged every 0.2 s)
 
 # Decision quality
 NOISE_AT_1 = 0.9      # score noise at Off The Ball 1 (0 at 20)
@@ -170,8 +183,48 @@ def _best(p, a0, l0, s, rank, others, ba, bl, opps, ctx):
         if best is None or sc > best[0]:
             best = (sc, a, l, (da, dl), parts)
     _, a, l, off, parts = best
+    step = _step_up(p, k, s, a, l, others, ba, bl, opps, ctx, otb, parts)
+    if step is not None:
+        p._step_from = (a, l)                                         # (for the overlay / pictures)
+        a, parts = step
+        p._step_to = (a, l)
+        off = (a - a0, off[1])
+    p._stepped_up = step is not None
     p._spot_offset = off
+    if step is not None:
+        return a, l, "step up into the space"
     return a, l, _label(a, l, a0, l0, ba, bl, parts)
+
+
+def _step_up(p, k, s, a, l, others, ba, bl, opps, ctx, otb, parts):
+    """Is the same space open 5-10 yards further up?  -> (a, parts) for the furthest that is, or None."""
+    if a <= ba - 15.0:
+        return None                                   # (well behind the ball: he's the safety, not an outlet)
+    lo, hi = STEP_UP_SEE
+    if random.random() > lo + (hi - lo) * (otb - 1.0) / 19.0:
+        return None
+    limit = STEP_UP_LIMIT.get(k, 9.0)
+    if k == "CM" and s.get("cm_forward", 0.5) < 0.3:
+        limit = STEP_UP_HOLD
+    limit = min(limit, STEP_UP[0] + (STEP_UP[-1] - STEP_UP[0]) * _clamp((otb - 5.0) / 10.0, 0.0, 1.0))
+    #       (Off The Ball 15+ sees the space 10 yards on; 5 or less only the 5 yards in front of him)
+    t0 = parts["time"]
+    best = None
+    for step in STEP_UP:
+        if step > limit + 1e-6:
+            break
+        a2 = a + step
+        if a2 > ctx["max_a"]:
+            break                                     # (offside up there)
+        lane, t = lane_and_time(a2, l, ba, bl, opps)
+        if lane < STEP_UP_LANE or t < STEP_UP_TIME or t < t0 - STEP_UP_TIME_LOSS:
+            break                                     # (closed up - and further on won't be better)
+        crowd = sum((CROWD_DIST - math.hypot(ta - a2, tl - l)) / CROWD_DIST
+                    for ta, tl in others if math.hypot(ta - a2, tl - l) < CROWD_DIST)
+        if crowd > STEP_UP_CROWD:
+            break
+        best = (a2, dict(parts, lane=lane, time=t, pass_d=math.hypot(a2 - ba, l - bl)))
+    return best
 
 
 def lane_and_time(a, l, ba, bl, opps, pass_d=None):
