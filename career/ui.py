@@ -4207,8 +4207,10 @@ class App:
         self.text("Training", "h1", TEXT, (x0, 18))
         self._training_tabs("training")
         self.text("Counts from today until each match. Young players improve towards their potential - "
-                  "faster with games and harder training.", "small", MUTED, (x0, 70))
-        y = 104
+                  "faster with games and harder training.", "small", MUTED, (x0, 64))
+        self.text("The week is planned round the matches: a recovery session the day after for the men who played, "
+                  "a day off, a light session the day before.", "small", MUTED, (x0, 82))
+        y = 108
         self.text("Focus", "small", MUTED, (x0, y + 8))
         for i, (key, (label, desc, _)) in enumerate(training.FOCUS.items()):
             self.buttons.append(Button((x0 + 90 + i * 128, y, 122, 32), label,
@@ -4218,7 +4220,7 @@ class App:
         y = 176
         self.text("Intensity", "small", MUTED, (x0, y + 8))
         effects = {"light": "Quicker recovery, fewer injuries, slower development.",
-                   "normal": "Full fitness about four days after a match.",
+                   "normal": "Steady development; fresh again within the week.",
                    "hard": "Faster development - but slower recovery and more injuries."}
         for i, (key, (label, *_)) in enumerate(training.INTENSITY.items()):
             self.buttons.append(Button((x0 + 90 + i * 128, y, 122, 32), label,

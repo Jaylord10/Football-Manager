@@ -256,9 +256,9 @@ def sunday_rest(career, round_date, club_ids):
             continue
         club = career["clubs"][cid]
         s = training.ai_settings(career, club, round_date) if cid != career["my_club"] else training.settings(club)
-        recover = training.INTENSITY[s["intensity"]][1]
+        share = training.DAY_RECOVERY["off"]              # (a day off)
         for p in club["players"]:
-            p["condition"] = min(1.0, round(training.condition(p) + recover, 3))
+            p["condition"] = min(1.0, round(training.condition(p) + (1.0 - training.condition(p)) * share, 3))
 
 
 def advance_to_match(career, stop=False):

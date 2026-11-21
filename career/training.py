@@ -70,6 +70,21 @@ TIRED_INJURY = 2.0             # training injuries x (1 + this x (1 - condition)
 TRAINING_PER_DAY = 0.0045      # base chance of a training injury per player per day (~26 a club a season)
 FIT_TO_PLAY = 0.88             # AI clubs rest a player below this condition if they can
 
+# The week around the matches (Jay, 21 Nov).  Recovery is quick at first and slower at the end: each day a player
+# gets back this share of what he's missing (his condition - his tiredness - is 1.0 when fully fresh).  Real
+# players are still 2-4% down on sprint and jump 72 hours after a match (Silva et al. 2018, Sports Med 48(3),
+# doi 10.1007/s40279-017-0798-8), so a man who played 90 on Saturday is nearly - not quite - fresh on Wednesday,
+# and one who pressed flat out all game is a bit further off.  The days are planned like a real club's:
+#   the day after he played   recovery session          (only the men who played - the rest train normally)
+#   two days after            a day off                 (if the next match isn't tomorrow)
+#   the day before a match    light session
+#   otherwise                 your Light / Normal / Hard training
+# Saturday-Wednesday: recovery, off, light - a man finishing on 60% is ~95% on Wednesday, one on 45% ~92%.
+# Saturday-Saturday: three proper training days in the middle, and everyone's fresh.
+DAY_RECOVERY = {"recovery": 0.45, "off": 0.55, "pre-match": 0.45, "light": 0.40, "normal": 0.33, "hard": 0.25}
+DAY_INJURY = {"recovery": 0.4, "off": 0.0, "pre-match": 0.6}     # training-injury risk x this on those days
+DAY_LOAD = {"recovery": "light", "off": "light", "pre-match": "light"}   # what it counts as for fitness
+
 NON_PHYSICAL = [c for c in clubs_mod.COLUMNS if c not in clubs_mod.PHYSICAL
                 and c not in ("Shot Stopping", "Handling", "Penalties")]
 
@@ -118,6 +133,8 @@ def after_match(career, results):
                 fit.played(p, mins)                      # sharpness and fitness from minutes
             if a and a.get("stamina") is not None and mins > 0:
                 p["condition"] = round(min(condition(p), a["stamina"]), 3)
+            if mins:
+                p["played_on"] = career.get("date")         # (tomorrow is his recovery day)
 
 
 def run_days(career, club, until, rng=None, news=None):
@@ -194,11 +211,13 @@ def train_day(career, club, iso, rng):
                 fit.train_day(p, s["intensity"], True)
                 continue
             # Recovery (no fresher than his fitness allows - career/fitness.py); your fitness coach helps
-            p["condition"] = min(1.0, round(condition(p) + recover * st_rec, 3))
-            fit.train_day(p, s["intensity"], False)
+            kind = day_kind(career, club, p, iso, s["intensity"])
+            share = min(0.9, DAY_RECOVERY[kind] * st_rec)
+            p["condition"] = min(1.0, round(condition(p) + (1.0 - condition(p)) * share, 3))
+            fit.train_day(p, DAY_LOAD.get(kind, s["intensity"]), False)
             # Injury
             risk = TRAINING_PER_DAY * av._age_factor(p) * inj_mult * (1 + TIRED_INJURY * (1 - condition(p))) \
-                * fit.injury_factor(p) * st_inj
+                * fit.injury_factor(p) * st_inj * DAY_INJURY.get(kind, 1.0)
             if rng.random() < risk:
                 av._injure(career, club, p, iso, "training", rng)
                 continue
@@ -213,6 +232,59 @@ def train_day(career, club, iso, rng):
             stadium.monthly(career, iso)                 # stand rebuilds: pay the builders, open the stand
         contracts.on_day(career, club, iso, rng)         # 1 January: contract talks / AI renewals
         trained[str(club["id"])] = iso
+
+
+def day_kind(career, club, p, iso, intensity):
+    """What today is for him: "recovery", "off", "pre-match" or the club's training intensity (see DAY_RECOVERY)."""
+    nxt = days_to_next_match(career, club, iso)
+    since = None
+    if p.get("played_on"):
+        try:
+            since = cal.days_between(p["played_on"], iso)
+        except Exception:
+            since = None
+    if since == 1:
+        return "recovery"
+    if nxt == 1:
+        return "pre-match"
+    if since == 2 and nxt >= 2:
+        return "off"
+    return intensity
+
+
+_NEXT = {}
+
+
+def days_to_next_match(career, club, iso):
+    """Days from `iso` to this club's next match (league, cups, Europe) - 99 if none is known."""
+    key = (id(career), club["id"], iso)
+    hit = _NEXT.get(key)
+    if hit is not None:
+        return hit
+    if len(_NEXT) > 5000:
+        _NEXT.clear()
+    best = None
+    try:
+        from career import league
+        for r in range(max(1, career.get("matchday", 1)), len(career.get("calendar") or []) + 1):
+            d = league.match_date(career, r, club["id"])
+            if d and d > iso:
+                best = d
+                break
+    except Exception:
+        best = None
+    try:
+        from career import cups
+        for m in cups.all_matches(career):
+            if m.get("result") is None and club["id"] in (m.get("home"), m.get("away")) and m["date"] > iso:
+                if best is None or m["date"] < best:
+                    best = m["date"]
+                break
+    except Exception:
+        pass
+    n = cal.days_between(iso, best) if best else 99
+    _NEXT[key] = n
+    return n
 
 
 def develop(p, dev_mult, focus, rng):
