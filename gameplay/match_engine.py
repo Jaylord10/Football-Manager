@@ -171,6 +171,8 @@ class MatchEngine:
         self.radar3d = os.environ.get("FM_3D_RADAR", "1") == "1"   # (the mini pitch on the 3D picture: M)
         self.names3d = os.environ.get("FM_3D_NAMES", "0") == "1"   # (names over their heads: N)
         self.quality3d = os.environ.get("FM_3D_QUALITY", "auto")   # (3D quality: Q)
+        self.players3d = os.environ.get("FM_3D_PLAYERS", "classic")  # (P: our figures / the Mixamo footballer)
+        self._p_note_until = -1.0
         self._q_note_until = -1.0
         self.fps3d = False                                          # (F: the 3D's picture time on screen)
         try:
@@ -566,6 +568,18 @@ class MatchEngine:
                         if self.quality3d in order else "auto"
                     self.live3d.quality(self.quality3d)
                     self._q_note_until = self.time_elapsed + 2.5 * max(1, getattr(self, "match_speed", 1))
+                    continue
+                if event.key == pygame.K_p and self._3d_on():
+                    # The players: our own figures, or the Mixamo footballer (test) - the 3D view restarts
+                    self.players3d = "mixamo" if self.players3d != "mixamo" else "classic"
+                    os.environ["FM_3D_PLAYERS"] = self.players3d
+                    try:
+                        self.live3d.close()
+                    except Exception:
+                        pass
+                    self.live3d = None
+                    self._start_3d()
+                    self._p_note_until = self.time_elapsed + 3.0 * max(1, getattr(self, "match_speed", 1))
                     continue
                 if event.key == pygame.K_n and self._3d_on():
                     self.names3d = not self.names3d       # (names over their heads)
@@ -1217,6 +1231,13 @@ class MatchEngine:
                 bg.fill((0, 0, 0, 160))
                 self.screen.blit(bg, (10, 10))
                 self.screen.blit(t, (16, 13))
+            if self.time_elapsed < self._p_note_until:                 # (P pressed: say which)
+                note = ("3D players: the new footballers (test) - P for our own" if self.players3d == "mixamo"
+                        else "3D players: our own figures - P for the new footballers (test)")
+                t = self.ui_renderer.med_font.render(note, True, (255, 255, 255))
+                box = t.get_rect(midtop=(self.screen.get_width() // 2, 14)).inflate(24, 12)
+                pygame.draw.rect(self.screen, (18, 20, 24), box, border_radius=6)
+                self.screen.blit(t, t.get_rect(center=box.center))
             if self.time_elapsed < self._q_note_until:                 # (Q pressed: say which)
                 note = {"auto": "3D quality: auto (lighter if the computer's struggling)",
                         "high": "3D quality: high (always everything)",

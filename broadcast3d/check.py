@@ -14,7 +14,8 @@ RUNS = [("day", ["5600", "2"]), ("close", ["5600", "2", "--close"]), ("follow", 
         ("goal", ["13500", "3"]), ("other ground", ["5600", "2", "--teams=Kingsmere,Penrith"]),
         ("bowl", ["5600", "2", "--teams=Northwick FC,Lydmouth"]), ("old body", ["5600", "2", "--oldbody"]),
         ("no lod", ["5600", "2", "--nolod"]), ("old run", ["5600", "2", "--oldrun"]),
-        ("live", ["5600", "--test"])]
+        ("live", ["5600", "--test"]),
+        ("mixamo players", ["5600", "2", "--mixamo"]), ("live, mixamo", ["5600", "--test", "--mixamo"])]
 
 
 def main():

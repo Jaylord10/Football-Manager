@@ -207,6 +207,8 @@ class Live3D:
         #  gets it too - the environment's copied when it starts)
         if os.environ.get("FM_3D_LIGHT"):               # (always the lighter 3D)
             flags = list(flags) + ["--light"]
+        if os.environ.get("FM_3D_PLAYERS") == "mixamo":   # (P in the match: the Mixamo footballer - test)
+            flags = list(flags) + ["--mixamo"]
         meta = {"home": home, "away": away, "names": names_from_engine(engine)}
         self.proc = ctx.Process(target=_child, args=(child, self.shm.name, self.w, self.h, meta, list(flags)),
                                 daemon=True)
