@@ -12,6 +12,12 @@ U = sys.argv[-2]
 OUT = sys.argv[-1]
 names = ["offensive idle", "Idle", "Idle (1)", "Breathing Idle", "jog forward", "Standard Run", "Sprint", "Left Strafe",
          "Right Strafe", "Running Backward", "kick soccerball", "Victory"]
+# Moves with the ball, played straight from the motion capture: the frame of the moment (the ball struck, headed,
+# let go) - found from the joints' paths (the foot passing the ball's height on its way through, the head at its
+# furthest forward, the hands at their fastest).  These are put on the spot at that moment: the engine has him there.
+ACTION = {"kick soccerball (2)": 5, "strike foward jog": 12, "Chip": 14, "header soccerball": 22, "throw in": 47,
+          "goalkeeper overhand throw": 47, "goalkeeper drop kick": 62}
+names += list(ACTION)
 bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.fbx(filepath=f"{U}/Ch38_nonPBR.fbx")
 arm = next(o for o in bpy.context.scene.objects if o.type == "ARMATURE")
@@ -38,6 +44,12 @@ for n in names:
                 for cb in strip.channelbags:
                     fcs += list(cb.fcurves)
     for fc in fcs:
+        if n in ACTION and fc.data_path.endswith('"].location') and "Hips" in fc.data_path and fc.array_index in (0, 2):
+            at = fc.evaluate(act.frame_range[0] + ACTION[n])      # (no travel, across or forward: held where he
+            for k in fc.keyframe_points:                          #  is at the moment)
+                k.co[1] = at; k.handle_left[1] = at; k.handle_right[1] = at
+            drift[fc.array_index] = 0.0
+            continue
         if fc.data_path.endswith('"].location') and "Hips" in fc.data_path:
             kp = fc.keyframe_points
             if len(kp) < 2:
@@ -53,6 +65,8 @@ for n in names:
                     k.handle_left[1] -= d * t
                     k.handle_right[1] -= d * t
     info[nm] = {"frames": list(act.frame_range), "drift": drift}
+    if n in ACTION:
+        info[nm]["moment"] = ACTION[n]
     track = arm.animation_data.nla_tracks.new(); track.name = nm
     track.strips.new(nm, int(act.frame_range[0]), act)
     track.mute = True

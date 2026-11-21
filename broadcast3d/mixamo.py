@@ -12,11 +12,12 @@ where his hands are, his card, his shadow...), but it's hidden and the Mixamo fo
     each move is played at the pace that matches that speed (from how far the motion-capture actor travelled
     in one stride), so his feet grip the grass instead of sliding
   - moving sideways or backwards against the way he faces: the strafes and the backward run
-  - striking the ball: the kick
-  - anything the pack hasn't got yet (dives, falls, tackles, headers, throws...): the old figure shows instead,
-    for now - so this test also shows what's still missing
+  - striking the ball with his right foot (passes, shots, chips), headers, throw-ins, a keeper's throws and kicks
+    from his hands: the motion-captured move, lined up so the ball's struck at the moment ours is (CLIPS)
+  - everything else (dives, falls, tackles, appeals, celebrations, left-footed kicks...): he copies our figure's
+    move, bone by bone (Retarget), easing in and out of it
 
-His kit is his shirt, shorts and socks tinted the club's colours (the model's kit is white).
+His kit is his own picture, painted with the club's kit (pattern, collar, sleeves), his name and number, his skin.
 
 The model and moves are built by dev/mixamo_build.py from Jay's "Soccer Game Pack" folder into
 broadcast3d/models/mixamo_footballer.glb (+ .json: each move's length and how far it travels).
@@ -36,6 +37,19 @@ KICKS = ("kick", "shot", "finish", "pass", "cross", "clear", "dink", "volley", "
 # Our figure's ways of standing and moving that the motion capture covers itself (standing about, side-steps,
 # backpedalling) - anything else of ours (celebrating, clapping, hands on hips / knees, calling for it) is copied
 RUN_THROUGH = {"cut", "brake"}          # (our figure's sharp cuts and stops: the motion capture just runs on)
+# Our moves with the ball that the motion capture has itself: played straight from it, lined up so its moment (the
+# ball struck, headed, thrown - "moment" in the .json) falls on ours.  (move, on the run?) -> his move; on the run =
+# going faster than SWING_FROM m/s.  Left-footed and anything else: he copies our figure (Retarget).
+CLIPS = {("kick", False): "kick_soccerball_2", ("pass", False): "kick_soccerball_2",
+         ("kick", True): "strike_foward_jog", ("pass", True): "strike_foward_jog",
+         ("shot", False): "strike_foward_jog", ("shot", True): "strike_foward_jog",
+         ("finish", False): "strike_foward_jog", ("finish", True): "strike_foward_jog",
+         ("dink", False): "Chip", ("dink", True): "Chip", ("loft", False): "Chip", ("loft", True): "Chip",
+         ("header", False): "header_soccerball", ("header", True): "header_soccerball",
+         ("throwin", False): "throw_in", ("throwin", True): "throw_in",
+         ("gkthrow", False): "goalkeeper_overhand_throw", ("gkthrow", True): "goalkeeper_overhand_throw",
+         ("punt", False): "goalkeeper_drop_kick", ("punt", True): "goalkeeper_drop_kick"}
+SWING_FROM = 2.5
 OWN_LOOPS = {"shift", "rest", "shuffle", "shuffle_m", "backpedal", "backwalk", "turnstep"}
 CM = 100.0                                   # (the capture is in centimetres)
 BRIGHT = 1.2
@@ -83,7 +97,8 @@ def info():
             f0, f1 = d["frames"]
             dur = max(0.1, (f1 - f0) / 30.0)
             dist = max(abs(v) for v in d["drift"].values()) / CM if d["drift"] else 0.0
-            _info[nm] = {"dur": dur, "dist": dist, "speed": dist / dur, "frames": int(f1 - f0) + 1}
+            _info[nm] = {"dur": dur, "dist": dist, "speed": dist / dur, "frames": int(f1 - f0) + 1,
+                         "moment": d.get("moment")}
     return _info
 
 
@@ -444,6 +459,8 @@ class Mix:
         idles = [n for n in IDLES if n in self.anims] or [self.anims[0]]
         self.idle = idles[(ap.seed // 3) % len(idles)]
         self.still = set(IDLES) | {"kick_soccerball", "Victory"}
+        self.clips = set(CLIPS.values())
+        self.clip_for = None
         self.rt = Retarget(self)                               # (in the rest pose: before anything moves)
         self.w_rt = 0.0                                        # (how much he's copying our figure: 0-1)
         self.holders = {}
@@ -485,16 +502,32 @@ class Mix:
         import gait
         moods = sum(w for n, w in getattr(ap, "loco", {}).items() if n in gait.LOOPS and n not in OWN_LOOPS)
         base = name.split("_")[0] if name else None
-        special = (name is not None and wgt > 0.2 and base not in RUN_THROUGH) or getattr(ap, "roll", 0.0) > 1.0 \
-            or getattr(ap, "lift", 0.0) > 0.05 or moods > 0.3 or getattr(ap, "force_stand", None)
+        # A move with the ball the motion capture has (right foot, header, throw): his own, lined up on ours
+        act = None
+        if name is not None and wgt > 0.02 and not name.endswith("_m"):
+            if self.clip_for is None or self.clip_for[0] != name or frame < self.clip_for[1]:
+                self.clip_for = (name, frame, CLIPS.get((name, ap.sp > SWING_FROM)))   # (chosen as it starts)
+            clip = self.clip_for[2]
+            if clip in self.anims and info()[clip]["moment"] is not None:
+                import gait
+                t = (gait.SPANS[name][0] + frame / 30.0) if name in gait.SPANS else 0.0  # (seconds from the moment)
+                f = info()[clip]["moment"] + t * 30.0
+                act = (clip, max(0, min(info()[clip]["frames"] - 1, int(round(f)))), wgt)
+                if LOG and self.clip_for[1] == frame:
+                    print("MXCLIP", _tick[0], ap.seed, name, clip, round(ap.sp, 1), round(frame, 1), round(wgt, 2), act[1], flush=True)
+        else:
+            self.clip_for = None
+        special = act is None and ((name is not None and wgt > 0.2 and base not in RUN_THROUGH)
+                                   or getattr(ap, "roll", 0.0) > 1.0 or getattr(ap, "lift", 0.0) > 0.05
+                                   or moods > 0.3 or getattr(ap, "force_stand", None))
         ap.a.hide(); self.a.show()
         # One of our own moves: he copies our figure - easing in and out of it over a tenth of a second or so
         self.w_rt += ((1.0 if special else 0.0) - self.w_rt) * min(1.0, dt * 12.0)
-        self._mocap(dt, vel)
+        self._mocap(dt, vel, act)
         self.rt.apply(self.w_rt)
         self._hold()
 
-    def _mocap(self, dt, vel):
+    def _mocap(self, dt, vel, act=None):
         ap = self.ap
         I = info()
         target = {n: 0.0 for n in self.anims}
@@ -525,16 +558,21 @@ class Mix:
             target["Running_Backward"] = moving
         else:
             target["Right_Strafe" if ang > 0 else "Left_Strafe"] = moving
-        self._blend(target, dt)
+        self._blend(target, dt, act=act)
         # One shared stride phase: every running move is at the same point in its stride, and the phase moves on
         # by how far he's gone (his speed) over how far a stride of the blend travels - his feet stay planted
-        loco = [n for n in self.anims if n not in self.still and self.w.get(n, 0) > 0.001]
+        loco = [n for n in self.anims if n not in self.still and n not in self.clips and self.w.get(n, 0) > 0.001]
         tot = sum(self.w[n] for n in loco)
         if tot > 0.001:
             stride = sum(self.w[n] * I[n]["dist"] for n in loco) / tot * self.a.getScale().z
             self.phase = (self.phase + sp * dt / max(0.3, stride)) % 1.0
         self.idle_t += dt
         for n in self.anims:
+            if n in self.clips:
+                if act is not None and n == act[0]:
+                    for a_ in self.actors:
+                        a_.pose(n, act[1])
+                continue
             if self.w[n] <= 0.001:
                 continue
             nf = I[n]["frames"]
@@ -542,23 +580,39 @@ class Mix:
                 f = int(self.idle_t * 30.0) % max(1, nf - 1)
             else:
                 f = int(self.phase * (nf - 1)) % max(1, nf - 1)
-            for act in self.actors:
-                act.pose(n, f)
+            for a_ in self.actors:
+                a_.pose(n, f)
 
-    def _blend(self, target, dt, fast=False):
+    def _blend(self, target, dt, fast=False, act=None):
+        """Ease the moving-about moves' weights to where they should be; a move with the ball goes straight in at
+        its own weight (it eases in and out with ours), on top of them."""
         k = min(1.0, dt * (14.0 if fast else 7.0))
+        aw = act[2] if act is not None else 0.0
         for n in self.anims:
-            self.w[n] += (target.get(n, 0.0) - self.w[n]) * k
-            for act in self.actors:
-                act.setControlEffect(n, max(0.0, self.w[n]))
+            if n in self.clips:
+                e = aw if act is not None and n == act[0] else 0.0
+            else:
+                self.w[n] += (target.get(n, 0.0) - self.w[n]) * k
+                e = max(0.0, self.w[n]) * (1.0 - aw)
+            for a_ in self.actors:
+                a_.setControlEffect(n, e)
+
+
+LOG = os.environ.get("FM_MX_LOG") == "1"      # (testing: print each motion-captured move as it starts)
+_tick = [0]
+_first = []
 
 
 def attach(ap, kit, keeper=False, number="", name=None, skin=None, hair=None):
     """Give an AnimPlayer the Mixamo body: wraps his update so the new body follows it."""
     m = Mix(ap, kit, keeper, number, name, skin, hair)
     orig = ap.update
+    if not _first:
+        _first.append(ap)
 
     def update(x, y, fx, fy, speed, dt, active=True, vel=None, ball=None):
+        if ap is _first[0]:
+            _tick[0] += 1
         orig(x, y, fx, fy, speed, dt, active, vel=vel, ball=ball)
         if active:
             m.update(dt, vel)
