@@ -97,3 +97,9 @@ Nothing here is on Jay's PC.  Each item is its own commit.
   assistant's flag and the referee's raised arm.)
 - The recordings now carry the match minute (record.py), which the late-match touches need.
 - Checks: check.py all good.
+
+## 7. Throw-ins (match engine)
+- Three team-mates now show for every throw-in - one short to feet (6 m infield, a little back), one down the
+  line (11 m on), one infield (13 m across) - and the other side's nearest men mark them, 1.5 m goal-side (never
+  inside the 2 m the law gives the thrower).  It used to be both teams standing in their normal shape.
+- (Quick throws, 20% of them, were already there.)  45 minutes on a real-club fixture: nothing odd.

@@ -361,12 +361,58 @@ class AIDecisionMaker:
             p.target = spot
             p.state = _walk_state(p)                 # walk (jog if he's a long way out)
             p.pos_reason = f"restart: {why}"
+        if ball.restart_type == "throw_in":
+            self._throw_in_options(team, opponents, ball, ours)
         # The keepers go back to their goal (the taking keeper is the restart taker)
         keeper = next((p for p in team if p.role == "GK"), None)
         if keeper is not None and keeper is not taker:
             from config.constants import WIDTH, HEIGHT
             keeper.target = Vector2(3.0 * M_TO_PX if keeper.team == 0 else WIDTH - 3.0 * M_TO_PX, HEIGHT / 2)
             keeper.state = "walk"
+
+    # A throw-in: three team-mates show for it - one short to feet, one down the line, one infield - and the
+    # other side's nearest men mark them (on TV every throw-in has this little dance; it used to be both teams
+    # just standing in their shape).  (a, l: m up the pitch from our goal, m across from the middle)
+    THROW_OPTIONS = ((-2.0, 6.0, "show short for the throw"), (11.0, 3.0, "down the line for the throw"),
+                     (3.0, 13.0, "show infield for the throw"))
+    THROW_MARK = 1.5                         # m goal-side of the man he's marking
+
+    def _throw_in_options(self, team, opponents, ball, ours):
+        from config.constants import M_TO_PX
+        from pygame.math import Vector2
+        import ai.team_shape as ts
+        taker = ball.restart_taker
+        tid = taker.team
+        ba, bl = ts.to_frame(tid, ball.pos)
+        side = 1.0 if bl > 0 else -1.0
+        spots = []
+        for da, dl, why in self.THROW_OPTIONS:
+            a = max(3.0, min(ts.PITCH_L - 3.0, ba + da))
+            spots.append((ts.to_world(tid, a, bl - side * dl), why))
+        if ours:
+            free = [p for p in team if p is not taker and p.role != "GK" and getattr(p, "is_active", True)]
+            for spot, why in spots:
+                if not free:
+                    break
+                p = min(free, key=lambda q: (q.pos - spot).length())
+                free.remove(p)
+                p.target = Vector2(spot)
+                p.pos_reason = "restart: " + why
+                p._throw_option = True
+        else:
+            free = [p for p in team if p.role != "GK" and getattr(p, "is_active", True)]
+            mid = team[0].team
+            for spot, why in spots:
+                if not free:
+                    break
+                p = min(free, key=lambda q: (q.pos - spot).length())
+                free.remove(p)
+                ma, ml = ts.to_frame(mid, spot)
+                mark = Vector2(ts.to_world(mid, ma - self.THROW_MARK, ml))
+                if (mark - ball.pos).length() < 2.5 * M_TO_PX:           # (2 m from the thrower - the law)
+                    mark = ball.pos + (mark - ball.pos).normalize() * 2.5 * M_TO_PX
+                p.target = mark
+                p.pos_reason = "restart: mark the man showing for the throw"
 
     def _determine_possession_state(self, ball_owner, team_id):
         if ball_owner: 
