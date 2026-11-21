@@ -1100,6 +1100,7 @@ class MatchEngine:
             self.subs.sent_off(fouler, self.match_minute(), display_card)
         if not recorded:
             self.subs.fouled(fouled, self.match_minute())     # hurt? (career matches)
+        self._fouled_man = fouled                             # (the 3D picture: he's the one who goes down)
 
         # Schedule UI messages
         self._foul_display_until = self.time_elapsed + 2.0 * getattr(self, "match_speed", 1)   # 2 s of watching time

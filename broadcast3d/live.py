@@ -39,6 +39,9 @@ def frame_from_engine(e):
     if getattr(b, "is_dead", False) and getattr(b, "restart_type", None):        # (a dead ball: who takes it)
         tk = getattr(b, "restart_taker", None)
         fr["r"] = [b.restart_type, everyone.index(tk) if tk in everyone else -1]
+        fd = getattr(e, "_fouled_man", None)                                      # (a free kick: the man fouled)
+        if b.restart_type == "free_kick" and fd in everyone:
+            fr["fd"] = everyone.index(fd)
     cd = getattr(e, "_card_display", None)                                        # (a booking: who, which card)
     if cd and e.time_elapsed < cd.get("until", 0):
         who = next((j for j, p in enumerate(everyone) if getattr(p, "name", None) == cd.get("name")), -1)

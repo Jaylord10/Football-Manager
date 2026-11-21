@@ -1111,6 +1111,9 @@ class Viewer(ShowBase):
             wx, wy, sp2 = self._gather(i, fr, cel, wx, wy, dt)                  # (team-mates mob the scorer)
             if sp2 is not None:
                 sp = sp2
+            dn = self._down(i, fr, k, wx, wy, fx, fy)                           # (fouled: he stays where he fell)
+            if dn is not None:
+                wx, wy, fx, fy, sp = dn
             arr = getattr(self, "_arriving", {}).get(i)                        # (a substitute jogging on)
             if arr is not None:
                 dx, dy = wx - arr[0], wy - arr[1]
@@ -1119,9 +1122,12 @@ class Viewer(ShowBase):
                 if dd < 0.4 or arr[2] > 15.0:
                     del self._arriving[i]
                 else:
-                    stp = min(dd, SUB_JOG * dt)
+                    jog = arr[3] if len(arr) > 3 else SUB_JOG
+                    if len(arr) > 3 and not fr.get("r"):                        # (play's going on: he hurries)
+                        jog = max(jog, DOWN_HURRY)
+                    stp = min(dd, jog * dt)
                     arr[0] += dx / dd * stp; arr[1] += dy / dd * stp
-                    wx, wy, sp = arr[0], arr[1], SUB_JOG * 10.0
+                    wx, wy, sp = arr[0], arr[1], jog * 10.0
                     fx, fy = dx / dd, -dy / dd
             lie = self._lier(fr, k)                                              # (behind the wall, lying down)
             if lie is not None and lie[0] == i:
@@ -1809,6 +1815,34 @@ def _viewer_stepping_up(self, fr, k):
                 out[who] = 0.0
     c["out"] = out
     return out
+
+
+DOWN_JOG = 3.0           # m/s: up again after being fouled, he jogs to where the engine has him
+DOWN_HURRY = 7.5         # m/s: ...or runs, if the free kick's been taken
+
+
+def _viewer_down(self, i, fr, k, wx, wy, fx, fy):
+    """Fouled: he goes down where it happened and stays there (the engine is already walking him to his place
+    for the free kick - drawn there, a man lying on the grass slid along it).  Once he's up - or the free kick's
+    taken - he jogs over to where the engine has him.  -> (x, y, fx, fy, speed) while he's down, else None."""
+    kind, t = self.events.action(i, k)
+    st = self.__dict__.setdefault("_down_at", {})
+    d = st.get(i)
+    if d is not None and not 0 <= k - d[4] <= 3:                        # (a replay, a jump: start again)
+        st.pop(i)
+        d = None
+    r = fr.get("r")
+    fk = bool(r and r[0] == "free_kick")
+    if kind in ("fouled", "hurt") and (fk or (d is not None and not d[5])):
+        if d is None:
+            d = st[i] = [wx, wy, fx, fy, k, fk and r[1] == i]          # (...the taker: up when it's taken)
+        d[4] = k
+        return d[0], d[1], d[2], d[3], 0.0
+    if d is not None:
+        st.pop(i)
+        if not getattr(self, "replay", None) and math.hypot(wx - d[0], wy - d[1]) > 0.4:
+            self.__dict__.setdefault("_arriving", {})[i] = [d[0], d[1], 0.0, DOWN_JOG]
+    return None
 
 
 LIE_FROM_GOAL = 30.0     # m: a free kick this close to goal, a wall of 3 or more: one of them lies behind it
@@ -2542,6 +2576,7 @@ Viewer._offside_man = _viewer_offside_man
 Viewer._handbags = _viewer_handbags
 Viewer._stepping_up = _viewer_stepping_up
 Viewer._lier = _viewer_lier
+Viewer._down = _viewer_down
 Viewer._ball = _viewer_ball
 Viewer.THROW_FLIGHT = 0.8      # s: a throw-in in the air (a 10-15 m throw at ~13-15 m/s)
 Viewer.THROW_ARC = 0.8         # m: how far it rises above a straight line from his hands to the grass
@@ -2767,13 +2802,17 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
             bx, by = F[k - 1]["b"][0], F[k - 1]["b"][1]                                               # the ball)
             team = r[1] < 11
             near = min(((_m.hypot(p[0] - bx, p[1] - by), j) for j, p in enumerate(F[k - 1]["p"])
-                        if (j < 11) == team and j not in keepers), default=(99, -1))
-            j = near[1]
-            if near[0] < 30 and j >= 0 and (k, "fouled") not in ev.by_player.get(j, []) \
-                    and (k, "hurt") not in ev.by_player.get(j, []):
-                l = ev.by_player.setdefault(j, [])
+                        if (j < 11) == team and j not in keepers and j != r[1]), default=(99, -1))
+            j = near[1]                                                      # (not the taker: he's up, on the ball)
+            if F[k].get("fd") is not None:                                   # (who was really fouled, when the
+                j = F[k]["fd"]                                               #  frames say)
+                near = (0.0, j)
+            quick = j == r[1] and k + 150 < len(F) and (F[k + 150].get("r") or [None])[0] != "free_kick"
+            if near[0] < 30 and j >= 0 and not quick and (k, "fouled") not in ev.by_player.get(j, []) \
+                    and (k, "hurt") not in ev.by_player.get(j, []):     # (a quick free kick by the man fouled:
+                l = ev.by_player.setdefault(j, [])                           #  he didn't stay down)
                 l[:] = [(k2, kd) for (k2, kd) in l if abs(k2 - k) > 8 or kd not in KICKS + ("touch", "stumble")]
-                l.append((k, "hurt" if (k + j) % 3 == 0 else "fouled"))      # (not a "kick" too: the ball was
+                l.append((k, "hurt" if (k + j) % 3 == 0 and j != r[1] else "fouled"))   # (not a "kick" too: the ball was
                                                                              #  taken off him, he didn't play it;
                                                                              #  about 1 in 3 stay down, hurt)
                 px, py = F[k - 1]["p"][j][:2]                               # (the man who fouled him: hands up)
