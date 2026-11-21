@@ -87,3 +87,13 @@ Nothing here is on Jay's PC.  Each item is its own commit.
   as 45+1, 45+2..., and the half ends when it's up.  (First half 1-6 minutes, second 2-10.)
   Three matches: +1/+2, +1/+2, +3/+7.
 - Checks: check.py all good; all_screens only the expected five.
+
+## 5, 23, 27. Tired legs, the penalty keeper, caught offside (3D only)
+- 5: from 75 minutes, at a dead ball, about a quarter of the players more than 12 m from it stand bent over,
+  hands on knees.  (Already there: hands on hips in the second half when play's far away.)
+- 23: a keeper facing a penalty waits on his line arms out wide and low, knees bent, bouncing and swaying side
+  to side to put the taker off.  (Already there: the taker's walk back and stuttered run-up.)
+- 27: the man caught offside throws his arms out - "never!" - as the flag goes up.  (Already there: the
+  assistant's flag and the referee's raised arm.)
+- The recordings now carry the match minute (record.py), which the late-match touches need.
+- Checks: check.py all good.

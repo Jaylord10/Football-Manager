@@ -1113,6 +1113,10 @@ class Viewer(ShowBase):
                 fx, fy = vel[0] / math.hypot(*vel), -vel[1] / math.hypot(*vel)
             p.calling = self._calling(i, fr, wx, wy, sp, k)
             p.late = fr.get("st") in ("second_half", "et_second_half")         # (tired: hands on hips more)
+            r_ = fr.get("r")                                                     # (late on, at a dead ball: some
+            p.force_stand = ("knees" if r_ and r_[0] != "kick_off" and (fr.get("m") or 0) >= LATE_KNEES_FROM  #  stand
+                             and i != r_[1] and not getattr(p, "keeper", False) and (i * 5) % 4 == 0      #  hands
+                             and math.hypot(wx - rbx, wy - rby) > 12.0 else None)                   #  on knees)
             p.wide = fr["o"] == i and sp > 55                                    # (on the ball at speed)
             o_ = fr["o"]                                                         # (defending close to the ball in
             p.defending = (not fr.get("r") and o_ >= 0 and (o_ < 11) != (i < 11)  #  open play: side-steps and
@@ -1175,6 +1179,14 @@ class Viewer(ShowBase):
                     kind, t = "point", (k % 150) / 30.0 - 0.4
                     if t > 1.6:
                         kind = None
+            if kind is None and getattr(p, "keeper", False) and r and r[0] == "penalty" \
+                    and 0 <= r[1] < len(fr["p"]) and (i < 11) != (r[1] < 11):
+                kind, t = "penwait", ((k - self._restart_id(k)) / 30.0) % 1.6    # (on his line: arms out, swaying)
+            if kind is None and r and r[0] == "offside" and 0 <= r[1] < len(fr["p"]) and (i < 11) != (r[1] < 11) \
+                    and i == self._offside_man(fr, r, k):
+                t0 = (k - self._restart_id(k)) / 30.0                              # (the man caught offside: arms out,
+                if t0 < 1.8:                                                       #  "never!")
+                    kind, t = "protest", 0.5
             if kind is None and getattr(p, "keeper", False) and sp < 25:          # (a keeper, set for a shot)
                 gx = -HX if wx < 0 else HX
                 if math.hypot(rbx - gx, rby) < 30 and fr["o"] not in (range(0, 11) if i < 11 else range(11, 22)):
@@ -1646,8 +1658,24 @@ def _viewer_keeper_dive(self, i, p, stage, k):
     p.root.setHpr(p.h, 0, p.roll * p.roll_side)
 
 
+LATE_KNEES_FROM = 75     # minute: from here, at a dead ball, about a quarter stand bent over, hands on knees
 APPEAL_WITHIN = 18.0     # m from the ball: the side given the free kick appeals for it (some of them)...
 APPEAL_FOR = 1.45        # s from the whistle
+
+
+def _viewer_offside_man(self, fr, r, k):
+    """The man caught offside: the free kick's taken where he was - the attacker nearest the spot when it's
+    given."""
+    cache = self.__dict__.setdefault("_offm", {})
+    rid = self._restart_id(k)
+    if rid not in cache:
+        F = self.m["frames"]
+        f0 = F[rid]
+        b = f0["b"]
+        cand = [(math.hypot(q[0] - b[0], q[1] - b[1]), j) for j, q in enumerate(f0["p"])
+                if (j < 11) != (r[1] < 11) and q[6] and j not in (0, 11)]
+        cache[rid] = min(cand)[1] if cand else -1
+    return cache[rid]
 
 
 def _viewer_adv_id(self, k):
@@ -2321,6 +2349,7 @@ Viewer._keeper_dive = _viewer_keeper_dive
 Viewer._smother = _viewer_smother
 Viewer._appeal = _viewer_appeal
 Viewer._adv_id = _viewer_adv_id
+Viewer._offside_man = _viewer_offside_man
 Viewer._ball = _viewer_ball
 Viewer.THROW_FLIGHT = 0.8      # s: a throw-in in the air (a 10-15 m throw at ~13-15 m/s)
 Viewer.THROW_ARC = 0.8         # m: how far it rises above a straight line from his hands to the grass

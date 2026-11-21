@@ -401,7 +401,8 @@ class AnimPlayer:
     # Each is a whole-body animation built in gait.py (from real kicking / gait figures), blended over the
     # running: act() picks it and how far into it he is; the keeper's dive also tips his whole body over.
     JUMP = {"header": (0.40, 0.26), "walljump": (0.30, 0.22), "splitstep": (0.10, 0.12), "contest": (0.34, 0.26),
-            "flickhead": (0.30, 0.24), "spread": (0.14, 0.20), "reachup": (0.22, 0.22)}   # (off the ground - m, s)
+            "flickhead": (0.30, 0.24), "spread": (0.14, 0.20), "reachup": (0.22, 0.22)}
+    # (the penalty wait: little hops on his toes - see act())   # (off the ground - m, s)
     # The dive: (seconds, degrees tipped over, metres off the ground) - he springs, flies, lands on his side.
     DIVE_ROOT = [(0.00, 0, 0.00), (0.12, 22, 0.28), (0.32, 70, 0.50), (0.50, 84, 0.30), (0.60, 86, 0.06)]
     RECOVER_ROOT = [(0.00, 86, 0.06), (0.25, 70, 0.0), (0.45, 25, 0.0), (0.85, 0, 0.0), (1.20, 0, 0.0)]

@@ -664,6 +664,23 @@ ACTIONS = {
             (2.2, {"abs": 1, "out_r": 62, "arm_r": 40, "elbow_r": 130, "across_r": 20, "out_l": 70, "arm_l": 10,
                    "elbow_l": 10, "lean": -8, "nod": -12, "turn": 12}),
             (2.6, N)],
+    # A keeper waiting for a penalty: on his line, arms out wide and low, knees bent, bouncing on his toes and
+    # swaying side to side to put the taker off (one 1.6 s cycle, played over and over).
+    "penwait": [(0.0, {"hip_r": 24, "knee_r": 42, "ankle_r": 14, "hip_l": 24, "knee_l": 42, "ankle_l": 14,
+                       "hipout_r": 12, "hipout_l": 12, "lean": 12, "nod": -10, "abs": 1, "arm_r": 15, "arm_l": 15,
+                       "out_r": 70, "out_l": 70, "elbow_r": 15, "elbow_l": 15, "side": 0}),
+                (0.4, {"hip_r": 18, "knee_r": 30, "ankle_r": 6, "hip_l": 26, "knee_l": 46, "ankle_l": 16,
+                       "hipout_r": 14, "hipout_l": 10, "lean": 10, "nod": -10, "abs": 1, "arm_r": 25, "arm_l": 10,
+                       "out_r": 80, "out_l": 60, "elbow_r": 10, "elbow_l": 20, "side": 6}),
+                (0.8, {"hip_r": 24, "knee_r": 42, "ankle_r": 14, "hip_l": 24, "knee_l": 42, "ankle_l": 14,
+                       "hipout_r": 12, "hipout_l": 12, "lean": 12, "nod": -10, "abs": 1, "arm_r": 15, "arm_l": 15,
+                       "out_r": 70, "out_l": 70, "elbow_r": 15, "elbow_l": 15, "side": 0}),
+                (1.2, {"hip_r": 26, "knee_r": 46, "ankle_r": 16, "hip_l": 18, "knee_l": 30, "ankle_l": 6,
+                       "hipout_r": 10, "hipout_l": 14, "lean": 10, "nod": -10, "abs": 1, "arm_r": 10, "arm_l": 25,
+                       "out_r": 60, "out_l": 80, "elbow_r": 20, "elbow_l": 10, "side": -6}),
+                (1.6, {"hip_r": 24, "knee_r": 42, "ankle_r": 14, "hip_l": 24, "knee_l": 42, "ankle_l": 14,
+                       "hipout_r": 12, "hipout_l": 12, "lean": 12, "nod": -10, "abs": 1, "arm_r": 15, "arm_l": 15,
+                       "out_r": 70, "out_l": 70, "elbow_r": 15, "elbow_l": 15, "side": 0})],
     # The referee playing advantage: both arms swept forward and out, palms up, towards the side attacking
     # ("play on").
     "advantage": [(-0.1, N),

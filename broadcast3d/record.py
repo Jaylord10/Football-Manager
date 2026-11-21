@@ -29,7 +29,7 @@ with contextlib.redirect_stdout(io.StringIO()):
         if n % 2:
             continue
         b = e.ball
-        fr = {"t": round(e.time_elapsed, 2), "s": list(e.score), "st": e.match_state,
+        fr = {"t": round(e.time_elapsed, 2), "s": list(e.score), "st": e.match_state, "m": e.match_minute(),
               "b": [round(b.pos.x, 1), round(b.pos.y, 1), round(getattr(b, "z", 0.0), 1)],
               "o": (e.team0 + e.team1).index(b.owner) if b.owner in e.team0 + e.team1 else -1,
               "p": [[round(p.pos.x, 1), round(p.pos.y, 1), round(p.facing.x, 3), round(p.facing.y, 3),
