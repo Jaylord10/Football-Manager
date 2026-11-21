@@ -13,6 +13,7 @@ from config.formations import formation_4_4_2_positions
 _BALL_K_PER_SEC  = 0.992 ** 60          # ground friction: speed retained per second ≈ 0.617
 _BALL_NEG_LOG_K  = -math.log(_BALL_K_PER_SEC)   # ≈ 0.481
 _INTERCEPT_T_CAP = 1.5                   # seconds: max lookahead for through-ball prediction
+MEET_STEP = 1.6                          # m: a man who's read a pass to his feet comes this far to meet it (ai/carrier.py)
 
 # ---------------------------------------------------------------------------
 # Stable ball position for role targeting
@@ -191,6 +192,21 @@ def handle_possession_movement(team, opponents, ball, ball_owner, current_time=N
             elif ball.vel.length_squared() <= 0.1:
                 is_receiving = True
 
+        rp = getattr(player, "_read_pass", None)
+        if rp is not None and not is_receiving and current_time is not None:
+            if current_time > rp["until"] or ball_owner is not rp["passer"]:
+                player._read_pass = None
+            elif current_time >= rp["from"]:
+                # He's read it: off onto the through ball's spot, or a step towards the ball to meet it
+                if rp["point"] is not None:
+                    pass                    # (a through ball: he holds his run until it's played - or he's offside)
+                else:
+                    to_b = rp["passer"].pos - player.pos
+                    if to_b.length_squared() > (3.0 * M_TO_PX) ** 2:
+                        player.target = player.pos + to_b.normalize() * (MEET_STEP * M_TO_PX)
+                        player.state = "chase"
+                        player.pos_reason = "read the pass: come to meet it"
+                continue
         if is_receiving:
             # Run to the earliest point on the ball's path he can actually
             # reach (players now accelerate realistically, so aiming at where

@@ -106,6 +106,8 @@ def make_ball_carrier_decision(carrier, team, opponents, ball, current_time, mec
     if deferred.queued is not None:
         st["pending"] = deferred.queued
         carrier._busy_until = deferred.queued["at"]
+        if deferred.queued["kind"] == "pass":
+            _read_the_pass(deferred.queued, current_time)
         # Setting the pass / shot: he slows right down - and if it's going behind him, he stops and turns
         # with it first (core/kick_angle.py; the turning is done in core/locomotion.py)
         if getattr(carrier, "_turn_to", None) is not None:
@@ -114,6 +116,29 @@ def make_ball_carrier_decision(carrier, team, opponents, ball, current_time, mec
             ahead = carrier.pos + (carrier.facing * (1.0 * M_TO_PX) if carrier.facing.length_squared() > 0 else Vector2())
         mechanics.execute_dribble(carrier, ahead, ball, current_time, speed_mult=_SETUP_SPEED)
     return result
+
+
+# Reading the pass (Jay, 21 Nov: a 20 Off The Ball player moves before the pass, not after it).  While the man on
+# the ball sets his pass (ai/decision_timing.py: 0.15-0.35 s), the man it's for may see it coming - from his body
+# shape, the look - and get moving: onto a through ball's spot, or a step towards the ball to meet it rather than
+# waiting for it to arrive.  How often and how soon: his Anticipation and Off The Ball.
+READ_CHANCE = (0.25, 0.95)      # chance he reads it: (Anticipation + Off The Ball) / 2 at 1 -> 20
+READ_DELAY = (0.30, 0.05)       # s after the set-up starts before he moves: worst -> best
+MEET_STEP = 1.6                 # m he comes towards the ball to meet a pass to feet
+
+
+def _read_the_pass(queued, now):
+    passer, receiver = queued["args"][0], queued["args"][1]
+    through = queued["args"][5] if len(queued["args"]) > 5 else None
+    if receiver is None or receiver is passer:
+        return
+    skill = (_stat20(receiver, "Anticipation") + _stat20(receiver, "Off The Ball")) / 2.0
+    u = (skill - 1.0) / 19.0
+    if random.random() > READ_CHANCE[0] + (READ_CHANCE[1] - READ_CHANCE[0]) * u:
+        return
+    delay = READ_DELAY[0] + (READ_DELAY[1] - READ_DELAY[0]) * u
+    point = Vector2(through["point"]) if through and through.get("point") is not None else None
+    receiver._read_pass = {"from": now + delay, "until": queued["at"] + 0.25, "passer": passer, "point": point}
 
 
 def _control_touch(carrier, opponents, ball, now, mechanics, pressured):
