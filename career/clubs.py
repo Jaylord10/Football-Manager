@@ -570,6 +570,53 @@ def toggle_bench(club, pid, exclude=()):
     return None
 
 
+def place_of(club, pid, exclude=()):
+    """Where a man is in the matchday squad: ("xi", slot), ("sub", n) or None (not in it)."""
+    for slot, x in (club.get("lineup") or {}).items():
+        if x == pid:
+            return ("xi", slot)
+    ids = [p["id"] for p in bench(club, exclude)]
+    return ("sub", ids.index(pid)) if pid in ids else None
+
+
+def swap_places(club, a, b, exclude=()):
+    """The manager drags one man onto another (Tactics / Squad screens): they swap places - in the XI, on the
+    bench, or out of the matchday squad.  b = None: an empty place on the bench.  Returns None, or why it can't
+    be done."""
+    ids = [p["id"] for p in bench(club, exclude)]
+    pa = place_of(club, a, exclude)
+    pb = place_of(club, b, exclude) if b is not None else ("sub", len(ids))
+    if a == b or pa == pb:
+        return None
+    if b is None:
+        if pa is not None and pa[0] == "xi":
+            return "Drag a substitute onto him instead - the team needs eleven."
+        if pa is not None:
+            return None                                       # (he's a sub already)
+        if len(ids) >= BENCH_SIZE:
+            return f"The bench is full ({BENCH_SIZE}) - drop him on one of them to swap."
+        ids.append(None)
+    if (a in exclude and pb is not None) or (b is not None and b in exclude and pa is not None):
+        return "He's not available - injured or suspended."
+    before = set(club["lineup"].values()) | set(ids)
+
+    def put(pid, place):
+        if place is None or pid is None:
+            return
+        if place[0] == "xi":
+            club["lineup"][place[1]] = pid
+        else:
+            ids[place[1]] = pid
+
+    put(a, pb)
+    put(b, pa)
+    starting = set(club["lineup"].values())
+    club["bench_pick"] = [x for x in ids if x is not None and x not in starting][:BENCH_SIZE]
+    now = starting | set(club["bench_pick"])
+    club["bench_drop"] = sorted((set(club.get("bench_drop", [])) | (before - now)) - now)
+    return None
+
+
 def match_squad(club, exclude=()):
     """What the match engine needs for substitutions: the bench (raw
     attributes, the drop and rating for each slot) and the XI's ids and ratings."""
