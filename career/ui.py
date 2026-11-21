@@ -203,6 +203,7 @@ class App:
             stadium.sync(self.career)                   # (the ground's real capacity - career/stadium.py)
         self.screen = "title"
         self.buttons = []
+        self.drags, self.drops = [], []              # (drag and drop: see _drag_start)
         self.links = []
         self.running = True
         self.fixtures_md = 1
@@ -336,6 +337,14 @@ class App:
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     self.quit()
+                elif e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 and self._drag_start(e.pos):
+                    pass                                        # (a man picked up: a click or a drag - see _drag_end)
+                elif e.type == pygame.MOUSEMOTION and getattr(self, "_drag", None):
+                    d = self._drag
+                    if abs(e.pos[0] - d["start"][0]) + abs(e.pos[1] - d["start"][1]) > 6:
+                        d["moving"] = True
+                elif e.type == pygame.MOUSEBUTTONUP and e.button == 1 and getattr(self, "_drag", None):
+                    self._drag_end(e.pos)
                 elif e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                     for b in list(self.buttons):
                         if b.hit(e.pos):
@@ -354,15 +363,81 @@ class App:
             self.win.fill(BG)
             self.buttons = []
             self.links = []
+            self.drags, self.drops = [], []
             getattr(self, "draw_" + self.screen)()
             if getattr(self, "preview", False) and self.screen != "preview":
                 self._preview_filter()
             for b in self.buttons:
                 b.draw(self.win, self.fonts, mouse)
             self._link_hover(mouse)
+            self._drag_draw(mouse)
             pygame.display.flip()
             self.clock.tick(30)
         pygame.quit()
+
+    # -- drag and drop (picking the team: Tactics and Squad) ----------------------------------------------------
+    # A screen offers men to pick up - self.drags: (rect, player id, label) - and places to put them -
+    # self.drops: (rect, action(player id)).  Pressing on one picks him up; let go without moving and it's an
+    # ordinary click (whatever button is under it), move and let go over a drop place and that happens.
+    def _drag_start(self, pos):
+        for rect, pid, label in getattr(self, "drags", []):
+            if rect.collidepoint(pos):
+                click = next((b for b in self.buttons if b.hit(pos)), None)
+                self._drag = {"pid": pid, "label": label, "start": pos, "moving": False, "click": click}
+                return True
+        return False
+
+    def _drag_end(self, pos):
+        d, self._drag = self._drag, None
+        if not d["moving"]:
+            if d["click"] is not None:
+                d["click"].action()
+            return
+        for rect, action in getattr(self, "drops", []):
+            if rect.collidepoint(pos):
+                action(d["pid"])
+                return
+
+    def _drag_draw(self, mouse):
+        d = getattr(self, "_drag", None)
+        if not d or not d["moving"]:
+            return
+        if not pygame.mouse.get_pressed()[0]:                # (let go outside the window)
+            self._drag = None
+            return
+        for rect, _a in self.drops:                           # (where he'd go)
+            if rect.collidepoint(mouse):
+                pygame.draw.rect(self.win, ACCENT, rect.inflate(4, 4), 2, border_radius=8)
+                break
+        t = self.fonts["small"].render(d["label"], True, (16, 22, 28))
+        box = t.get_rect(center=(mouse[0] + 6, mouse[1] - 16)).inflate(18, 10)
+        pygame.draw.rect(self.win, ACCENT, box, border_radius=8)
+        self.win.blit(t, t.get_rect(center=box.center))
+
+    def _drop_on(self, a, b):
+        """One man dragged onto another (b: a player id, or None for an empty place on the bench): they swap
+        places - the XI, the bench, or out of the squad (career/clubs.py)."""
+        club = self._my_club()
+        today = self.career.get("date") or ""
+        out = avail.unavailable_ids(club, today) if today else set()
+        problem = clubs_mod.swap_places(club, a, b, out)
+        self.tactics_msg = self.flash = problem
+        self.tactics_note = False
+        if not problem:
+            league.save(self.career)
+
+    def _drop_on_spot(self, a, spot):
+        """A man dragged to an empty spot on the Tactics pitch: one of the XI moves there (the shape changes)."""
+        club = self._my_club()
+        at = next((s for s, x in club["lineup"].items() if x == a), None)
+        if at is None:
+            self.tactics_msg, self.tactics_note = "Drop him on one of the team to swap them - then move him.", False
+            return
+        if at == "GK":
+            self.tactics_msg, self.tactics_note = "The keeper stays in goal - drop a man on him to swap them.", False
+            return
+        self.tactics_slot = at
+        self._move_to(spot)
 
     def key(self, k, ch=""):
         if self.screen == "newname":
@@ -1195,8 +1270,9 @@ class App:
         if mine:
             self.text("Squad", "h1", TEXT, (x0, 24))
             self.text(f"Their {len(c['players'])} players - click one to see his profile." if getattr(self, "preview", False)
-                      else f"Click a player for his profile. The XI is picked on Tactics; click the XI column to "
-                           f"put a man on the bench (SUB) or take him off.", "small", MUTED, (x0, 80))
+                      else f"Click a man for his profile  ·  drag his place (LB, SUB...) onto another man to swap "
+                           f"them  ·  click an empty XI box: on the bench", "small",
+                      MUTED, (x0, 80))
         else:
             _badge(self.win, self.colour(cid), (x0 + 18, 48), 18, self._club_of(cid))
             self.text(c["name"], "h1", TEXT, (x0 + 48, 24))
@@ -1237,9 +1313,9 @@ class App:
         cols = [("Pos", 0), ("Name", 50), ("Age", 270), ("Rating", 316), ("Pace", 386), ("Passing", 446),
                 ("Finishing", 521), ("Tackling", 601), ("Heading", 676), ("Fit", 742), ("XI", 798)]
         if mine:                                 # (your own players: how they're feeling - career/morale.py)
-            cols = [("Pos", 0), ("Name", 50), ("Age", 266), ("Rating", 308), ("Pace", 368), ("Passing", 420),
-                    ("Finishing", 488), ("Tackling", 560), ("Heading", 628), ("Fit", 692), ("Morale", 752),
-                    ("XI", 828)]
+            cols = [("Pos", 0), ("Name", 50), ("Age", 250), ("Rating", 290), ("Pace", 346), ("Passing", 394),
+                    ("Finishing", 458), ("Tackling", 526), ("Heading", 590), ("Fit", 652), ("Morale", 702),
+                    ("XI", 770)]
         y = r.y + 12
         for label, cx in cols:
             self.text(label, "small", MUTED, (r.x + 20 + cx, y))
@@ -1278,6 +1354,11 @@ class App:
                 if label == "Rating":
                     col = ACCENT if v >= 70 else TEXT if v >= 55 else MUTED
                 elif label == "XI":
+                    if mine and v and not getattr(self, "preview", False):       # (a tag to drag onto another man)
+                        pill = pygame.Rect(r.x + 20 + cx - 8, y - 2, 52, step - 5)
+                        pygame.draw.rect(self.win, ACCENT if v != "SUB" else LINE, pill, border_radius=6)
+                        self.text(v, "small", (16, 22, 28) if v != "SUB" else TEXT, pill.center, "center")
+                        continue
                     col = ACCENT if v != "SUB" else MUTED
                 elif label == "Morale":
                     col = MORALE_COLOUR[morale.colour_key(p)]
@@ -1293,12 +1374,17 @@ class App:
             if st:
                 age_x = next(x_ for l_, x_ in cols if l_ == "Age")
                 self.text(st, "small", LOSS if st.startswith("INJ") else DRAW, (r.x + 20 + age_x - 10, y + 2), "topright")
-            if mine and p["id"] not in in_xi and not getattr(self, "preview", False):   # (the bench: click the XI
-                xi_x = next(x_ for l_, x_ in cols if l_ == "XI")                         #  column)
-                cell = pygame.Rect(r.x + 20 + xi_x - 10, y - 3, 64, step - 3)
+            if mine and not getattr(self, "preview", False):                       # (the XI column: drag his
+                xi_x = next(x_ for l_, x_ in cols if l_ == "XI")                     #  place onto another man;
+                cell = pygame.Rect(r.x + 20 + xi_x - 10, y - 3, 64, step - 3)        #  click: on / off the bench)
                 if cell.collidepoint(mouse):
                     pygame.draw.rect(self.win, ACCENT, cell, 1, border_radius=5)
-                self.buttons.append(_Invisible(cell, lambda pid=p["id"]: self._toggle_bench(pid)))
+                if p["id"] not in in_xi:
+                    self.buttons.append(_Invisible(cell, lambda pid=p["id"]: self._toggle_bench(pid)))
+                tag = in_xi.get(p["id"], "SUB" if p["id"] in bench_ids else "")
+                self.drags.append((cell, p["id"], f"{tag or p['Name'].split(' ')[-1]}  {p['Name'].split(' ')[-1]}"
+                                   if tag else p["Name"].split(" ")[-1]))
+                self.drops.append((row, lambda a, pid=p["id"]: self._drop_on(a, pid)))
             self.buttons.append(_Invisible(row, lambda pid=p["id"]: self.view_player(cid, pid)))
             y += step
         if mine and getattr(self, "flash", None):
@@ -3392,6 +3478,31 @@ class App:
                 line = (line + " " + w_).strip()
         return lines + ([line] if line else [])
 
+    def _bench_row(self, club, r):
+        """The substitutes, under the Tactics pitch: drag one onto a man in the team (or a man onto one) to swap
+        them; an empty place takes anyone from the list."""
+        today = self.career.get("date") or ""
+        out = avail.unavailable_ids(club, today) if today else set()
+        subs = clubs_mod.bench(club, out)
+        self.text("Subs", "small", MUTED, (r.x, r.y - 2))
+        n = clubs_mod.BENCH_SIZE
+        x = r.x + 44
+        w = (r.right - x - (n - 1) * 6) / n
+        for i in range(n):
+            box = pygame.Rect(int(x + i * (w + 6)), r.y, int(w), r.h)
+            if i < len(subs):
+                p = subs[i]
+                pygame.draw.rect(self.win, PANEL, box, border_radius=8)
+                self.text(self._fit_text(p["Name"].split(" ")[-1], "small", box.w - 6), "small", TEXT,
+                          (box.centerx, box.y + 3), "midtop")
+                self.text(p["Pos"], "tiny", MUTED, (box.centerx, box.y + 23), "midtop")
+                self.drags.append((box, p["id"], p["Name"].split(" ")[-1]))
+                self.drops.append((box, lambda a, pid=p["id"]: self._drop_on(a, pid)))
+            else:
+                pygame.draw.rect(self.win, PANEL, box, 1, border_radius=8)
+                self.text("empty", "tiny", MUTED, box.center, "center")
+                self.drops.append((box, lambda a: self._drop_on(a, None)))
+
     def _select_spot(self, s):
         self.tactics_slot = s
         self.tactics_msg = None
@@ -3502,7 +3613,7 @@ class App:
                                        primary=f == name, font="btn_s"))
 
         # The pitch with the XI - and the empty spots you can move a man to
-        pr = pygame.Rect(x0, 262, 440, H - 262 - 104)
+        pr = pygame.Rect(x0, 262, 440, H - 262 - 158)
         pygame.draw.rect(self.win, (34, 92, 52), pr, border_radius=10)
         pygame.draw.rect(self.win, (70, 130, 85), pr.inflate(-20, -20), 2)
         pygame.draw.line(self.win, (70, 130, 85), (pr.x + 10, pr.centery), (pr.right - 10, pr.centery), 2)
@@ -3528,6 +3639,7 @@ class App:
             pygame.draw.rect(self.win, (52, 112, 70) if moving else (44, 102, 62), rect, 1, border_radius=8)
             self.text(slots_mod.LABEL[s], "small", (96, 150, 110) if moving else (70, 128, 86), rect.center, "center")
             self.buttons.append(_Invisible(rect, lambda s=s: self._move_to(s)))
+            self.drops.append((rect, lambda a, s=s: self._drop_on_spot(a, s)))
         for s in ["GK"] + spots_now:
             p = clubs_mod.player_by_id(club, club["lineup"][s])
             f = clubs_mod.fit(p, s)
@@ -3549,6 +3661,8 @@ class App:
             role = PITCH_ROLE.get(role, SHORT_ROLE.get(role, role))
             self.text(self._fit_text(role, "tiny", spot.w - 4), "tiny", MUTED, (spot.centerx, spot.y + 23), "midtop")
             self.buttons.append(_Invisible(spot, lambda s=s: self._select_spot(s)))
+            self.drags.append((spot, p["id"], p["Name"].split(" ")[-1]))
+            self.drops.append((spot, lambda a, pid=p["id"]: self._drop_on(a, pid)))
         for t, bg in getattr(self, "_lp_labels", []):          # (the line labels, on top of the boxes)
             pygame.draw.rect(self.win, (34, 92, 52), bg, border_radius=3)
             self.win.blit(t, (bg.x + 4, bg.y + 1))
@@ -3557,14 +3671,16 @@ class App:
             self.text(self._fit_text(hint, "small", W - x0 - 30), "small",
                       ACCENT if getattr(self, "tactics_note", False) else LOSS, (x0, pr.bottom + 8))
         else:
-            self.text(f"{name if name != 'Custom' else 'Your own shape'}  ·  click a player, then an empty spot to "
-                      f"move him there", "small", MUTED, (x0, pr.bottom + 8))
+            self.text(f"{name if name != 'Custom' else 'Your own shape'}  ·  drag a man onto another to swap them "
+                      f"(the list and the subs too), or onto an empty spot to move him there", "small", MUTED,
+                      (x0, pr.bottom + 8))
+        self._bench_row(club, pygame.Rect(x0, pr.bottom + 32, W - x0 - 30, 42))
         cap, vice = captains.armband(club)
         rec, _ = captains.recommend(club)
         line = (f"Captain: {cap['Name'] if cap else 'none'}  ·  Vice: {vice['Name'] if vice else 'none'}"
                 + (f"  ·  Assistant: \u201c{rec['Name'].split(' ')[-1]} would be my captain.\u201d"
                    if rec is not None and (cap is None or rec['id'] != cap['id']) else ""))
-        self.text(self._fit_text(line, "small", W - x0 - 30), "small", MUTED, (x0, pr.bottom + 28))
+        self.text(self._fit_text(line, "small", W - x0 - 30), "small", MUTED, (x0, pr.bottom + 82))
 
         # The selected position: player, role, instructions
         rx = pr.right + 18
@@ -3643,6 +3759,8 @@ class App:
             self.text(self._fit_text(tag, "small", 164), "small", (LOSS if st else MUTED), (rr.right - 168, y))
             if not st:                                   # can't pick an injured / suspended man
                 self.buttons.append(_Invisible(row, lambda pid=p["id"]: self._pick_player(slot, pid)))
+                self.drags.append((row, p["id"], p["Name"].split(" ")[-1]))
+            self.drops.append((row, lambda a, pid=p["id"]: self._drop_on(a, pid)))
             y += 24
 
         # Next opponent
@@ -3656,7 +3774,7 @@ class App:
             msg = (f"Next: {oc['name']} - {STYLE_TEXT[oc['tactics']['defence']]}, "
                    f"{BUILD_TEXT[oc['tactics']['build_up']]}.  Danger man: {best['Name']} ({best['Pos']}, "
                    f"{clubs_mod.overall(best)})")
-            self.text(self._fit_text(msg, "small", W - x0 - 30), "small", MUTED, (x0, H - 46))
+            self.text(self._fit_text(msg, "small", W - x0 - 30), "small", MUTED, (x0, H - 30))
 
     # -- table --------------------------------------------------------------
     # -- the Spanish league ---------------------------------------------------
