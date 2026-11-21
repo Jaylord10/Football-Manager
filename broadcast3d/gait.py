@@ -681,6 +681,20 @@ ACTIONS = {
                 (1.6, {"hip_r": 24, "knee_r": 42, "ankle_r": 14, "hip_l": 24, "knee_l": 42, "ankle_l": 14,
                        "hipout_r": 12, "hipout_l": 12, "lean": 12, "nod": -10, "abs": 1, "arm_r": 15, "arm_l": 15,
                        "out_r": 70, "out_l": 70, "elbow_r": 15, "elbow_l": 15, "side": 0})],
+    # Handbags: a shove in the chest - both arms punched forward, a step in, then back.
+    "shove": [(-0.15, N),
+              (0.10, {"abs": 1, "arm_r": 85, "arm_l": 85, "out_r": 8, "out_l": 8, "elbow_r": 15, "elbow_l": 15,
+                      "lean": 12, "chest": 4, "hip_l": 25, "knee_l": 20}),
+              (0.35, {"abs": 1, "arm_r": 60, "arm_l": 60, "out_r": 15, "out_l": 15, "elbow_r": 50, "elbow_l": 50,
+                      "lean": 4, "nod": -6}),
+              (0.80, N)],
+    # ...and a team-mate pulling him away / keeping them apart: arms out wide between them.
+    "separate": [(-0.1, N),
+                 (0.30, {"abs": 1, "arm_r": 60, "arm_l": 60, "out_r": 55, "out_l": 55, "elbow_r": 25, "elbow_l": 25,
+                         "lean": -4}),
+                 (2.20, {"abs": 1, "arm_r": 55, "arm_l": 55, "out_r": 50, "out_l": 50, "elbow_r": 30, "elbow_l": 30,
+                         "lean": -3}),
+                 (2.60, N)],
     # The referee playing advantage: both arms swept forward and out, palms up, towards the side attacking
     # ("play on").
     "advantage": [(-0.1, N),

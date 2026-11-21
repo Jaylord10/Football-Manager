@@ -114,3 +114,9 @@ Nothing here is on Jay's PC.  Each item is its own commit.
   the whole team stood still (161 "frozen" moments in 45 minutes).  Fixed - a hold starts once per spell with
   the ball - then 0 in 45 minutes, and in a recorded match keepers held it 11 times for 1-5 s.
 - Checks: check.py all good.
+
+## 22. Handbags (3D only)
+- A booking: up to two of the fouled side within 18 m rush in at the man booked - the nearest gives him a shove
+  in the chest, the other protests - and one of his own team-mates gets between them, arms out wide.  About
+  3.5 s, then they drift back to where the match has them.  (The referee already walks over to show the card.)
+- Checks: check.py all good.

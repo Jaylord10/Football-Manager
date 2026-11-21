@@ -1105,6 +1105,10 @@ class Viewer(ShowBase):
             wx, wy, sp2 = self._gather(i, fr, cel, wx, wy, dt)                  # (team-mates mob the scorer)
             if sp2 is not None:
                 sp = sp2
+            hb = self._handbags(i, fr, wx, wy, dt, k)                            # (a bad foul: handbags)
+            if hb is not None:
+                wx, wy, sp2, hb_kind = hb
+                sp = sp2 if sp2 is not None else sp
             wx, wy, fx, fy, sp, sp_pose = self._run_up(i, fr, wx, wy, fx, fy, sp, k, dt)   # (set pieces)
             px, py = prev.get(i, (wx, wy))
             vel = ((wx - px) / max(dt, 1e-3), (wy - py) / max(dt, 1e-3))
@@ -1191,6 +1195,9 @@ class Viewer(ShowBase):
                 gx = -HX if wx < 0 else HX
                 if math.hypot(rbx - gx, rby) < 30 and fr["o"] not in (range(0, 11) if i < 11 else range(11, 22)):
                     kind, t = "ready", 0.0
+            hbk = getattr(self, "_hb_kind", {}).get(i)
+            if hbk is not None and kind in (None, "protest"):
+                kind, t = hbk
             p.act(kind, t, self._left_foot(i, p, kind, t, k))
         self._prev_pos = prev
         self._walk_offs(dt, rbx, rby)
@@ -1669,6 +1676,71 @@ BOUNCE_EVERY = 1.5       # ...once every this many seconds
 LATE_KNEES_FROM = 75     # minute: from here, at a dead ball, about a quarter stand bent over, hands on knees
 APPEAL_WITHIN = 18.0     # m from the ball: the side given the free kick appeals for it (some of them)...
 APPEAL_FOR = 1.45        # s from the whistle
+
+
+HANDBAGS = (0.3, 3.8)    # s after a booking: team-mates of the man fouled go for the fouler; one of his pulls
+HANDBAGS_NEAR = 18.0     # them apart (m: those within this of it)
+
+
+def _viewer_handbags(self, i, fr, wx, wy, dt, k):
+    """A booking (a bad foul): up to two of the fouled side's men within 18 m rush in at the fouler - the nearest
+    shoves him - and one of his own team-mates gets between them, arms out; then they drift back to where the
+    engine has them.  Drawn only.  -> (x, y, speed or None, (kind, t) or None) or None."""
+    hb = self.__dict__.setdefault("_hb", {})
+    kinds = self.__dict__.setdefault("_hb_kind", {})
+    kinds.pop(i, None)
+    card = fr.get("card")
+    F = self.m["frames"]
+    cur = hb.get(("pos", i))
+    target = None
+    if card and card[0] in ("yellow", "red", "second_yellow") and 0 <= card[1] < len(fr["p"]):
+        cs = k
+        while cs > 0 and F[cs - 1].get("card") == card:
+            cs -= 1
+        t = (k - cs) / 30.0
+        plan = hb.get(cs)
+        if plan is None:
+            f0 = F[cs]["p"]
+            f = card[1]
+            fx_, fy_ = f0[f][0], f0[f][1]
+            near = lambda team: sorted((math.hypot(q[0] - fx_, q[1] - fy_) / 10.0, j) for j, q in enumerate(f0)
+                                       if (j < 11) == team and j != f and q[6] and j not in (0, 11))
+            theirs = [j for d, j in near(not (f < 11)) if d < HANDBAGS_NEAR][:2]
+            ours = [j for d, j in near(f < 11) if d < HANDBAGS_NEAR][:1]
+            plan = hb[cs] = {"f": f, "in": theirs, "sep": ours}
+        if HANDBAGS[0] <= t <= HANDBAGS[1] and (i in plan["in"] or i in plan["sep"]):
+            g = fr["p"][plan["f"]]
+            gx, gy = to_world(g[0], g[1])
+            if i in plan["in"]:
+                n = plan["in"].index(i)
+                a = math.atan2(wy - gy, wx - gx) + (0.5 if n else 0.0)
+                target = (gx + 0.85 * math.cos(a), gy + 0.85 * math.sin(a))
+                if n == 0 and t > 1.0:
+                    kinds[i] = ("shove", min(0.8, t - 1.0))
+                elif t > 0.9:
+                    kinds[i] = ("protest", 0.5)
+            else:
+                a = math.atan2(wy - gy, wx - gx)
+                target = (gx + 0.6 * math.cos(a), gy + 0.6 * math.sin(a))
+                if t > 0.8:
+                    kinds[i] = ("separate", min(2.2, t - 0.8))
+    if target is None:
+        if cur is None:
+            return None
+        target = (wx, wy)
+        if math.hypot(cur[0] - wx, cur[1] - wy) < 0.3:
+            del hb[("pos", i)]
+            return None
+    if cur is None:
+        cur = (wx, wy)
+    dx, dy = target[0] - cur[0], target[1] - cur[1]
+    d = math.hypot(dx, dy)
+    v = min(6.5, d * 2.5)
+    step = min(d, v * dt)
+    if d > 1e-6:
+        cur = (cur[0] + dx / d * step, cur[1] + dy / d * step)
+    hb[("pos", i)] = cur
+    return cur[0], cur[1], v * 10.0, kinds.get(i)
 
 
 def _viewer_offside_man(self, fr, r, k):
@@ -2358,6 +2430,7 @@ Viewer._smother = _viewer_smother
 Viewer._appeal = _viewer_appeal
 Viewer._adv_id = _viewer_adv_id
 Viewer._offside_man = _viewer_offside_man
+Viewer._handbags = _viewer_handbags
 Viewer._ball = _viewer_ball
 Viewer.THROW_FLIGHT = 0.8      # s: a throw-in in the air (a 10-15 m throw at ~13-15 m/s)
 Viewer.THROW_ARC = 0.8         # m: how far it rises above a straight line from his hands to the grass
