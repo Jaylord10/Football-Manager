@@ -126,3 +126,10 @@ Nothing here is on Jay's PC.  Each item is its own commit.
   of appearing where the man going off was.  (The law since 2019: the sub comes on at halfway, the player going
   off leaves by the nearest point - which he already did, clapping the fans.)
 - Tested by making a substitution in a recorded match; check.py all good.
+
+## 15. Players talking: the back line stepping up (3D only)
+- When the whole back four push up the pitch together (all faster than 2.5 m/s - the ball's been cleared), the
+  most central of them points up the pitch, calling them out (once in 20 s per team at most).
+- Already there from before: runners pointing into space or calling with an arm up, keepers pointing to set the
+  wall, managers pointing from the touchline.
+- Checks: check.py all good.

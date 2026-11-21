@@ -1213,6 +1213,10 @@ class Viewer(ShowBase):
                 gx = -HX if wx < 0 else HX
                 if math.hypot(rbx - gx, rby) < 30 and fr["o"] not in (range(0, 11) if i < 11 else range(11, 22)):
                     kind, t = "ready", 0.0
+            if kind is None and not getattr(p, "keeper", False):              # (the back line stepping up:
+                su = self._stepping_up(fr, k)                                  #  the centre-back calls them
+                if su.get(i) is not None:                                      #  out, pointing up the pitch)
+                    kind, t = "point", su[i]
             hbk = getattr(self, "_hb_kind", {}).get(i)
             if hbk is not None and kind in (None, "protest"):
                 kind, t = hbk
@@ -1760,6 +1764,42 @@ def _viewer_handbags(self, i, fr, wx, wy, dt, k):
         cur = (cur[0] + dx / d * step, cur[1] + dy / d * step)
     hb[("pos", i)] = cur
     return cur[0], cur[1], v * 10.0, kinds.get(i)
+
+
+STEP_UP_SPEED = 2.5      # m/s: the whole back four moving up the pitch at least this fast...
+STEP_UP_GAP = 20.0       # s: (once in this long, per team)
+
+
+def _viewer_stepping_up(self, fr, k):
+    """The back four pushing up together (after the ball's cleared): the most central of them points up the
+    pitch, calling them out, for a second or so.  -> {player: seconds into it}."""
+    c = self.__dict__.setdefault("_su", {"k": None, "out": {}, "last": {0: -999, 1: -999}, "go": {}})
+    if c["k"] == k:
+        return c["out"]
+    c["k"] = k
+    out = {}
+    F = self.m["frames"]
+    if k >= 6 and not fr.get("r") and not fr.get("c"):
+        P0, P1 = F[k - 6]["p"], fr["p"]
+        for team in (0, 1):
+            ids = range(1, 11) if team == 0 else range(12, 22)
+            gk = 0 if team == 0 else 11
+            own = P1[gk][0]
+            ups = 1.0 if own < 550 else -1.0                                   # (which way is up the pitch)
+            line = sorted((abs(P1[j][0] - own), j) for j in ids if P1[j][6])[:4]
+            if len(line) < 4:
+                continue
+            vs = [(P1[j][0] - P0[j][0]) * ups / 10.0 * 5.0 for _, j in line]   # (m/s over the last 0.2 s)
+            g = c["go"].get(team)
+            if g is not None and (k - g[1]) / 30.0 < 1.4:
+                out[g[0]] = (k - g[1]) / 30.0
+            elif min(vs) > STEP_UP_SPEED and (k - c["last"][team]) / 30.0 > STEP_UP_GAP:
+                who = min(line, key=lambda d: abs(P1[d[1]][1] - 340.0))[1]
+                c["go"][team] = (who, k)
+                c["last"][team] = k
+                out[who] = 0.0
+    c["out"] = out
+    return out
 
 
 def _viewer_offside_man(self, fr, r, k):
@@ -2450,6 +2490,7 @@ Viewer._appeal = _viewer_appeal
 Viewer._adv_id = _viewer_adv_id
 Viewer._offside_man = _viewer_offside_man
 Viewer._handbags = _viewer_handbags
+Viewer._stepping_up = _viewer_stepping_up
 Viewer._ball = _viewer_ball
 Viewer.THROW_FLIGHT = 0.8      # s: a throw-in in the air (a 10-15 m throw at ~13-15 m/s)
 Viewer.THROW_ARC = 0.8         # m: how far it rises above a straight line from his hands to the grass
