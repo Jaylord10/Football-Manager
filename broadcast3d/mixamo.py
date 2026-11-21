@@ -35,6 +35,7 @@ IDLES = ["Idle", "Idle_1", "Breathing_Idle", "offensive_idle"]   # (each man has
 KICKS = ("kick", "shot", "finish", "pass", "cross", "clear", "dink", "volley", "lob", "chip", "drive")
 # Our figure's ways of standing and moving that the motion capture covers itself (standing about, side-steps,
 # backpedalling) - anything else of ours (celebrating, clapping, hands on hips / knees, calling for it) is copied
+RUN_THROUGH = {"cut", "brake"}          # (our figure's sharp cuts and stops: the motion capture just runs on)
 OWN_LOOPS = {"shift", "rest", "shuffle", "shuffle_m", "backpedal", "backwalk", "turnstep"}
 CM = 100.0                                   # (the capture is in centimetres)
 BRIGHT = 1.2
@@ -174,6 +175,21 @@ def kit_texture(actor, kit, number, name, keeper, skin):
         g = sk & (ax > 0.60)
         gc = C((235, 235, 235) if sum(kit["shirt"]) < 600 else (40, 40, 44))
         out[g] = gc * np.clip(raw[g].mean(axis=1) / max(1e-3, float(np.median(raw[g].mean(axis=1)))), 0.6, 1.2)[:, None]
+    # Boots: the same choice as our figures (players3d.py) - half in black, the rest white or a bright colour
+    import zlib
+    bs = zlib.crc32(f"boots{name}{number}".encode()) % 20
+    bright = [(240, 240, 240), (240, 240, 240), (255, 120, 30), (40, 200, 190), (190, 240, 60), (230, 50, 60),
+              (60, 120, 240), (250, 220, 50), (245, 90, 170), (240, 240, 240)]
+    bt_col = C((22, 22, 24)) if bs < 10 or not name else C(bright[bs - 10])
+    bm = part == 5
+    if bm.any():
+        Lb = raw[bm].mean(axis=1)
+        sole = Lb > 0.75                                          # (studs and soles stay as they are)
+        sh = np.clip(Lb / max(1e-3, float(np.median(Lb))), 0.5, 1.4)[:, None]
+        newc = bt_col * sh
+        cur = out[bm]
+        cur[~sole] = newc[~sole]
+        out[bm] = cur
     # Name and number on his back (the same picture our figures use, the same place)
     num_col = kit.get("number", (255, 255, 255))
     bt = players3d._back_texture(name, number, num_col, None)
@@ -278,65 +294,65 @@ class Retarget:
         self.dx = None
 
     def _control(self):
-        from panda3d.core import LMatrix4f
-        a = self.mix.a
+        """Take charge of his main joints for good: every frame they're set from the motion capture (played on a
+        hidden twin, self.mix.m), our figure's pose, or a blend of the two - so he moves smoothly from one to the
+        other."""
+        from panda3d.core import LMatrix4f, LQuaternionf
+        a, m = self.mix.a, self.mix.m
         P = "mixamorig5:"
         root = self.mix.ap.root
+        hx = a.exposeJoint(None, "modelRoot", P + "Hips")
+        a.getPartBundle("modelRoot").forceUpdate()
         self.ctrl = {}
         for d in CHAIN:
             c = a.controlJoint(None, "modelRoot", P + d)
             self.ctrl[d] = c
-            if d not in self.rest_local:
-                self.rest_local[d] = (c.getQuat(), c.getMat())
-        if self.pw_q is None:
-            # The hips' parent, in the player's frame: his rest hips (world) = rest local x parent
-            hx = a.exposeJoint(None, "modelRoot", P + "Hips")
-            a.getPartBundle("modelRoot").forceUpdate()
-            from panda3d.core import LQuaternionf
-            lq = LQuaternionf(self.rest_local["Hips"][0]); lq.invertInPlace()
-            # (not posed yet: the controlled hips still has its rest value, so the exposed node is the rest pose)
-            self.pw_q = lq * hx.getQuat(root)
-            m = LMatrix4f(self.rest_local["Hips"][1]); m.invertInPlace()
-            self.pw_mat = m * hx.getMat(root)
-            self.pw_inv = LMatrix4f(self.pw_mat); self.pw_inv.invertInPlace()
-            hx.removeNode()
+            self.rest_local[d] = (c.getQuat(), c.getMat())
+        # The hips' parent (the skeleton's root), in the player's frame: rest hips (world) = rest local x parent
+        lq = LQuaternionf(self.rest_local["Hips"][0]); lq.invertInPlace()
+        self.pw_q = lq * hx.getQuat(root)
+        mm = LMatrix4f(self.rest_local["Hips"][1]); mm.invertInPlace()
+        self.pw_mat = mm * hx.getMat(root)
+        self.pw_inv = LMatrix4f(self.pw_mat); self.pw_inv.invertInPlace()
+        hx.removeNode()
+        self.mx = {d: m.exposeJoint(None, "modelRoot", P + d) for d in CHAIN}
 
-    def release(self):
-        if self.ctrl is None:
-            return
-        a = self.mix.a
-        for d in CHAIN:
-            a.releaseJoint("modelRoot", "mixamorig5:" + d)
-        for c in self.ctrl.values():
-            c.removeNode()
-        self.ctrl = None
-
-    def apply(self):
-        """Pose him as our figure is posed right now."""
+    def apply(self, w):
+        """Pose him: the motion capture (from his twin), blended towards our figure's pose by w (0-1)."""
         from panda3d.core import LQuaternionf, Point3
         if self.ctrl is None:
             self._control()
         ap = self.mix.ap
         root = ap.root
-        ap.a.getPartBundle("modelRoot").forceUpdate()
+        self.mix.m.getPartBundle("modelRoot").forceUpdate()
+        if w > 0.001:
+            ap.a.getPartBundle("modelRoot").forceUpdate()
         world = {}
         for d in CHAIN:
             parent_q = world[PARENT[d]] if d in PARENT else self.pw_q
-            s = self.src_of.get(d)
-            if s is None:                                         # (a joint of his we don't have: as at rest)
-                lq = self.rest_local[d][0]
-                world[d] = lq * parent_q
-                self.ctrl[d].setQuat(lq)
-                continue
-            wq = self.F[d] * self.sx[s].getQuat(root)
+            q = self.mx[d].getQuat(root)
+            if w > 0.001:
+                s = self.src_of.get(d)
+                rq = self.F[d] * self.sx[s].getQuat(root) if s is not None else self.rest_local[d][0] * parent_q
+                q = _nlerp(q, rq, w)
             inv = LQuaternionf(parent_q); inv.invertInPlace()
-            lq = wq * inv
-            self.ctrl[d].setQuat(lq)
-            world[d] = wq
-        # His hips go where ours go (scaled to his height): crouching, diving, lying on the grass
-        ps = self.sx["pelvis"].getPos(root)
-        want = self.pd0 + (ps - self.ps0) * self.k
-        self.ctrl["Hips"].setPos(self.pw_inv.xformPoint(Point3(want)))
+            self.ctrl[d].setQuat(q * inv)
+            world[d] = q
+        hp = self.mx["Hips"].getPos(root)
+        if w > 0.001:                       # (his hips go where ours go, scaled to his height: crouching, diving...)
+            ps = self.sx["pelvis"].getPos(root)
+            hp = hp * (1.0 - w) + (self.pd0 + (ps - self.ps0) * self.k) * w
+        self.ctrl["Hips"].setPos(self.pw_inv.xformPoint(Point3(hp)))
+
+
+def _nlerp(a, b, t):
+    from panda3d.core import LQuaternionf
+    if a.dot(b) < 0:
+        b = LQuaternionf(-b[0], -b[1], -b[2], -b[3])
+    q = LQuaternionf(a[0] * (1 - t) + b[0] * t, a[1] * (1 - t) + b[1] * t, a[2] * (1 - t) + b[2] * t,
+                     a[3] * (1 - t) + b[3] * t)
+    q.normalize()
+    return q
 
 
 def _arc(a, b):
@@ -394,6 +410,14 @@ class Mix:
             print("mixamo kit picture:", ex)
             self._kit(kit, keeper)
         self.a.enableBlend()
+        # His twin: the same body, hidden, playing the motion capture - what he does when he's just moving about
+        self.m = Actor(Filename.fromOsSpecific(MODEL).getFullpath())
+        self.m.reparentTo(ap.root)
+        self.m.setScale(k)
+        self.m.setH(180)
+        self.m.hide()
+        self.m.enableBlend()
+        self.actors = (self.a, self.m)
         self.anims = self.a.getAnimNames()
         self.w = {n: 0.0 for n in self.anims}
         self.phase = 0.0
@@ -401,8 +425,8 @@ class Mix:
         idles = [n for n in IDLES if n in self.anims] or [self.anims[0]]
         self.idle = idles[(ap.seed // 3) % len(idles)]
         self.still = set(IDLES) | {"kick_soccerball", "Victory"}
-        self.rt = None                                         # (Retarget: made the first time it's needed)
-        self.in_rt = False
+        self.rt = Retarget(self)                               # (in the rest pose: before anything moves)
+        self.w_rt = 0.0                                        # (how much he's copying our figure: 0-1)
         ap.a.hide()
 
     def _kit(self, kit, keeper):
@@ -418,18 +442,17 @@ class Mix:
         name, wgt, frame = cur
         import gait
         moods = sum(w for n, w in getattr(ap, "loco", {}).items() if n in gait.LOOPS and n not in OWN_LOOPS)
-        special = (name is not None and wgt > 0.2) or getattr(ap, "roll", 0.0) > 1.0 \
+        base = name.split("_")[0] if name else None
+        special = (name is not None and wgt > 0.2 and base not in RUN_THROUGH) or getattr(ap, "roll", 0.0) > 1.0 \
             or getattr(ap, "lift", 0.0) > 0.05 or moods > 0.3 or getattr(ap, "force_stand", None)
         ap.a.hide(); self.a.show()
-        if special:                                            # (one of our own moves: he copies our figure)
-            if self.rt is None:
-                self.rt = Retarget(self)
-            self.rt.apply()
-            self.in_rt = True
-            return
-        if self.in_rt:
-            self.rt.release()                                  # (back to the motion capture)
-            self.in_rt = False
+        # One of our own moves: he copies our figure - easing in and out of it over a tenth of a second or so
+        self.w_rt += ((1.0 if special else 0.0) - self.w_rt) * min(1.0, dt * 12.0)
+        self._mocap(dt, vel)
+        self.rt.apply(self.w_rt)
+
+    def _mocap(self, dt, vel):
+        ap = self.ap
         I = info()
         target = {n: 0.0 for n in self.anims}
         sp = ap.sp
@@ -476,13 +499,15 @@ class Mix:
                 f = int(self.idle_t * 30.0) % max(1, nf - 1)
             else:
                 f = int(self.phase * (nf - 1)) % max(1, nf - 1)
-            self.a.pose(n, f)
+            for act in self.actors:
+                act.pose(n, f)
 
     def _blend(self, target, dt, fast=False):
         k = min(1.0, dt * (14.0 if fast else 7.0))
         for n in self.anims:
             self.w[n] += (target.get(n, 0.0) - self.w[n]) * k
-            self.a.setControlEffect(n, max(0.0, self.w[n]))
+            for act in self.actors:
+                act.setControlEffect(n, max(0.0, self.w[n]))
 
 
 def attach(ap, kit, keeper=False, number="", name=None, skin=None, hair=None):
