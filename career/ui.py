@@ -4197,6 +4197,16 @@ class App:
         club.setdefault("training", dict(training.DEFAULT))[key] = value
         league.save(self.career)
 
+    def _cycle_load(self, p):
+        order = training.LOAD_ORDER
+        cur = p.get("load")
+        nxt = order[(order.index(cur) + 1) % len(order)] if cur in order else None
+        if nxt is None:
+            p.pop("load", None)
+        else:
+            p["load"] = nxt
+        league.save(self.career)
+
     def draw_training(self):
         W, H = self.size
         self.sidebar("training")
@@ -4209,7 +4219,8 @@ class App:
         self.text("Counts from today until each match. Young players improve towards their potential - "
                   "faster with games and harder training.", "small", MUTED, (x0, 64))
         self.text("The week is planned round the matches: a recovery session the day after for the men who played, "
-                  "a day off, a light session the day before.", "small", MUTED, (x0, 82))
+                  "a day off, a light session the day before.",
+                  "small", MUTED, (x0, 82))
         y = 108
         self.text("Focus", "small", MUTED, (x0, y + 8))
         for i, (key, (label, desc, _)) in enumerate(training.FOCUS.items()):
@@ -4226,13 +4237,14 @@ class App:
             self.buttons.append(Button((x0 + 90 + i * 128, y, 122, 32), label,
                                        lambda k=key: self._set_training("intensity", k),
                                        primary=s["intensity"] == key, font="btn_s"))
-        self.text(effects[s["intensity"]], "small", MUTED, (x0 + 90, y + 40))
+        self.text(effects[s["intensity"]] + "   One man on his own load? Click his Workload: Half, Rest or Extra.",
+                  "small", MUTED, (x0 + 90, y + 40))
 
         # The squad: fitness and development
         r = pygame.Rect(x0, 246, W - x0 - 30, H - 266)
         self.panel(r)
-        cols = [("Pos", 0), ("Name", 46), ("Age", 250), ("Fitness", 300), ("Rating", 470),
-                ("This season", 540), ("Coaches' view", 650)]
+        cols = [("Pos", 0), ("Name", 46), ("Age", 250), ("Fitness", 296), ("Workload", 446), ("Rating", 540),
+                ("Season", 606), ("Coaches' view", 670)]
         y = r.y + 12
         for label, cx in cols:
             self.text(label, "small", MUTED, (r.x + 18 + cx, y))
@@ -4259,10 +4271,19 @@ class App:
                 view, vcol = "Experienced", MUTED
             else:
                 view, vcol = "At his level", MUTED
-            vals = [p["Pos"], p["Name"], age, None, rating, f"{change:+d}" if change else "-", view]
+            vals = [p["Pos"], p["Name"], age, None, None, rating, f"{change:+d}" if change else "-", view]
             for (label, cx), v in zip(cols, vals):
+                if label == "Workload":                  # (his own training load: click to change)
+                    ld = training.PLAYER_LOAD.get(p.get("load"))
+                    pill = pygame.Rect(r.x + 18 + cx - 4, y - 1, 70, step - 5)
+                    pygame.draw.rect(self.win, PANEL_2 if ld is None else (DRAW if p.get("load") != "extra"
+                                                                          else ACCENT), pill, border_radius=6)
+                    self.text(ld[0] if ld else "Team", "small", TEXT if ld is None else (16, 22, 28),
+                              pill.center, "center")
+                    self.buttons.append(_Invisible(pill, lambda pp=p: self._cycle_load(pp)))
+                    continue
                 if label == "Fitness":
-                    bar = pygame.Rect(r.x + 18 + cx, y + 6, 110, 9)
+                    bar = pygame.Rect(r.x + 18 + cx, y + 6, 90, 9)
                     pygame.draw.rect(self.win, PANEL_2, bar, border_radius=4)
                     colr = ACCENT if cnd >= 0.95 else DRAW if cnd >= training.FIT_TO_PLAY else LOSS
                     pygame.draw.rect(self.win, colr, (bar.x, bar.y, int(bar.w * cnd), bar.h), border_radius=4)

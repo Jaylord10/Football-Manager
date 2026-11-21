@@ -85,6 +85,15 @@ DAY_RECOVERY = {"recovery": 0.45, "off": 0.55, "pre-match": 0.45, "light": 0.40,
 DAY_INJURY = {"recovery": 0.4, "off": 0.0, "pre-match": 0.6}     # training-injury risk x this on those days
 DAY_LOAD = {"recovery": "light", "off": "light", "pre-match": "light"}   # what it counts as for fitness
 
+# One man's own workload on the proper training days (Jay, 21 Nov: "give individuals different intensities - ask
+# them to train at half?").  Clubs manage load player by player - an older man, one coming back from a knock,
+# one who's played every minute.  None / missing = he trains with the team.
+#              label     recovery share  development  injuries  counts for fitness as
+PLAYER_LOAD = {"half":  ("Half",  0.42,  0.6,  0.5, "light"),
+               "rest":  ("Rest",  0.55,  0.15, 0.0, "rest"),
+               "extra": ("Extra", 0.22,  1.3,  1.6, "hard")}
+LOAD_ORDER = [None, "half", "rest", "extra"]           # (clicking his workload goes round these)
+
 NON_PHYSICAL = [c for c in clubs_mod.COLUMNS if c not in clubs_mod.PHYSICAL
                 and c not in ("Shot Stopping", "Handling", "Penalties")]
 
@@ -212,17 +221,20 @@ def train_day(career, club, iso, rng):
                 continue
             # Recovery (no fresher than his fitness allows - career/fitness.py); your fitness coach helps
             kind = day_kind(career, club, p, iso, s["intensity"])
-            share = min(0.9, DAY_RECOVERY[kind] * st_rec)
+            own = PLAYER_LOAD.get(p.get("load")) if mine and (kind == s["intensity"] or
+                                                              (kind == "pre-match" and p.get("load") in ("half", "rest"))) \
+                else None
+            share = min(0.9, (own[1] if own else DAY_RECOVERY[kind]) * st_rec)
             p["condition"] = min(1.0, round(condition(p) + (1.0 - condition(p)) * share, 3))
-            fit.train_day(p, DAY_LOAD.get(kind, s["intensity"]), False)
+            fit.train_day(p, own[4] if own else DAY_LOAD.get(kind, s["intensity"]), False)
             # Injury
             risk = TRAINING_PER_DAY * av._age_factor(p) * inj_mult * (1 + TIRED_INJURY * (1 - condition(p))) \
-                * fit.injury_factor(p) * st_inj * DAY_INJURY.get(kind, 1.0)
+                * fit.injury_factor(p) * st_inj * DAY_INJURY.get(kind, 1.0) * (own[3] if own else 1.0)
             if rng.random() < risk:
                 av._injure(career, club, p, iso, "training", rng)
                 continue
             # Development
-            develop(p, dev_mult * staff.development(career, club, p), focus, rng)
+            develop(p, dev_mult * staff.development(career, club, p) * (own[2] if own else 1.0), focus, rng)
         from career import finance, contracts
         finance.daily(career, club, iso)                 # wages, TV money... on the 1st of the month
         if mine and iso.endswith("-01"):

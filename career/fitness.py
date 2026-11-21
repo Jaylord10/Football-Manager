@@ -32,7 +32,8 @@ import random
 from career import calendar as cal
 
 CAP_BASE = 0.55                 # condition cap at zero fitness (1.0 at full fitness)
-GAIN = {"light": 0.004, "normal": 0.007, "hard": 0.011}   # fitness per training day
+GAIN = {"light": 0.004, "normal": 0.007, "hard": 0.011, "rest": 0.0}   # fitness per training day ("rest": a
+                                                                          #  man rested from training)
 MATCH_FITNESS = 0.03            # per 90 minutes played
 INJURED_LOSS = 0.006            # per day out injured
 FIT_FLOOR = 0.55
