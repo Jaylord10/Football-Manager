@@ -329,6 +329,9 @@ def dive_move(keeper, dt):
         keeper._dive = None
         return False
     dv["t"] += dt
+    if dv["t"] > dv["T"] + DOWN_TIME + GETUP_TIME:                 # (up again - whatever's happened meanwhile,
+        keeper._dive = None                                       #  a goal kick to take, say)
+        return False
     u = min(1.0, dv["t"] / max(0.05, dv["T"]))
     f = u * u * (3.0 - 2.0 * u)                                  # (off the mark, through the air, down)
     new = dv["from"] + dv["vec"] * f

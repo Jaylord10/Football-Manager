@@ -169,6 +169,7 @@ def evaluate_dive(keeper, ball, current_time):
             keeper.dive_state      = "preparing"
             keeper.dive_target     = dive_target
             keeper.dive_start_time = current_time
+            keeper.target          = Vector2(keeper.pos)     # (he sets himself - feet planted - as he reads it)
         elif keeper.dive_state == "preparing":
             # Already preparing — update target as trajectory refines,
             # but DO NOT reset dive_start_time (that would freeze the timer)
