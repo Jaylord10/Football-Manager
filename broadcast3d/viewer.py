@@ -22,6 +22,7 @@ if RAIN or SNOW:
 SUN_AZ, SUN_EL = 200.0, 22.0               # the sun: degrees round from behind the Main Stand, and up
 SHADOW_MAP = 4096
 ANIM = "--boxes" not in sys.argv          # (animated figures unless --boxes: the old block players)
+MIXAMO = "--mixamo" in sys.argv           # (test, 21 Nov: the Mixamo footballer - broadcast3d/mixamo.py)
 # The winter ball (--winterball): from the clocks going back in late October to the spring the Premier League
 # plays with a hi-vis ball, easier to follow under floodlights (premierleague.com, "Why does the Premier League
 # have a hi-vis ball for winter?").  Ours: yellow panels for white.
@@ -547,6 +548,9 @@ class Viewer(ShowBase):
                                                crest=info.get("crest"), role=role,
                                                captain=(i % 11) == self._captain(match, i // 11)))
                 self.players[-1].kit = kit
+                if MIXAMO:                                                # (test: the Mixamo footballer -
+                    import mixamo                                         #  broadcast3d/mixamo.py)
+                    mixamo.attach(self.players[-1], kit, keeper)
             else:
                 self.players.append(Player(self.render, kit, (i % 11) + 1, skin, hair, keeper))
         self.officials = []
@@ -670,6 +674,9 @@ class Viewer(ShowBase):
         info = self.home_info if team == 0 else self.away_info
         p = AnimPlayer(self.render, kit, num, skin, hair, keeper, name=name, crest=info.get("crest"), role=role)
         p.kit = kit
+        if MIXAMO:
+            import mixamo
+            mixamo.attach(p, kit, keeper)
         p.root.setPos(old.root.getPos()); p.root.setH(old.root.getH())
         self._shadow_under(p)
         if getattr(old, "flood", None) is not None:
