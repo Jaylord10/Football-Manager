@@ -187,6 +187,10 @@ def kit_texture(actor, kit, number, name, keeper, skin):
     sk = part == 4
     tone = C(skin) / np.maximum(1e-3, b["skin_ref"])
     out[sk] = np.clip(raw[sk] * tone, 0, 1)
+    if kit.get("trousers"):                                      # (a manager's or a warming-up sub's: down to
+        legs = ((part == 2) | (part == 3) | (sk & (z < 0.97) & (ax < 0.30))) & (z > 0.07)  # his shoes)
+        L = raw[legs].mean(axis=1)
+        out[legs] = C(kit.get("shorts", (30, 30, 34))) * np.clip(L / max(1e-3, float(np.median(L))), 0.7, 1.2)[:, None]
     if keeper or gl:                                             # (gloves: a keeper's, or a cold outfielder's)
         g = sk & (ax > 0.60)
         gc = C((28, 28, 30)) if not keeper else C((235, 235, 235) if sum(kit["shirt"]) < 600 else (40, 40, 44))
@@ -442,7 +446,30 @@ class Mix:
         self.still = set(IDLES) | {"kick_soccerball", "Victory"}
         self.rt = Retarget(self)                               # (in the rest pose: before anything moves)
         self.w_rt = 0.0                                        # (how much he's copying our figure: 0-1)
+        self.holders = {}
         ap.a.hide()
+
+    def holder(self, joint):
+        """Somewhere to hang a thing he holds (an assistant's flag, the referee's card) on his hand, lined up the
+        way our figure's hand is - so anything made for our figure's hand fits his."""
+        if joint not in self.holders:
+            h = self.ap.root.attachNewNode("hold_" + joint)
+            src = self.ap.a.exposeJoint(None, "modelRoot", joint)
+            dst = self.a.exposeJoint(None, "modelRoot", "mixamorig5:" + dict(MAP)[joint])
+            self.holders[joint] = (h, src, dst, dict(MAP)[joint])
+        return self.holders[joint][0]
+
+    def _hold(self):
+        from panda3d.core import LQuaternionf
+        if not self.holders:
+            return
+        self.a.getPartBundle("modelRoot").forceUpdate()
+        root = self.ap.root
+        for h, src, dst, d in self.holders.values():
+            inv = LQuaternionf(self.rt.F[d]); inv.invertInPlace()  # (his hand = F x ours, so ours = F' x his)
+            h.setPos(root, dst.getPos(root))
+            h.setQuat(root, inv * dst.getQuat(root))
+            h.setScale(root, src.getScale(root))
 
     def _kit(self, kit, keeper):
         def c(rgb):
@@ -465,6 +492,7 @@ class Mix:
         self.w_rt += ((1.0 if special else 0.0) - self.w_rt) * min(1.0, dt * 12.0)
         self._mocap(dt, vel)
         self.rt.apply(self.w_rt)
+        self._hold()
 
     def _mocap(self, dt, vel):
         ap = self.ap

@@ -2310,6 +2310,22 @@ def _viewer_spin_ball(self, bx, by, bz, dt):
 REF_COLOURS = [(25, 25, 28), (235, 215, 40), (60, 190, 90), (220, 60, 140), (40, 90, 200), (220, 60, 40)]
 
 
+def _mixamo_too(p, kit, number, name, skin, hair):
+    """(test, --mixamo) The referee, his assistants, the managers and the subs warming up as Mixamo men too.  The
+    stewards, ball boys and the subs sitting on the bench stay as our figures - small, at the edge, and each Mixamo
+    man costs more to draw."""
+    if MIXAMO:
+        import mixamo
+        mixamo.attach(p, kit, False, number, name, skin, hair)
+
+
+def _hand_node(p):
+    """Where to hang something in his right hand (a flag, a card): our figure's hand, or the Mixamo man's."""
+    if getattr(p, "mix", None) is not None:
+        return p.mix.holder("hand.r")
+    return p.a.exposeJoint(None, "modelRoot", "hand.r")
+
+
 def make_officials(v, kits_in_use):
     import kits as _k
     taken = [k["shirt"] for k in kits_in_use] + [k["shorts"] for k in kits_in_use[:2]]
@@ -2323,8 +2339,9 @@ def make_officials(v, kits_in_use):
     out = []
     for role, x, y in (("ref", -8.0, -6.0), ("ar_near", 20.0, -HY - 1.2), ("ar_far", -20.0, HY + 1.2)):
         p = AnimPlayer(v.render, kit, "", (205, 160, 125) if role != "ar_far" else (150, 105, 75), (40, 30, 25))
+        _mixamo_too(p, kit, "", None, (205, 160, 125) if role != "ar_far" else (150, 105, 75), (40, 30, 25))
         if role != "ref":                                                   # (an assistant's flag)
-            hand = p.a.exposeJoint(None, "modelRoot", "hand.r")
+            hand = _hand_node(p)
             flag = box(hand, -0.01, -0.01, 0.0, 0.01, 0.01, 0.55, (0.15, 0.15, 0.15, 1))
             cloth = box(hand, -0.005, 0.0, 0.32, 0.005, 0.30, 0.55, (0.95, 0.85, 0.1, 1))
             for n in (flag, cloth):
@@ -2340,6 +2357,7 @@ def make_officials(v, kits_in_use):
             suit.update(shirt=kit["shirt"], trim=kit.get("trim", kit["shirt"]), pattern="sleeves" if False else None)
         p = AnimPlayer(v.render, suit, "", (214, 168, 134) if team == 0 else (176, 124, 92), (60, 55, 50),
                        height=1.78)
+        _mixamo_too(p, suit, "", None, (214, 168, 134) if team == 0 else (176, 124, 92), (60, 55, 50))
         out.append({"p": p, "role": "manager", "team": team, "home_x": x, "pos": [x, -HY - 2.2], "vel": [0.0, 0.0],
                     "next_point": 4.0 + 5 * team, "t": 0.0})
     # Stewards in hi-vis round the edge, facing the crowd, and ball boys / girls by the corner flags and behind
@@ -2363,6 +2381,7 @@ def make_officials(v, kits_in_use):
             top = {"shirt": bib, "trim": bib, "shorts": (30, 30, 34), "socks": (30, 30, 34), "socktop": (30, 30, 34),
                    "pattern": None, "number": (240, 240, 240), "trousers": True, "long_sleeves": True}
             p = AnimPlayer(v.render, top, 20 + j, Player.SKINS[(j * 2 + team + 1) % 5], (30, 25, 20), name=f"warm{team}{j}")
+            _mixamo_too(p, top, 20 + j, f"warm{team}{j}", Player.SKINS[(j * 2 + team + 1) % 5], (30, 25, 20))
             out.append({"p": p, "role": "warmup", "team": team, "pos": [x0 + j * 2.0, HY + 2.3 + j * 0.7],
                         "vel": [0.0, 0.0], "x0": x0, "phase": j * 0.37})
     # Five substitutes on each bench, in training tops.
@@ -2559,7 +2578,7 @@ def _viewer_calling(self, i, fr, wx, wy, sp, k):
 def _viewer_card_in_hand(self, p, kind):
     """The card in the referee's raised hand (yellow, or red)."""
     if not hasattr(p, "card_np"):
-        hand = p.a.exposeJoint(None, "modelRoot", "hand.r")
+        hand = _hand_node(p)
         p.card_np = box(hand, -0.04, -0.005, 0.05, 0.04, 0.005, 0.17, (1, 1, 1, 1))
         p.card_np.setShaderInput("kit_on", 0.0); p.card_np.setTextureOff(3)
     if kind is None:
