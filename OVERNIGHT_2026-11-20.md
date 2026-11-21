@@ -140,3 +140,19 @@ Nothing here is on Jay's PC.  Each item is its own commit.
   sides do it now).  Drawn only - the match engine's wall is unchanged.
 - Already there: the wall jumping as it's struck, the keeper pointing to set it up, the taker's run-up.
 - Checks: check.py all good.
+
+## The whole night together - checks
+- 26 real-club matches with everything above (against the same 26 from earlier tonight, before the night's
+  work): 2.96 goals a match (was 3.31; real Premier League ~2.8), 18.5 shots (was 21.6; real ~25), 25% of
+  open-play shots from outside the box (was 36%; real 32%).
+- To tune later (Jay: looks first, numbers at the end): passes ~820 a team a match and distance run ~140 km
+  (real ~450-550 passes, ~105-115 km) - both higher than before tonight's second-balls and throw-in changes;
+  few corners (1-2 a team; real ~5).
+- all_screens: only the expected five; season2: two seasons, no errors; dev/flow_d1.py: a real match day, fine;
+  broadcast3d/check.py: all good after every 3D item; replay runs (the hash changes - the engine changed).
+- Already in the game before tonight (from the list): headers with a jump and the opponent going up, flick-ons;
+  celebrations (knee slide, badge, ear, team-mates mobbing the scorer); sliding tackles and stumbles; chest and
+  thigh control; the referee's whistle, pointing, cards and the offside signal; overlaps (about 23 a match, 4
+  actually played in); counter-pressing (a style setting); weather - night, rain, snow, dusk, fog.
+- Not done: 21 (the physio - needs the match to stop for injuries first), 24 (walking out of the tunnel);
+  20 needs sound files; 28/29 left out as Jay asked.
