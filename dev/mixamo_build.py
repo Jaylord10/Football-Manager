@@ -17,10 +17,10 @@ names = ["offensive idle", "Idle", "Idle (1)", "Breathing Idle", "jog forward", 
 # furthest forward, the hands at their fastest).  These are put on the spot (no travel): the engine moves him.
 ACTION = {"kick soccerball (2)": 5, "strike foward jog": 12, "Chip": 14, "header soccerball": 22, "throw in": 47,
           "goalkeeper overhand throw": 47, "goalkeeper drop kick": 62}
-names += list(ACTION)
+names += list(ACTION) + ["goalkeeper idle", "Goalkeeper Sidestep"]   # (a keeper's own stance and shuffle)
 # Right-footed moves also made left-footed: every frame mirrored, left to right (each bone takes its opposite
 # number's pose, reflected across the middle of him) - saved as "<move>_M"
-MIRROR = ("kick soccerball (2)", "strike foward jog", "Chip")
+MIRROR = ("kick soccerball (2)", "strike foward jog", "Chip", "Goalkeeper Sidestep")
 
 
 def mirrored(arm, act, nm):
@@ -58,7 +58,7 @@ for a in list(bpy.data.actions):
     bpy.data.actions.remove(a)
 arm.animation_data_create()
 info = {}
-MOVING = ("jog forward", "Standard Run", "Sprint", "Left Strafe", "Right Strafe", "Running Backward")
+MOVING = ("jog forward", "Standard Run", "Sprint", "Left Strafe", "Right Strafe", "Running Backward", "Goalkeeper Sidestep")
 for n in names:
     before = set(bpy.context.scene.objects)
     bpy.ops.import_scene.fbx(filepath=f"{U}/{n}.fbx")

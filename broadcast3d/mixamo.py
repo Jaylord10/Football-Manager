@@ -473,7 +473,10 @@ class Mix:
         self.idle_t = (ap.seed % 97) / 10.0
         idles = [n for n in IDLES if n in self.anims] or [self.anims[0]]
         self.idle = idles[(ap.seed // 3) % len(idles)]
-        self.still = set(IDLES) | {"kick_soccerball", "Victory"}
+        self.keeper = keeper
+        if keeper and "goalkeeper_idle" in self.anims:          # (a keeper: his own stance, and side-steps
+            self.idle = "goalkeeper_idle"                       #  across his goal)
+        self.still = set(IDLES) | {"kick_soccerball", "Victory", "goalkeeper_idle"}
         self.clips = set(CLIPS.values()) | set(c + "_M" for c in CLIPS.values())
         self.clip_for = None
         self.rt = Retarget(self)                               # (in the rest pose: before anything moves)
@@ -601,7 +604,10 @@ class Mix:
         elif abs(ang) >= 125:
             target["Running_Backward"] = moving
         else:
-            target["Right_Strafe" if ang > 0 else "Left_Strafe"] = moving
+            if self.keeper and sp < 3.0 and "Goalkeeper_Sidestep_M" in self.anims:
+                target["Goalkeeper_Sidestep" if ang > 0 else "Goalkeeper_Sidestep_M"] = moving
+            else:
+                target["Right_Strafe" if ang > 0 else "Left_Strafe"] = moving
         self._blend(target, dt, act=act)
         # One shared stride phase: every running move is at the same point in its stride, and the phase moves on
         # by how far he's gone (his speed) over how far a stride of the blend travels - his feet stay planted
