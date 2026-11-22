@@ -32,7 +32,19 @@ MODEL = os.path.join(HERE, "models", "mixamo_footballer.glb")
 
 # Locomotion: (move, its own speed in m/s) - worked out from the motion capture in build (json)
 FORWARD = ["jog_forward", "Standard_Run", "Sprint"]
-IDLES = ["Idle", "Idle_1", "Breathing_Idle", "offensive_idle"]   # (each man has his own way of standing)
+# (22 Nov) each man runs his own way: one of these (slow to fast) - the pack's three runs and two jogs
+FORWARDS = (FORWARD, ["Running", "Running_1", "Sprint"], ["jog_forward", "Running_1", "Sprint"])
+IDLES = ["Idle", "Idle_1", "Breathing_Idle", "offensive_idle", "Happy_Idle", "Warrior_Idle"]   # (each man has his own
+                                                                                              #  way of standing)
+KEEPER_IDLES = ["goalkeeper_idle", "goalkeeper_idle_2"]
+# Jogging, every way round (the pack's jogs: forward, the diagonals, sideways, back) - by the way he's moving
+# against the way he faces (degrees, + = to his right).  Slower than JOG_UPTO he jogs; faster, the runs take over.
+JOG8 = [(-180, "jog_backward"), (-135, "jog_backward_diagonal_2"), (-90, "jog_strafe_left"),
+        (-45, "jog_forward_diagonal_2"), (0, "jog_forward"), (45, "jog_forward_diagonal"), (90, "jog_strafe_right"),
+        (135, "jog_backward_diagonal"), (180, "jog_backward")]
+JOG_UPTO = 2.4             # m/s: the jogs, up to here...
+JOG_BLEND = 0.8            # ...blending into the runs over this much more
+LOOK_BACK = 115.0          # degrees: running on with the ball this far behind him - a look back over his shoulder
 KICKS = ("kick", "shot", "finish", "pass", "cross", "clear", "dink", "volley", "lob", "chip", "drive")
 # Our figure's ways of standing and moving that the motion capture covers itself (standing about, side-steps,
 # backpedalling) - anything else of ours (celebrating, clapping, hands on hips / knees, calling for it) is copied
@@ -51,6 +63,18 @@ CLIPS = {("kick", False): "kick_soccerball_2", ("pass", False): "kick_soccerball
          ("gkthrow", False): "goalkeeper_overhand_throw", ("gkthrow", True): "goalkeeper_overhand_throw",
          ("punt", False): "goalkeeper_drop_kick", ("punt", True): "goalkeeper_drop_kick"}
 SWING_FROM = 2.5
+# (22 Nov) The rest of the pack, played straight from the motion capture where ours has the same moment - see
+# Mix._plan: catches (by the ball's height), the scooped one, the rolled pass out, the keeper pointing his defence,
+# putting the ball down for a goal kick, his dives and going down at a man's feet, the slide tackle, the trip and the
+# fall after a foul and getting up again, a knee and a sole on the ball, a standing header, the penalty, despair,
+# the cheer.  Every clip the moves use (and each one's mirror, "_M"):
+MOVE_CLIPS = ["goalkeeper_catch", "goalkeeper_catch_2", "goalkeeper_catch_4", "goalkeeper_scoop", "goalkeeper_pass",
+              "goalkeeper_directing_2", "goalkeeper_placing_ball", "goalkeeper_diving_save", "goalkeeper_diving_save_2",
+              "goalkeeper_body_block", "goalkeeper_body_block_2", "goalkeeper_miss", "soccer_tackle_2", "soccer_trip",
+              "Fall_Flat", "standing_up", "Fallen_Idle", "kneeing_soccerball", "kneeing_soccerball_2",
+              "stall_soccerball_2", "stall_soccerball_3", "header_soccerball_2", "soccer_penalty_kick", "Victory"]
+XFADE = 0.15               # s: one clip into the next (a fall, then getting up) over this long, each side
+PLACE_FOR = 3.4            # s: putting the ball down for a goal kick (the pack's clip)
 OWN_LOOPS = {"shift", "rest", "shuffle", "shuffle_m", "backpedal", "backwalk", "turnstep"}
 CM = 100.0                                   # (the capture is in centimetres)
 BRIGHT = 1.2
@@ -97,7 +121,8 @@ def info():
         for nm, d in raw.items():
             f0, f1 = d["frames"]
             dur = max(0.1, (f1 - f0) / 30.0)
-            dist = max(abs(v) for v in d["drift"].values()) / CM if d["drift"] else 0.0
+            dr = d["drift"]                                 # (across and forward - a diagonal jog goes both ways)
+            dist = math.hypot(dr.get("0", 0.0), dr.get("2", 0.0)) / CM if dr else 0.0
             _info[nm] = {"dur": dur, "dist": dist, "speed": dist / dur, "frames": int(f1 - f0) + 1,
                          "moment": d.get("moment")}
     return _info
@@ -474,10 +499,17 @@ class Mix:
         idles = [n for n in IDLES if n in self.anims] or [self.anims[0]]
         self.idle = idles[(ap.seed // 3) % len(idles)]
         self.keeper = keeper
-        if keeper and "goalkeeper_idle" in self.anims:          # (a keeper: his own stance, and side-steps
-            self.idle = "goalkeeper_idle"                       #  across his goal)
-        self.still = set(IDLES) | {"kick_soccerball", "Victory", "goalkeeper_idle"}
-        self.clips = set(CLIPS.values()) | set(c + "_M" for c in CLIPS.values())
+        kid = [n for n in KEEPER_IDLES if n in self.anims]
+        if keeper and kid:                                      # (a keeper: his own stance, and side-steps
+            self.idle = kid[(ap.seed // 5) % len(kid)]          #  across his goal)
+        runs = [f for f in FORWARDS if all(n in self.anims for n in f)] or [FORWARD]
+        self.forward = runs[(ap.seed // 7) % len(runs)]         # (his own way of running)
+        self.still = set(IDLES) | {"kick_soccerball"} | set(KEEPER_IDLES)
+        cl = set(CLIPS.values()) | set(MOVE_CLIPS)
+        self.clips = cl | set(c + "_M" for c in cl)
+        self.plan = None                                       # (the move he's making: chosen as it starts)
+        self.down = None                                       # (a keeper's dive / going down / lying: from our
+                                                               #  figure's dive(), smother(), lie() - see attach)
         self.clip_for = None
         self.rt = Retarget(self)                               # (in the rest pose: before anything moves)
         self.w_rt = 0.0                                        # (how much he's copying our figure: 0-1)
@@ -533,82 +565,203 @@ class Mix:
             for np_ in self.a.findAllMatches(f"**/*{part}*"):
                 np_.setColorScale(*c(kit.get(key, (230, 230, 230))))
 
-    def update(self, dt, vel):
+    def _plan(self, name, t):
+        """Our move `name` (as our figure plays it: "_m" = left-footed / to his left) -> his own, from the motion
+        capture: a list of (from s, anchor s, clip, its frame at the anchor, speed, loops?) - one clip, or a few one
+        after another (a fall, then getting up).  t = seconds from our move's moment (the ball struck, the foul...),
+        as it starts.  None: there's no move of his for it - he copies ours."""
+        ap, sd = self.ap, self.ap.seed
+        left = name.endswith("_m")
+        base = name[:-2] if left else name
+        var = getattr(ap, "mx_var", None)               # (how the 3D view saw it: the ball's height, a penalty...)
+        A = self.anims
+        def one(clip, at, speed=1.0, mirror=left):
+            c = clip + "_M" if mirror and clip + "_M" in A else clip
+            return [(-99.0, 0.0, c, at, speed, False)] if c in A else None
+        if base == "shot" and var == "pen":
+            return one("soccer_penalty_kick", 22)
+        if base == "header" and ap.sp <= SWING_FROM and sd % 2 == 0:
+            return one("header_soccerball_2", 32, mirror=False)
+        clip = CLIPS.get((base, ap.sp > SWING_FROM))
+        if clip:                                        # (the moves with the ball we had already)
+            if left:
+                clip = clip + "_M" if clip + "_M" in A else None
+            return [(-99.0, 0.0, clip, info()[clip]["moment"], 1.0, False)] if clip in A else None
+        if base == "catch":                             # (a keeper takes it: by how high it came to him)
+            return {"low": one("goalkeeper_catch", 21, mirror=False), "high": one("goalkeeper_catch_4", 24, mirror=False),
+                    "scoop": one("goalkeeper_scoop", 22, mirror=False)}.get(var) or one("goalkeeper_catch_2", 11, mirror=False)
+        if base == "reachup":
+            return one("goalkeeper_catch_4", 24, mirror=False)
+        if base == "bowl":
+            return one("goalkeeper_pass", 34, mirror=False)
+        if base == "point" and self.keeper:
+            return one("goalkeeper_directing_2", 100, mirror=False)
+        if base == "slide":
+            return one("soccer_tackle_2", 14)
+        if base == "thigh":
+            return one("kneeing_soccerball", 16, mirror=False) if left else one("kneeing_soccerball_2", 9, mirror=False)
+        if base == "touch" and ap.sp < 2.0:
+            return one("stall_soccerball_3", 13, mirror=False) if left else one("stall_soccerball_2", 13, mirror=False)
+        if base == "despair" and sd % 2 == 1:
+            return one("goalkeeper_miss", 36, 0.75, mirror=False)
+        if base in ("fouled", "hurt") and all(c in A for c in ("soccer_trip", "Fall_Flat", "standing_up", "Fallen_Idle")):
+            fall = [(-99.0, 0.0, "soccer_trip", 6, 1.0, False)] if sd % 3 else [(-99.0, 0.0, "Fall_Flat", 14, 1.0, False)]
+            if base == "fouled":                        # (down, a moment on the grass, up again by 2.9 s)
+                return fall + [(1.2, 1.2, "standing_up", 0, 1.0, False)]
+            return fall + [(2.8, 2.8, "Fallen_Idle", 0, 1.0, True), (3.6, 3.6, "standing_up", 0, 1.0, False)]
+        return None
+
+    def _down_plan(self, kind, side):
+        """A keeper's dive ("diving" from the moment his feet leave the grass, "recover" from landing), going down at
+        a man's feet ("smother"), lying behind the wall ("lie").  side +1 = to his right."""
+        A, sd = self.anims, self.ap.seed
+        def pick(clip, natural):                        # (each clip goes one way: its mirror goes the other)
+            c = clip if natural == side else clip + "_M"
+            return c if c in A else None
+        if kind in ("diving", "recover"):
+            if sd % 2:                                  # (a full-stretch flying dive: feet off f18, lands f42, up f96)
+                c = pick("goalkeeper_diving_save_2", 1)
+                plan = (18, 1.33) if kind == "diving" else (42, 1.5)
+            else:                                       # (a lower one: off f24, lands f42, up by f90)
+                c = pick("goalkeeper_diving_save", -1)
+                plan = (24, 1.0) if kind == "diving" else (42, 1.33)
+            return [(-99.0, 0.0, c, plan[0], plan[1], False)] if c else None
+        if kind == "smother":                           # (down on his side across the man's feet, and up again)
+            c = pick("goalkeeper_body_block_2", 1) if sd % 2 else pick("goalkeeper_body_block", -1)
+            return [(-99.0, 0.0, c, 13 if sd % 2 else 15, 1.05 if sd % 2 else 1.14, False)] if c else None
+        if kind == "lie":                               # (lying on his side behind the wall: held)
+            c = pick("goalkeeper_body_block_2", 1)
+            return [(-99.0, 0.0, c, 33, 0.0, False)] if c else None
+        return None
+
+    def _play(self, plan, t, w):
+        """Where each clip of a plan is at t (seconds), and how much of it: [(clip, frame, weight)]."""
+        I, out = info(), []
+        for i, (t0, ta, clip, fa, spd, loop) in enumerate(plan):
+            t1 = plan[i + 1][0] if i + 1 < len(plan) else 1e9
+            if t < t0 - XFADE or t > t1 + XFADE:
+                continue
+            k = 1.0
+            if i > 0:
+                k = min(k, (t - (t0 - XFADE)) / (2 * XFADE))
+            if i + 1 < len(plan):
+                k = min(k, ((t1 + XFADE) - t) / (2 * XFADE))
+            nf = I[clip]["frames"]
+            f = fa + (t - ta) * 30.0 * spd
+            f = f % max(1, nf - 1) if loop else max(0.0, min(nf - 1.0, f))
+            out.append((clip, int(round(f)), max(0.0, min(1.0, k))))
+        tot = sum(o[2] for o in out) or 1.0
+        return [(c, f, w * k / tot) for c, f, k in out]
+
+    def update(self, dt, vel, ball=None):
         ap = self.ap
         cur = getattr(ap, "cur", (None, 0.0, 0.0))
         name, wgt, frame = cur
         import gait
-        moods = sum(w for n, w in getattr(ap, "loco", {}).items() if n in gait.LOOPS and n not in OWN_LOOPS)
-        base = name.split("_")[0] if name else None
-        # A move with the ball the motion capture has (right foot, header, throw): his own, lined up on ours
-        act = None
-        if name is not None and wgt > 0.02:
-            if self.clip_for is None or self.clip_for[0] != name or frame < self.clip_for[1]:
-                left = name.endswith("_m")                      # (left-footed: the move mirrored, if we have it)
-                clip = CLIPS.get((name[:-2] if left else name, ap.sp > SWING_FROM))
-                if left:
-                    clip = clip + "_M" if clip and clip + "_M" in self.anims else None
-                self.clip_for = (name, frame, clip)             # (chosen as it starts)
-            clip = self.clip_for[2]
-            if clip in self.anims and info()[clip]["moment"] is not None:
-                import gait
-                t = (gait.SPANS[name][0] + frame / 30.0) if name in gait.SPANS else 0.0  # (seconds from the moment)
-                f = info()[clip]["moment"] + t * 30.0
-                act = (clip, max(0, min(info()[clip]["frames"] - 1, int(round(f)))), wgt)
-                if LOG and (self.clip_for[1] == frame or LOG2):
-                    print("MXCLIP", _tick[0], ap.seed, name, clip, round(ap.sp, 1), round(frame, 1), round(wgt, 2), act[1], flush=True)
+        loco = getattr(ap, "loco", {})
+        acts = None
+        dn = self.down if self.down is not None and self.down[-1] >= _tick[0] - 1 else None
+        if dn is not None:                              # (a keeper's dive, down at a man's feet, lying: his own)
+            kind, t, side, _ = dn
+            if self.plan is None or self.plan[0] != ("down", kind, side) or t < self.plan[1]:
+                self.plan = (("down", kind, side), t, self._down_plan(kind, side))
+            if self.plan[2]:
+                acts = self._play(self.plan[2], t, 1.0)
+        elif name is not None and wgt > 0.02:
+            # A move with the ball, a catch, a fall...: his own where the pack has it, lined up on ours
+            t = (gait.SPANS[name][0] + frame / 30.0) if name in gait.SPANS else 0.0  # (seconds from the moment)
+            if self.plan is None or self.plan[0] != name or t < self.plan[1]:
+                self.plan = (name, t, self._plan(name, t))       # (chosen as it starts)
+                if LOG and self.plan[2]:
+                    print("MXCLIP", _tick[0], ap.seed, name, getattr(ap, "mx_var", None), self.plan[2][0][2],
+                          round(ap.sp, 1), round(t, 2), flush=True)
+            if self.plan[2]:
+                acts = self._play(self.plan[2], t, wgt)
         else:
-            self.clip_for = None
-        special = act is None and ((name is not None and wgt > 0.2 and base not in RUN_THROUGH)
-                                   or getattr(ap, "roll", 0.0) > 1.0 or getattr(ap, "lift", 0.0) > 0.05
-                                   or moods > 0.3 or getattr(ap, "force_stand", None))
+            self.plan = None
+        pl = getattr(ap, "mx_place", None)              # (a keeper putting the ball down for a goal kick)
+        if acts is None and pl is not None and 0.0 <= pl < PLACE_FOR and self.keeper \
+                and "goalkeeper_placing_ball" in self.anims:
+            w = max(0.0, min(1.0, pl / 0.2, (PLACE_FOR - pl) / 0.3, (1.8 - ap.sp) / 0.6))   # (off as he walks back)
+            if w > 0.0:
+                acts = [("goalkeeper_placing_ball", int(pl * 30.0), w)]
+        cheer = loco.get("cheer", 0.0) if "Victory" in self.anims else 0.0
+        if acts is None and cheer > 0.3:                # (celebrating: arms up - the pack's Victory)
+            acts = [("Victory", 20 + int(self.idle_t * 30.0) % 90, min(1.0, cheer))]
+        moods = sum(w for n, w in loco.items() if n in gait.LOOPS and n not in OWN_LOOPS and not (acts and n == "cheer"))
+        base = name.split("_")[0] if name else None
+        special = acts is None and ((name is not None and wgt > 0.2 and base not in RUN_THROUGH)
+                                    or getattr(ap, "roll", 0.0) > 1.0 or getattr(ap, "lift", 0.0) > 0.05
+                                    or moods > 0.3 or getattr(ap, "force_stand", None))
         ap.a.hide(); self.a.show()
         # One of our own moves: he copies our figure - easing in and out of it over a tenth of a second or so
         self.w_rt += ((1.0 if special else 0.0) - self.w_rt) * min(1.0, dt * 12.0)
         # His twin only needs moving while he's copying our figure (or easing in or out of it)
         self.live = self.actors if (special or self.w_rt >= 0.002 or self.rt.ctrl is not None) else (self.a,)
-        self._mocap(dt, vel, act)
+        self._mocap(dt, vel, acts, ball)
         if self.w_rt < 0.002 and not special:
             self.rt.release()                                  # (just the motion capture: he plays it himself)
         else:
             self.rt.apply(self.w_rt)
         self._hold()
 
-    def _mocap(self, dt, vel, act=None):
+    def _mocap(self, dt, vel, acts=None, ball=None):
         ap = self.ap
         I = info()
         target = {n: 0.0 for n in self.anims}
         sp = ap.sp
         # Which way is he moving against the way he faces?
         fwd, rgt = 1.0, 0.0
+        hd = math.radians(ap.h or 0.0)
         if vel is not None and sp > 0.3:
-            hd = math.radians(ap.h or 0.0)
             vl = max(0.1, math.hypot(*vel))
             fwd = (vel[0] * -math.sin(hd) + vel[1] * math.cos(hd)) / vl
             rgt = (vel[0] * math.cos(hd) + vel[1] * math.sin(hd)) / vl
         ang = math.degrees(math.atan2(rgt, fwd))
         moving = min(1.0, max(0.0, (sp - 0.4) / 0.8))
         target[self.idle] = 1.0 - moving
+        FW = self.forward
+        jog = 1.0 - min(1.0, max(0.0, (sp - JOG_UPTO) / JOG_BLEND)) if all(n in self.anims for _, n in JOG8) else 0.0
+        if self.keeper and sp < 3.0 and 55 < abs(ang) < 125 and "Goalkeeper_Sidestep_M" in self.anims:
+            jog = 0.0                                   # (a keeper shuffling across his goal: his side-step)
+        if jog > 0.0:                                   # (jogging: whichever way he's going, two jogs either side)
+            for (a0, n0), (a1, n1) in zip(JOG8, JOG8[1:]):
+                if a0 <= ang <= a1:
+                    u = (ang - a0) / (a1 - a0)
+                    target[n0] += moving * jog * (1 - u)
+                    target[n1] += moving * jog * u
+                    break
+        run = moving * (1.0 - jog)
         if abs(ang) <= 55:
-            speeds = [I[n]["speed"] for n in FORWARD]
+            speeds = [I[n]["speed"] for n in FW]
             if sp <= speeds[0]:
-                target[FORWARD[0]] = moving
+                target[FW[0]] += run
             elif sp >= speeds[-1]:
-                target[FORWARD[-1]] = moving
+                target[FW[-1]] += run
             else:
-                for i in range(len(FORWARD) - 1):
+                for i in range(len(FW) - 1):
                     if speeds[i] <= sp <= speeds[i + 1]:
                         u = (sp - speeds[i]) / (speeds[i + 1] - speeds[i])
-                        target[FORWARD[i]] = moving * (1 - u)
-                        target[FORWARD[i + 1]] = moving * u
+                        target[FW[i]] += run * (1 - u)
+                        target[FW[i + 1]] += run * u
+            # Running on with the ball behind him (a run in behind, getting back): a look over his shoulder
+            if ball is not None and "Look_Behind_Run" in self.anims and 2.0 < sp < 4.6 and ap.seed % 3:
+                bx, by = ball[0] - ap.root.getX(), ball[1] - ap.root.getY()
+                if math.hypot(bx, by) > 3.0:
+                    fb = (bx * -math.sin(hd) + by * math.cos(hd)) / math.hypot(bx, by)
+                    if math.degrees(math.acos(max(-1.0, min(1.0, fb)))) > LOOK_BACK:
+                        lb = sum(target[n] for n in FW)
+                        for n in FW:
+                            target[n] = 0.0
+                        target["Look_Behind_Run"] = lb
         elif abs(ang) >= 125:
-            target["Running_Backward"] = moving
+            target["Running_Backward"] += run
         else:
             if self.keeper and sp < 3.0 and "Goalkeeper_Sidestep_M" in self.anims:
                 target["Goalkeeper_Sidestep" if ang > 0 else "Goalkeeper_Sidestep_M"] = moving
             else:
-                target["Right_Strafe" if ang > 0 else "Left_Strafe"] = moving
-        self._blend(target, dt, act=act)
+                target["Right_Strafe" if ang > 0 else "Left_Strafe"] += run
+        self._blend(target, dt, acts=acts)
         # One shared stride phase: every running move is at the same point in its stride, and the phase moves on
         # by how far he's gone (his speed) over how far a stride of the blend travels - his feet stay planted
         loco = [n for n in self.anims if n not in self.still and n not in self.clips and self.w.get(n, 0) > 0.001]
@@ -617,11 +770,12 @@ class Mix:
             stride = sum(self.w[n] * I[n]["dist"] for n in loco) / tot * self.a.getScale().z
             self.phase = (self.phase + sp * dt / max(0.3, stride)) % 1.0
         self.idle_t += dt
+        posed = {c: f for c, f, w in (acts or ())}
         for n in self.anims:
             if n in self.clips:
-                if act is not None and n == act[0]:
+                if n in posed:
                     for a_ in self.live:
-                        a_.pose(n, act[1])
+                        a_.pose(n, posed[n])
                 continue
             if self.w[n] <= 0.001:
                 continue
@@ -633,14 +787,17 @@ class Mix:
             for a_ in self.live:
                 a_.pose(n, f)
 
-    def _blend(self, target, dt, fast=False, act=None):
-        """Ease the moving-about moves' weights to where they should be; a move with the ball goes straight in at
-        its own weight (it eases in and out with ours), on top of them."""
+    def _blend(self, target, dt, fast=False, acts=None):
+        """Ease the moving-about moves' weights to where they should be; a move with the ball (a catch, a fall...)
+        goes straight in at its own weight (it eases in and out with ours), on top of them."""
         k = min(1.0, dt * (14.0 if fast else 7.0))
-        aw = act[2] if act is not None else 0.0
+        aws = {}
+        for c, f, w in (acts or ()):
+            aws[c] = aws.get(c, 0.0) + w
+        aw = min(1.0, sum(aws.values()))
         for n in self.anims:
             if n in self.clips:
-                e = aw if act is not None and n == act[0] else 0.0
+                e = aws.get(n, 0.0)
             else:
                 self.w[n] += (target.get(n, 0.0) - self.w[n]) * k
                 e = max(0.0, self.w[n]) * (1.0 - aw)
@@ -677,11 +834,27 @@ def attach(ap, kit, keeper=False, number="", name=None, skin=None, hair=None):
             if TIME:
                 import time
                 t0 = time.perf_counter()
-                m.update(dt, vel)
+                m.update(dt, vel, ball)
                 _spent[0] += time.perf_counter() - t0
             else:
-                m.update(dt, vel)
+                m.update(dt, vel, ball)
     ap.update = update
+    # A keeper's dive, going down at a man's feet, lying behind the wall: the pack's own (his whole body goes down in
+    # them) - so our figure isn't tipped over as well (it's hidden: only its pose is copied when there's no clip)
+    def downs(fn, kind_of):
+        o = getattr(ap, fn, None)
+        if o is None:
+            return
+        def w(*a, **k):
+            o(*a, **k)
+            kind, t, side = kind_of(*a, **k)
+            m.down = (kind, t, side, _tick[0])
+            if m._down_plan(kind, side):
+                ap.roll, ap.lift = 0.0, 0.0
+        setattr(ap, fn, w)
+    downs("dive", lambda stage, t, side: ("diving" if stage == "diving" else "recover", t, side))
+    downs("smother", lambda t, side: ("smother", t, side))
+    downs("lie", lambda side=1: ("lie", 0.0, side))
     ap.mix = m
     ap.hands, ap.hand = m.hands, m.hand
     return m

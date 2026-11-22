@@ -1161,6 +1161,8 @@ class Viewer(ShowBase):
                            and math.hypot(wx - rbx, wy - rby) < 15.0)            #  backing off are right)
             p.scan = self._scan(i, k)                                           # (a look over his shoulder)
             kind, t = self.events.action(i, k)
+            p.mx_var = self.events.variant(i) if kind is not None else None
+            p.mx_place = self._placing(i, fr, wx, wy, rbx, rby, sp, dt) if getattr(p, "keeper", False) else None
             if kind is None and sp_pose is not None:
                 kind, t = sp_pose
             if kind is None and getattr(self, "_shake", {}).get(i) and fr.get("st") == "full_time":
@@ -1215,7 +1217,7 @@ class Viewer(ShowBase):
                 kind, t = self._contact(i, p, fr, wx, wy, fx, fy, sp, r)        # (jockeying, tugging, barging)
             else:
                 p.barge = 0.0
-            if kind is None and getattr(p, "keeper", False) and fr["o"] == i:    # (a keeper with it in his hands)
+            if kind is None and getattr(p, "keeper", False) and fr["o"] == i and fr.get("gf") != i:   # (in his hands)
                 kind, t = "cradle", 0.5
             if kind is None and getattr(p, "keeper", False) and r and r[0] == "free_kick" and (i < 11) != (r[1] < 11):
                 gx = -HX if i < 11 else HX                                          # (a free kick near his goal:
@@ -1621,7 +1623,8 @@ def _viewer_ball(self, fr, dt):
                 lat = s0 * sd + (lat - s0 * sd) * u
         px, py = p.root.getX(), p.root.getY()
         bx, by, bz = px + fx * dist + fy * lat, py + fy * dist - fx * lat, BALL_R
-        if getattr(p, "keeper", False):                                     # (a keeper: in his hands)
+        if getattr(p, "keeper", False) and fr.get("gf") != o:               # (a keeper: in his hands - not a
+                                                                            #  back-pass, that's at his feet)
             bx, by, bz = p.hand() if (kind == "gkthrow" and t > -0.45) else p.hands()
             gk_ = getattr(self.events, "_gained", {}).get(o)
             held = (fr.get("k", 0) - gk_[0]) / 30.0 if gk_ else 0.0
@@ -2045,6 +2048,9 @@ def _viewer_left_foot(self, i, p, kind, t, k):
 RUNUP = {"free_kick": 2.4, "corner_kick": 2.0, "penalty": 2.6, "goal_kick": 3.0}   # (m he steps back from it)
 
 
+PLACE_GK = 2.6           # s: a keeper putting the ball down for a goal kick before he walks back for his run-up
+
+
 def _viewer_run_up(self, i, fr, wx, wy, fx, fy, sp, k, dt):
     """Set pieces.  The engine keeps the taker standing on the ball until he kicks it; here, once he's put it
     down, he walks back a few paces (facing where it's going), and runs up to it as he takes it - a penalty
@@ -2102,7 +2108,8 @@ def _viewer_run_up(self, i, fr, wx, wy, fx, fy, sp, k, dt):
             u = 1.0 - g
         w = w0 * u
     else:
-        want = min(1.0, max(0.0, (s["at"] - 0.8) / 0.8))                   # (put it down, then walk back)
+        put = PLACE_GK if r[0] == "goal_kick" else 0.8                      # (put it down, then walk back - a
+        want = min(1.0, max(0.0, (s["at"] - put) / 0.8))                   #  keeper takes his time over it)
         w = s["w"] + (want - s["w"]) * min(1.0, dt * 2.0)
         if r[0] == "corner_kick" or (r[0] == "free_kick" and d > 22.0):    # (an arm up: it's coming in)
             if 1.6 < s["at"] < 4.4:
@@ -2607,6 +2614,19 @@ Viewer._throw_spot = _viewer_throw_spot
 Viewer.THROW_BACK = 0.35           # m: the thrower's middle this far outside the pitch while he throws
 Viewer._left_foot = _viewer_left_foot
 Viewer._shield_side = _viewer_shield_side
+
+
+def _viewer_placing(self, i, fr, wx, wy, rbx, rby, sp, dt):
+    """A keeper taking a goal kick: seconds since he got to the ball - he puts it down (the Mixamo men play the
+    pack's "placing ball"); None otherwise.  (His walk back for the run-up waits for it: _run_up, PLACE_GK.)"""
+    r = fr.get("r")
+    if not (r and r[0] == "goal_kick" and r[1] == i):
+        return None
+    s = getattr(self, "_runup", {}).get(i)
+    return s["at"] if s is not None and s.get("go") is None else None
+
+
+Viewer._placing = _viewer_placing
 Viewer._gather = _viewer_gather
 Viewer._cam_tv = _viewer_cam_tv
 Viewer._set_piece_cam = _viewer_set_piece_cam
@@ -2633,6 +2653,8 @@ class Events:
     def __init__(self, frames):
         self.by_player = {}
         self.fps = 30.0
+        self.var = {}            # (player, frame) -> how it was (a catch: "low" / "high" / "scoop"; "pen") - for the
+        self.last = None         #  Mixamo men's own moves (broadcast3d/mixamo.py); last: the event action() chose
 
     RANK = {"fouled": 8, "despair": 0, "kneeslide": 7, "throwin": 6, "punt": 5, "bowl": 5, "shot": 4, "header": 3, "tackle": 3,
             "kick": 2, "pass": 2, "loft": 2, "flick": 2, "backheel": 2, "touch": 1, "hurt": 8, "stumble": 3,
@@ -2658,7 +2680,14 @@ class Events:
             down, bdown = kind in ("fouled", "hurt"), best is not None and best[0] in ("fouled", "hurt")
             if lo <= t <= hi and (best is None or down > bdown or (down == bdown and abs(t) < abs(best[1]))):
                 best = (kind, t)                                    # (a fall beats anything else at that moment)
+                self.last = (i, ke)
+        if best is None:
+            self.last = None
         return best if best else (None, 0.0)
+
+    def variant(self, i):
+        """How the move action() just found for player i was (or None)."""
+        return self.var.get(self.last) if self.last and self.last[0] == i else None
 
 
 KICKS = ("kick", "pass", "loft", "flick", "backheel")
@@ -2772,7 +2801,9 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
             v = sp(F[k]["b"], F[k + 3]["b"]) / 3.0
             z = F[k - 1]["b"][2] / 10.0
             gk, dead = gained.get(a, (-99, False))
-            if a in keepers and k - gk <= 15 and not dead and z < 2.5:      # (a keeper, ball just caught: out of his hands)
+            if a in keepers and not dead and z < 2.5 and F[k - 1].get("gf") != a:   # (a keeper, ball in his hands:
+                                                                            #  out of his hands - however long he
+                                                                            #  held it; not a back-pass at his feet)
                 ev.add(a, k, "punt" if v > 17 else "gkthrow" if v > 12 else "bowl")   # (overarm for a long one)
                 continue
             ev.add(a, k, _head_kind(F, k, a, ev) if z > 1.3 else _shot_kind(F, k, a, v, keepers) if v > 21 else
@@ -2784,10 +2815,15 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
                 ev.add(gk, k - (1 if close else 4), "spread" if close else "splitstep")
         elif a < 0 and b >= 0:
             z = F[k]["b"][2] / 10.0
-            if b in keepers and z < 0.6 and _opp_near(F, k, b, SMOTHER_NEAR):  # (a keeper going down at a
+            if b in keepers and z < 0.6 and _opp_near(F, k, b, SMOTHER_NEAR) and F[k].get("gf") != b:   # (a keeper going down at a
                 ev.add(b, k, "smother")                                          #  man's feet for it)
-            elif b in keepers and sp(F[k - 2]["b"], F[k - 1]["b"]) > 9.0:     # (a keeper takes a shot / a cross)
+            elif b in keepers and sp(F[k - 2]["b"], F[k - 1]["b"]) > 9.0 and F[k].get("gf") != b:   # (a keeper takes
+                                                                            #  a shot / a cross - not a back-pass)
                 ev.add(b, k, "catch")
+                ev.var[(b, k)] = "low" if z < 0.5 else "high" if z > 1.7 else None
+            elif b in keepers and z < 0.5 and F[k].get("gf") != b and sp(F[k - 2]["b"], F[k - 1]["b"]) > 1.0:
+                ev.add(b, k, "catch")                                       # (a keeper gathers a rolling ball:
+                ev.var[(b, k)] = "scoop"                                    #  scoops it up)
             else:
                 ev.add(b, k, _head_kind(F, k, b, ev) if z > 1.3 else "chest" if z > 1.0 else "thigh" if z > 0.45
                        else "touch")                                        # (the first touch)
@@ -2871,6 +2907,8 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
             l = ev.by_player.setdefault(r[1], [])
             l[:] = [(k2, kd) for (k2, kd) in l if abs(k2 - k) > 8]
             l.append((k, kind))
+            if r[0] == "penalty":
+                ev.var[(r[1], k)] = "pen"
     return ev
 
 

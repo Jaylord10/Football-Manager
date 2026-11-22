@@ -11,16 +11,35 @@ import bpy, sys, os, json
 U = sys.argv[-2]
 OUT = sys.argv[-1]
 names = ["offensive idle", "Idle", "Idle (1)", "Breathing Idle", "jog forward", "Standard Run", "Sprint", "Left Strafe",
-         "Right Strafe", "Running Backward", "kick soccerball", "Victory"]
+         "Right Strafe", "Running Backward", "kick soccerball", "Victory",
+         # (22 Nov) more ways of standing, and of jogging every way round (diagonals, sideways, backwards), two more
+         # runs (each man runs his own way), running while looking back over his shoulder, lying on all fours
+         "Happy Idle", "Warrior Idle", "goalkeeper idle (2)", "jog forward diagonal", "jog forward diagonal (2)",
+         "jog strafe left", "jog strafe right", "jog backward", "jog backward diagonal", "jog backward diagonal (2)",
+         "Running", "Running (1)", "Look Behind Run", "Fallen Idle"]
 # Moves with the ball, played straight from the motion capture: the frame of the moment (the ball struck, headed,
 # let go) - found from the joints' paths (the foot passing the ball's height on its way through, the head at its
 # furthest forward, the hands at their fastest).  These are put on the spot (no travel): the engine moves him.
 ACTION = {"kick soccerball (2)": 5, "strike foward jog": 12, "Chip": 14, "header soccerball": 22, "throw in": 47,
-          "goalkeeper overhand throw": 47, "goalkeeper drop kick": 62}
+          "goalkeeper overhand throw": 47, "goalkeeper drop kick": 62,
+          # (22 Nov) the keeper: catches (chest high, low, jumping high, scooping one off the grass) - the moment his
+          # hands meet the ball; the rolled pass out - let go; dives - his feet leave the grass; going down at a
+          # man's feet; putting the ball down for a goal kick; pointing his defence where to go
+          "goalkeeper catch (2)": 11, "goalkeeper catch": 21, "goalkeeper catch (4)": 24, "goalkeeper scoop": 22,
+          "goalkeeper pass": 34, "goalkeeper diving save (2)": 18, "goalkeeper diving save": 24,
+          "goalkeeper body block": 15, "goalkeeper body block (2)": 13, "goalkeeper placing ball": 0,
+          "goalkeeper directing (2)": 100, "goalkeeper miss": 36,
+          # outfield: the slide tackle (his foot at the ball), the trip and the fall forward after a foul (the
+          # contact), getting up, a knee and a sole on the ball, a standing header, the penalty kick
+          "soccer tackle (2)": 14, "soccer trip": 6, "Fall Flat": 14, "standing up": 0, "kneeing soccerball": 16,
+          "kneeing soccerball (2)": 9, "stall soccerball (2)": 13, "stall soccerball (3)": 13,
+          "header soccerball (2)": 32, "soccer penalty kick": 22}
 names += list(ACTION) + ["goalkeeper idle", "Goalkeeper Sidestep"]   # (a keeper's own stance and shuffle)
 # Right-footed moves also made left-footed: every frame mirrored, left to right (each bone takes its opposite
 # number's pose, reflected across the middle of him) - saved as "<move>_M"
-MIRROR = ("kick soccerball (2)", "strike foward jog", "Chip", "Goalkeeper Sidestep")
+MIRROR = ("kick soccerball (2)", "strike foward jog", "Chip", "Goalkeeper Sidestep", "soccer tackle (2)",
+          "goalkeeper diving save (2)", "goalkeeper diving save", "goalkeeper body block", "goalkeeper body block (2)",
+          "soccer penalty kick")
 
 
 def mirrored(arm, act, nm):
@@ -58,7 +77,9 @@ for a in list(bpy.data.actions):
     bpy.data.actions.remove(a)
 arm.animation_data_create()
 info = {}
-MOVING = ("jog forward", "Standard Run", "Sprint", "Left Strafe", "Right Strafe", "Running Backward", "Goalkeeper Sidestep")
+MOVING = ("jog forward", "Standard Run", "Sprint", "Left Strafe", "Right Strafe", "Running Backward", "Goalkeeper Sidestep",
+          "jog forward diagonal", "jog forward diagonal (2)", "jog strafe left", "jog strafe right", "jog backward",
+          "jog backward diagonal", "jog backward diagonal (2)", "Running", "Running (1)", "Look Behind Run")
 for n in names:
     before = set(bpy.context.scene.objects)
     bpy.ops.import_scene.fbx(filepath=f"{U}/{n}.fbx")
