@@ -8,6 +8,9 @@ import core.fatigue as fatigue
 import random
 import math
 
+KEEPER_SETTLE = 0.05      # m: a keeper this close to his spot stands still
+KEEPER_TURN_RUN = 3.5     # m/s: going back towards his goal faster than this, a keeper turns and runs
+
 class Ball:
     def __init__(self, position):
         self.pos = Vector2(position)
@@ -192,15 +195,27 @@ class Player:
     def _update_normal_movement(self, delta_time, all_players=None):
         if self.role == "GK":
             # Keepers keep their simple positional movement (diving has its own code)
+            # He eases off as he gets there, like everyone else (core/locomotion.py ARRIVE_DECEL): he used to go at
+            # full speed right up to his spot, so a spot creeping 10-20 cm as play moved had him darting back and
+            # forth at 6.5 m/s - jittering.  Now a small adjustment is a gentle shuffle.
             to_target = self.target - self.pos
             dist_sq = to_target.length_squared()
-            if dist_sq > 4:
-                speed = self._calculate_movement_speed()
+            if dist_sq > (KEEPER_SETTLE * M_TO_PX) ** 2:
+                dist_m = math.sqrt(dist_sq) / M_TO_PX
+                speed = min(self._calculate_movement_speed(),
+                            math.sqrt(2.0 * locomotion.ARRIVE_DECEL * dist_m) * M_TO_PX)
                 move = to_target.normalize() * min(speed * delta_time, math.sqrt(dist_sq))
                 self.pos += move; self.vel = move / max(delta_time, 1e-6)
             else:
                 self.vel = Vector2(0, 0)
-            self.facing = Vector2(1, 0) if self.team == 0 else Vector2(-1, 0)
+            # He faces up the pitch - unless he's hurrying back towards his goal: then he turns and runs (he used
+            # to backpedal at full speed - moonwalking)
+            up = Vector2(1, 0) if self.team == 0 else Vector2(-1, 0)
+            sp = self.vel.length() / M_TO_PX
+            if sp > KEEPER_TURN_RUN and self.vel.normalize().dot(up) < -0.5:
+                self.facing = self.vel.normalize()
+            else:
+                self.facing = up
             fatigue.update(self, delta_time)
             return
 

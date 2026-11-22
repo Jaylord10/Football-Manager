@@ -66,19 +66,26 @@ def check_interceptions(team0, team1, ball, current_time):
 LOOSE_CONTEST_WITHIN = 1.5   # s: a team whose quickest man would get there within this of the first one goes
                              #    for it too - a second ball is a race, not handed to whoever's nearest
 LOOSE_LOOK = 30.0            # m: (only men within this of the ball are considered)
+LOOSE_KEEP = 0.25            # s: the man already going for it keeps going unless a team-mate would get there
+                             #    this much sooner (two men with near-equal times used to swap every frame - a
+                             #    keeper darting out and back)
+_chaser = {}                 # team -> the man going for the loose ball
 
 
 def handle_loose_balls(all_players, ball):
     """A loose ball on the ground: each team sends its man who'll get there first (to where he can meet it,
     not where it is now) - both teams race for it if they're close to it in time."""
-    if ball.is_dead: return
-    if ball.owner is not None or ball.z > 20: return
+    if ball.is_dead or ball.owner is not None:
+        _chaser.clear()
+        return
+    if ball.z > 20: return
 
     active = [p for p in all_players if getattr(p, 'is_active', True)]
     if not active: return
     from ai.movement import predict_intercept
     import core.locomotion as locomotion
     best = {}
+    keep = {}
     for p in active:
         d = distance(p.pos, ball.pos)
         if d > LOOSE_LOOK * M_TO_PX and p.team in best:
@@ -91,8 +98,15 @@ def handle_loose_balls(all_players, ball):
         t = distance(p.pos, spot) / max(1.0, locomotion.top_speed_ms(p) * M_TO_PX)
         if p.team not in best or t < best[p.team][0]:
             best[p.team] = (t, p, spot)
+        if _chaser.get(p.team) is p:
+            keep[p.team] = (t, p, spot)
     if not best:
         return
+    for team, (t, p, spot) in keep.items():
+        if team in best and t <= best[team][0] + LOOSE_KEEP:
+            best[team] = (t, p, spot)
+    for team, (t, p, spot) in best.items():
+        _chaser[team] = p
     first = min(v[0] for v in best.values())
     for t, p, spot in best.values():
         if t > first + LOOSE_CONTEST_WITHIN:
