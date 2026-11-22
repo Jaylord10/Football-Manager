@@ -90,7 +90,12 @@ were clean (one striker standing still 8 seconds, once). The keepers weren't:
   (before: 19 cm). So now he also keeps pace with his spot as it moves, and pulls up a bit more sharply than an
   outfield player (keepers set themselves in a step or two). Same test match: now one time in ten he's 17 cm off,
   and with the ball near him he's on average closer to his spot than he is on your PC today (29 cm vs 39 cm).
-  The 26 matches and the jitter check are being re-run on this version.
+- **That didn't fix it either: 4.81 goals a match, and the jitter came back far worse (162 in 3 matches).** Keeping
+  pace with his spot means following every little wobble of it. And since he's as close to his spot as on your PC
+  but still lets in more, his position isn't the whole story - the loose-ball change (which applies to everyone)
+  may be part of it. I'm now testing the two halves separately (26 matches each) to see which one costs goals.
+- **So for now: don't use this branch.** The keepers' darting about is a real thing to fix, but not at the price of
+  goals.
 
 ## 5. The numbers over 26 matches, on what's on the PC now
 | | before the keeper / support-run / squeeze changes | now (on your PC) |
