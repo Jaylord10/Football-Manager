@@ -52,6 +52,8 @@ def frame_from_engine(e):
     adv = getattr(e, "_advantage", None)                                           # (advantage being played)
     if adv and e.time_elapsed - adv["at"] < 2.0:
         fr["adv"] = adv["team"]
+    if b.owner in everyone and b.owner.role == "GK" and getattr(b.owner, "_feet", False):
+        fr["gf"] = fr["o"]                                                         # (a keeper with it at his feet)
     return fr
 
 

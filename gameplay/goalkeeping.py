@@ -132,7 +132,25 @@ def init_keeper(keeper):
     keeper._dive = None
 
 
-def _claim(keeper, ball, current_time, ai_system):
+def back_pass(keeper, ball):
+    """Law 12 (the back-pass rule): he can't pick it up when a team-mate has kicked it to him on purpose (or he's
+    kicked it himself) - he has to play it with his feet.  A header back to him, or a ball that's come off
+    someone, he can still pick up."""
+    lt = ball.last_toucher
+    if lt is None or lt.team != keeper.team:
+        return False
+    from gameplay.ricochet import is_ricochet
+    if is_ricochet(ball):
+        return False
+    h = getattr(ball, "last_header", None)
+    if h and h.get("player") is lt and h.get("time", -99.0) >= getattr(ball, "last_kick_time", 0.0) - 1e-6:
+        return False
+    return True
+
+
+def _claim(keeper, ball, current_time, ai_system, feet=False):
+    # feet: a back-pass - he's got it at his feet, not in his hands (ai/goalkeeper.py plays it on quickly)
+    keeper._feet = feet
     ball.owner = keeper
     ball.vel = Vector2(0, 0)
     ball.z = 0.0
@@ -222,7 +240,7 @@ def resolve_keeper_contact(keeper, ball, current_time, ai_system):
 
     # Slow balls close by are simply gathered up
     if speed_ms < COLLECT_MAX_SPEED and d_m < COLLECT_RADIUS and z_m < COLLECT_MAX_HEIGHT:
-        _claim(keeper, ball, current_time, ai_system)
+        _claim(keeper, ball, current_time, ai_system, feet=back_pass(keeper, ball))
         return True
 
     diving = keeper.dive_state == "diving"
@@ -251,9 +269,9 @@ def resolve_keeper_contact(keeper, ball, current_time, ai_system):
         return False
     keeper._last_save_roll = kick_key
 
-    # A team-mate's pass/back-pass: just take it
+    # A team-mate's pass/back-pass: just take it (with his feet if it was kicked to him - the back-pass rule)
     if ball.last_toucher_team == keeper.team and not deflected:
-        _claim(keeper, ball, current_time, ai_system)
+        _claim(keeper, ball, current_time, ai_system, feet=back_pass(keeper, ball))
         return True
 
     ss = _stat(keeper, "Shot Stopping")

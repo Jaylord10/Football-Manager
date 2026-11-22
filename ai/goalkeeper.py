@@ -10,6 +10,11 @@ import ai.movement as movement
 
 GK_HOLD = (1.5, 5.0)     # s a keeper holds it, with the ball in his hands, while his team gets out...
 GK_COUNTER_SCORE = 80.0  # ...unless a pass this good is on (a quick counter): then at once
+GK_LAW_HOLD = 6.0        # s: the most he'll hold it in his hands (the law allows 8) - waiting for an opponent stood
+                         #    right by him to back off...
+GK_CLOSE = 5.0           # m: ...an opponent this close: he won't roll it out short past him, he kicks it long
+GK_FEET_HOLD = (0.4, 1.2)  # s: a back-pass at his feet: a touch to set it, then he plays it...
+GK_FEET_PRESS = 8.0      # m: ...at once if an opponent's this close (and long, if one's within GK_CLOSE)
 GK_SPOT_RATE = 5.0       # m/s: how fast his spot moves as play moves...
 GK_SPOT_RATE_RUSH = 9.0  # ...coming out to meet a man through on him
 
@@ -197,15 +202,31 @@ def handle_goalkeeper_with_ball(keeper, teammates, opponents, ball, current_time
     # Holding it a few seconds while his team gets out (real keepers take 4-6 s - the law allows 8) - unless
     # there's a quick counter on: then he lets it go at once.
     import random
-    if current_time - getattr(keeper, "_hold_last", -99.0) > 0.5:      # (a new spell with it in his hands)
+    feet = getattr(keeper, "_feet", False)          # (a back-pass: at his feet, not in his hands - the back-pass rule)
+    near = min((distance(keeper.pos, o.pos) for o in opponents if getattr(o, "is_active", True)),
+               default=9e9) / M_TO_PX
+    if current_time - getattr(keeper, "_hold_last", -99.0) > 0.5:      # (a new spell with it)
         keeper._hold_start = current_time
-        keeper._hold_for = random.uniform(*GK_HOLD)
+        keeper._hold_for = random.uniform(*(GK_FEET_HOLD if feet else GK_HOLD))
     keeper._hold_last = current_time
-    if current_time - keeper._hold_start < keeper._hold_for and \
-            not (prog_type == "pass" and prog_score > GK_COUNTER_SCORE):
-        keeper.target = keeper.pos
-        keeper.state = "guard"
+    held = current_time - keeper._hold_start
+    if feet:
+        # At his feet: a touch and he plays it - straight away if someone's closing him down, and if they're right on
+        # him he just clears it (no rolling it short past a man stood next to him)
+        if near < GK_CLOSE:
+            return actions.perform_smart_clearance(keeper, teammates, ball, current_time, mechanics)
+        if held < keeper._hold_for and near >= GK_FEET_PRESS:
+            keeper.target = keeper.pos
+            keeper.state = "guard"
+            return keeper.team
+    elif not (prog_type == "pass" and prog_score > GK_COUNTER_SCORE) and \
+            (held < keeper._hold_for or (near < GK_CLOSE and held < GK_LAW_HOLD)):
+        keeper.target = keeper.pos                  # (in his hands: holding it while his team gets out - and while
+        keeper.state = "guard"                      #  someone's stood right by him, waiting for him to back off)
         return keeper.team
+    if not feet and near < GK_CLOSE and not (prog_type == "pass" and prog_score > 55.0):
+        # Still someone right by him: he doesn't roll it out short past him - he kicks it long
+        return actions.perform_smart_clearance(keeper, teammates, ball, current_time, mechanics)
 
     if prog_type == "pass" and prog_target and prog_score > 55.0:
         mechanics.execute_pass(keeper, prog_target, ball, current_time)
