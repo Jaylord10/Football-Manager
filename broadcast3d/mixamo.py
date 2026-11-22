@@ -491,6 +491,26 @@ class Mix:
             self.holders[joint] = (h, src, dst, dict(MAP)[joint])
         return self.holders[joint][0]
 
+    def _palms(self):
+        if not hasattr(self, "_pj"):
+            self._pj = tuple(self.a.exposeJoint(None, "modelRoot", "mixamorig5:" + j)
+                             for j in ("RightHandMiddle1", "LeftHandMiddle1"))
+        self.a.getPartBundle("modelRoot").forceUpdate()
+        r = self.ap.root.getParent()
+        return self._pj[0].getPos(r), self._pj[1].getPos(r)
+
+    def hands(self):
+        """Where the ball sits when he holds it in both hands: between HIS palms (the ball follows the Mixamo man's
+        hands, not our hidden figure's)."""
+        a, b = self._palms()
+        mid = (a + b) * 0.5
+        return mid[0], mid[1], mid[2]
+
+    def hand(self, left=False):
+        """His right (or left) palm: a keeper's overarm throw."""
+        q = self._palms()[1 if left else 0]
+        return q[0], q[1], q[2] + 0.05
+
     def _hold(self):
         from panda3d.core import LQuaternionf
         if not self.holders:
@@ -532,7 +552,7 @@ class Mix:
                 t = (gait.SPANS[name][0] + frame / 30.0) if name in gait.SPANS else 0.0  # (seconds from the moment)
                 f = info()[clip]["moment"] + t * 30.0
                 act = (clip, max(0, min(info()[clip]["frames"] - 1, int(round(f)))), wgt)
-                if LOG and self.clip_for[1] == frame:
+                if LOG and (self.clip_for[1] == frame or LOG2):
                     print("MXCLIP", _tick[0], ap.seed, name, clip, round(ap.sp, 1), round(frame, 1), round(wgt, 2), act[1], flush=True)
         else:
             self.clip_for = None
@@ -624,7 +644,8 @@ class Mix:
                     self.eff[i][n] = e
 
 
-LOG = os.environ.get("FM_MX_LOG") == "1"      # (testing: print each motion-captured move as it starts)
+LOG = os.environ.get("FM_MX_LOG") in ("1", "2")
+LOG2 = os.environ.get("FM_MX_LOG") == "2"      # (testing: print each motion-captured move as it starts)
 _tick = [0]
 TIME = os.environ.get("FM_MX_TIME") == "1"    # (testing: how long the Mixamo men take, per frame)
 _spent = [0.0]
@@ -656,4 +677,5 @@ def attach(ap, kit, keeper=False, number="", name=None, skin=None, hair=None):
                 m.update(dt, vel)
     ap.update = update
     ap.mix = m
+    ap.hands, ap.hand = m.hands, m.hand
     return m
