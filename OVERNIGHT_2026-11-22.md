@@ -1,7 +1,8 @@
 # Overnight 21-22 Nov: the Mixamo footballer, and the rest of the list
 
 Nothing here is on Jay's PC. The Mixamo work is all on the branch `test/2026-11-21-mixamo` (built on top of
-what's on the PC now). The "read the pass" experiment is on `fix/2026-11-22-read-the-pass`.
+what's on the PC now). A keeper fix the sweep turned up is on `fix/2026-11-22-keeper-shuffle`. The "read the
+pass" experiment is on `fix/2026-11-22-read-the-pass`.
 
 ## 1. The Mixamo footballer, in the game (branch test/2026-11-21-mixamo)
 
@@ -69,8 +70,21 @@ The idea from your note: a receiver reads that a pass is coming and steps toward
 How often he reads it goes with his Anticipation (25%-95%), and how quickly. Through balls he leaves alone
 (offside). In a 30-minute test, passing went 88% -> 83% for one side - not clear it helps, so I'd leave it.
 
-## 4. Oddities sweep on what's on the PC now
-(filled in below)
+## 4. Oddities sweep on what's on the PC now, and a keeper fix (branch fix/2026-11-22-keeper-shuffle)
+Three full matches on what's on your PC, looking for anything that would look odd on screen. Outfield players
+were clean (one striker standing still 8 seconds, once). The keepers weren't:
+- **Jitter** - 13 times in 3 matches, all keepers: darting back and forth. Cause: a keeper ran at full speed
+  (6.5 m/s) right up to his spot, and his spot creeps 10-20 cm as play moves, so he'd dash, stop, dash the other
+  way. Now he eases off as he gets there, the same way outfield players do - a small adjustment is a gentle
+  shuffle.
+- Also: when a keeper and a defender would reach a loose ball at almost the same moment, the job swapped between
+  them every frame, so the keeper went out-back-out-back. Now whoever's going keeps going unless a team-mate
+  would clearly get there sooner (a quarter of a second). This applies to everyone, not just keepers.
+- **Moonwalk** - 3 times: a keeper running backwards to his goal at full speed. Now, hurrying back (over
+  3.5 m/s), he turns and runs.
+- Same 3 matches after the fix: **jitters 13 -> 1, moonwalks 3 -> 0**.
+- This one does change the match engine (the replay check changes, as it should). Checks: the real-engine
+  match-day flow runs fine. The 26-match numbers for it are running now - in the next section if they finish.
 
 ## 5. The numbers over 26 matches, on what's on the PC now
 | | before the keeper / support-run / squeeze changes | now (on your PC) |
