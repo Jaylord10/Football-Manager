@@ -336,6 +336,9 @@ class Retarget:
         a, m = self.mix.a, self.mix.m
         P = "mixamorig5:"
         root = self.mix.ap.root
+        if self.pw_q is not None:                       # (taking charge again: the rest is worked out already)
+            self.ctrl = {d: a.controlJoint(None, "modelRoot", P + d) for d in CHAIN}
+            return
         hx = a.exposeJoint(None, "modelRoot", P + "Hips")
         a.getPartBundle("modelRoot").forceUpdate()
         self.ctrl = {}
@@ -351,6 +354,15 @@ class Retarget:
         self.pw_inv = LMatrix4f(self.pw_mat); self.pw_inv.invertInPlace()
         hx.removeNode()
         self.mx = {d: m.exposeJoint(None, "modelRoot", P + d) for d in CHAIN}
+
+    def release(self):
+        """Let go of his joints: he plays the motion capture himself, exactly as his twin does (no copying -
+        much less work while he's just running about)."""
+        if self.ctrl is not None:
+            for d, c in self.ctrl.items():
+                self.mix.a.releaseJoint("modelRoot", "mixamorig5:" + d)
+                c.removeNode()
+            self.ctrl = None
 
     def apply(self, w):
         """Pose him: the motion capture (from his twin), blended towards our figure's pose by w (0-1)."""
@@ -453,6 +465,8 @@ class Mix:
         self.m.hide()
         self.m.enableBlend()
         self.actors = (self.a, self.m)
+        self.live = self.actors                                # (the ones being moved this frame)
+        self.eff = ({}, {})                                    # (each one's move weights, as last set)
         self.anims = self.a.getAnimNames()
         self.w = {n: 0.0 for n in self.anims}
         self.phase = 0.0
@@ -528,8 +542,13 @@ class Mix:
         ap.a.hide(); self.a.show()
         # One of our own moves: he copies our figure - easing in and out of it over a tenth of a second or so
         self.w_rt += ((1.0 if special else 0.0) - self.w_rt) * min(1.0, dt * 12.0)
+        # His twin only needs moving while he's copying our figure (or easing in or out of it)
+        self.live = self.actors if (special or self.w_rt >= 0.002 or self.rt.ctrl is not None) else (self.a,)
         self._mocap(dt, vel, act)
-        self.rt.apply(self.w_rt)
+        if self.w_rt < 0.002 and not special:
+            self.rt.release()                                  # (just the motion capture: he plays it himself)
+        else:
+            self.rt.apply(self.w_rt)
         self._hold()
 
     def _mocap(self, dt, vel, act=None):
@@ -575,7 +594,7 @@ class Mix:
         for n in self.anims:
             if n in self.clips:
                 if act is not None and n == act[0]:
-                    for a_ in self.actors:
+                    for a_ in self.live:
                         a_.pose(n, act[1])
                 continue
             if self.w[n] <= 0.001:
@@ -585,7 +604,7 @@ class Mix:
                 f = int(self.idle_t * 30.0) % max(1, nf - 1)
             else:
                 f = int(self.phase * (nf - 1)) % max(1, nf - 1)
-            for a_ in self.actors:
+            for a_ in self.live:
                 a_.pose(n, f)
 
     def _blend(self, target, dt, fast=False, act=None):
@@ -599,12 +618,20 @@ class Mix:
             else:
                 self.w[n] += (target.get(n, 0.0) - self.w[n]) * k
                 e = max(0.0, self.w[n]) * (1.0 - aw)
-            for a_ in self.actors:
-                a_.setControlEffect(n, e)
+            for i, a_ in enumerate(self.live):                # (only when it's changed: fewer calls)
+                if abs(self.eff[i].get(n, -1.0) - e) > 1e-4:
+                    a_.setControlEffect(n, e)
+                    self.eff[i][n] = e
 
 
 LOG = os.environ.get("FM_MX_LOG") == "1"      # (testing: print each motion-captured move as it starts)
 _tick = [0]
+TIME = os.environ.get("FM_MX_TIME") == "1"    # (testing: how long the Mixamo men take, per frame)
+_spent = [0.0]
+if TIME:
+    import atexit
+    atexit.register(lambda: print("MXTIME total %.2f s over %d frames = %.1f ms a frame"
+                                  % (_spent[0], _tick[0], 1000 * _spent[0] / max(1, _tick[0])), flush=True))
 _first = []
 
 
@@ -620,7 +647,13 @@ def attach(ap, kit, keeper=False, number="", name=None, skin=None, hair=None):
             _tick[0] += 1
         orig(x, y, fx, fy, speed, dt, active, vel=vel, ball=ball)
         if active:
-            m.update(dt, vel)
+            if TIME:
+                import time
+                t0 = time.perf_counter()
+                m.update(dt, vel)
+                _spent[0] += time.perf_counter() - t0
+            else:
+                m.update(dt, vel)
     ap.update = update
     ap.mix = m
     return m

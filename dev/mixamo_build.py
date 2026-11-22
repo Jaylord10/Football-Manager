@@ -14,7 +14,7 @@ names = ["offensive idle", "Idle", "Idle (1)", "Breathing Idle", "jog forward", 
          "Right Strafe", "Running Backward", "kick soccerball", "Victory"]
 # Moves with the ball, played straight from the motion capture: the frame of the moment (the ball struck, headed,
 # let go) - found from the joints' paths (the foot passing the ball's height on its way through, the head at its
-# furthest forward, the hands at their fastest).  These are put on the spot at that moment: the engine has him there.
+# furthest forward, the hands at their fastest).  These are put on the spot (no travel): the engine moves him.
 ACTION = {"kick soccerball (2)": 5, "strike foward jog": 12, "Chip": 14, "header soccerball": 22, "throw in": 47,
           "goalkeeper overhand throw": 47, "goalkeeper drop kick": 62}
 names += list(ACTION)
@@ -78,8 +78,8 @@ for n in names:
                     fcs += list(cb.fcurves)
     for fc in fcs:
         if n in ACTION and fc.data_path.endswith('"].location') and "Hips" in fc.data_path and fc.array_index in (0, 2):
-            at = fc.evaluate(act.frame_range[0] + ACTION[n])      # (no travel, across or forward: held where he
-            for k in fc.keyframe_points:                          #  is at the moment)
+            at = fc.keyframe_points[0].co[1]                      # (no travel, across or forward: held where he
+            for k in fc.keyframe_points:                          #  starts - over the spot the engine has him on)
                 k.co[1] = at; k.handle_left[1] = at; k.handle_right[1] = at
             drift[fc.array_index] = 0.0
             continue
