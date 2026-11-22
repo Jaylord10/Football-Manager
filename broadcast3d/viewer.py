@@ -1335,11 +1335,12 @@ class Viewer(ShowBase):
             self.cam.lookAt(bx, by, 0.9)
         else:
             self.cam.setPos(self.cx * 0.8, -HY - TV_BACK, TV_UP)
-            yw = 0.35 + 0.6 * self.cam_tilt                                 # (close in: right on him)
+            dn = TV_DOWN - (TV_DOWN - TV_DOWN_BOX) * max(0.0, min(1.0, (abs(self.cx) - 34.0) / 12.0))  # (by a goal:
+            yw = dn + (0.95 - dn) * self.cam_tilt           # the goalmouth's the thing, not the touchline; close in: on him)
             ht = getattr(self, "_flag_t", 0.0)                              # (close in, a cameraman's hand: the
             hx = self.cam_tilt * (0.22 * math.sin(ht * 0.71) + 0.09 * math.sin(ht * 1.93))   # picture drifts a
             hz = self.cam_tilt * (0.12 * math.sin(ht * 0.53 + 1.0) + 0.05 * math.sin(ht * 2.3))  # touch)
-            self.cam.lookAt(self.cx + hx, self.cy * yw + 9 * (1 - self.cam_tilt), 0.8 * self.cam_tilt + hz)
+            self.cam.lookAt(self.cx + hx, self.cy * yw + TV_FAR * (1 - self.cam_tilt), 0.8 * self.cam_tilt + hz)
             self.camLens.setFov(self.cam_fov)
             sp = self._set_piece_cam(fr, bx, by, dt)                        # (a free kick near the box, a corner:
             if sp is not None:                                              #  cut to a closer camera, as TV does)
@@ -1480,6 +1481,13 @@ def _viewer_set_piece_cam(self, fr, bx, by, dt):
 
 TV_FOV = 22.0       # degrees: the TV camera's picture (was 34, then 30; 22 Nov: closer in, like a Sky Sports main
 TV_WIDER = 4.5      #  camera - the players bigger, easier to follow), and up to this much wider while the ball's flying
+# How far the TV camera follows the ball (22 Nov, after the closer picture: it was missing the goalmouth at corners and
+# the play down by the near touchline): along the pitch, up to TV_REACH m from halfway (was 36 - the goal line is 55);
+# across, TV_DOWN of the ball's way towards a touchline (was 0.35), the picture TV_FAR m nearer the far side (was 9)
+TV_REACH = 46.0
+TV_DOWN = 0.75
+TV_FAR = 4.0
+TV_DOWN_BOX = 0.4   # (...but near a goal - a corner from the near flag - less: the box in the picture, not the flag)
 TV_BACK, TV_UP = 50.0, 27.0   # the gantry: metres back from the near touchline, and up (was 62, 33: the same angle down)
 
 
@@ -1513,7 +1521,7 @@ def _viewer_cam_tv(self, fr, bx, by, dt):
     if cel and 0 <= cel[1] < len(fr["p"]):              # (a goal: on to the scorer, closer)
         sx_, sy_ = to_world(fr["p"][cel[1]][0], fr["p"][cel[1]][1])
         tx, ty, fov, tilt = sx_, sy_, 17.0, 1.0
-    tx = max(-36.0, min(36.0, tx)) if not cel else max(-(HX - 2.0), min(HX - 2.0, tx))   # (a scorer by the corner flag: right on him)
+    tx = max(-TV_REACH, min(TV_REACH, tx)) if not cel else max(-(HX - 2.0), min(HX - 2.0, tx))   # (a scorer by the corner flag: right on him)
     # a critically damped spring: smooth to start and to stop
     w = 1.7
     n = max(1, int(math.ceil(dt / 0.05)))               # (in small steps, however long the frame: steady)
