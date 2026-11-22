@@ -19,7 +19,8 @@ DUSK = "--dusk" in sys.argv                 # (a 3 o'clock kick-off in midwinter
 FOG = "--fog" in sys.argv                   # (a misty winter evening: the far stand softened, the lights hazy)
 if RAIN or SNOW:
     OVERCAST = True
-SUN_AZ, SUN_EL = 200.0, 22.0               # the sun: degrees round from behind the Main Stand, and up
+SUN_AZ, SUN_EL = 20.0, 22.0                # the sun: degrees round from behind the Main Stand (the camera's side: grounds are
+#   laid out so the main TV cameras don't film into the sun - was 200, behind the far stand, the players in shadow), and up
 SHADOW_MAP = 4096
 ANIM = "--boxes" not in sys.argv          # (animated figures unless --boxes: the old block players)
 MIXAMO = "--mixamo" in sys.argv           # (test, 21 Nov: the Mixamo footballer - broadcast3d/mixamo.py)
@@ -709,7 +710,7 @@ class Viewer(ShowBase):
         --overcast: the old grey Lancashire afternoon, no sun shadows."""
         if NIGHT:                                           # (floodlights: from high up, white, a darker fill)
             global SUN_AZ, SUN_EL
-            SUN_AZ, SUN_EL = 200.0, 60.0
+            SUN_AZ, SUN_EL = 20.0, 60.0
         if OVERCAST:
             al = AmbientLight("amb"); al.setColor(Vec4(0.52, 0.53, 0.56, 1) if not RAIN else Vec4(0.46, 0.48, 0.52, 1))
             self.render.setLight(self.render.attachNewNode(al))
@@ -1333,7 +1334,7 @@ class Viewer(ShowBase):
             self.cam.setPos(bx - 6, by - 14, 4.5)
             self.cam.lookAt(bx, by, 0.9)
         else:
-            self.cam.setPos(self.cx * 0.8, -HY - 62, 33)
+            self.cam.setPos(self.cx * 0.8, -HY - TV_BACK, TV_UP)
             yw = 0.35 + 0.6 * self.cam_tilt                                 # (close in: right on him)
             ht = getattr(self, "_flag_t", 0.0)                              # (close in, a cameraman's hand: the
             hx = self.cam_tilt * (0.22 * math.sin(ht * 0.71) + 0.09 * math.sin(ht * 1.93))   # picture drifts a
@@ -1477,8 +1478,9 @@ def _viewer_set_piece_cam(self, fr, bx, by, dt):
     return None
 
 
-TV_FOV = 30.0       # degrees: the TV camera's picture (was 34: a touch closer in - the players bigger, easier to
-TV_WIDER = 4.5      #  follow), and up to this much wider while the ball's flying about
+TV_FOV = 22.0       # degrees: the TV camera's picture (was 34, then 30; 22 Nov: closer in, like a Sky Sports main
+TV_WIDER = 4.5      #  camera - the players bigger, easier to follow), and up to this much wider while the ball's flying
+TV_BACK, TV_UP = 50.0, 27.0   # the gantry: metres back from the near touchline, and up (was 62, 33: the same angle down)
 
 
 def _viewer_cam_tv(self, fr, bx, by, dt):
