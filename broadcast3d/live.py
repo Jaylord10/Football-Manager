@@ -688,10 +688,14 @@ def _draw_loop(conn, buf, w, h, meta):
             if v.intro >= 1.0:
                 intro["t"] = None
                 v.intro = None
+                # (no team sheets over the kick-off now: the game shows them while the 3D gets ready - straight
+                #  to the attendance, as on TV)
                 try:
-                    sheet["n"] = v.lineups(match)
-                except Exception:
-                    print("lineups:", traceback.format_exc(), flush=True)
+                    att = int(os.environ.get("FM_3D_ATTENDANCE", "0") or 0)
+                    if att > 0:
+                        caps.append(("ATTENDANCE", f"{att:,}    {v.home_name}", v.kits[0]["shirt"], 6.0))
+                except ValueError:
+                    pass
             shown_t = -1.0
         if sheet["n"] is not None:                      # (the team sheets, for the first few seconds)
             sheet["t"] += min(0.5, raw_dt)              # (by the clock, however slow the pictures)

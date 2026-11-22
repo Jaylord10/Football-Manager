@@ -2,6 +2,7 @@ import gameplay.aerial as aerial
 import pygame
 import random
 import os
+import time
 from pygame.math import Vector2
 from config.constants import *
 from core.game_objects import Ball
@@ -174,6 +175,7 @@ class MatchEngine:
         self.players3d = os.environ.get("FM_3D_PLAYERS", "classic")  # (P: our figures / the Mixamo footballer)
         self._p_note_until = -1.0
         self._q_note_until = -1.0
+        self._sheets_t0 = None                                      # (the team sheets: when they went up)
         self.fps3d = False                                          # (F: the 3D's picture time on screen)
         try:
             self.camera3d = int(os.environ.get("FM_3D_CAMERA", "0")) % 2   # (TV gantry / close: C)
@@ -210,6 +212,14 @@ class MatchEngine:
                     f.write(f"couldn't start the 3D view: {ex!r} - playing in 2D\n")
             except Exception:
                 pass
+
+    SHEETS_MIN = 10.0    # seconds: the team sheets stay up at least this long before kick-off (both teams' -
+                         #  rendering/teamsheet.SHOW_EACH each - if the 3D's quick)
+
+    def _sheets_holding(self):
+        """True while the team sheets are up before kick-off and haven't had SHEETS_MIN yet."""
+        return (self.time_elapsed <= 0.0 and self._sheets_t0 is not None
+                and time.perf_counter() - self._sheets_t0 < self.SHEETS_MIN)
 
     def _3d_on(self):
         return self.view3d and self.live3d is not None and not self.live3d.failed
@@ -483,8 +493,9 @@ class MatchEngine:
                 # so restart timers and cooldowns ran down during a pause).
                 self._render_paused()
                 continue
-            if self._3d_on() and self.live3d.holding():
-                # The 3D view is getting ready, or showing a goal again: the match waits for it
+            if self._3d_on() and (self.live3d.holding() or self._sheets_holding()):
+                # The 3D view is getting ready (the team sheets up meanwhile), or showing a goal again: the match
+                # waits for it
                 self._render()
                 continue
             # The football always runs in fixed 1/60 s steps (exactly like
@@ -1208,6 +1219,14 @@ class MatchEngine:
         if not self._3d_on():
             return None
         pic = self.live3d.picture()
+        if self.time_elapsed <= 0.0 and (pic is None or self._sheets_holding()):
+            # Before kick-off, while the 3D gets ready: the team sheets (for SHEETS_MIN at least)
+            if self._sheets_t0 is None:
+                self._sheets_t0 = time.perf_counter()
+            from rendering import teamsheet
+            teamsheet.draw(self.screen, self, "Getting the 3D view ready" if pic is None else "Kick-off",
+                           time.perf_counter() - self._sheets_t0)
+            return list(self.score)
         if pic is None:
             self.pitch_renderer.draw_pitch(self.screen)
             font = self.ui_renderer.med_font
