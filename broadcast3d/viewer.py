@@ -1717,6 +1717,12 @@ def _viewer_keeper_dive(self, i, p, stage, k):
                 e += 1
             fl = (e + 1 - k) / 30.0
             st["pace"] = max(0.85, min(1.8, 0.6 / fl)) if e + 1 < len(F) and fl > 0.15 else 1.0
+        if stage == "recover":              # (how long till he's up: the Mixamo keeper gets up in that time)
+            e = k
+            while e + 1 < len(F) and e - k < 90 and (F[e + 1]["p"][i][7] if len(F[e + 1]["p"][i]) > 7 else "") \
+                    == "recover":
+                e += 1
+            p.mx_up = (e + 1 - k) / 30.0
         if stage == "diving" or "h" not in st:
             st["h"] = p.h or 0.0                                            # (he keeps facing the shot through it)
             a, b = F[k]["p"][i], F[min(len(F) - 1, k + 8)]["p"][i]

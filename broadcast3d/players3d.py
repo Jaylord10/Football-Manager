@@ -250,6 +250,10 @@ def _speed_weights(s):
     return {SPEEDS[-1][0]: 1.0}
 
 
+POSES = ("knees", "hips", "cheer", "clap", "sit")   # (standing poses that ease in and out: see _ease_poses)
+POSE_RATE = 3.0                                    # (per second)
+
+
 class AnimPlayer:
     def __init__(self, parent, kit, number, skin, hair, keeper=False, model=MODEL, name=None, crest=None,
                  height=None, role=None, captain=False):
@@ -724,9 +728,33 @@ class AnimPlayer:
             self.a.pose("backpedal", self.ph_back * self.nf["backpedal"])
         else:
             self.loco[run] += w_run * (w_side + w_back)
+        self._ease_poses(dt)
         self._mix()
         if ball is not None:
             self._watch(ball, x, y, dt)
+
+    def _ease_poses(self, dt):
+        """His standing poses after a goal or late on (hands on his knees, on his hips, arms up, clapping, sat down)
+        come and go over a third of a second or so, not all at once: when the kick-off's taken he straightens up."""
+        shown = self.__dict__.setdefault("_poses_shown", {})
+        out = 0.0                                       # (how much of him is still in a pose that's going)
+        for n in POSES:
+            if n not in self.loco:
+                continue
+            want = self.loco[n]
+            was = shown.get(n, want)
+            w = max(was - dt * POSE_RATE, min(was + dt * POSE_RATE, want))
+            shown[n] = w
+            if w > want:
+                out += w - want
+            self.loco[n] = w
+        if out > 1e-4:                                  # (the rest of him makes room for it)
+            others = [n for n in self.loco if n not in POSES]
+            tot = sum(self.loco[n] for n in others)
+            if tot > 1e-4:
+                k = max(0.0, tot - out) / tot
+                for n in others:
+                    self.loco[n] *= k
 
     def hands(self):
         """Where the ball sits when he holds it in both hands: between his palms (in the world)."""

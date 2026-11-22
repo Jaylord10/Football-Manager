@@ -48,6 +48,7 @@ LOOK_BACK = 115.0          # degrees: running on with the ball this far behind h
 KICKS = ("kick", "shot", "finish", "pass", "cross", "clear", "dink", "volley", "lob", "chip", "drive")
 # Our figure's ways of standing and moving that the motion capture covers itself (standing about, side-steps,
 # backpedalling) - anything else of ours (celebrating, clapping, hands on hips / knees, calling for it) is copied
+DESPAIR_TO = 1.0                         # (m/s: running faster than that, he keeps our figure's despair)
 RUN_THROUGH = {"cut", "brake"}          # (our figure's sharp cuts and stops: the motion capture just runs on)
 # Our moves with the ball that the motion capture has itself: played straight from it, lined up so its moment (the
 # ball struck, headed, thrown - "moment" in the .json) falls on ours.  (move, on the run?) -> his move; on the run =
@@ -74,6 +75,11 @@ MOVE_CLIPS = ["goalkeeper_catch", "goalkeeper_catch_2", "goalkeeper_catch_4", "g
               "Fall_Flat", "standing_up", "Fallen_Idle", "kneeing_soccerball", "kneeing_soccerball_2",
               "stall_soccerball_2", "stall_soccerball_3", "header_soccerball_2", "soccer_penalty_kick", "Victory"]
 XFADE = 0.15               # s: one clip into the next (a fall, then getting up) over this long, each side
+CLIP_IN = 0.12             # s: at least this long for one of his moves to come in from nothing...
+CLIP_OUT = 0.25            # s: ...and to go out again (a dive ending as he gets up with the ball: no snap)
+RT_RATE = 5.0              # per s: how fast he can go over to copying our figure (or back): all of it in 0.2 s
+UP_FASTEST = 2.5           # x: a keeper getting up after a dive, at most this much quicker than the capture
+LAND_EASE = 0.3            # s: a dive's clip catching up (or waiting) to the moment he lands, over this long
 PLACE_FOR = 3.4            # s: putting the ball down for a goal kick (the pack's clip)
 OWN_LOOPS = {"shift", "rest", "shuffle", "shuffle_m", "backpedal", "backwalk", "turnstep"}
 CM = 100.0                                   # (the capture is in centimetres)
@@ -494,6 +500,8 @@ class Mix:
         self.eff = ({}, {})                                    # (each one's move weights, as last set)
         self.anims = self.a.getAnimNames()
         self.w = {n: 0.0 for n in self.anims}
+        self.nzw = set()                                       # (the moving-about moves with any weight)
+        self.nz = None                                         # (each body's moves with any effect: set on the first go)
         self.phase = 0.0
         self.idle_t = (ap.seed % 97) / 10.0
         idles = [n for n in IDLES if n in self.anims] or [self.anims[0]]
@@ -511,6 +519,8 @@ class Mix:
         self.down = None                                       # (a keeper's dive / going down / lying: from our
                                                                #  figure's dive(), smother(), lie() - see attach)
         self.clip_for = None
+        self.shown = {}                                        # (his moves as last shown: clip -> [frame, weight])
+        self.land = None                                       # (a dive landing: (clip, frames to make up))
         self.rt = Retarget(self)                               # (in the rest pose: before anything moves)
         self.w_rt = 0.0                                        # (how much he's copying our figure: 0-1)
         self.holders = {}
@@ -602,7 +612,7 @@ class Mix:
             return one("kneeing_soccerball", 16, mirror=False) if left else one("kneeing_soccerball_2", 9, mirror=False)
         if base == "touch" and ap.sp < 2.0:
             return one("stall_soccerball_3", 13, mirror=False) if left else one("stall_soccerball_2", 13, mirror=False)
-        if base == "despair" and sd % 2 == 1:
+        if base == "despair" and sd % 2 == 1 and ap.sp < DESPAIR_TO:   # (head in hands: a standing move, not on the run)
             return one("goalkeeper_miss", 36, 0.75, mirror=False)
         if base in ("fouled", "hurt") and all(c in A for c in ("soccer_trip", "Fall_Flat", "standing_up", "Fallen_Idle")):
             fall = [(-99.0, 0.0, "soccer_trip", 6, 1.0, False)] if sd % 3 else [(-99.0, 0.0, "Fall_Flat", 14, 1.0, False)]
@@ -622,9 +632,14 @@ class Mix:
             if sd % 2:                                  # (a full-stretch flying dive: feet off f18, lands f42, up f96)
                 c = pick("goalkeeper_diving_save_2", 1)
                 plan = (18, 1.33) if kind == "diving" else (42, 1.5)
+                up = 96
             else:                                       # (a lower one: off f24, lands f42, up by f90)
                 c = pick("goalkeeper_diving_save", -1)
                 plan = (24, 1.0) if kind == "diving" else (42, 1.33)
+                up = 90
+            rl = getattr(self.ap, "mx_up", None)        # (the engine has him up quickly: so does the clip)
+            if kind == "recover" and rl:
+                plan = (42, max(plan[1], min(UP_FASTEST, (up - 42) / 30.0 / rl)))
             return [(-99.0, 0.0, c, plan[0], plan[1], False)] if c else None
         if kind == "smother":                           # (down on his side across the man's feet, and up again)
             c = pick("goalkeeper_body_block_2", 1) if sd % 2 else pick("goalkeeper_body_block", -1)
@@ -633,6 +648,24 @@ class Mix:
             c = pick("goalkeeper_body_block_2", 1)
             return [(-99.0, 0.0, c, 33, 0.0, False)] if c else None
         return None
+
+    def _ease(self, acts, dt):
+        """His moves (clip, frame, weight) eased in and out: a move that stops all at once (a dive over, the ball in
+        his hands) fades out over CLIP_OUT, held where it was; one that starts comes in over CLIP_IN at least."""
+        want = {}
+        for c, f, w in (acts or ()):
+            want[c] = (f, want.get(c, (f, 0.0))[1] + w)
+        out = []
+        for c in set(want) | set(self.shown):
+            f, w = want.get(c, (None, 0.0))
+            was = self.shown.get(c, [f, 0.0])
+            w = max(was[1] - dt / CLIP_OUT, min(was[1] + dt / CLIP_IN, w))
+            if w <= 0.002:
+                self.shown.pop(c, None)
+                continue
+            self.shown[c] = [f if f is not None else was[0], w]
+            out.append((c, self.shown[c][0], w))
+        return out or None
 
     def _play(self, plan, t, w):
         """Where each clip of a plan is at t (seconds), and how much of it: [(clip, frame, weight)]."""
@@ -664,9 +697,20 @@ class Mix:
         if dn is not None:                              # (a keeper's dive, down at a man's feet, lying: his own)
             kind, t, side, _ = dn
             if self.plan is None or self.plan[0] != ("down", kind, side) or t < self.plan[1]:
+                was = self.plan
                 self.plan = (("down", kind, side), t, self._down_plan(kind, side))
+                self.land = None
+                if was and was[0] == ("down", "diving", side) and kind == "recover" and self.plan[2]:
+                    c = self.plan[2][0][2]              # (landing in the same clip: carry on from where it's got to)
+                    if c in self.shown:
+                        self.land = (c, self.shown[c][0] - self._play(self.plan[2], t, 1.0)[0][1])
             if self.plan[2]:
                 acts = self._play(self.plan[2], t, 1.0)
+                if self.land and kind == "recover":
+                    k = max(0.0, 1.0 - t / LAND_EASE)
+                    nf = info()[self.land[0]]["frames"]
+                    acts = [(c, int(round(max(0, min(nf - 1, f + self.land[1] * k)))) if c == self.land[0] else f, w)
+                            for c, f, w in acts]
         elif name is not None and wgt > 0.02:
             # A move with the ball, a catch, a fall...: his own where the pack has it, lined up on ours
             t = (gait.SPANS[name][0] + frame / 30.0) if name in gait.SPANS else 0.0  # (seconds from the moment)
@@ -677,6 +721,8 @@ class Mix:
                           round(ap.sp, 1), round(t, 2), flush=True)
             if self.plan[2]:
                 acts = self._play(self.plan[2], t, wgt)
+                if acts and acts[0][0] == "goalkeeper_miss" and ap.sp > DESPAIR_TO:
+                    acts = None                         # (head in hands, then off at a run: it fades while he walks)
         else:
             self.plan = None
         pl = getattr(ap, "mx_place", None)              # (a keeper putting the ball down for a goal kick)
@@ -694,8 +740,10 @@ class Mix:
                                     or getattr(ap, "roll", 0.0) > 1.0 or getattr(ap, "lift", 0.0) > 0.05
                                     or moods > 0.3 or getattr(ap, "force_stand", None))
         ap.a.hide(); self.a.show()
-        # One of our own moves: he copies our figure - easing in and out of it over a tenth of a second or so
-        self.w_rt += ((1.0 if special else 0.0) - self.w_rt) * min(1.0, dt * 12.0)
+        acts = self._ease(acts, dt)
+        # One of our own moves: he copies our figure - easing in and out of it over a tenth of a second or so (but no
+        # faster than RT_RATE: hands on his knees at a kick-off is a long way from standing)
+        self.w_rt += max(-dt * RT_RATE, min(dt * RT_RATE, ((1.0 if special else 0.0) - self.w_rt) * min(1.0, dt * 12.0)))
         # His twin only needs moving while he's copying our figure (or easing in or out of it)
         self.live = self.actors if (special or self.w_rt >= 0.002 or self.rt.ctrl is not None) else (self.a,)
         self._mocap(dt, vel, acts, ball)
@@ -704,11 +752,34 @@ class Mix:
         else:
             self.rt.apply(self.w_rt)
         self._hold()
+        if SNAP:
+            self._snap_check()
+        if DBG and str(ap.seed) == DBG:
+            print("MXDBG", _tick[0], cur[0], round(wgt, 2), special, {n: round(w, 2) for n, w in loco.items() if w > 0.05},
+                  getattr(ap, "force_stand", None), round(getattr(ap, "roll", 0), 2), round(getattr(ap, "lift", 0), 2),
+                  round(self.w_rt, 2), round(ap.h or 0, 1), [round(x, 2) for x in ap.root.getPos()], flush=True)
+
+    def _snap_check(self):
+        """Testing (FM_MX_SNAP=1): print when his hips or head jump more than SNAP_M in one frame (against where
+        the engine has him) - a snap between two moves."""
+        if not hasattr(self, "_sj"):
+            self._sj = [self.a.exposeJoint(None, "modelRoot", "mixamorig5:" + j) for j in ("Hips", "Head")]
+            self._sp = None
+        self.a.getPartBundle("modelRoot").forceUpdate()
+        now = [j.getPos(self.ap.root) for j in self._sj]
+        if self._sp is not None:
+            d = max((a - b).length() for a, b in zip(now, self._sp))
+            if d > SNAP_M:
+                print("MXSNAP", _tick[0], self.ap.seed, "keeper" if self.keeper else "", round(d, 2),
+                      getattr(self.ap, "cur", (None,))[0], self.plan[2][0][2] if self.plan and self.plan[2] else None,
+                      self.down[0] if self.down else None, round(self.w_rt, 2), round(self.ap.sp, 1), flush=True)
+        self._sp = now
 
     def _mocap(self, dt, vel, acts=None, ball=None):
         ap = self.ap
         I = info()
-        target = {n: 0.0 for n in self.anims}
+        import collections
+        target = collections.defaultdict(float)          # (only the moves he's doing: the rest are nought)
         sp = ap.sp
         # Which way is he moving against the way he faces?
         fwd, rgt = 1.0, 0.0
@@ -764,14 +835,14 @@ class Mix:
         self._blend(target, dt, acts=acts)
         # One shared stride phase: every running move is at the same point in its stride, and the phase moves on
         # by how far he's gone (his speed) over how far a stride of the blend travels - his feet stay planted
-        loco = [n for n in self.anims if n not in self.still and n not in self.clips and self.w.get(n, 0) > 0.001]
+        loco = [n for n in self.nzw if n not in self.still and n not in self.clips and self.w.get(n, 0) > 0.001]
         tot = sum(self.w[n] for n in loco)
         if tot > 0.001:
             stride = sum(self.w[n] * I[n]["dist"] for n in loco) / tot * self.a.getScale().z
             self.phase = (self.phase + sp * dt / max(0.3, stride)) % 1.0
         self.idle_t += dt
         posed = {c: f for c, f, w in (acts or ())}
-        for n in self.anims:
+        for n in list(posed) + [n for n in self.nzw if n not in posed]:
             if n in self.clips:
                 if n in posed:
                     for a_ in self.live:
@@ -795,21 +866,40 @@ class Mix:
         for c, f, w in (acts or ()):
             aws[c] = aws.get(c, 0.0) + w
         aw = min(1.0, sum(aws.values()))
-        for n in self.anims:
+        # Only the moves that are on (or were last frame, on either body): with ~75 moves in the pack, going through
+        # every one of them for every man, every frame, was a third of his time
+        if self.nz is None:
+            names, self.nz = list(self.anims), (set(), set())
+        else:
+            names = self.nzw | {n for n, v in target.items() if v > 0.0} | set(aws) | self.nz[0] | self.nz[1]
+        for n in names:
             if n in self.clips:
                 e = aws.get(n, 0.0)
             else:
-                self.w[n] += (target.get(n, 0.0) - self.w[n]) * k
-                e = max(0.0, self.w[n]) * (1.0 - aw)
+                w = self.w[n] + (target.get(n, 0.0) - self.w[n]) * k
+                if w > 1e-4:
+                    self.nzw.add(n)
+                else:
+                    w = 0.0
+                    self.nzw.discard(n)
+                self.w[n] = w
+                e = w * (1.0 - aw)
             for i, a_ in enumerate(self.live):                # (only when it's changed: fewer calls)
                 if abs(self.eff[i].get(n, -1.0) - e) > 1e-4:
                     a_.setControlEffect(n, e)
                     self.eff[i][n] = e
+                    if e > 1e-4:
+                        self.nz[i].add(n)
+                    else:
+                        self.nz[i].discard(n)
 
 
 LOG = os.environ.get("FM_MX_LOG") in ("1", "2")
 LOG2 = os.environ.get("FM_MX_LOG") == "2"      # (testing: print each motion-captured move as it starts)
 _tick = [0]
+SNAP = os.environ.get("FM_MX_SNAP") == "1"     # (testing: report his body snapping from one pose to another)
+SNAP_M = 0.3
+DBG = os.environ.get("FM_MX_DBG")       # (testing: one man's every frame, by his seed)
 TIME = os.environ.get("FM_MX_TIME") == "1"    # (testing: how long the Mixamo men take, per frame)
 _spent = [0.0]
 if TIME:
