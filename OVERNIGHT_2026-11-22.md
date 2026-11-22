@@ -13,7 +13,8 @@ What he does now:
 - **Running about** - standing, jogging, running, sprinting, side-steps and running backwards come straight from
   the motion capture in your pack. They blend into each other by how fast the match has him going, and each is
   played at the speed that matches, so his feet grip the grass instead of sliding. Each man has his own way of
-  standing (four idles from your pack).
+  standing (four idles from your pack). Keepers have their own stance and side-step across their goal (the
+  pack's keeper idle and sidestep).
 - **With the ball, from the motion capture** - passes, shots and chips (left-footed ones use the same moves
   mirrored), headers, throw-ins, and the keeper's overarm throw and his kick out of his hands. Each one is lined
   up so his foot (or head, or hands) meets the ball at the moment the match engine says it does, and a ball he's
@@ -28,7 +29,9 @@ What he does now:
   sleeves (bare arms, a hem in the trim colour), the rest in long sleeves, and a few of those in black gloves.
 - **The officials and the touchline** (new tonight) - the referee, both assistants (flag in hand), both managers
   (in trousers) and the subs warming up are Mixamo men too. A flag or a card in a hand follows his hand.
-- `broadcast3d/check.py` now also runs a Mixamo match and a live Mixamo match: **all good**.
+- Checks: `broadcast3d/check.py` (now also a Mixamo match and a live Mixamo match) **all good**; every screen draws
+  (only the five that need setting up "fail", as always); two seasons run fine. The match engine isn't touched
+  (P only changes the picture).
 
 Pictures (sent with this report):
 - `mixamo_sprint_compare.jpg` - our figure and the Mixamo man sprinting, same moment.
