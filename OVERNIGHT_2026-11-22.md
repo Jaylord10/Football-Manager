@@ -84,7 +84,13 @@ were clean (one striker standing still 8 seconds, once). The keepers weren't:
   3.5 m/s), he turns and runs.
 - Same 3 matches after the fix: **jitters 13 -> 1, moonwalks 3 -> 0**.
 - This one does change the match engine (the replay check changes, as it should). Checks: the real-engine
-  match-day flow runs fine. The 26-match numbers for it are running now - in the next section if they finish.
+  match-day flow runs fine.
+- **But the first version made keepers much worse: 5.92 goals a match over 26 matches (from 3.92).** I measured
+  why: easing off made him trail his spot when it was moving - one time in ten he was over a metre out of place
+  (before: 19 cm). So now he also keeps pace with his spot as it moves, and pulls up a bit more sharply than an
+  outfield player (keepers set themselves in a step or two). Same test match: now one time in ten he's 17 cm off,
+  and with the ball near him he's on average closer to his spot than he is on your PC today (29 cm vs 39 cm).
+  The 26 matches and the jitter check are being re-run on this version.
 
 ## 5. The numbers over 26 matches, on what's on the PC now
 | | before the keeper / support-run / squeeze changes | now (on your PC) |
