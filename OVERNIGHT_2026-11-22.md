@@ -93,9 +93,23 @@ were clean (one striker standing still 8 seconds, once). The keepers weren't:
 - **That didn't fix it either: 4.81 goals a match, and the jitter came back far worse (162 in 3 matches).** Keeping
   pace with his spot means following every little wobble of it. And since he's as close to his spot as on your PC
   but still lets in more, his position isn't the whole story - the loose-ball change (which applies to everyone)
-  may be part of it. I'm now testing the two halves separately (26 matches each) to see which one costs goals.
+  may be part of it.
+- **Testing the two halves on their own** (the second run hit the 2-hour limit after 18 matches, so it's compared
+  on the same 18):
+
+  | | goals a match |
+  |---|---|
+  | on your PC now (same 18 matches) | 4.28 |
+  | only the loose-ball change (all 26: 4.31 vs 3.92) | about +0.4 |
+  | only the keeper's movement (easing off + turn and run) | 5.17 (+0.9) |
+  | both together (the first try) | 6.28 (+2.0) |
+
+  Both halves cost goals, the keeper's movement most. The loose-ball one is small enough that it could be luck,
+  but together they're clearly worse.
 - **So for now: don't use this branch.** The keepers' darting about is a real thing to fix, but not at the price of
-  goals.
+  goals. Something to talk over when you're up: a gentler idea is to let him stand still until his spot has moved
+  a fair bit (say 30 cm), then go there at his normal pace - fewer little dashes without slowing him down. And
+  the moonwalk fix (turn and run) could be tested on its own, since it may be most of the "keeper movement" cost.
 
 ## 5. The numbers over 26 matches, on what's on the PC now
 | | before the keeper / support-run / squeeze changes | now (on your PC) |
