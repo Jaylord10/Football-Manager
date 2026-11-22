@@ -10,6 +10,8 @@ import math
 
 KEEPER_SETTLE = 0.05      # m: a keeper this close to his spot stands still
 KEEPER_TURN_RUN = 3.5     # m/s: going back towards his goal faster than this, a keeper turns and runs
+KEEPER_DECEL = 6.0        # m/s^2: how sharply a keeper pulls up at his spot (sharper than an outfield man's 3.5 -
+                          #    keepers 'set' themselves in a step or two)
 
 class Ball:
     def __init__(self, position):
@@ -195,15 +197,21 @@ class Player:
     def _update_normal_movement(self, delta_time, all_players=None):
         if self.role == "GK":
             # Keepers keep their simple positional movement (diving has its own code)
-            # He eases off as he gets there, like everyone else (core/locomotion.py ARRIVE_DECEL): he used to go at
+            # He eases off as he gets there (KEEPER_DECEL, like outfield players in core/locomotion.py): he used to go at
             # full speed right up to his spot, so a spot creeping 10-20 cm as play moved had him darting back and
             # forth at 6.5 m/s - jittering.  Now a small adjustment is a gentle shuffle.
+            # His spot moves as play moves, so he keeps pace with it as well (easing off alone, he trailed a moving
+            # spot by over a metre and let in two goals a match more).
             to_target = self.target - self.pos
             dist_sq = to_target.length_squared()
+            prev = getattr(self, "_gk_prev_target", None)
+            tv = (self.target - prev) / max(delta_time, 1e-6) if prev is not None else Vector2(0, 0)
+            self._gk_prev_target = Vector2(self.target)
             if dist_sq > (KEEPER_SETTLE * M_TO_PX) ** 2:
                 dist_m = math.sqrt(dist_sq) / M_TO_PX
+                pace = max(0.0, tv.dot(to_target) / math.sqrt(dist_sq))
                 speed = min(self._calculate_movement_speed(),
-                            math.sqrt(2.0 * locomotion.ARRIVE_DECEL * dist_m) * M_TO_PX)
+                            pace + math.sqrt(2.0 * KEEPER_DECEL * dist_m) * M_TO_PX)
                 move = to_target.normalize() * min(speed * delta_time, math.sqrt(dist_sq))
                 self.pos += move; self.vel = move / max(delta_time, 1e-6)
             else:
