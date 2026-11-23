@@ -58,7 +58,7 @@ STYLES = {
                        step_from=85.0, block_jockey=2.5, cb_beyond_half=False, gk_back=55.0, gk_front=92.0),
     "high_press": dict(line_max=54.0, line_ratio=0.80, line_offset=6.0, front_gap=13.0, stay_up=65.0,
                        press_from=110.0, press_reach=3.4, second_presser=True, mark_short=True,
-                       counter_press=5.0, counter_pressers=3, urgency_bonus=0.20, att_line_max=58.0,
+                       counter_press=5.0, counter_pressers=2, urgency_bonus=0.20, att_line_max=58.0,
                        step_from=110.0, block_jockey=2.0, cb_beyond_half=True, gk_back=60.0, gk_front=95.0),
 }
 DEFAULT_STYLE = "mid_block"

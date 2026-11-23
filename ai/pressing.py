@@ -82,6 +82,16 @@ MARK_REACH          = 15.0   # m: ...if one of ours is within this of them
 MARK_MAX            = 3      # ...up to this many
 MARK_GOALSIDE       = 1.5    # m goal-side of his man
 COUNTER_REACH       = 2.5    # s: counter-pressers must be able to get there this fast
+# Their keeper with the ball (high press): see _press_keeper
+KEEPER_SHORT        = 35.0   # m: his short options - opponents this close to him (but not stood right by him:
+                             #    screening those would mean standing in the keeper's face)...
+KEEPER_SCREENS      = 3      # ...up to this many get a man stood in the way of the pass
+KEEPER_SCREEN_SHARE = 0.6    # the screen stands this far along the pass, keeper to receiver...
+KEEPER_SCREEN_OFF   = 11.0   # m: ...and at least this far off the keeper (never in his face)
+KEEPER_SCREEN_REACH = 30.0   # m: only a man within this of the spot goes there
+KEEPER_PRESS_REACH  = 30.0   # m: at his feet, the presser goes if he's within this
+KEEPER_CURVE        = 2.0    # m: the presser comes in this much towards the keeper's nearest pass (curving his run)
+KEEPER_SHADOW       = 6.0    # m: an option this close to the presser is cut off already (no screen needed)
 
 # Block the run / cover
 # (where it starts and how tight the blocker gets come from the style: ai/tactics.py)
@@ -156,8 +166,10 @@ def _press(state, team, opponents, ball, now, since_change):
         if counter and ball.owner is None and not ball.is_dead:
             _counter_press(candidates, ball.pos, st, own_goal, None, exclude=())
         return None
-    if carrier.role == "GK" and st["press_from"] < 100.0:
-        return None
+    if carrier.role == "GK":
+        if st["press_from"] < 100.0:
+            return None
+        return _press_keeper(state, candidates, carrier, opponents, own_goal)
 
     d_goal_m = distance(carrier.pos, own_goal) / M_TO_PX
     depth_m = abs(carrier.pos.x - own_goal.x) / M_TO_PX         # how far up the pitch (from our goal line)
@@ -200,7 +212,7 @@ def _press(state, team, opponents, ball, now, since_change):
             cover = min(free, key=lambda p: distance(p.pos, lane))
             if distance(cover.pos, lane) / M_TO_PX < 20.0:
                 cover.target = Vector2(lane)
-                cover.state = "press"
+                cover.state = "defend"                      # (into the lane - not a flat-out charge at the ball)
                 cover.pos_reason = "cut the passing lane"
                 busy.add(id(cover))
 
@@ -221,10 +233,61 @@ def _press(state, team, opponents, ball, now, since_change):
             to_goal = own_goal - o.pos
             spot = o.pos + (to_goal.normalize() * (MARK_GOALSIDE * M_TO_PX) if to_goal.length_squared() > 0 else Vector2())
             m.target = spot
-            m.state = "press"
+            m.state = "defend"                              # (onto his man - not at the ball)
             m.pos_reason = f"mark tight: {o.role}"
             busy.add(id(m))
             marked += 1
+    return best
+
+
+def _press_keeper(state, candidates, keeper, opponents, own_goal):
+    """Their keeper's got it (high press only).
+    In his HANDS: nobody goes near him - the law says you can't stop a keeper releasing it (Law 12: an indirect
+    free kick) - the front men drop off and stand in the way of his short throws to the defenders near him, so he
+    has to kick it long.  At his FEET (a back-pass, a short goal kick): one goes at him, curving in to cut off the
+    pass to one side; the others stand in the way of the passes that are left.
+    Returns the presser (or None)."""
+    feet = getattr(keeper, "_feet", False)
+    short = sorted((o for o in opponents if o is not keeper and getattr(o, "is_active", True)
+                    and KEEPER_SCREEN_OFF + 3.0 < distance(o.pos, keeper.pos) / M_TO_PX < KEEPER_SHORT),
+                   key=lambda o: distance(o.pos, keeper.pos))
+    pool = [p for p in candidates if p.role not in BACK_LINE]
+    busy = set()
+    best = None
+    if feet and pool:
+        best = min(pool, key=lambda p: distance(p.pos, keeper.pos))
+        if distance(best.pos, keeper.pos) / M_TO_PX > KEEPER_PRESS_REACH:
+            best = None
+        else:
+            spot = press_point(best, keeper, own_goal)
+            if short:                                       # (curve in on the side of his nearest pass)
+                side = short[0].pos - keeper.pos
+                if side.length_squared() > 1e-6:
+                    spot = spot + side.normalize() * (KEEPER_CURVE * M_TO_PX)
+            best.target = spot
+            best.state = "press"
+            best.pos_reason = "press the keeper"
+            busy.add(id(best))
+            short = [o for o in short if distance(o.pos, best.pos) > KEEPER_SHADOW * M_TO_PX]
+    state["presser"] = best
+    state["_last_presser"] = best
+    for o in short[:KEEPER_SCREENS]:
+        free = [p for p in pool if id(p) not in busy]
+        if not free:
+            break
+        lane = o.pos - keeper.pos
+        d = lane.length() / M_TO_PX
+        if d < 1e-3:
+            continue
+        along = max(KEEPER_SCREEN_OFF, d * KEEPER_SCREEN_SHARE)   # (in his lane, well off the keeper)
+        spot = keeper.pos + lane.normalize() * (along * M_TO_PX)
+        m = min(free, key=lambda p: distance(p.pos, spot))
+        if distance(m.pos, spot) / M_TO_PX > KEEPER_SCREEN_REACH:
+            continue
+        m.target = Vector2(spot)
+        m.state = "defend"
+        m.pos_reason = f"screen the short ball to {o.role}"
+        busy.add(id(m))
     return best
 
 
