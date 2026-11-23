@@ -1336,6 +1336,14 @@ class Viewer(ShowBase):
         else:
             self.cam.setPos(self.cx * 0.8, -HY - TV_BACK, TV_UP)
             dn = TV_DOWN - (TV_DOWN - TV_DOWN_BOX) * max(0.0, min(1.0, (abs(self.cx) - 34.0) / 12.0))  # (by a goal:
+            # (...but a corner from our side: down on the taker and the near post while he lines it up, up with the
+            #  ball into the box once it's struck - 23 Nov)
+            r_ = fr.get("r")
+            want = 1.0 if (r_ and r_[0] == "corner_kick" and by < -HY + 4.0 and abs(bx) > HX - 4.0) else 0.0  # (ball
+            #  still at our flag)
+            cn = getattr(self, "_corner_near", 0.0)
+            self._corner_near = cn + max(-dt * CORNER_UP, min(dt * CORNER_UP, want - cn))
+            dn += (CORNER_DOWN - dn) * self._corner_near
             yw = dn + (0.95 - dn) * self.cam_tilt           # the goalmouth's the thing, not the touchline; close in: on him)
             ht = getattr(self, "_flag_t", 0.0)                              # (close in, a cameraman's hand: the
             hx = self.cam_tilt * (0.22 * math.sin(ht * 0.71) + 0.09 * math.sin(ht * 1.93))   # picture drifts a
@@ -1487,6 +1495,8 @@ TV_WIDER = 4.5      #  camera - the players bigger, easier to follow), and up to
 TV_REACH = 46.0
 TV_DOWN = 0.75
 TV_FAR = 4.0
+CORNER_DOWN = 0.7  # (a corner from our side, while he lines it up: the taker at the bottom, the near post at the top)
+CORNER_UP = 1.6    # (a corner from our side: how fast the camera goes from the taker up to the box, a second's worth)
 TV_DOWN_BOX = 0.4   # (...but near a goal - a corner from the near flag - less: the box in the picture, not the flag)
 TV_BACK, TV_UP = 50.0, 27.0   # the gantry: metres back from the near touchline, and up (was 62, 33: the same angle down)
 
