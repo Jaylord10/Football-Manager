@@ -202,7 +202,7 @@ def _view_env(career, home_id):
     os.environ["FM_3D_NAMES"] = "1" if career.get("names_3d", False) else "0"
     os.environ["FM_3D_QUALITY"] = career.get("quality_3d", "auto")
     os.environ["FM_3D_CAMERA"] = str(career.get("camera_3d", 0))
-    os.environ["FM_3D_PLAYERS"] = career.get("players_3d", "classic")   # (P: our figures / the Mixamo footballer)
+    os.environ.setdefault("FM_3D_PLAYERS", "mixamo")   # (the Mixamo footballers; our own figures are parked - 24 Nov)
     date = career.get("date", "")
     try:
         ko = cal.kick_off(date)
@@ -245,7 +245,6 @@ def watch(career, home, away, matchday):
     career["names_3d"] = engine.names3d
     career["quality_3d"] = engine.quality3d
     career["camera_3d"] = getattr(engine, "camera3d", 0)
-    career["players_3d"] = getattr(engine, "players3d", "classic")
     if engine.my_team is not None:
         career["assistant_subs"] = engine.subs.auto[engine.my_team]   # remembered for next time
     if engine.match_state != "full_time":
@@ -277,7 +276,6 @@ def watch_friendly(career, f):
     career["names_3d"] = engine.names3d
     career["quality_3d"] = engine.quality3d
     career["camera_3d"] = getattr(engine, "camera3d", 0)
-    career["players_3d"] = getattr(engine, "players3d", "classic")
     if engine.my_team is not None:
         career["assistant_subs"] = engine.subs.auto[engine.my_team]
     if engine.match_state != "full_time":
@@ -312,7 +310,6 @@ def watch_playoff(career, m):
     career["names_3d"] = engine.names3d
     career["quality_3d"] = engine.quality3d
     career["camera_3d"] = getattr(engine, "camera3d", 0)
-    career["players_3d"] = getattr(engine, "players3d", "classic")
     if engine.my_team is not None:
         career["assistant_subs"] = engine.subs.auto[engine.my_team]
     if engine.match_state != "full_time":
@@ -348,7 +345,6 @@ def watch_cup(career, m):
     career["names_3d"] = engine.names3d
     career["quality_3d"] = engine.quality3d
     career["camera_3d"] = getattr(engine, "camera3d", 0)
-    career["players_3d"] = getattr(engine, "players3d", "classic")
     if engine.my_team is not None:
         career["assistant_subs"] = engine.subs.auto[engine.my_team]
     if engine.match_state != "full_time":

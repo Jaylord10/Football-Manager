@@ -152,7 +152,7 @@ class UIRenderer:
         legend_y  += 4
         legend_str = "States: press / dribble / pass / drive / support / chase / guard / tackle"
         if mi and mi.get("view3d"):
-            legend_str = ("3D view:  V back to 2D   C camera   M mini pitch   N names   Q quality   P players   "
+            legend_str = ("3D view:  V back to 2D   C camera   M mini pitch   N names   Q quality   "
                           "- after a goal the match waits for the replay (ENTER skips it)")
         legend_surf = self.normal_font.render(legend_str, True, (100, 100, 100))
         surface.blit(legend_surf, (12, legend_y))
