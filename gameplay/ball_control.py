@@ -34,14 +34,14 @@ def apply_first_touch(receiver, ball, opponents, teammates, current_time, mechan
         # FIRST-TIME PASS
         if context['planned_action'] == 'first_time_pass':
             outlet = context.get('planned_target')
-            # Only if he'd already seen it - scanned before the ball arrived (ai/decision_timing.py) -
-            # and he's still under pressure now it's here (he planned it a moment ago: if the
-            # man on him has been left behind, he takes a touch instead)
-            import ai.decision_timing as timing
-            still_pressed = calculate_pressure_urgency(receiver, opponents) in ("Immediate", "Crowded")
-            if outlet and still_pressed and timing.has_picture(receiver, ball):
+            # He planned it as the ball came (wants_first_time): he plays it unless the pass has been shut off
+            # in the meantime - then he takes a touch instead
+            if outlet and not opponent_will_intercept(receiver.pos, outlet.pos, opponents, PASS_SPEED):
                 execute_first_time_pass(receiver, outlet, ball, current_time, mechanics, opponents)
                 return True
+            touch_intent, touch_direction = choose_first_touch_intent(receiver, context, opponents)
+            execute_first_touch_with_physics(receiver, ball, touch_intent, touch_direction, current_time)
+            return False
 
         # TOUCH (PUSH/SET/KILL)
         else:
@@ -64,6 +64,37 @@ def apply_first_touch(receiver, ball, opponents, teammates, current_time, mechan
     touch_intent, touch_direction = choose_first_touch_intent(receiver, context, opponents)
     execute_first_touch_with_physics(receiver, ball, touch_intent, touch_direction, current_time)
     return False
+
+
+# =============================================================================
+# FIRST TIME OR A TOUCH?  (24 Nov)
+# =============================================================================
+# Tracked real matches (Metrica, dev/onball_real.py): about a quarter of passes a player receives he plays on first
+# time - 70% when a man is within 3 m as it arrives, ~20% when he's free (a lay-off, a quick ball back, moving it
+# on) - and 41% of passes back.  Ours were first time only with a man right on him (1.5 m) or three around him.
+FT_PRESS_M      = 3.0     # m: a man this close as it arrives = he's pressed...
+FT_CLOSING_TIME = 0.4     # ...or one who'll be that close within this many seconds
+FT_PRESSED_BLIND = 0.5    # pressed but hadn't looked around first: chance he still plays it first time (back where
+                          #  it came from, or to the man he knows is there)
+FT_FREE         = 0.35    # free, and he'd looked around: chance he moves it on first time when a simple pass is on
+
+
+def wants_first_time(receiver, ball, context):
+    """As the ball comes to him: does he mean to play it first time?  "pressed", "free" or None."""
+    import ai.decision_timing as timing
+    picture = timing.has_picture(receiver, ball)
+    near = context.get('nearest_distance', 9999)
+    opp = context.get('nearest_opponent')
+    pressed = context['pressure_urgency'] == "Crowded" or near < FT_PRESS_M * M_TO_PX
+    if not pressed and opp is not None and near < 10.0 * M_TO_PX:
+        rel = receiver.pos - opp.pos
+        d = rel.length()
+        if d > 0:
+            closing = opp.vel.dot(rel / d)
+            pressed = closing > 0 and (d - FT_PRESS_M * M_TO_PX) / closing < FT_CLOSING_TIME
+    if pressed:
+        return "pressed" if (picture or random.random() < FT_PRESSED_BLIND) else None
+    return "free" if (picture and random.random() < FT_FREE) else None
 
 
 # =============================================================================
@@ -245,8 +276,9 @@ def identify_exit_lanes(receiver, opponents, teammates):
 # FIRST-TIME PASS
 # =============================================================================
 
-def find_first_time_outlet(receiver, teammates, opponents, context):
-    """Finds the best outlet for a first-time pass."""
+def find_first_time_outlet(receiver, teammates, opponents, context, fallback=True):
+    """Finds the best outlet for a first-time pass.  fallback: with nobody open, the nearest centre-back / keeper
+    (under pressure - get it away); a free man with nobody open just takes a touch instead."""
     
     if not teammates:
         return None
@@ -287,7 +319,7 @@ def find_first_time_outlet(receiver, teammates, opponents, context):
             best_score = score
             best_outlet = mate
     
-    if not best_outlet:
+    if not best_outlet and fallback:
         gk_or_cbs = [p for p in teammates if p.role in ["GK", "LCB", "RCB"]]
         if gk_or_cbs:
             best_outlet = min(gk_or_cbs, key=lambda p: distance(receiver.pos, p.pos))

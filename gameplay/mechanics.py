@@ -211,15 +211,19 @@ class GameMechanics:
                                 context = analyze_receiving_context(player, ball, opponents, teammates)
 
                                 # Decide what to do (but don't execute yet!)
-                                if context['pressure_urgency'] in ["Immediate", "Crowded"]:
-                                    outlet = find_first_time_outlet(player, teammates, opponents, context)
-                                    if outlet:
-                                        context['planned_action'] = 'first_time_pass'
-                                        context['planned_target'] = outlet
-                                    else:
-                                        touch_intent, touch_direction = choose_first_touch_intent(player, context, opponents)
-                                        context['planned_action'] = touch_intent
-                                        context['planned_direction'] = touch_direction
+                                # First time?  (24 Nov: real players play about a quarter of passes first time,
+                                # 70% of them when a man is within 3 m as it arrives - gameplay/ball_control.py)
+                                from gameplay.ball_control import wants_first_time
+                                ft = wants_first_time(player, ball, context)
+                                if ft:
+                                    outlet = find_first_time_outlet(player, teammates, opponents, context,
+                                                                    fallback=(ft == "pressed"))
+                                else:
+                                    outlet = None
+                                if outlet:
+                                    context['planned_action'] = 'first_time_pass'
+                                    context['planned_target'] = outlet
+                                    context['ft_free'] = (ft == "free")
                                 else:
                                     touch_intent, touch_direction = choose_first_touch_intent(player, context, opponents)
                                     context['planned_action'] = touch_intent

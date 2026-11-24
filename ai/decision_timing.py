@@ -40,7 +40,8 @@ import random
 # ---------------------------------------------------------------------------
 # TUNING
 # ---------------------------------------------------------------------------
-TOUCH          = 0.30          # s to control the ball
+TOUCH          = (0.30, 0.15)  # s to control the ball (worst, best Control) - was 0.30 for everyone; real players
+                               #  settle a pass in a tenth of a second or so (Metrica tracking, 24 Nov)
 LOOK           = (0.60, 0.25)  # s to get the head up and see the options (worst, best Decisions)
 HURRIED        = 0.70          # under pressure the look is quicker (and less thorough)
 REDECIDE       = (0.60, 0.25)  # s between re-checks of his options (worst, best Decisions)
@@ -74,7 +75,7 @@ def has_picture(p, ball):
 
 def first_decision(p, pressured, picture):
     """Seconds after receiving before he can make his first decision."""
-    t = TOUCH
+    t = _lerp(TOUCH, _stat(p, "Control"))
     if not picture:
         look = _lerp(LOOK, _stat(p, "Decisions"))
         t += look * (HURRIED if pressured else 1.0)

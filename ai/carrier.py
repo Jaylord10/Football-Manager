@@ -156,6 +156,8 @@ def _decide(carrier, team, opponents, ball, current_time, mechanics):
     is_panic = nearest_opp_dist < 1.0 * M_TO_PX
     # REAL pressure (someone on him, or about to be) - not just someone nearby
     real_pressure = _real_pressure(carrier, opponent_field_players)
+    # (move it on: a man is coming - real players play it while he's still ~4 m off, not once he's on them)
+    move_it = real_pressure or _closing_in(carrier, opponent_field_players)
 
     # --- GK LOGIC ---
     if carrier.role == "GK":
@@ -368,7 +370,7 @@ def _decide(carrier, team, opponents, ball, current_time, mechanics):
     # (and straight away if he's under real pressure).  Not good enough yet:
     # he keeps it - carries, shifts it, shields - and looks again.
     # ------------------------------------------------------------------
-    if prog_action == "pass" and not real_pressure \
+    if prog_action == "pass" and not move_it \
             and prog_score < _PASS_BAR + _PASS_BAR_EARLY * _bar_left(carrier, current_time):
         prog_action = None
 
@@ -398,7 +400,7 @@ def _decide(carrier, team, opponents, ball, current_time, mechanics):
             and recycle_action == "pass"
             and recycle_target is not None
             and recycle_value > prog_score + PATIENCE_GAP):
-        if _keep_it(carrier, opponent_field_players, ball, current_time, mechanics, real_pressure):
+        if _keep_it(carrier, opponent_field_players, ball, current_time, mechanics, move_it):
             return carrier.team
         mechanics.execute_pass(carrier, recycle_target, ball, current_time)
         return carrier.team
@@ -431,7 +433,7 @@ def _decide(carrier, team, opponents, ball, current_time, mechanics):
     # LAYER 4: RECYCLE (Safety pass — includes GK so CBs can play it back)
     # Reuses the recycle already computed above — no duplicate evaluation.
     if recycle_action == "pass" and recycle_target:
-        if _keep_it(carrier, opponent_field_players, ball, current_time, mechanics, real_pressure):
+        if _keep_it(carrier, opponent_field_players, ball, current_time, mechanics, move_it):
             return carrier.team
         mechanics.execute_pass(carrier, recycle_target, ball, current_time)
         return carrier.team
@@ -669,6 +671,31 @@ def _bar_left(carrier, now):
     calm = 0.5 * (_stat20(carrier, "Composure") + _stat20(carrier, "Decisions"))
     patience = lo + (hi - lo) * (calm - 1) / 19
     return max(0.0, 1.0 - held / patience)
+
+
+_MOVE_IT_DIST  = (4.5, 3.5)   # m: a man this close means move it on now (Composure 1 / 20)...
+_MOVE_IT_TIME  = 0.7          # ...or one who'll be that close within this many seconds
+_MOVE_IT_RANGE = 12.0         # m: (only counting opponents this close)
+# (24 Nov: tracked real matches - Metrica - have the nearest defender ~4.1 m away when the pass is played; ours
+#  waited for a better option until he was ~2.5 m away, so 60% of our passes were rushed with a man on them)
+
+
+def _closing_in(carrier, opponents):
+    """A man near enough, or coming fast enough, that a real player would move it on now rather than wait."""
+    lo, hi = _MOVE_IT_DIST
+    r = (lo + (hi - lo) * (_stat20(carrier, "Composure") - 1) / 19) * M_TO_PX
+    for o in opponents:
+        if not getattr(o, "is_active", True):
+            continue
+        rel = carrier.pos - o.pos
+        d = rel.length()
+        if d < r:
+            return True
+        if 0 < d < _MOVE_IT_RANGE * M_TO_PX:
+            closing = o.vel.dot(rel / d)
+            if closing > 0 and (d - r) / closing < _MOVE_IT_TIME:
+                return True
+    return False
 
 
 def _real_pressure(carrier, opponents):
