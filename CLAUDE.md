@@ -24,8 +24,8 @@ meant to match what's deployed on his PC.** Work happens on branches.
 ## Must-pass checks before reporting any change
 
 1. **Match engine replay is unchanged** (unless the change is meant to touch the engine):
-   `python dev/replay.py . 1 60` must end with `hash 815c9deb424df6cb6d3991d2b712c3f6` (since 24 Nov: quicker on the
-   ball; a change meant to alter play changes it - then update this line).
+   `python dev/replay.py . 1 60` must end with `hash 74b0aa823f4c9747f0a7067f4270db18` (since 25 Nov: the left box-to-box
+   midfielder's own area; a change meant to alter play changes it - then update this line).
 2. **Every screen still draws**: `python dev/all_screens.py` (with `FM_GAME` = the game folder). The screens
    `arrange`, `bid`, `choose`, `loan` and `talks` "fail" there because they need setting up first - that's
    expected; anything else failing is a bug.
