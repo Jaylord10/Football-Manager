@@ -99,6 +99,7 @@ CM_BUILDUP_AHEAD = 6.0       # ...but in build-up they show ahead of it, offerin
 CM_HOLD_EXTRA    = 6.0       # a holding midfielder sits this much deeper still
 CM_JOIN_ATTACK   = 16.0      # box-to-box: up to this much further forward in the final third
 CM_HALF_WIDTH    = 9.0
+ZONE_B2B_FORWARD = 0.6       # a left-sided central midfielder this attacking (box-to-box) uses his own area (25 Nov)
 FINAL_THIRD      = 70.0      # m from our goal
 ST_ONSIDE        = 1.0       # pinning strikers sit this far onside
 ST_LINK_DROP     = 9.0       # link striker drops this far off the last line...
@@ -734,6 +735,13 @@ def _attacking(team, opponents, ball, tid, ba, bl, st, now, out):
             fixed.append((a, l))
             out[id(p)] = (a, l, why)
         else:
+            # (25 Nov, Jay's idea - the left-sided box-to-box midfielder only, so he can be watched against the right
+            #  one: he has an area of his own, and looks for the highest spot in it where he can still get the ball
+            #  with some space - ai/spot_value.py _zone_best.  He only comes short when the man on the ball needs him
+            #  (ai/patterns.py support under pressure, below).)
+            is_cm = (gen and band == "cm") if gen else p.role in ("LCM", "RCM")
+            if is_cm and side < 0 and s.get("cm_forward", 0.5) >= ZONE_B2B_FORWARD:
+                s = dict(s, zone_b2b=True, zone_c=c, zone_cb_a=cb_a)
             slots.append((p, a, l, why, s))
 
     # Each player judges the spots around his base spot (ai/spot_value.py)

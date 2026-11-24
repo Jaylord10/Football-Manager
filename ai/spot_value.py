@@ -152,7 +152,84 @@ def choose(players, slots, ctx):
     return result
 
 
+# ---------------------------------------------------------------------------
+# HIS OWN AREA (25 Nov - Jay's idea, for the left-sided box-to-box midfielder; ai/team_shape.py marks him):
+# "a box-to-box midfielder on the left centre has an area that he scores points for staying in; he then gets more
+#  points for receiving the ball further upfield" - and he only shows close to the man on the ball when that man
+# really needs it (ai/patterns.py does that, on top).
+#   score = how far up the pitch  +  can the pass reach him  +  time on the ball when it arrives
+#           - outside his area  - on top of / hidden behind a team-mate
+#   A spot the ball can't get to with some space (lane under Z_MIN_LANE or under Z_MIN_TIME s on it) only counts if
+#   nothing is on: then he holds a spot in his area a little ahead of the ball, waiting.
+# ---------------------------------------------------------------------------
+Z_CHANNEL     = 12.0      # m: the middle of his area, this far left of the middle of the pitch (+ half the team's lean)...
+Z_HALF_ACROSS = 7.0       # ...and this far either side of it (the left inside channel, ~5-19 m left of centre - not
+                          #  the touchline, that's the winger's)
+Z_CLEAR       = 5.0       # m: never a spot this close to a team-mate's
+Z_BEHIND      = 6.0       # m: the bottom of his area - at most this far behind the ball...
+Z_ABOVE_CB    = 6.0       # ...and at least this far ahead of the centre-backs
+Z_TOP_GAP     = 16.0      # m: the top of it - the edge of their box (and onside)
+Z_STEP        = 3.0       # m between the spots he weighs up
+Z_HEIGHT      = 1.0       # per 10 m further up than the ball
+Z_LANE        = 1.0       # an open passing lane (0-1)
+Z_TIME        = 0.5       # per second on the ball when it arrives (up to 2 s)
+Z_MIN_LANE    = 0.7       # the pass must be at least this open...
+Z_MIN_TIME    = 0.5       # ...and leave him this long on the ball (s)
+Z_MIN_PASS    = 6.0       # m: nearer than this is on top of the man on the ball
+Z_OUTSIDE     = 0.25      # per m outside his area
+Z_WAIT_AHEAD  = 8.0       # m: nothing on - he waits about this far ahead of the ball, in his area
+Z_STICKY      = 0.3       # bonus for staying with the spot he had (so he doesn't dither)
+
+
+def _zone_best(p, s, others, ba, bl, opps, ctx):
+    side_c = 0.5 * s.get("zone_c", 0.0) - Z_CHANNEL
+    l_lo, l_hi = max(-HALF_W + EDGE, side_c - Z_HALF_ACROSS), min(HALF_W - EDGE, side_c + Z_HALF_ACROSS)
+    a_lo = max(s.get("zone_cb_a", 10.0) + Z_ABOVE_CB, ba - Z_BEHIND)
+    a_hi = min(ctx["max_a"], GOAL_A - Z_TOP_GAP)
+    if a_hi < a_lo:
+        a_lo = a_hi
+    otb = _stat(p, "Off The Ball")
+    noise = NOISE_AT_1 * (20.0 - otb) / 19.0
+    prev = getattr(p, "_zone_spot", None)
+    best = None
+    a = a_lo - Z_STEP
+    while a <= a_hi + 1e-6:
+        l = l_lo - Z_STEP
+        while l <= l_hi + Z_STEP + 1e-6:
+            pass_d = math.hypot(a - ba, l - bl)
+            if pass_d >= Z_MIN_PASS and all(math.hypot(ta - a, tl - l) >= Z_CLEAR for ta, tl in others):
+                lane, t = lane_and_time(a, l, ba, bl, opps, pass_d)
+                outside = max(0.0, a_lo - a) + max(0.0, l_lo - l, l - l_hi)
+                crowd = sum((CROWD_DIST - math.hypot(ta - a, tl - l)) / CROWD_DIST
+                            for ta, tl in others if math.hypot(ta - a, tl - l) < CROWD_DIST)
+                on = lane >= Z_MIN_LANE and t >= Z_MIN_TIME and pass_d <= MAX_PASS
+                if on:
+                    sc = Z_HEIGHT * (a - ba) / 10.0 + Z_LANE * lane + Z_TIME * _clamp(t, 0.0, 2.0)
+                else:
+                    sc = -10.0 - 0.1 * abs(a - (ba + Z_WAIT_AHEAD)) + 0.5 * lane
+                sc -= Z_OUTSIDE * outside + W_CROWD * crowd
+                if prev is not None and math.hypot(a - prev[0], l - prev[1]) < Z_STEP:
+                    sc += Z_STICKY
+                if noise > 0:
+                    sc += random.gauss(0.0, noise * 0.3)
+                if best is None or sc > best[0]:
+                    best = (sc, a, l, on)
+            l += Z_STEP
+        a += Z_STEP
+    if best is None:
+        return None
+    _, a, l, on = best
+    p._zone_spot = (a, l)
+    p._spot_offset = None
+    p._stepped_up = False
+    return a, l, ("show high in his area" if on else "hold his area: nothing on yet")
+
+
 def _best(p, a0, l0, s, rank, others, ba, bl, opps, ctx):
+    if s.get("zone_b2b"):
+        z = _zone_best(p, s, others, ba, bl, opps, ctx)
+        if z is not None:
+            return z
     k = kind(p.role)
     radius = SEARCH_RADIUS.get(k, 8.0) * (1.0 + 0.5 * s.get("roam", 0.0))
     tether = TETHER.get(k, 0.3) * (1.0 - 0.5 * s.get("roam", 0.0))
