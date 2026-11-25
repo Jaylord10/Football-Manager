@@ -731,7 +731,19 @@ def _attacking(team, opponents, ball, tid, ba, bl, st, now, out):
             l += dl * s["roam"]
             why += " + roam"
 
+        # (Jay's maps for the inside forward and the winger - which one, if any; ai/spot_value.py MAPS)
+        import ai.spot_value as spot_value_maps
+        import roles.library as role_library
+        is_wide = (gen and band == "wide") if gen else p.role in ("LM", "RM")
+        area = spot_value_maps.ROLE_MAPS.get(getattr(p, "role_style", None)
+                                             or role_library.default_role_id(p.role, p.team)) if is_wide else None
+        if area and not (side != 0 and (spot_value_maps.MAP_MIRROR.get(area) or side == spot_value_maps.MAPS[area]["side"])):
+            area = None
+
         if p.role in ("LCB", "RCB") or hold_spot:
+            if area:
+                # (staying wide for the switch - and his roaming - kept inside his area)
+                a, l = spot_value_maps.clamp_to_map(area, side, a, l)
             fixed.append((a, l))
             out[id(p)] = (a, l, why)
         else:
@@ -742,7 +754,11 @@ def _attacking(team, opponents, ball, tid, ba, bl, st, now, out):
             #  Both teams: the frame is each team's own, so "left" is his left whichever way he's kicking.)
             is_cm = (gen and band == "cm") if gen else p.role in ("LCM", "RCM")
             if is_cm and side != 0 and s.get("cm_forward", 0.5) >= ZONE_B2B_FORWARD:
-                s = dict(s, zone_b2b=True, zone_c=c, zone_cb_a=cb_a, zone_side=side)
+                s = dict(s, zone_b2b=True, zone_c=c, zone_cb_a=cb_a, zone_side=side, zone_map="b2b")
+            # (25 Nov, evening: Jay's maps for the inside forward and the winger - the same idea, on the side he
+            #  drew them for (ai/spot_value.py MAPS / ROLE_MAPS; the other side keeps the old thinking for now).)
+            if area:
+                s = dict(s, zone_b2b=True, zone_c=c, zone_cb_a=cb_a, zone_side=side, zone_map=area)
             slots.append((p, a, l, why, s))
 
     # Each player judges the spots around his base spot (ai/spot_value.py)

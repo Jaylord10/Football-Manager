@@ -189,11 +189,67 @@ Z_AREA = "map"
 #   amber - he can go there, but it's not as good: the whole length, out to ~4 m off the touchline and ~4 m over
 #           to the right of the middle
 #   anywhere else - not his.
-# The right-sided box-to-box uses the same map flipped over (left minus becomes right plus) - _map_area.
+# The right-sided box-to-box uses the same map flipped over (left minus becomes right plus) - map_rects.
 MAP_GREEN = ((11.0, 99.0), (-26.0, 0.0))
 MAP_AMBER = ((0.0, 110.0), (-31.0, 4.0))
 MAP_AMBER_COST = 0.8      # points off for a spot in amber (about 8 m of height's worth)
-MAP_BEHIND = 8.0          # m: a box-to-box keeps up with play - never more than this far behind the ball
+MAP_BEHIND = 8.0          # m: keeps up with play - never more than this far behind the ball
+
+# Jay's maps for each role, as rectangles (a from, a to, l from, l to) in m, drawn for one side ("side": -1 left,
+# 1 right).  "shoot" (yellow on his drawing) is where he looks to shoot from - part of his main area here.
+MAPS = {
+    "b2b": {"side": -1,
+            "green": [(MAP_GREEN[0][0], MAP_GREEN[0][1], MAP_GREEN[1][0], MAP_GREEN[1][1])],
+            "amber": [(MAP_AMBER[0][0], MAP_AMBER[0][1], MAP_AMBER[1][0], MAP_AMBER[1][1])]},
+    # "Left inside forward and right winger.png" (25 Nov, evening):
+    #   inside forward (left) - green: along the left touchline (out to 9 m in) from 19 m into our half to 13 m off
+    #   their goal line, and the left side of the edge of their box (28 m to 10 m out, 9-26 m in from the
+    #   touchline); yellow inside that - where he shoots from; amber: the start of it in our half, a band 9-13 m in,
+    #   the corner, near their goal line in the box, and a strip just left of the middle by their box.
+    "inside_forward": {"side": -1,
+                       "green": [(36.0, 97.0, -35.0, -26.0), (82.0, 100.0, -26.0, -9.0)],
+                       "shoot": [(83.0, 96.0, -17.0, -9.0)],
+                       "amber": [(27.0, 36.0, -35.0, -22.0), (36.0, 82.0, -26.0, -22.0), (97.0, 110.0, -35.0, -26.0),
+                                 (100.0, 110.0, -26.0, -9.0), (82.0, 110.0, -9.0, -4.0)]},
+    #   winger (right) - green: along the right touchline (out to 9 m in) from 19 m into our half to the byline, then
+    #   wider in near their box (13 m in) and into the box by the byline (13-22 m in); amber: the start of it in our
+    #   half and a band 9-13 m in from the touchline.
+    "winger": {"side": 1,
+               "green": [(36.0, 110.0, 26.0, 35.0), (97.0, 110.0, 21.0, 26.0), (101.0, 110.0, 13.0, 21.0)],
+               "amber": [(27.0, 97.0, 22.0, 26.0), (27.0, 36.0, 26.0, 35.0)]},
+}
+# Which roles have a map (roles/library.py ids), and whether it's mirrored for the other side yet.
+ROLE_MAPS = {"LM_blue": "inside_forward", "RM_blue": "winger"}
+MAP_MIRROR = {"b2b": True, "inside_forward": False, "winger": False}
+
+
+def map_rects(name, side):
+    """Jay's map for this role on this side: {"green": [...], "amber": [...], "shoot": [...]} - flipped over when
+    he's on the other side from the drawing."""
+    m = MAPS[name]
+    flip = side != m["side"]
+    out = {}
+    for k in ("green", "amber", "shoot"):
+        out[k] = [(a0, a1, -l1, -l0) if flip else (a0, a1, l0, l1) for a0, a1, l0, l1 in m.get(k, [])]
+    return out
+
+
+def clamp_to_map(name, side, a, l):
+    """The nearest spot to (a, l) inside his map (green, yellow or amber)."""
+    best = None
+    for a0, a1, l0, l1 in sum(map_rects(name, side).values(), []):
+        ca, cl = _clamp(a, a0, a1), _clamp(l, l0, l1)
+        d = (ca - a) ** 2 + (cl - l) ** 2
+        if best is None or d < best[0]:
+            best = (d, ca, cl)
+    return (best[1], best[2]) if best else (a, l)
+
+
+def _map_area(side):
+    """(the box-to-box map as one green and one amber rectangle - kept for dev pictures)"""
+    r = map_rects("b2b", side)
+    g, a = r["green"][0], r["amber"][0]
+    return ((g[0], g[1]), (g[2], g[3])), ((a[0], a[1]), (a[2], a[3]))
 
 
 def _zone_best(p, s, others, ba, bl, opps, ctx):
@@ -242,6 +298,17 @@ def _zone_best(p, s, others, ba, bl, opps, ctx):
     return a, l, ("show high in his area" if on else "hold his area: nothing on yet")
 
 
+def clamp_to_map(name, side, a, l):
+    """The nearest spot to (a, l) inside his map (green, yellow or amber)."""
+    best = None
+    for a0, a1, l0, l1 in sum(map_rects(name, side).values(), []):
+        ca, cl = _clamp(a, a0, a1), _clamp(l, l0, l1)
+        d = (ca - a) ** 2 + (cl - l) ** 2
+        if best is None or d < best[0]:
+            best = (d, ca, cl)
+    return (best[1], best[2]) if best else (a, l)
+
+
 def _map_area(side):
     """Jay's map for his side: the left one as drawn, the right one its mirror image."""
     (ga, (gl0, gl1)), (aa, (al0, al1)) = MAP_GREEN, MAP_AMBER
@@ -250,11 +317,19 @@ def _map_area(side):
     return (ga, (gl0, gl1)), (aa, (al0, al1))
 
 
+def _inside(rects, a, l):
+    return any(a0 <= a <= a1 and l0 <= l <= l1 for a0, a1, l0, l1 in rects)
+
+
 def _map_best(p, s, others, ba, bl, opps, ctx):
     """Jay's map: anywhere in green or amber (amber costs MAP_AMBER_COST), keeping up with play (no more than
     MAP_BEHIND behind the ball, 6 m clear of the centre-backs, onside) - the highest spot where he can get the ball
     with some space, as in the channel version."""
-    ((ga0, ga1), (gl0, gl1)), ((aa0, aa1), (al0, al1)) = _map_area(s.get("zone_side", -1))
+    r = map_rects(s.get("zone_map", "b2b"), s.get("zone_side", -1))
+    main = r["green"] + r["shoot"]
+    every = main + r["amber"]
+    aa0, aa1 = min(x[0] for x in every), max(x[1] for x in every)
+    al0, al1 = min(x[2] for x in every), max(x[3] for x in every)
     a_lo = max(aa0, s.get("zone_cb_a", 10.0) + Z_ABOVE_CB, ba - MAP_BEHIND)
     a_hi = min(aa1 - 1.0, ctx["max_a"])
     if a_hi < a_lo:
@@ -268,8 +343,9 @@ def _map_best(p, s, others, ba, bl, opps, ctx):
         l = max(al0, -HALF_W + EDGE)
         while l <= min(al1, HALF_W - EDGE) + 1e-6:
             pass_d = math.hypot(a - ba, l - bl)
-            if pass_d >= Z_MIN_PASS and all(math.hypot(ta - a, tl - l) >= Z_CLEAR for ta, tl in others):
-                green = ga0 <= a <= ga1 and gl0 <= l <= gl1
+            if _inside(every, a, l) and pass_d >= Z_MIN_PASS and \
+                    all(math.hypot(ta - a, tl - l) >= Z_CLEAR for ta, tl in others):
+                green = _inside(main, a, l)
                 lane, t = lane_and_time(a, l, ba, bl, opps, pass_d)
                 crowd = sum((CROWD_DIST - math.hypot(ta - a, tl - l)) / CROWD_DIST
                             for ta, tl in others if math.hypot(ta - a, tl - l) < CROWD_DIST)
