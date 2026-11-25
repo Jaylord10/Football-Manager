@@ -180,8 +180,24 @@ Z_OUTSIDE     = 0.25      # per m outside his area
 Z_WAIT_AHEAD  = 8.0       # m: nothing on - he waits about this far ahead of the ball, in his area
 Z_STICKY      = 0.3       # bonus for staying with the spot he had (so he doesn't dither)
 
+# Which area: "map" - Jay's map (25 Nov, "Left Box to Box.png"), fixed on the pitch; or "channel" - the first
+# version (25 Nov, night), the left inside channel moving with the ball.  Both are kept - switch here.
+Z_AREA = "map"
+# Jay's map, in m (up the pitch from our goal line; across from the middle, left minus):
+#   green - where he should mainly be: from 11 m off our goal line to 11 m off theirs, from the middle of the pitch
+#           out to ~9 m off the left touchline
+#   amber - he can go there, but it's not as good: the whole length, out to ~4 m off the touchline and ~4 m over
+#           to the right of the middle
+#   anywhere else - not his.
+MAP_GREEN = ((11.0, 99.0), (-26.0, 0.0))
+MAP_AMBER = ((0.0, 110.0), (-31.0, 4.0))
+MAP_AMBER_COST = 0.8      # points off for a spot in amber (about 8 m of height's worth)
+MAP_BEHIND = 8.0          # m: a box-to-box keeps up with play - never more than this far behind the ball
+
 
 def _zone_best(p, s, others, ba, bl, opps, ctx):
+    if Z_AREA == "map":
+        return _map_best(p, s, others, ba, bl, opps, ctx)
     side_c = 0.5 * s.get("zone_c", 0.0) - Z_CHANNEL
     l_lo, l_hi = max(-HALF_W + EDGE, side_c - Z_HALF_ACROSS), min(HALF_W - EDGE, side_c + Z_HALF_ACROSS)
     a_lo = max(s.get("zone_cb_a", 10.0) + Z_ABOVE_CB, ba - Z_BEHIND)
@@ -223,6 +239,54 @@ def _zone_best(p, s, others, ba, bl, opps, ctx):
     p._spot_offset = None
     p._stepped_up = False
     return a, l, ("show high in his area" if on else "hold his area: nothing on yet")
+
+
+def _map_best(p, s, others, ba, bl, opps, ctx):
+    """Jay's map: anywhere in green or amber (amber costs MAP_AMBER_COST), keeping up with play (no more than
+    MAP_BEHIND behind the ball, 6 m clear of the centre-backs, onside) - the highest spot where he can get the ball
+    with some space, as in the channel version."""
+    (ga0, ga1), (gl0, gl1) = MAP_GREEN
+    (aa0, aa1), (al0, al1) = MAP_AMBER
+    a_lo = max(aa0, s.get("zone_cb_a", 10.0) + Z_ABOVE_CB, ba - MAP_BEHIND)
+    a_hi = min(aa1 - 1.0, ctx["max_a"])
+    if a_hi < a_lo:
+        a_lo = a_hi
+    otb = _stat(p, "Off The Ball")
+    noise = NOISE_AT_1 * (20.0 - otb) / 19.0
+    prev = getattr(p, "_zone_spot", None)
+    best = None
+    a = a_lo
+    while a <= a_hi + 1e-6:
+        l = max(al0, -HALF_W + EDGE)
+        while l <= min(al1, HALF_W - EDGE) + 1e-6:
+            pass_d = math.hypot(a - ba, l - bl)
+            if pass_d >= Z_MIN_PASS and all(math.hypot(ta - a, tl - l) >= Z_CLEAR for ta, tl in others):
+                green = ga0 <= a <= ga1 and gl0 <= l <= gl1
+                lane, t = lane_and_time(a, l, ba, bl, opps, pass_d)
+                crowd = sum((CROWD_DIST - math.hypot(ta - a, tl - l)) / CROWD_DIST
+                            for ta, tl in others if math.hypot(ta - a, tl - l) < CROWD_DIST)
+                on = lane >= Z_MIN_LANE and t >= Z_MIN_TIME and pass_d <= MAX_PASS
+                if on:
+                    sc = Z_HEIGHT * (a - ba) / 10.0 + Z_LANE * lane + Z_TIME * _clamp(t, 0.0, 2.0)
+                else:
+                    sc = -10.0 - 0.1 * abs(a - (ba + Z_WAIT_AHEAD)) + 0.5 * lane
+                sc -= (0.0 if green else MAP_AMBER_COST) + W_CROWD * crowd
+                if prev is not None and math.hypot(a - prev[0], l - prev[1]) < Z_STEP:
+                    sc += Z_STICKY
+                if noise > 0:
+                    sc += random.gauss(0.0, noise * 0.3)
+                if best is None or sc > best[0]:
+                    best = (sc, a, l, on, green)
+            l += Z_STEP
+        a += Z_STEP
+    if best is None:
+        return None
+    _, a, l, on, green = best
+    p._zone_spot = (a, l)
+    p._spot_offset = None
+    p._stepped_up = False
+    where = "green" if green else "amber"
+    return a, l, (f"show high in his area ({where})" if on else f"hold his area ({where}): nothing on yet")
 
 
 def _best(p, a0, l0, s, rank, others, ba, bl, opps, ctx):

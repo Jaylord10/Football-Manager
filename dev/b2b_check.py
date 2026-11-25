@@ -98,6 +98,9 @@ def reasons(rs):
              else "helping a pressed team-mate" if w.startswith("support") and "(" in w else "filling a gap" if "fill the gap" in w
              else "making a run" if ("run" in w or "overlap" in w or "beyond" in w or "box" in w) else "team shape / other")
         c[k] = c.get(k, 0) + 1
+        if "(green)" in w or "(amber)" in w:
+            g = "in green" if "(green)" in w else "in amber"
+            c[g] = c.get(g, 0) + 1
     return {k: round(100 * v / max(1, len(rs)), 1) for k, v in sorted(c.items(), key=lambda kv: -kv[1])}
 
 
