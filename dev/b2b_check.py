@@ -7,7 +7,9 @@ Every half a second in open play, for the team with the ball:
   free_ahead he's 3 m+ ahead of the ball and free for a pass (no opponent within 2 m of the line of the pass, nobody
              within 3 m of him)
 And the moment Jay watched: a centre-back on the ball with nobody within 8 m of him - where are the two midfielders?
-Also one snapshot of that moment (positions of all 22) for a picture."""
+Also one snapshot of that moment (positions of all 22) for a picture.
+B2B_BOTH=1: both teams play both central midfielders as box-to-boxes (LCM_blue), and the results are split by team
+(team 0 kicks left to right, team 1 right to left).  across = m from the middle, his team's left minus."""
 import os, sys, io, contextlib, random, json, math
 
 eng, seeds, half, out = sys.argv[1], [int(s) for s in sys.argv[2].split(",")], float(sys.argv[3]), sys.argv[4]
@@ -26,8 +28,8 @@ def seg(px, py, ax, ay, bx, by):
     return math.hypot(px - (ax + t * dx), py - (ay + t * dy)), t * math.sqrt(L2)
 
 
-R = {"LCM": [], "RCM": []}
-CBFREE = {"LCM": [], "RCM": []}
+R = {}
+CBFREE = {}
 snaps = []
 for seed in seeds:
     random.seed(seed)
@@ -35,6 +37,10 @@ for seed in seeds:
         me.RL_ENABLED = False
         me.HALF_DURATION_REAL = half
         e = me.MatchEngine(career=True)
+    if os.environ.get("B2B_BOTH"):
+        for q in e.team0 + e.team1:
+            if q.role in ("LCM", "RCM"):
+                q.role_style = "LCM_blue"
     random.seed(seed)
     n = 0
     sink = io.StringIO()
@@ -62,17 +68,19 @@ for seed in seeds:
                 if p is None or p is c:
                     continue
                 px, py = m(p.pos)
+                across = (py - 35.0) if c.team == 0 else (35.0 - py)
                 height = (px - cx) * dirn
                 d = math.hypot(px - cx, py - cy)
                 lane_ok = all(not (seg(ox, oy, cx, cy, px, py)[0] < 2.0 and seg(ox, oy, cx, cy, px, py)[1] > 3.0)
                               for ox, oy in opps)
                 free = height > 3.0 and lane_ok and min(math.hypot(ox - px, oy - py) for ox, oy in opps) > 3.0 \
                     and d <= 40.0
-                rec = {"height": height, "dist": d, "free_ahead": 1 if free else 0,
+                rec = {"across": across, "height": height, "dist": d, "free_ahead": 1 if free else 0,
                        "why": getattr(p, "pos_reason", "")}
-                R[role].append(rec)
+                key = f"t{c.team} {role}" if os.environ.get("B2B_BOTH") else role
+                R.setdefault(key, []).append(rec)
                 if cb_free:
-                    CBFREE[role].append(rec)
+                    CBFREE.setdefault(key, []).append(rec)
             if cb_free and len(snaps) < 3 * len(seeds) and e.time_elapsed > 20 and \
                     (not snaps or e.time_elapsed - snaps[-1]["t"] > 30 or snaps[-1]["seed"] != seed):
                 snaps.append({"seed": seed, "t": e.time_elapsed, "dirn": dirn, "carrier": c.role, "ball": (cx, cy),
@@ -87,7 +95,8 @@ def summ(rs):
     hs = sorted(r["height"] for r in rs)
     return {"n": len(rs), "height median m": hs[len(hs) // 2], "ahead of the ball %": 100 * sum(h > 0 for h in hs) / len(hs),
             "free ahead %": 100 * sum(r["free_ahead"] for r in rs) / len(rs),
-            "distance from the ball median m": sorted(r["dist"] for r in rs)[len(rs) // 2]}
+            "distance from the ball median m": sorted(r["dist"] for r in rs)[len(rs) // 2],
+            "across median m": sorted(r["across"] for r in rs)[len(rs) // 2]}
 
 
 def reasons(rs):
@@ -110,5 +119,5 @@ json.dump(res, open(out, "w"))
 print("why", res["reasons"])
 for k in ("all", "cb free"):
     print(k)
-    for role in ("LCM", "RCM"):
+    for role in sorted(res[k]):
         print("  ", role, {a: (round(b, 1) if isinstance(b, float) else b) for a, b in (res[k][role] or {}).items()})

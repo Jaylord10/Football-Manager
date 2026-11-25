@@ -189,6 +189,7 @@ Z_AREA = "map"
 #   amber - he can go there, but it's not as good: the whole length, out to ~4 m off the touchline and ~4 m over
 #           to the right of the middle
 #   anywhere else - not his.
+# The right-sided box-to-box uses the same map flipped over (left minus becomes right plus) - _map_area.
 MAP_GREEN = ((11.0, 99.0), (-26.0, 0.0))
 MAP_AMBER = ((0.0, 110.0), (-31.0, 4.0))
 MAP_AMBER_COST = 0.8      # points off for a spot in amber (about 8 m of height's worth)
@@ -198,7 +199,7 @@ MAP_BEHIND = 8.0          # m: a box-to-box keeps up with play - never more than
 def _zone_best(p, s, others, ba, bl, opps, ctx):
     if Z_AREA == "map":
         return _map_best(p, s, others, ba, bl, opps, ctx)
-    side_c = 0.5 * s.get("zone_c", 0.0) - Z_CHANNEL
+    side_c = 0.5 * s.get("zone_c", 0.0) + s.get("zone_side", -1) * Z_CHANNEL
     l_lo, l_hi = max(-HALF_W + EDGE, side_c - Z_HALF_ACROSS), min(HALF_W - EDGE, side_c + Z_HALF_ACROSS)
     a_lo = max(s.get("zone_cb_a", 10.0) + Z_ABOVE_CB, ba - Z_BEHIND)
     a_hi = min(ctx["max_a"], GOAL_A - Z_TOP_GAP)
@@ -241,12 +242,19 @@ def _zone_best(p, s, others, ba, bl, opps, ctx):
     return a, l, ("show high in his area" if on else "hold his area: nothing on yet")
 
 
+def _map_area(side):
+    """Jay's map for his side: the left one as drawn, the right one its mirror image."""
+    (ga, (gl0, gl1)), (aa, (al0, al1)) = MAP_GREEN, MAP_AMBER
+    if side > 0:
+        (gl0, gl1), (al0, al1) = (-gl1, -gl0), (-al1, -al0)
+    return (ga, (gl0, gl1)), (aa, (al0, al1))
+
+
 def _map_best(p, s, others, ba, bl, opps, ctx):
     """Jay's map: anywhere in green or amber (amber costs MAP_AMBER_COST), keeping up with play (no more than
     MAP_BEHIND behind the ball, 6 m clear of the centre-backs, onside) - the highest spot where he can get the ball
     with some space, as in the channel version."""
-    (ga0, ga1), (gl0, gl1) = MAP_GREEN
-    (aa0, aa1), (al0, al1) = MAP_AMBER
+    ((ga0, ga1), (gl0, gl1)), ((aa0, aa1), (al0, al1)) = _map_area(s.get("zone_side", -1))
     a_lo = max(aa0, s.get("zone_cb_a", 10.0) + Z_ABOVE_CB, ba - MAP_BEHIND)
     a_hi = min(aa1 - 1.0, ctx["max_a"])
     if a_hi < a_lo:
