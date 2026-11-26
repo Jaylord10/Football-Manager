@@ -42,23 +42,28 @@ Each style is a set of numbers (STYLES below) used by:
 You can tweak any number or add your own style.
 """
 
+# With the ball (26 Nov - Jay: "I'm playing a very high back line, why are the centre-backs so far back?"): the back
+# line sits at att_ratio x (the ball's distance from our goal) + att_offset m, no higher than att_line_max (m from
+# our goal; halfway is 55).  It used to be 28 m behind the ball for everyone, whatever the line setting.
+# "standard" copies real teams - Metrica's tracking data of two professional matches: the back line ~13 m behind the
+# ball in midfield, about halfway with the ball in their third (dev/backline_measures.py); higher settings push up.
 STYLES = {
     #                  back line           front two          pressing                                    counter-press
     "low_block":  dict(line_max=26.0, line_ratio=0.50, line_offset=2.0, front_gap=12.0, stay_up=38.0,
                        press_from=40.0, press_reach=2.2, second_presser=False, mark_short=False,
-                       counter_press=0.0, counter_pressers=0, urgency_bonus=0.0, att_line_max=40.0,
+                       counter_press=0.0, counter_pressers=0, urgency_bonus=0.0, att_line_max=40.0, att_ratio=0.50, att_offset=6.0,
                        step_from=55.0, block_jockey=3.0, cb_beyond_half=False, gk_back=28.0, gk_front=50.0),
     "mid_block":  dict(line_max=38.0, line_ratio=0.60, line_offset=2.0, front_gap=14.0, stay_up=45.0,
                        press_from=62.0, press_reach=2.6, second_presser=False, mark_short=False,
-                       counter_press=0.0, counter_pressers=0, urgency_bonus=0.0, att_line_max=50.0,
+                       counter_press=0.0, counter_pressers=0, urgency_bonus=0.0, att_line_max=58.0, att_ratio=0.58, att_offset=8.0,
                        step_from=62.0, block_jockey=3.0, cb_beyond_half=False, gk_back=45.0, gk_front=80.0),
     "press":      dict(line_max=46.0, line_ratio=0.70, line_offset=4.0, front_gap=14.0, stay_up=55.0,
                        press_from=85.0, press_reach=3.0, second_presser=True, mark_short=False,
-                       counter_press=3.0, counter_pressers=2, urgency_bonus=0.10, att_line_max=55.0,
+                       counter_press=3.0, counter_pressers=2, urgency_bonus=0.10, att_line_max=62.0, att_ratio=0.65, att_offset=6.0,
                        step_from=85.0, block_jockey=2.5, cb_beyond_half=False, gk_back=55.0, gk_front=92.0),
     "high_press": dict(line_max=54.0, line_ratio=0.80, line_offset=6.0, front_gap=13.0, stay_up=65.0,
                        press_from=110.0, press_reach=3.4, second_presser=True, mark_short=True,
-                       counter_press=5.0, counter_pressers=2, urgency_bonus=0.20, att_line_max=58.0,
+                       counter_press=5.0, counter_pressers=2, urgency_bonus=0.20, att_line_max=66.0, att_ratio=0.72, att_offset=4.0,
                        step_from=110.0, block_jockey=2.0, cb_beyond_half=True, gk_back=60.0, gk_front=95.0),
 }
 DEFAULT_STYLE = "mid_block"
@@ -120,14 +125,16 @@ def build_up(team_id):
 # The style is the starting point; line_height swaps in the back-line numbers of
 # another style, press_height its pressing numbers.  Left out (or the same as
 # the style) = the style exactly as it is.
-LINE_KEYS = ("line_max", "line_ratio", "line_offset", "gk_back", "cb_beyond_half", "att_line_max")
+LINE_KEYS = ("line_max", "line_ratio", "line_offset", "gk_back", "cb_beyond_half", "att_line_max", "att_ratio",
+             "att_offset")
 PRESS_KEYS = ("press_from", "press_reach", "second_presser", "mark_short", "counter_press", "counter_pressers",
               "urgency_bonus", "step_from", "block_jockey", "gk_front", "front_gap", "stay_up")
 LINE_HEIGHTS = {"deep": "low_block", "standard": "mid_block", "high": "press", "very_high": "high_press"}
 PRESS_HEIGHTS = {"low": "low_block", "mid": "mid_block", "high": "press", "very_high": "high_press"}
 # ...and the in-between levels (halfway between two styles)
 LINE_HEIGHTS["low"] = {"line_max": 32.0, "line_ratio": 0.55, "line_offset": 2.0, "gk_back": 36.5,
-                       "cb_beyond_half": False, "att_line_max": 45.0}                      # deep .. standard
+                       "cb_beyond_half": False, "att_line_max": 45.0,
+                       "att_ratio": 0.54, "att_offset": 7.0}                      # deep .. standard
 PRESS_HEIGHTS["vhigh"] = {"press_from": 97.0, "press_reach": 3.2, "second_presser": True, "mark_short": False,
                           "counter_press": 4.0, "counter_pressers": 2, "urgency_bonus": 0.15, "step_from": 97.0,
                           "block_jockey": 2.25, "gk_front": 93.5, "front_gap": 13.5, "stay_up": 60.0}  # high .. full

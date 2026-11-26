@@ -87,7 +87,8 @@ DIAG_MID_MAX     = 3.0
 
 # In possession
 ATT_SHIFT        = 0.30      # shape slides this share of the ball's sideways position
-CB_BEHIND_BALL   = 28.0      # centre-backs this far behind the ball...
+CB_BEHIND_MIN    = 2.0       # centre-backs at least this far behind the ball (the height itself: the line setting,
+                             # ai/tactics.py att_ratio / att_offset / att_line_max - 26 Nov; it was 28 m for all)...
 CB_MIN           = 10.0      # ...but no deeper than this
 CB_SPLIT_BUILDUP = 15.0      # centre-backs split this far apart (each side) when building from the back
 CB_SPLIT         = 10.0
@@ -584,7 +585,8 @@ def _defending(team, tid, ba, bl, st, out, now=None, restart=None):
 def _attacking(team, opponents, ball, tid, ba, bl, st, now, out):
     c = _clamp(bl * ATT_SHIFT, -8.0, 8.0)
     last = _last_line(tid, opponents)
-    cb_a = _clamp(ba - CB_BEHIND_BALL, CB_MIN, st["att_line_max"])
+    cb_a = _clamp(min(st.get("att_ratio", 0.58) * ba + st.get("att_offset", 8.0), ba - CB_BEHIND_MIN),
+                  CB_MIN, st["att_line_max"])
     buildup = ba < BUILDUP_DEPTH
     final_third = _clamp((ba - (FINAL_THIRD - 15.0)) / 15.0, 0.0, 1.0)   # 0 -> 1 approaching the final third
     max_a = min(last - ST_ONSIDE, ba + ST_MAX_AHEAD)
