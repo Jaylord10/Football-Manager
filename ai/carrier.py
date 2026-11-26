@@ -247,6 +247,13 @@ def _decide(carrier, team, opponents, ball, current_time, mechanics):
     # DECISION HIERARCHY (4-Layer System)
     # ========================================================================
 
+    # THE SCOREBOARD (26 Nov, on test): every option on one scale instead of the checklist below
+    # (ai/scoreboard.py; switched on with FM_DECIDE=scoreboard)
+    import ai.scoreboard as scoreboard
+    if scoreboard.ENABLED:
+        return scoreboard.decide(carrier, teammates, teammates_with_gk, opponents, opponent_field_players,
+                                 ball, current_time, mechanics)
+
     # LAYER 0: CLEAR IT
     # In his own defensive third and it isn't safe to keep it: get rid of it
     # (ai/clearance.py) - up the pitch, into touch, or behind.

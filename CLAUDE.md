@@ -53,6 +53,11 @@ cache - keep that line.
   prompts). Ashvale, Northwick and Bramhall have them; their honours years are fixed - never change them.
 - `data/world/honours.json` - the roll of honour, built by `dev/make_roll.py` (asserts Ashvale's years).
 - `career/ui.py` - every screen (`draw_<screen>`), `career/office.py` - the office picture hub.
+- On-the-ball decisions: `ai/carrier.py` (the checklist, still the default). ON TEST (overnight 26 Nov, branch
+  `overnight/2026-11-26-scoreboard`): `ai/scoreboard.py` weighs every option on one scale (chance of scoring next,
+  from real pitch values `data/decide/xt.json` built by `dev/xt_grid.py` from StatsBomb; pass odds measured in our
+  engine `data/decide/pass_odds.json`, `dev/pass_odds.py`). Switched on with `FM_DECIDE=scoreboard`;
+  `dev/decisions.py` / `dev/decision_pic.py` show what each player was thinking.
 - The 3D match view: `broadcast3d/` (Panda3D). `broadcast3d/live.py` draws career matches live inside the match
   screen (a second process, picture via shared memory; `MatchEngine._start_3d` / `_draw_3d`; V switches 2D/3D,
   remembered in `career["match_view"]`). It never changes the engine's play. Check: `python broadcast3d/check.py`.
