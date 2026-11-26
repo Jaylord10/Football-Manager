@@ -70,6 +70,9 @@ BOX_EDGE         = 16.0      # m: the line goes from the edge of the box...
 BOX_LINE         = 11.0      # ...to about the penalty spot
 LINE_GAP         = 11.0      # m between the back line and the midfield line
 MID_GOALSIDE     = 1.5       # midfield line stays at least this far goal-side of the ball
+BACK_GOALSIDE    = 6.0       # back line stays at least this far goal-side of the ball (26 Nov: a very high line used to
+                             # stand in front of the ball when it got into our third - real lines sit 7-8 m goal-side
+                             # of it there, Metrica's tracking data, dev/backline_measures.py)
 DEF_SHIFT        = 0.55      # block slides this share of the ball's sideways position...
 DEF_SHIFT_FAR    = 0.25      # ...but only this share when the ball is far away (in their half)
 BACK_HALF_WIDTH  = 16.0      # back four spread across 32 m
@@ -488,6 +491,7 @@ def _cover_absent(team, tid, out):
 def _defending(team, tid, ba, bl, st, out, now=None, restart=None):
     # How high the block sits comes from the team's defensive style (ai/tactics.py)
     back = _clamp(st["line_ratio"] * ba + st["line_offset"], DEF_LINE_MIN, st["line_max"])
+    back = max(DEF_LINE_MIN, min(back, ba - BACK_GOALSIDE))
     # Ball out wide in our final third (a cross is on): the back line drops into
     # the box to protect the space in front of goal - from the edge of the box
     # down to about the penalty spot as the ball gets closer.  (It used to hold
