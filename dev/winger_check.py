@@ -1,6 +1,7 @@
 """Jay's right winger (26 Nov: "he isn't trying to get high enough up the pitch - he should be aiming to get 1v1 against
 the left back").  Jay's set-up for team 0: 4-3-3, full press, the right winger on the Winger role (RM_blue).
-usage: python dev/winger_check.py <engine_dir> <seed> <seconds per half> <out.json>
+usage: python dev/winger_check.py <engine_dir> <seed> <seconds per half> <out.json> [RW | LW]
+(LW: the left winger on the Winger role instead, against their right back.)
 Every half a second his team has the ball past its own third:
   gap     m between him and their back line (their offside line; + = he's that far behind it)
   fb_gap  m between him and their left back, up the pitch (+ = he's behind him)
@@ -9,6 +10,8 @@ When he gets the ball: how far up, how many of them within 10 m (1 = one against
 import os, sys, io, contextlib, random, json, math
 
 eng, seed, half, out = sys.argv[1], int(sys.argv[2]), float(sys.argv[3]), sys.argv[4]
+SLOT = sys.argv[5] if len(sys.argv) > 5 else "RW"
+SGN = 1 if SLOT == "RW" else -1
 os.chdir(eng); sys.path.insert(0, eng)
 os.environ["SDL_VIDEODRIVER"] = "dummy"; os.environ["SDL_AUDIODRIVER"] = "dummy"
 os.environ.setdefault("FM_MATCH_CONFIG", "match_config_benchmark.json")
@@ -29,7 +32,7 @@ with contextlib.redirect_stdout(io.StringIO()):
     db.formation[0] = ["GK", "LB", "LCB", "RCB", "RB", "DM", "LCM", "RCM", "LW", "RW", "ST"]
     e = me.MatchEngine(career=True)
 for q in e.team0:
-    if getattr(q, "slot", None) == "RW":
+    if getattr(q, "slot", None) == SLOT:
         q.role_style = "RM_blue"
 random.seed(seed)
 fr = lambda v: (v.x / M_TO_PX, v.y / M_TO_PX - 35.0)          # team 0 attacks left to right: its own frame
@@ -48,7 +51,7 @@ with contextlib.redirect_stdout(sink):
             continue
         b = e.ball
         o = b.owner
-        rw = next((q for q in e.team0 if getattr(q, "slot", None) == "RW"), None)
+        rw = next((q for q in e.team0 if getattr(q, "slot", None) == SLOT), None)
         if rw is None:
             break
         opps = [q for q in e.team1 if getattr(q, "is_active", True)]
@@ -66,9 +69,9 @@ with contextlib.redirect_stdout(sink):
             continue
         depths = sorted((fr(q.pos)[0] for q in opps), reverse=True)
         line = max(depths[1], 55.0)
-        lb = next((q for q in e.team1 if q.role == "LB"), None)       # (their left back: on our right)
+        lb = next((q for q in e.team1 if q.role == ("LB" if SLOT == "RW" else "RB")), None)   # (their full-back on his side)
         ra, rl = fr(rw.pos)
-        S.append({"gap": line - ra, "fb_gap": (fr(lb.pos)[0] - ra) if lb else None, "wide": 35.0 - rl,
+        S.append({"gap": line - ra, "fb_gap": (fr(lb.pos)[0] - ra) if lb else None, "wide": 35.0 - SGN * rl,
                   "ahead": ra - ba, "final": ba >= 73.3, "why": getattr(rw, "pos_reason", "")})
 med = lambda xs: sorted(xs)[len(xs) // 2] if xs else None
 def summ(ss):

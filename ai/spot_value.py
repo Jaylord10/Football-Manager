@@ -228,7 +228,7 @@ WING_NOT_ON   = 1.0       # points off a spot where no pass is on yet - he still
                           # full-back): he only drops off their line for a pass that's clearly better
 # Which roles have a map (roles/library.py ids), and whether it's mirrored for the other side yet.
 ROLE_MAPS = {"LM_blue": "inside_forward", "RM_blue": "winger"}
-MAP_MIRROR = {"b2b": True, "inside_forward": False, "winger": False}
+MAP_MIRROR = {"b2b": True, "inside_forward": False, "winger": True}      # (winger mirrored for the left: 26 Nov)
 
 
 def map_rects(name, side):
