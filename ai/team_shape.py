@@ -748,6 +748,10 @@ def _attacking(team, opponents, ball, tid, ba, bl, st, now, out):
 
         if p.role in ("LCB", "RCB") or hold_spot:
             if area:
+                if area == "winger" and why.startswith("stay wide for the switch"):
+                    # (26 Nov: the winger waits for the switch on their back line - one against one with their
+                    #  full-back when it comes - not level with the ball)
+                    a = max_a
                 # (staying wide for the switch - and his roaming - kept inside his area)
                 a, l = spot_value_maps.clamp_to_map(area, side, a, l)
             fixed.append((a, l))

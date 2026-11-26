@@ -218,6 +218,14 @@ MAPS = {
                "green": [(36.0, 110.0, 26.0, 35.0), (97.0, 110.0, 21.0, 26.0), (101.0, 110.0, 13.0, 21.0)],
                "amber": [(27.0, 97.0, 22.0, 26.0), (27.0, 36.0, 26.0, 35.0)]},
 }
+# The winger (26 Nov - Jay: "he should be aiming to get 1v1 against the left back"): he wants to be on their back
+# line, wide, with their full-back to beat - so a pass is on for him even with the full-back close (only the lane has
+# to be open and the ball get to him first), height counts double, and with nothing on he still holds the highest
+# onside spot out wide (pinning their full-back) instead of waiting near the ball.
+WING_MIN_TIME = 0.0       # s on the ball he needs when it arrives (others: Z_MIN_TIME) - a 1 v 1 is what he wants
+WING_HEIGHT   = 2.0       # per 10 m further up than the ball (others: Z_HEIGHT)
+WING_NOT_ON   = 1.0       # points off a spot where no pass is on yet - he still values its height (pinning their
+                          # full-back): he only drops off their line for a pass that's clearly better
 # Which roles have a map (roles/library.py ids), and whether it's mirrored for the other side yet.
 ROLE_MAPS = {"LM_blue": "inside_forward", "RM_blue": "winger"}
 MAP_MIRROR = {"b2b": True, "inside_forward": False, "winger": False}
@@ -275,9 +283,11 @@ def _zone_best(p, s, others, ba, bl, opps, ctx):
                 outside = max(0.0, a_lo - a) + max(0.0, l_lo - l, l - l_hi)
                 crowd = sum((CROWD_DIST - math.hypot(ta - a, tl - l)) / CROWD_DIST
                             for ta, tl in others if math.hypot(ta - a, tl - l) < CROWD_DIST)
-                on = lane >= Z_MIN_LANE and t >= Z_MIN_TIME and pass_d <= MAX_PASS
+                on = lane >= Z_MIN_LANE and t >= min_time and pass_d <= MAX_PASS
                 if on:
-                    sc = Z_HEIGHT * (a - ba) / 10.0 + Z_LANE * lane + Z_TIME * _clamp(t, 0.0, 2.0)
+                    sc = height_w * (a - ba) / 10.0 + Z_LANE * lane + Z_TIME * _clamp(t, 0.0, 2.0)
+                elif winger:
+                    sc = height_w * (a - ba) / 10.0 - WING_NOT_ON + 0.5 * lane
                 else:
                     sc = -10.0 - 0.1 * abs(a - (ba + Z_WAIT_AHEAD)) + 0.5 * lane
                 sc -= Z_OUTSIDE * outside + W_CROWD * crowd
@@ -325,7 +335,10 @@ def _map_best(p, s, others, ba, bl, opps, ctx):
     """Jay's map: anywhere in green or amber (amber costs MAP_AMBER_COST), keeping up with play (no more than
     MAP_BEHIND behind the ball, 6 m clear of the centre-backs, onside) - the highest spot where he can get the ball
     with some space, as in the channel version."""
-    r = map_rects(s.get("zone_map", "b2b"), s.get("zone_side", -1))
+    name = s.get("zone_map", "b2b")
+    winger = name == "winger"
+    min_time, height_w = (WING_MIN_TIME, WING_HEIGHT) if winger else (Z_MIN_TIME, Z_HEIGHT)
+    r = map_rects(name, s.get("zone_side", -1))
     main = r["green"] + r["shoot"]
     every = main + r["amber"]
     aa0, aa1 = min(x[0] for x in every), max(x[1] for x in every)
@@ -349,9 +362,11 @@ def _map_best(p, s, others, ba, bl, opps, ctx):
                 lane, t = lane_and_time(a, l, ba, bl, opps, pass_d)
                 crowd = sum((CROWD_DIST - math.hypot(ta - a, tl - l)) / CROWD_DIST
                             for ta, tl in others if math.hypot(ta - a, tl - l) < CROWD_DIST)
-                on = lane >= Z_MIN_LANE and t >= Z_MIN_TIME and pass_d <= MAX_PASS
+                on = lane >= Z_MIN_LANE and t >= min_time and pass_d <= MAX_PASS
                 if on:
-                    sc = Z_HEIGHT * (a - ba) / 10.0 + Z_LANE * lane + Z_TIME * _clamp(t, 0.0, 2.0)
+                    sc = height_w * (a - ba) / 10.0 + Z_LANE * lane + Z_TIME * _clamp(t, 0.0, 2.0)
+                elif winger:
+                    sc = height_w * (a - ba) / 10.0 - WING_NOT_ON + 0.5 * lane
                 else:
                     sc = -10.0 - 0.1 * abs(a - (ba + Z_WAIT_AHEAD)) + 0.5 * lane
                 sc -= (0.0 if green else MAP_AMBER_COST) + W_CROWD * crowd
