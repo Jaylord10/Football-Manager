@@ -116,7 +116,7 @@ def draw(screen, engine, note=None, t=0.0):
         screen.blit(a, (lx + 30 - a.get_width(), y - a.get_height() / 2))
         nm = _font(fs).render(str(getattr(p, "name", "")), True, (240, 240, 240))
         screen.blit(nm, (lx + 44, y - nm.get_height() / 2))
-        role = str(getattr(p, "role", "") or "")
+        role = _position_label(p)
         if role:
             r = _font(max(12, fs - 6)).render(role, True, (150, 160, 175))
             screen.blit(r, (x0 + pw - r.get_width() - 18, y - r.get_height() / 2))
@@ -128,6 +128,44 @@ def draw(screen, engine, note=None, t=0.0):
         dots = "." * (1 + int(pygame.time.get_ticks() / 400) % 3)
         t_ = _font(20, True).render(note.rstrip(".") + dots, True, (210, 215, 225))
         screen.blit(t_, (W // 2 - t_.get_width() // 2, H - pad - 22))
+
+
+# The formation as a line-up graphic: each player at his spot in the formation (config/slots.py GRID - row from
+# the back line to the strikers, lane from left to right), not where he's standing for kick-off (which squeezes
+# everyone into his own half - centre-backs ahead of the full-backs, the strikers on top of each other).
+ROW_DEPTH = {0: 0.20, 1: 0.38, 2: 0.55, 3: 0.72, 4: 0.90}      # (0 = his goal line, 1 = halfway)
+LANE_ACROSS = 0.2                                              # (lane -2..2 -> 0.1..0.9 across)
+
+
+def _position_label(p):
+    """His position as the game names it elsewhere (config/slots.py LABEL: CB, DM, AM, ST...) - not the engine's
+    stand-in role (a holding midfielder plays as a "LCM" underneath)."""
+    s = str(getattr(p, "slot", None) or getattr(p, "role", "") or "")
+    try:
+        from config import slots
+        return slots.LABEL.get(s, s)
+    except Exception:
+        return s
+
+
+def _shape_spot(p, team):
+    """(depth 0..1 up his half, across 0..1 left to right) for the line-up picture."""
+    if p.role == "GK" or getattr(p, "slot", None) == "GK":
+        return 0.04, 0.5
+    try:
+        from config import slots
+        s = getattr(p, "slot", None) or p.role
+        if s in slots.GRID:
+            row, lane = slots.GRID[s]
+            return ROW_DEPTH.get(row, 0.5), 0.5 + LANE_ACROSS * lane
+    except Exception:
+        pass
+    px, py = p.pos.x, p.pos.y                           # (anything unknown: where he is)
+    if team == 0:
+        depth, lat = px / (WIDTH / 2), py / HEIGHT
+    else:
+        depth, lat = (WIDTH - px) / (WIDTH / 2), 1.0 - py / HEIGHT
+    return max(0.0, min(1.0, depth)), max(0.0, min(1.0, lat))
 
 
 def _mini_pitch(screen, rect, players, team, shirt):
@@ -144,13 +182,7 @@ def _mini_pitch(screen, rect, players, team, shirt):
     r = max(10, int(w / 22))
     f = _font(max(11, int(r * 1.1)), True)
     for j, p in enumerate(players[:11]):
-        px, py = p.pos.x, p.pos.y
-        if team == 0:                                       # (home attack to the right: their own half on the left)
-            depth, lat = px / (WIDTH / 2), py / HEIGHT
-        else:
-            depth, lat = (WIDTH - px) / (WIDTH / 2), 1.0 - py / HEIGHT
-        depth = max(0.0, min(1.0, depth))
-        lat = max(0.0, min(1.0, lat))
+        depth, lat = _shape_spot(p, team)
         cx = x + r + lat * (w - 2 * r)
         cy = y + h - r - depth * (h - 2 * r)
         pygame.draw.circle(screen, (10, 10, 10), (int(cx) + 1, int(cy) + 2), r)
