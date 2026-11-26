@@ -24,9 +24,9 @@ meant to match what's deployed on his PC.** Work happens on branches.
 ## Must-pass checks before reporting any change
 
 1. **Match engine replay is unchanged** (unless the change is meant to touch the engine):
-   `python dev/replay.py . 1 60` must end with `hash 49909cb73e84d8d0832cbb4079247d8c` (since 25 Nov evening: the left inside
-   forward and right winger on Jay's maps - ai/spot_value.py MAPS; a change meant to alter play changes it - then
-   update this line).
+   `python dev/replay.py . 1 60` must end with `hash 87758da1414e89cf2c34fd3a1eae3f29` (since 26 Nov: the back line with the
+   ball follows the line setting, and stays goal-side of the ball - ai/tactics.py att_ratio, ai/team_shape.py
+   BACK_GOALSIDE; a change meant to alter play changes it - then update this line).
 2. **Every screen still draws**: `python dev/all_screens.py` (with `FM_GAME` = the game folder). The screens
    `arrange`, `bid`, `choose`, `loan` and `talks` "fail" there because they need setting up first - that's
    expected; anything else failing is a bug.
