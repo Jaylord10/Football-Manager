@@ -252,6 +252,8 @@ def _in_behind(carrier, teammates, opponents, opps, ca, cl, passing):
     if not opps:
         return out
     last = max(oa for oa, ol in opps)                 # (their deepest outfield man - the keeper's behind him)
+    near_me = min([math.hypot(oa - ca, ol - cl) for oa, ol in opps if oa > ca - 0.5] or [99.0])   # (a man in front of
+    #  him - pressed from behind he can still look up and pick the ball out: Jay's moments 11 and 29)
     for m in teammates:
         ma, ml = to_frame(carrier.team, m.pos)
         if ma < ca + 5.0 or ma < last - 5.0 or ma > last + 1.0:      # (up on their line, ahead of the ball)
@@ -302,6 +304,12 @@ def _in_behind(carrier, teammates, opponents, opps, ca, cl, passing):
             # (a chip over three men needs a real passer - Jay; along the floor less so)
             skill = 0.012 if not loft else 0.04
             p = _clamp((0.4 if not loft else 0.2) + 0.3 * min(safety, 1.0) + skill * (passing - 10), 0.1, 0.85)
+            # (the further it has to go, the less exact it is - and with a man on him he can't pick it out: 27 Nov,
+            #  Jay: "one or two giant punts down the field")
+            p -= max(0.0, d_m - BEHIND_LONG[0]) * BEHIND_LONG[1] * (1.0 - BEHIND_LONG[2] * (passing - 10))
+            if near_me < PRESSED_M:
+                p *= BEHIND_PRESSED
+            p = _clamp(p, 0.05, 0.85)
             gain = p * space_value(pa, pl, opps, t_run, running_on=True)
             if p < HOPEFUL:
                 gain *= (p / HOPEFUL) ** 2
@@ -315,6 +323,10 @@ def _in_behind(carrier, teammates, opponents, opps, ca, cl, passing):
     return out
 
 
+BEHIND_LONG = (30.0, 0.01, 0.04)   # a ball in behind longer than 30 m: -0.01 a metre on its chance of coming off
+                                    # (40 m: -0.10), 4% less a point of Passing (real long balls come off ~49%;
+                                    # through balls far less - StatsBomb PL 2015/16)
+BEHIND_PRESSED = 0.7                # x its chance with a man on him in front (he can't look up and pick it out)
 BEATEN_M = 2.5             # m: a defender this close behind the runner (and on his own side of him) has been beaten
                            # - he can't cut out a ball played in front of the runner without going through him
 
