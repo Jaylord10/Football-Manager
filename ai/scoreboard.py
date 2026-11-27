@@ -98,6 +98,9 @@ CLEAR_FROM = 36.0          # m from our goal: clearing is an option nearer than 
 CLEAR_PRESSED = 6.0        # ...with a man within this
 CLEAR_OURS = 0.25          # share of clearances we end up with
 PASS_MIN, PASS_MAX = 4.0, 60.0
+PASS_SKILL = (0.012, 0.0006, 15.0)   # how much each point of Passing adds to a pass's odds: 0.012 for a short one, plus
+                                     # 0.0006 per m beyond 15 m (a 45 m diagonal: 0.03 a point) - a great passer (Van Dijk)
+                                     # hits balls an average one shouldn't try (27 Nov, Jay)
 SEE_OUT_OF_CONE = (0.30, 0.035)   # chance he knows about a team-mate BEHIND him (unless he'd scanned): + per Vision
                                   # point.  Anyone in front of him or to the side he always knows about (27 Nov, Jay:
                                   # the striker 10 m ahead was left off his list)
@@ -449,7 +452,8 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
         if pressed and _angle_from_facing(carrier, m) > PRESSED_NO_BACK:
             continue
         lane, t = spot_value.lane_and_time(ma, ml, ca, cl, opps, L)
-        p = _clamp(pass_odds(L, lane, t, pressed) + 0.012 * (passing - 10), 0.03, 0.97)
+        per = PASS_SKILL[0] + PASS_SKILL[1] * max(0.0, L - PASS_SKILL[2])
+        p = _clamp(pass_odds(L, lane, t, pressed) + per * (passing - 10), 0.03, 0.97)
         v_ok = space_value(ma, ml, opps, pass_time(L))
         f = 0.6 + 0.35 * _clamp((L - LONG_FAIL[0]) / (LONG_FAIL[1] - LONG_FAIL[0]), 0.0, 1.0)
         fa, fl = ca + f * (ma - ca), cl + f * (ml - cl)

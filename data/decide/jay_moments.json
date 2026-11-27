@@ -115,7 +115,7 @@
   },
   {
    "name": "thinking_1 bottom: RM on the right",
-   "jay": "into ST1's feet, or a through ball",
+   "jay": "into ST1's feet, or a through ball - (27 Nov: Jay's happy enough with the scoreboard's answer, not much in it)",
    "ok": [
     [
      "pass",
@@ -128,6 +128,10 @@
     [
      "through",
      ""
+    ],
+    [
+     "pass",
+     "LM"
     ]
    ],
    "role": "RM",
@@ -455,7 +459,7 @@
   },
   {
    "name": "thinking_3 top: RCM free in his own half",
-   "jay": "not a carry towards 11 players: turn / carry towards the LCM, then LCB switches it, or ping it to the LM himself",
+   "jay": "not a carry towards 11 players: turn / carry towards the LCM, then LCB switches it, or ping it to the LM himself - (27 Nov: Jay's happy enough with the scoreboard's answer, not much in it)",
    "ok": [
     [
      "pass",
@@ -475,6 +479,10 @@
     ],
     [
      "hold",
+     ""
+    ],
+    [
+     "carry",
      ""
     ]
    ],
@@ -1032,7 +1040,7 @@
   },
   {
    "name": "moment 9: LCB being pressed",
-   "jay": "ST1 along the floor, hit hard - or over the top to ST2 if he's an exceptional passer (over the heads of ~3 men)",
+   "jay": "ST1 along the floor, hit hard - or over the top to ST2 if he's an exceptional passer (over the heads of ~3 men) - (27 Nov: Jay's happy enough with the scoreboard's answer, not much in it)",
    "ok": [
     [
      "through",
@@ -1045,6 +1053,10 @@
     [
      "through",
      "ST2"
+    ],
+    [
+     "pass",
+     "LCM"
     ]
    ],
    "role": "LCB",
@@ -2247,11 +2259,15 @@
   },
   {
    "name": "moment 20: winger, full-back overlapping",
-   "jay": "a small carry inside might make space for the LB, but a straight carry is okay too",
+   "jay": "a small carry inside might make space for the LB, but a straight carry is okay too - (27 Nov: Jay's happy enough with the scoreboard's answer, not much in it)",
    "ok": [
     [
      "carry",
      ""
+    ],
+    [
+     "pass",
+     "ST1"
     ]
    ],
    "role": "LM",
@@ -2800,6 +2816,1114 @@
     ]
    ],
    "nearest": 3.9
+  },
+  {
+   "name": "moment 25: centre-back with time, average passer",
+   "jay": "an average passer: the LCB is the best option - (27 Nov: Jay's happy with the scoreboard's answer; long-pass accuracy parked)",
+   "ok": [
+    [
+     "pass",
+     "LCB"
+    ],
+    [
+     "pass",
+     "LB"
+    ]
+   ],
+   "role": "RCB",
+   "a": 36.7,
+   "l": 13.7,
+   "facing": -64.0,
+   "mates": [
+    [
+     2.3,
+     3.8,
+     "GK"
+    ],
+    [
+     47.2,
+     23.6,
+     "RB"
+    ],
+    [
+     34.4,
+     -7.2,
+     "LCB"
+    ],
+    [
+     50.2,
+     -32.5,
+     "LB"
+    ],
+    [
+     67.0,
+     -32.2,
+     "LM"
+    ],
+    [
+     49.8,
+     -7.6,
+     "LCM"
+    ],
+    [
+     48.1,
+     19.0,
+     "RCM"
+    ],
+    [
+     69.9,
+     30.5,
+     "RM"
+    ],
+    [
+     74.7,
+     -1.6,
+     "ST1"
+    ],
+    [
+     73.5,
+     10.3,
+     "ST2"
+    ]
+   ],
+   "opps": [
+    [
+     76.6,
+     -7.1
+    ],
+    [
+     72.3,
+     11.6
+    ],
+    [
+     74.0,
+     2.1
+    ],
+    [
+     72.4,
+     22.4
+    ],
+    [
+     58.5,
+     23.4
+    ],
+    [
+     63.3,
+     13.6
+    ],
+    [
+     62.6,
+     1.4
+    ],
+    [
+     60.5,
+     -7.6
+    ],
+    [
+     49.2,
+     18.0
+    ],
+    [
+     46.2,
+     1.9
+    ]
+   ],
+   "nearest": 13.2
+  },
+  {
+   "name": "moment 25b: the same, a great passer (Van Dijk)",
+   "jay": "a very good ball-playing centre-back like Van Dijk hits the LM here - (27 Nov: Jay's happy with the scoreboard's answer; long-pass accuracy parked)",
+   "ok": [
+    [
+     "pass",
+     "LM"
+    ],
+    [
+     "pass",
+     "LB"
+    ]
+   ],
+   "attributes": {
+    "Passing": 18,
+    "Vision": 18
+   },
+   "role": "RCB",
+   "a": 36.7,
+   "l": 13.7,
+   "facing": -64.0,
+   "mates": [
+    [
+     2.3,
+     3.8,
+     "GK"
+    ],
+    [
+     47.2,
+     23.6,
+     "RB"
+    ],
+    [
+     34.4,
+     -7.2,
+     "LCB"
+    ],
+    [
+     50.2,
+     -32.5,
+     "LB"
+    ],
+    [
+     67.0,
+     -32.2,
+     "LM"
+    ],
+    [
+     49.8,
+     -7.6,
+     "LCM"
+    ],
+    [
+     48.1,
+     19.0,
+     "RCM"
+    ],
+    [
+     69.9,
+     30.5,
+     "RM"
+    ],
+    [
+     74.7,
+     -1.6,
+     "ST1"
+    ],
+    [
+     73.5,
+     10.3,
+     "ST2"
+    ]
+   ],
+   "opps": [
+    [
+     76.6,
+     -7.1
+    ],
+    [
+     72.3,
+     11.6
+    ],
+    [
+     74.0,
+     2.1
+    ],
+    [
+     72.4,
+     22.4
+    ],
+    [
+     58.5,
+     23.4
+    ],
+    [
+     63.3,
+     13.6
+    ],
+    [
+     62.6,
+     1.4
+    ],
+    [
+     60.5,
+     -7.6
+    ],
+    [
+     49.2,
+     18.0
+    ],
+    [
+     46.2,
+     1.9
+    ]
+   ],
+   "nearest": 13.2
+  },
+  {
+   "name": "moment 26: winger on a counter",
+   "jay": "fine",
+   "ok": [
+    [
+     "carry",
+     ""
+    ]
+   ],
+   "role": "RM",
+   "a": 63.9,
+   "l": 32.0,
+   "facing": 0.0,
+   "mates": [
+    [
+     2.3,
+     3.9,
+     "GK"
+    ],
+    [
+     49.6,
+     22.2,
+     "RB"
+    ],
+    [
+     40.2,
+     -6.2,
+     "LCB"
+    ],
+    [
+     39.9,
+     13.6,
+     "RCB"
+    ],
+    [
+     55.4,
+     -30.5,
+     "LB"
+    ],
+    [
+     54.3,
+     -27.6,
+     "LM"
+    ],
+    [
+     54.1,
+     -14.5,
+     "LCM"
+    ],
+    [
+     67.4,
+     13.1,
+     "RCM"
+    ],
+    [
+     70.5,
+     0.7,
+     "ST1"
+    ],
+    [
+     61.1,
+     17.3,
+     "ST2"
+    ]
+   ],
+   "opps": [
+    [
+     79.6,
+     3.3
+    ],
+    [
+     63.6,
+     11.0
+    ],
+    [
+     61.7,
+     2.5
+    ],
+    [
+     75.0,
+     19.4
+    ],
+    [
+     50.3,
+     26.6
+    ],
+    [
+     61.2,
+     26.1
+    ],
+    [
+     62.4,
+     2.7
+    ],
+    [
+     52.0,
+     -10.4
+    ],
+    [
+     46.0,
+     13.0
+    ],
+    [
+     48.9,
+     5.2
+    ]
+   ],
+   "nearest": 6.6
+  },
+  {
+   "name": "moment 27: centre-back, no pressure, average passer",
+   "jay": "(the LCM - fine for an average passer) - (27 Nov: Jay's happy with the scoreboard's answer; long-pass accuracy parked)",
+   "ok": [
+    [
+     "pass",
+     "LCM"
+    ],
+    [
+     "carry",
+     ""
+    ]
+   ],
+   "role": "LCB",
+   "a": 32.6,
+   "l": -14.9,
+   "facing": -13.0,
+   "mates": [
+    [
+     2.3,
+     -3.8,
+     "GK"
+    ],
+    [
+     42.9,
+     32.3,
+     "RB"
+    ],
+    [
+     24.2,
+     2.1,
+     "RCB"
+    ],
+    [
+     42.5,
+     -28.9,
+     "LB"
+    ],
+    [
+     40.8,
+     -29.3,
+     "LM"
+    ],
+    [
+     39.3,
+     -24.0,
+     "LCM"
+    ],
+    [
+     36.7,
+     0.1,
+     "RCM"
+    ],
+    [
+     70.4,
+     33.1,
+     "RM"
+    ],
+    [
+     69.1,
+     -13.8,
+     "ST1"
+    ],
+    [
+     70.5,
+     0.1,
+     "ST2"
+    ]
+   ],
+   "opps": [
+    [
+     70.7,
+     -21.1
+    ],
+    [
+     72.6,
+     -0.4
+    ],
+    [
+     72.7,
+     -10.1
+    ],
+    [
+     76.4,
+     7.5
+    ],
+    [
+     60.9,
+     8.8
+    ],
+    [
+     62.1,
+     -1.3
+    ],
+    [
+     60.7,
+     -10.5
+    ],
+    [
+     51.4,
+     -24.6
+    ],
+    [
+     47.1,
+     -1.6
+    ],
+    [
+     46.9,
+     -12.8
+    ]
+   ],
+   "nearest": 14.4
+  },
+  {
+   "name": "moment 27b: the same, a great passer",
+   "jay": "a great passer can easily hit the RB or even the RM with all the time and space",
+   "ok": [
+    [
+     "pass",
+     "RB"
+    ],
+    [
+     "pass",
+     "RM"
+    ]
+   ],
+   "attributes": {
+    "Passing": 18,
+    "Vision": 18
+   },
+   "role": "LCB",
+   "a": 32.6,
+   "l": -14.9,
+   "facing": -13.0,
+   "mates": [
+    [
+     2.3,
+     -3.8,
+     "GK"
+    ],
+    [
+     42.9,
+     32.3,
+     "RB"
+    ],
+    [
+     24.2,
+     2.1,
+     "RCB"
+    ],
+    [
+     42.5,
+     -28.9,
+     "LB"
+    ],
+    [
+     40.8,
+     -29.3,
+     "LM"
+    ],
+    [
+     39.3,
+     -24.0,
+     "LCM"
+    ],
+    [
+     36.7,
+     0.1,
+     "RCM"
+    ],
+    [
+     70.4,
+     33.1,
+     "RM"
+    ],
+    [
+     69.1,
+     -13.8,
+     "ST1"
+    ],
+    [
+     70.5,
+     0.1,
+     "ST2"
+    ]
+   ],
+   "opps": [
+    [
+     70.7,
+     -21.1
+    ],
+    [
+     72.6,
+     -0.4
+    ],
+    [
+     72.7,
+     -10.1
+    ],
+    [
+     76.4,
+     7.5
+    ],
+    [
+     60.9,
+     8.8
+    ],
+    [
+     62.1,
+     -1.3
+    ],
+    [
+     60.7,
+     -10.5
+    ],
+    [
+     51.4,
+     -24.6
+    ],
+    [
+     47.1,
+     -1.6
+    ],
+    [
+     46.9,
+     -12.8
+    ]
+   ],
+   "nearest": 14.4
+  },
+  {
+   "name": "moment 28: winger pressed by the corner flag",
+   "jay": "perfect if it's a lofted through ball (it is - whipped over the man pressing him)",
+   "ok": [
+    [
+     "through",
+     "ST2"
+    ]
+   ],
+   "role": "LM",
+   "a": 98.5,
+   "l": -32.1,
+   "facing": 29.0,
+   "mates": [
+    [
+     2.3,
+     -3.9,
+     "GK"
+    ],
+    [
+     76.6,
+     32.9,
+     "RB"
+    ],
+    [
+     56.5,
+     -14.0,
+     "LCB"
+    ],
+    [
+     56.3,
+     6.0,
+     "RCB"
+    ],
+    [
+     73.2,
+     -32.5,
+     "LB"
+    ],
+    [
+     92.5,
+     1.0,
+     "LCM"
+    ],
+    [
+     70.8,
+     -2.8,
+     "RCM"
+    ],
+    [
+     91.4,
+     3.8,
+     "RM"
+    ],
+    [
+     93.0,
+     -4.1,
+     "ST1"
+    ],
+    [
+     93.8,
+     3.6,
+     "ST2"
+    ]
+   ],
+   "opps": [
+    [
+     94.0,
+     -30.2
+    ],
+    [
+     94.3,
+     -8.6
+    ],
+    [
+     98.2,
+     -21.6
+    ],
+    [
+     92.6,
+     3.1
+    ],
+    [
+     86.1,
+     1.3
+    ],
+    [
+     87.4,
+     -6.8
+    ],
+    [
+     82.2,
+     -19.9
+    ],
+    [
+     96.5,
+     -30.6
+    ],
+    [
+     67.2,
+     -10.2
+    ],
+    [
+     69.9,
+     -18.7
+    ]
+   ],
+   "nearest": 2.5
+  },
+  {
+   "name": "moment 29: midfielder pressed from behind",
+   "jay": "great",
+   "ok": [
+    [
+     "through",
+     "RM"
+    ]
+   ],
+   "role": "RCM",
+   "a": 58.7,
+   "l": 0.5,
+   "facing": 76.0,
+   "mates": [
+    [
+     2.3,
+     0.4,
+     "GK"
+    ],
+    [
+     54.8,
+     29.7,
+     "RB"
+    ],
+    [
+     42.2,
+     -10.4,
+     "LCB"
+    ],
+    [
+     42.4,
+     9.2,
+     "RCB"
+    ],
+    [
+     56.7,
+     -24.3,
+     "LB"
+    ],
+    [
+     64.3,
+     -25.9,
+     "LM"
+    ],
+    [
+     61.3,
+     -6.0,
+     "LCM"
+    ],
+    [
+     77.0,
+     25.6,
+     "RM"
+    ],
+    [
+     71.2,
+     0.5,
+     "ST1"
+    ]
+   ],
+   "opps": [
+    [
+     79.6,
+     -20.4
+    ],
+    [
+     78.9,
+     1.4
+    ],
+    [
+     78.4,
+     -9.4
+    ],
+    [
+     78.6,
+     12.3
+    ],
+    [
+     65.0,
+     15.8
+    ],
+    [
+     68.8,
+     0.8
+    ],
+    [
+     67.6,
+     -9.4
+    ],
+    [
+     62.2,
+     -22.3
+    ],
+    [
+     57.3,
+     0.5
+    ],
+    [
+     50.6,
+     -7.3
+    ]
+   ],
+   "nearest": 1.4
+  },
+  {
+   "name": "moment 30: striker through on the keeper",
+   "jay": "fine",
+   "ok": [
+    [
+     "carry",
+     ""
+    ]
+   ],
+   "role": "ST2",
+   "a": 97.4,
+   "l": 13.8,
+   "facing": -69.0,
+   "mates": [
+    [
+     2.3,
+     3.8,
+     "GK"
+    ],
+    [
+     53.1,
+     28.5,
+     "RB"
+    ],
+    [
+     42.3,
+     -6.8,
+     "LCB"
+    ],
+    [
+     41.3,
+     13.5,
+     "RCB"
+    ],
+    [
+     54.8,
+     -30.6,
+     "LB"
+    ],
+    [
+     78.3,
+     -30.4,
+     "LM"
+    ],
+    [
+     61.2,
+     -13.4,
+     "LCM"
+    ],
+    [
+     49.9,
+     12.3,
+     "RCM"
+    ],
+    [
+     69.6,
+     27.8,
+     "RM"
+    ],
+    [
+     81.4,
+     4.7,
+     "ST1"
+    ]
+   ],
+   "opps": [
+    [
+     86.8,
+     -4.8
+    ],
+    [
+     85.0,
+     14.4
+    ],
+    [
+     86.5,
+     5.6
+    ],
+    [
+     82.6,
+     25.0
+    ],
+    [
+     66.8,
+     27.5
+    ],
+    [
+     70.8,
+     14.2
+    ],
+    [
+     73.9,
+     4.6
+    ],
+    [
+     69.0,
+     -6.7
+    ],
+    [
+     54.4,
+     12.8
+    ],
+    [
+     55.8,
+     5.8
+    ]
+   ],
+   "nearest": 12.4
+  },
+  {
+   "name": "moment 31: full-back in midfield",
+   "jay": "great - he can let the RM close him, then pass to his LM",
+   "ok": [
+    [
+     "hold",
+     ""
+    ],
+    [
+     "pass",
+     "LM"
+    ]
+   ],
+   "role": "LB",
+   "a": 51.8,
+   "l": -25.2,
+   "facing": -5.0,
+   "mates": [
+    [
+     2.3,
+     -3.9,
+     "GK"
+    ],
+    [
+     56.7,
+     32.0,
+     "RB"
+    ],
+    [
+     38.9,
+     -13.6,
+     "LCB"
+    ],
+    [
+     38.8,
+     6.3,
+     "RCB"
+    ],
+    [
+     55.4,
+     -30.7,
+     "LM"
+    ],
+    [
+     54.4,
+     -21.3,
+     "LCM"
+    ],
+    [
+     46.9,
+     -2.4,
+     "RCM"
+    ],
+    [
+     80.4,
+     32.9,
+     "RM"
+    ],
+    [
+     74.5,
+     -16.9,
+     "ST1"
+    ]
+   ],
+   "opps": [
+    [
+     76.2,
+     -26.1
+    ],
+    [
+     76.1,
+     -4.1
+    ],
+    [
+     73.1,
+     -15.0
+    ],
+    [
+     80.7,
+     4.9
+    ],
+    [
+     65.4,
+     5.2
+    ],
+    [
+     65.7,
+     -3.5
+    ],
+    [
+     60.0,
+     -17.7
+    ],
+    [
+     61.6,
+     -26.8
+    ],
+    [
+     51.1,
+     -2.7
+    ],
+    [
+     50.4,
+     -13.5
+    ]
+   ],
+   "nearest": 10.0
+  },
+  {
+   "name": "moment 32: midfielder in their third",
+   "jay": "looks fine",
+   "ok": [
+    [
+     "carry",
+     ""
+    ]
+   ],
+   "role": "RCM",
+   "a": 75.5,
+   "l": 0.6,
+   "facing": -149.0,
+   "mates": [
+    [
+     2.3,
+     0.0,
+     "GK"
+    ],
+    [
+     55.3,
+     21.7,
+     "RB"
+    ],
+    [
+     42.1,
+     -10.5,
+     "LCB"
+    ],
+    [
+     42.2,
+     2.0,
+     "RCB"
+    ],
+    [
+     56.2,
+     -26.5,
+     "LB"
+    ],
+    [
+     88.6,
+     -30.8,
+     "LM"
+    ],
+    [
+     79.4,
+     -17.6,
+     "LCM"
+    ],
+    [
+     90.4,
+     26.7,
+     "RM"
+    ],
+    [
+     89.2,
+     -22.0,
+     "ST1"
+    ],
+    [
+     94.5,
+     -21.3,
+     "ST2"
+    ]
+   ],
+   "opps": [
+    [
+     84.4,
+     -29.2
+    ],
+    [
+     99.2,
+     -9.8
+    ],
+    [
+     96.0,
+     -22.6
+    ],
+    [
+     97.2,
+     5.7
+    ],
+    [
+     78.9,
+     16.8
+    ],
+    [
+     79.9,
+     -3.8
+    ],
+    [
+     79.2,
+     -15.1
+    ],
+    [
+     74.4,
+     -29.4
+    ],
+    [
+     69.5,
+     -5.4
+    ],
+    [
+     73.7,
+     -16.8
+    ]
+   ],
+   "nearest": 6.2
   }
  ]
 }

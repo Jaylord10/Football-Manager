@@ -43,6 +43,7 @@ data = json.load(open(os.path.join(eng, "data", "decide", "jay_moments.json")))
 res = []
 for m in data["moments"]:
     me = P(0, m["a"], m["l"], m["role"], m.get("facing"))
+    me.attributes = dict(m.get("attributes", {}))
     mates = [P(0, a, l, r) for a, l, r in m["mates"]]
     opps = [P(1, 110 - a, -l, "X") for a, l in m["opps"]]          # (theirs, in their own frame)
     gk = P(1, 2.0, 0.0, "GK")
