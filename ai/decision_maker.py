@@ -20,7 +20,9 @@ from ai.rl_actions import execute_rl_action
 # free kick in shooting range (wall, ceremony) over a minute.
 _RESTART_TIMING = {        # (minimum, maximum) seconds from the ball going dead
     "throw_in":    (12.0, 30.0),
-    "goal_kick":   (24.0, 45.0),
+    "goal_kick":   (6.0, 50.0),       # (27 Nov, Jay: "a massive wait when everyone's in position - get rid of it":
+                                      #  the time now goes on fetching the ball - gameplay/ball_back.py - and the
+                                      #  keeper putting it down, GK_PLACE; then it's taken as soon as they're set)
     "corner_kick": (32.0, 55.0),
     "free_kick":   (20.0, 45.0),          # fallback - free kicks are timed by zone below
     "free_kick_long":     (20.0, 45.0),   # gameplay/set_pieces.py _fk_zone
@@ -31,12 +33,15 @@ _RESTART_TIMING = {        # (minimum, maximum) seconds from the ball going dead
     "kick_off":    (3.0, 90.0),     # after a goal: celebrate, walk back (see _kickoff_positions)
 }
 _DEFAULT_TIMING = (9.0, 25.0)
+GK_PLACE = 3.4             # s: a keeper putting the ball down for a goal kick and stepping back for his run-up
+                           # (broadcast3d draws it: PLACE_GK 2.6 s + 0.8 s walking back)
 _MIN_SPREAD     = 1.4      # the minimum is a random time between min and this x min
 QUICK_THROW     = 0.20     # chance a throw-in is taken quickly, without waiting for the team...
 QUICK_THROW_MIN = 4.0      # ...as soon as this many seconds
 SET_DIST        = 3.0      # m: a player this close to his restart spot is "set"...
 SET_SHARE       = 0.85     # ...and a team is set when this share of its outfielders are
 WALK_UNTIL      = 25.0     # m: further than this from his spot he jogs instead of walking
+GK_WALK_UNTIL   = 5.0      # ...at a goal kick, this (they get back into shape: Jay, 27 Nov)
 CELEBRATE_JOIN  = 45.0     # m: teammates this close to the scorer run over to celebrate
 KICKOFF_SET     = 2.5      # m: everyone this close to his kick-off spot before kick-off
 
@@ -64,9 +69,9 @@ def _restart_timing(ball):
     return ball._timing
 
 
-def _walk_state(p):
+def _walk_state(p, until=None):
     from config.constants import M_TO_PX
-    return "walk" if (p.target - p.pos).length() < WALK_UNTIL * M_TO_PX else "idle"
+    return "walk" if (p.target - p.pos).length() < (WALK_UNTIL if until is None else until) * M_TO_PX else "idle"
 
 
 class AIDecisionMaker:
@@ -101,6 +106,14 @@ class AIDecisionMaker:
                         self._kickoff_ready(team + opponents, ball, current_time, elapsed >= max_t)
                 else:
                     on_ball = taker_dist <= 0.4
+                    if ball.restart_type == "goal_kick":
+                        # (he has to have fetched it, put it down and stepped back for his run-up)
+                        if getattr(ball, "_back", None) is not None or not on_ball:
+                            ball._gk_on_since = None
+                        elif getattr(ball, "_gk_on_since", None) is None:
+                            ball._gk_on_since = current_time
+                        on_ball = on_ball and getattr(ball, "_gk_on_since", None) is not None and \
+                            current_time - ball._gk_on_since >= GK_PLACE
                     set_ = quick or self._team_set(team, ball) and \
                         (ball.restart_type != "free_kick" or self._team_set(opponents, ball))
                     ready = (elapsed >= min_t and on_ball and set_) or elapsed >= max_t
@@ -116,6 +129,17 @@ class AIDecisionMaker:
                     # originates from the correct spot (corner flag, GK box, etc.)
                     taker.pos    = Vector2(ball.pos)
                     taker.target = Vector2(ball.pos)
+                    if restart_type_captured == "goal_kick":
+                        # (a goal kick is kicked off the grass, at once: not picked up, held and kicked out of his
+                        #  hands - Jay, 27 Nov.  Stood behind it, so it doesn't jump to his feet first)
+                        from config.constants import WIDTH as _W, PLAYER_RADIUS, BALL_RADIUS
+                        inward = Vector2(1, 0) if ball.pos.x < _W / 2 else Vector2(-1, 0)
+                        taker.facing = Vector2(inward)
+                        taker.pos = Vector2(ball.pos) - inward * (PLAYER_RADIUS + BALL_RADIUS + 2)
+                        taker.target = Vector2(taker.pos)
+                        taker._feet = True
+                        taker._kick_now = True
+                        ball._gk_on_since = None
                     taker.vel    = Vector2(0, 0)
                     # Face INTO the pitch: the ball is held just in front of
                     # the player, so facing outwards (he usually arrives
@@ -160,6 +184,11 @@ class AIDecisionMaker:
                     ball.restart_taker.state = "walk" if ball.restart_type in ("goal_kick", "kick_off") \
                         else "idle"
                     ball.restart_taker.pos_reason = "take restart"
+                    if getattr(ball, "_back", None) is not None and ball._back.get("keeper") is ball.restart_taker:
+                        import gameplay.ball_back as ball_back      # (fetching the ball, then walking it to the spot)
+                        ball.restart_taker.target = ball_back.keeper_target(ball)
+                        ball.restart_taker.state = "walk" if ball._back["phase"] == "carry" else "idle"
+                        ball.restart_taker.pos_reason = "fetch the ball"
             # Everyone else takes up position for the restart (they used to
             # keep their old orders - so whoever had chased the ball out ran
             # over and stood on it until the other team's taker arrived)
@@ -359,7 +388,9 @@ class AIDecisionMaker:
                 if d < need:
                     spot = ball.pos + (away.normalize() if d > 1e-6 else Vector2(0, 1)) * need
             p.target = spot
-            p.state = _walk_state(p)                 # walk (jog if he's a long way out)
+            # walk (jog if he's a long way out) - at a goal kick they jog into their shape unless they're nearly
+            # there (27 Nov, Jay: "a massive wait" - they strolled 20 m+ at walking pace)
+            p.state = _walk_state(p, GK_WALK_UNTIL if ball.restart_type == "goal_kick" else None)
             p.pos_reason = f"restart: {why}"
         if ball.restart_type == "throw_in":
             self._throw_in_options(team, opponents, ball, ours)

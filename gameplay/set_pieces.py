@@ -163,14 +163,21 @@ def _setup_goal_kick(mechanics, team_id, team0, team1, ball, ai_system, current_
     else:
         ball_pos = Vector2(WIDTH - box_depth + 10, HEIGHT / 2 + random.choice([-20, 20]))
 
+    # ── 3. GK takes the kick ──────────────────────────────────────────────
+    kicking_team = team0 if team_id == 0 else team1
+    keeper = next((p for p in kicking_team if p.role == "GK"), None)
+
+    # (27 Nov, Jay) What you see: the ball flies on into the stands, a ball boy throws one back, the keeper
+    # fetches it and walks it to the spot (gameplay/ball_back.py) - the match's ball is on the spot meanwhile
+    if ball.pos.x < 0 or ball.pos.x > WIDTH:
+        import gameplay.ball_back as ball_back
+        ball_back.start(ball, ball_pos, keeper if keeper is not None and getattr(keeper, "is_active", True)
+                        else None, current_time)
+
     ball.pos = ball_pos
     ball.vel = Vector2(0, 0)
     ball.z   = 0
     ball.vz  = 0
-
-    # ── 3. GK takes the kick ──────────────────────────────────────────────
-    kicking_team = team0 if team_id == 0 else team1
-    keeper = next((p for p in kicking_team if p.role == "GK"), None)
 
     if keeper:
         # He walks over to put the ball down (he's only a few metres away)

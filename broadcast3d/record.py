@@ -36,6 +36,12 @@ with contextlib.redirect_stdout(io.StringIO()):
                      round(p.vel.length(), 1), p.state, int(getattr(p, "is_active", True)),
                      getattr(p, "dive_state", "") if p.role == "GK" else ""] for p in e.team0 + e.team1]}
         everyone = e.team0 + e.team1
+        if getattr(b, "_back", None) is not None:                                  # (a goal kick's ball being
+            import gameplay.ball_back as ball_back                                 #  fetched: that's the one shown,
+            fr["b"] = [round(v, 1) for v in ball_back.shown(b)]                    #  and the keeper carrying it has
+            h = ball_back.holder(b)                                                #  it in his hands)
+            if h in everyone:
+                fr["o"] = everyone.index(h)
         if getattr(b, "is_dead", False) and getattr(b, "restart_type", None):        # (a dead ball: who takes it)
             tk = getattr(b, "restart_taker", None)
             fr["r"] = [b.restart_type, everyone.index(tk) if tk in everyone else -1]

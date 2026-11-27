@@ -60,6 +60,11 @@ class ObjectRenderer:
     # --- NEW: 3D BALL RENDERING ---
     def draw_ball(self, surface, ball):
         """Draws ball with 3D illusion (Shadow + Height offset)."""
+        if getattr(ball, "_back", None) is not None:        # (a goal kick's ball being fetched: gameplay/ball_back.py)
+            import gameplay.ball_back as ball_back
+            from types import SimpleNamespace
+            x, y, z = ball_back.shown(ball)
+            ball = SimpleNamespace(pos=pygame.math.Vector2(x, y), z=z)
         # 1. Shadow (Always on the ground)
         shadow_pos = (int(ball.pos.x) + FIELD_MARGIN, int(ball.pos.y) + FIELD_MARGIN)
         

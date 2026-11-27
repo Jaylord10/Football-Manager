@@ -208,6 +208,9 @@ def handle_goalkeeper_with_ball(keeper, teammates, opponents, ball, current_time
     if current_time - getattr(keeper, "_hold_last", -99.0) > 0.5:      # (a new spell with it)
         keeper._hold_start = current_time
         keeper._hold_for = random.uniform(*(GK_FEET_HOLD if feet else GK_HOLD))
+    if getattr(keeper, "_kick_now", False):         # (a goal kick: he's lined it up already - he kicks it)
+        keeper._kick_now = False
+        keeper._hold_for = 0.0
     keeper._hold_last = current_time
     held = current_time - keeper._hold_start
     if feet:

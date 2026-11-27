@@ -2829,6 +2829,9 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
         if b >= 0 and a != b:
             gained[b] = (k, "r" in F[k - 1] or "r" in F[k - 2])            # (when he got it - from a dead ball?)
         if a >= 0 and b < 0:                                                # he's played it
+            r_ = F[k].get("r")
+            if r_ and r_[0] == "goal_kick" and r_[1] == a:                  # (no: a keeper putting the ball down
+                continue                                                    #  for a goal kick - _placing draws it)
             v = sp(F[k]["b"], F[k + 3]["b"]) / 3.0
             z = F[k - 1]["b"][2] / 10.0
             gk, dead = gained.get(a, (-99, False))

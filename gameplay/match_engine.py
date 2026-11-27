@@ -745,6 +745,9 @@ class MatchEngine:
         finally:
             locomotion.CONTACT_XS = None
         self.ball.update(delta_time, self.time_elapsed)
+        if getattr(self.ball, "_back", None) is not None:      # (a goal kick's ball being fetched - ball_back.py)
+            import gameplay.ball_back as ball_back
+            ball_back.update(self.ball, delta_time, self.time_elapsed)
 
         # Headers and aerial challenges come first: a ball at head height is
         # contested in the air before anyone can bring it down (gameplay/aerial.py)
