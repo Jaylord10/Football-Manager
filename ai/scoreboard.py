@@ -88,6 +88,10 @@ PRESSED_NO_BACK = 120.0    # deg: with a man on him he can't pass to anyone furt
 ACROSS_FROM = (85.0, 14.0) # a ball across the box: he's past this far up and at least this far out wide...
 ACROSS_TO = (85.0, 14.0)   # ...to a team-mate past this far up and within this of the middle
 ACROSS_AHEAD = (0.0, 2.0, 4.0)  # m in front of him (towards goal) it could go
+ACROSS_MARKER = (3.0, 1.0)  # a man within 3 m of the runner and not at least 1 m behind him (towards our goal): the runner
+                            # hasn't got goal-side of his man...
+ACROSS_LEVEL = 0.5          # ...so the man can attack the ball too: x this on the chance (27 Nov, Jay: "ST2's surrounded,
+                            # the ball would have to beat 2 men" - vs moment 23, "both beyond their markers")
 FIRST_TIME_FINISH = 0.85   # x a shot's chance when he has to hit it first time
 THIRD = 110.0 / 3
 SPACE_FULL = 1.5           # s he'd have before anyone gets to him, for the full value
@@ -109,7 +113,7 @@ SEE_OUT_OF_CONE = (0.30, 0.035)   # chance he knows about a team-mate BEHIND him
                                   # point.  Anyone in front of him or to the side he always knows about (27 Nov, Jay:
                                   # the striker 10 m ahead was left off his list)
 BEHIND_DEG = 100.0                # a team-mate more than this far round from the way he's facing is "behind him"
-TAKE_ON_MIN = (0.65, 0.52, 0.42)    # he only thinks about taking a man on with at least this chance of beating him -
+TAKE_ON_MIN = (0.65, 0.52, 0.50)    # he only thinks about taking a man on with at least this chance of beating him -
                                   # in our third / midfield / their third (27 Nov, Jay: outside their third only if he's
                                   # exceptional)
                                   # (real take-ons are won 59% of the time - players don't try the hopeless ones)
@@ -600,7 +604,7 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
         zone = 0 if ca < THIRD else 1 if ca < 2 * THIRD else 2
         if p >= TAKE_ON_MIN[zone]:
             ba, bl = oa + TAKE_ON_BEYOND, ol + (2.0 if ol < cl else -2.0)
-            cover = sum(1 for xa, xl in opps if (xa, xl) != (oa, ol) and xa > ba and math.hypot(xa - ba, xl - bl) < TAKE_ON_COVER)
+            cover = sum(1 for xa, xl in opps if (xa, xl) != (oa, ol) and xa > oa and math.hypot(xa - ba, xl - bl) < TAKE_ON_COVER)
             appeal = 1.0 + (TAKE_ON_APPEAL - 1.0) * max(0.0, 1.0 - cover / 2.0)
             gain = p * space_value(ba, bl, [o for o in opps if o != (oa, ol)], 1.0) * appeal * (1.0 + FLAIR_TAKE_ON * (_stat(carrier, "Flair") - 10))
             opts.append((gain - TAKE_ON_LOSS[0 if zone < 2 else 1] * (1 - p) * here_them, "take_on", man, (ba, bl), p))
@@ -740,6 +744,7 @@ def _across_box(carrier, teammates, opponents, opps, ca, cl, passing):
         ma, ml = to_frame(carrier.team, m.pos)
         if ma < ACROSS_TO[0] or abs(ml) > ACROSS_TO[1]:
             continue
+        not_beyond = any(math.hypot(oa - ma, ol - ml) < ACROSS_MARKER[0] and oa > ma - ACROSS_MARKER[1] for oa, ol in opps)
         best = None
         for ahead in ACROSS_AHEAD:
             pa, pl = min(ma + ahead, PITCH_L - 4.0), ml
@@ -770,6 +775,8 @@ def _across_box(carrier, teammates, opponents, opps, ca, cl, passing):
             else:
                 p = _clamp(0.45 + 0.3 * min(safety, 1.0) + 0.012 * (passing - 10), 0.2, 0.9)
                 chance = xg(pa, pl) * FIRST_TIME_FINISH
+            if not_beyond:
+                chance *= ACROSS_LEVEL
             v = p * chance - LOSS_WEIGHT * (1 - p) * xt_them(pa, pl)
             if best is None or v > best[0]:
                 plan = {"point": point, "speed_px": v_pass * M_TO_PX, "lead_time": t_run, "safety": safety,
