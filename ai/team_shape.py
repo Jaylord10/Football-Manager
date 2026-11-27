@@ -310,11 +310,11 @@ def compute(team, opponents, ball, in_possession, now, restart=None):
     if not team:
         return {}
     if in_possession:
-        key = team[0].team
+        key = (team[0].team, restart)
         hit = _cache.get(key)
         if hit is not None and 0.0 <= now - hit[0] < ATT_REFRESH:
             return hit[1]
-        result = _compute(team, opponents, ball, in_possession, now)
+        result = _compute(team, opponents, ball, in_possession, now, restart)
         _cache[key] = (now, result)
         return result
     # Defending: worked out DEF_REFRESH times a second rather than every frame.
@@ -339,6 +339,13 @@ def _compute(team, opponents, ball, in_possession, now, restart=None):
     out = {}
     if in_possession:
         _attacking(team, opponents, ball, tid, fa, fl, st, now, out)
+        if restart == "goal_kick":
+            # Our goal kick: the two centre-backs split wide, just outside the corners of the six-yard box (Jay's
+            # picture, 27 Nov - the keeper can play it short to either side, the modern build-up)
+            for p in team:
+                side = {"LCB": -1.0, "RCB": 1.0}.get(getattr(p, "slot", p.role))
+                if side is not None and id(p) in out:
+                    out[id(p)] = (to_world(tid, GK_CB_SPOT[0], side * GK_CB_SPOT[1]), "split wide for the goal kick")
     else:
         # Each defender places himself from his OWN read of the ball (ai/reading.py)
         import ai.reading as reading
@@ -413,6 +420,8 @@ def _squeeze(team, opponents, tid, st, out):
             out[id(p)] = (to_world(tid, a, l), "squeeze up behind the press")
 
 
+GK_CB_SPOT = (6.0, 13.5)   # our goal kick: the centre-backs this far from our goal line (m) and either side of the
+                           # middle - just outside the corners of the six-yard box (5.5 m deep, 9.2 m either side)
 GK_PRESS_FRONT = 90.0    # their goal kick: a style whose front men go this high (the press, the high press)...
 GK_PRESS_OFF   = 3.0     # ...sends its wide men onto their full-backs: this far off him, on his inside
 GK_PRESS_IN    = 3.5

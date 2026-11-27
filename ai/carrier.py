@@ -28,6 +28,8 @@ def _looks_offside(carrier, mate, opponents):
     return random.random() > 0.5 * (1.0 - decisions / 20.0)
 
 
+KICKOFF_PASS = (5.0, 20.0)   # m: a kick-off is played to a team-mate this far away (the nearest, central) -
+                             # or, nobody there yet, the nearest further back
 _SET_PIECE_FLAGS = ("must_take_penalty", "must_take_freekick", "must_cross_corner", "must_pass_restart")
 _TIMING_PRESSURE = 3.5      # m: an opponent this close when he receives it = he's under pressure
 _SETUP_SPEED     = 0.3      # dribble pace while he sets a pass / shot
@@ -230,6 +232,19 @@ def _decide(carrier, team, opponents, ball, current_time, mechanics):
     # dribbled.  Bypasses shooting, the settle window, and all dribble layers.
     if getattr(carrier, 'must_pass_restart', False):
         carrier.must_pass_restart = False
+        kind = getattr(carrier, "_restart_kind", None)
+        carrier._restart_kind = None
+        if kind == "kick_off":
+            # A kick-off: a short pass back to a midfielder (27 Nov, Jay: "the guy turns and launches it back miles")
+            # - the nearest team-mate 5-20 m away, the more central the better
+            from config.constants import M_TO_PX as _M, HEIGHT as _H
+            near = [t for t in teammates if t.role != "GK" and KICKOFF_PASS[0] * _M <= distance(carrier.pos, t.pos)
+                    <= KICKOFF_PASS[1] * _M] or \
+                   [t for t in teammates if t.role != "GK" and distance(carrier.pos, t.pos) >= KICKOFF_PASS[0] * _M]
+            if near:
+                best = min(near, key=lambda t: distance(carrier.pos, t.pos) + 0.5 * abs(t.pos.y - _H / 2))
+                mechanics.execute_pass(carrier, best, ball, current_time)
+                return carrier.team
         # Try the recycle layer first — it knows how to find open teammates
         rc_action, rc_target, _ = recycle.evaluate_recycle_layer(
             carrier, teammates_with_gk, opponent_field_players
@@ -237,9 +252,11 @@ def _decide(carrier, team, opponents, ball, current_time, mechanics):
         if rc_action == "pass" and rc_target is not None:
             mechanics.execute_pass(carrier, rc_target, ball, current_time)
             return carrier.team
-        # Fallback: nearest teammate who isn't too close
+        # Fallback: nearest teammate who isn't too close (27 Nov: this picked the FURTHEST - a 40-60 m ball back)
         if teammates:
-            best = max(teammates, key=lambda t: distance(carrier.pos, t.pos))
+            from config.constants import M_TO_PX as _M
+            ok = [t for t in teammates if distance(carrier.pos, t.pos) >= KICKOFF_PASS[0] * _M] or teammates
+            best = min(ok, key=lambda t: distance(carrier.pos, t.pos))
             mechanics.execute_pass(carrier, best, ball, current_time)
             return carrier.team
 

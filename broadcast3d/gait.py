@@ -447,6 +447,13 @@ ACTIONS = {
               (1.10, N)],
     # Shielding the ball: side-on, low, knees bent, backside out towards the man, the left arm out and back
     # to hold him off (the man on his left; mirrored for the right), eyes down on the ball.
+    # (27 Nov, Jay: "a weird looking stance on corners" - they used the ball-shielding pose, both arms flung out)
+    # Marking at a corner: up on his toes, knees a little bent, weight forward, head up watching the ball; the arm
+    # on the man's side bent with the hand on him (his back / hip - feeling where he is), the other arm low and
+    # loose; shifting his weight as they jostle.  (The man on his left; the mirror for his right.)
+    "boxmark": [(0.0, {"hip_r": 14, "knee_r": 20, "ankle_r": 8, "hip_l": 10, "knee_l": 18, "ankle_l": 8, "lean": 8, "side": 2, "turn": 6, "twist": 8, "nod": -4, "out_l": 14, "arm_l": 42, "elbow_l": 75, "across_l": 14, "out_r": -2, "arm_r": 4, "elbow_r": 22}),
+                (0.8, {"hip_r": 10, "knee_r": 18, "ankle_r": 8, "hip_l": 16, "knee_l": 22, "ankle_l": 8, "lean": 10, "side": -3, "turn": 10, "twist": 12, "nod": -2, "out_l": 18, "arm_l": 48, "elbow_l": 68, "across_l": 16, "out_r": 2, "arm_r": 0, "elbow_r": 26}),
+                (1.6, {"hip_r": 14, "knee_r": 20, "ankle_r": 8, "hip_l": 10, "knee_l": 18, "ankle_l": 8, "lean": 8, "side": 2, "turn": 6, "twist": 8, "nod": -4, "out_l": 14, "arm_l": 42, "elbow_l": 75, "across_l": 14, "out_r": -2, "arm_r": 4, "elbow_r": 22})],
     "shield": [(0.0, {"hip_r": 30, "knee_r": 45, "ankle_r": 14, "hip_l": 22, "knee_l": 40, "ankle_l": 12,
                       "hipout_r": 8, "hipout_l": 10, "lean": 22, "side": 6, "turn": 18, "twist": 10, "nod": 18,
                       "out_l": 70, "arm_l": -20, "elbow_l": 25, "out_r": 25, "arm_r": 15, "elbow_r": 40}),
@@ -788,7 +795,7 @@ for _keys in ACTIONS.values():
                     if _m in _p:
                         _p[_m] += OUT_SHIFT
 # How strongly each blends over the running (a dribbling touch stays light).
-WEIGHT = {"touch": 0.55, "cut": 0.7, "brake": 0.75, "shield": 0.8, "jockey": 0.7, "tug": 0.6}
+WEIGHT = {"touch": 0.55, "cut": 0.7, "brake": 0.75, "shield": 0.8, "boxmark": 0.85, "jockey": 0.7, "tug": 0.6}
 
 
 # --- moods: other ways of standing, walking and running (goal celebrations) -----------------------------------
@@ -1258,7 +1265,7 @@ def _make(actor):
             _CACHE[name] = build(actor, name, fn, n)
     for name, keys in ACTIONS.items():
         variants = [(name, keys)]
-        if name in ("dive", "recover", "kick", "shot", "touch", "tackle", "punt", "cut", "brake", "slide", "shield", "fouled",
+        if name in ("dive", "recover", "kick", "shot", "touch", "tackle", "punt", "cut", "brake", "slide", "shield", "boxmark", "fouled",
                     "pass", "sidepass", "loft", "flick", "backheel", "hurt", "stumble", "volley", "thigh", "stepover", "dragback",
                     "finish", "dink"):
             variants.append((name + "_m", [(t, mirror(p) if isinstance(p, dict) else p) for t, p in keys]))

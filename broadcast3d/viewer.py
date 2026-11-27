@@ -2046,7 +2046,7 @@ def _viewer_shield_side(self, i, fr, wx, wy, fwx, fwy):
 def _viewer_left_foot(self, i, p, kind, t, k):
     """Which foot he plays it with: the one on the ball's side - or, if it's straight in front of him, his
     stronger foot (about 1 in 5 players are left-footed)."""
-    if kind == "shield":                                            # (the arm out on the man's side)
+    if kind in ("shield", "boxmark"):                               # (the arm out on the man's side)
         return self._shield_left.get(i, True)
     if kind not in KICKS + SHOTS + ("touch", "tackle", "volley"):
         return False
@@ -2255,7 +2255,8 @@ def _viewer_contact(self, i, p, fr, wx, wy, fx, fy, sp, r):
     if r and r[0] == "corner_kick" and best < 1.3 and ms < 2.5:              # (a corner: jostling in the box)
         bx, by = to_world(fr["b"][0], fr["b"][1])
         if math.hypot(wx - bx, wy - by) > 6.0:
-            return "shield", 0.5
+            self._shield_left[i] = -(dx * fy + dy * fx) > 0                     # (his hand on the man: 27 Nov)
+            return "boxmark", ((fr.get("k", 0) + i * 11) / 30.0) % 1.6
     if o == bj and best < 3.5 and ms < 4.5 and ahead > 0.5:                   # (closing the man on the ball down)
         return "jockey", 0.5
     if best < 1.1 and ms > 4.0 and ms_q > 4.0 and abs(ahead) < 0.55:          # (side by side: leaning in)

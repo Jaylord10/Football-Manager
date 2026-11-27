@@ -176,6 +176,7 @@ class AIDecisionMaker:
                         taker.must_take_penalty = True
                     else:
                         taker.must_pass_restart = True
+                    taker._restart_kind = restart_type_captured
                 else:
                     # Still waiting — taker goes to the ball (walks to a goal
                     # kick or kick-off, jogs to fetch a throw-in)
