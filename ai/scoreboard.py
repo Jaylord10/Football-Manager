@@ -69,8 +69,15 @@ HOLD_SAFE = 7.0            # m: nobody nearer - keeping it is (nearly) free
 HOLD_LOSS_MAX = 0.30       # chance of losing it if he waits with a man right on him (average Strength)
 HOLD_COST = 0.003          # waiting isn't free: they get back into shape (in xT units)
 PRESSED_M = 3.0            # a man this close = he's passing under pressure (real completion falls)
-RECEIVE_VALUE = (0.8, 1.25)  # x the spot's value for a man closed down as it arrives .. one with 2 s+ to turn and
-                             # go (a man in space between the lines is worth far more than the average there)
+# SPACE (27 Nov, Jay: "a carry towards 11 players isn't sensible", "he shouldn't pass to ST2, he's marked", the free
+# LM for a switch): the real values are averages for an area - here a spot is worth more the longer he'd have there
+# before anyone can close him down, and more again if there's grass ahead to run into (one move ahead).
+SPACE_MIN = 0.5            # x a spot's value with a man on him as he gets there (marked)
+SPACE_FULL = 1.5           # s he'd have before anyone gets to him, for the full value
+LOOK_M = (5.0, 25.0)       # m: how far he could run from there before anyone can get across him (5 m steps, up to
+                           # 25 m: a whole free flank)...
+LOOK_W = 0.6               # ...and the share of what it gains that counts now
+PASS_SPEED = (12.0, 0.25)  # m/s a pass travels at, on average: 12 + this x its length (a long ball is struck harder)
 CARRY_SLOW = 1.0           # x a carry's value: running with it gives the defence time to get back in shape
 TAKE_ON_LOSS = 0.75        # x what losing a take-on costs (it's often a counter-attack the other way)
 CLEAR_FROM = 36.0          # m from our goal: clearing is an option nearer than this...
@@ -157,6 +164,37 @@ def xg(a, l, header=False):
     return 1 / (1 + math.exp(-max(-30, min(30, z))))
 
 
+def pass_time(length):
+    """s for a pass of this length to get there."""
+    return 0.2 + length / (PASS_SPEED[0] + PASS_SPEED[1] * length)
+
+
+def space_value(a, l, opps, t_arrive=0.0, look=True):
+    """What having the ball at (a, l) is worth to us, getting there t_arrive s from now: the spot's real value (xT)
+    scaled by the time he'd have there before anyone can close him down (marked: SPACE_MIN of it .. SPACE_FULL s
+    free: all of it), plus - one move ahead - part of what a free run from there (LOOK_M forward or diagonal, nobody
+    able to get across it) would gain."""
+    base = xt(a, l)
+    free = min((CHASER_REACT + math.hypot(oa - a, ol - l) / CHASER_SPEED for oa, ol in opps), default=9.0) - t_arrive
+    v = base * (SPACE_MIN + (1.0 - SPACE_MIN) * _clamp(free / SPACE_FULL, 0.0, 1.0))
+    if look:
+        best = 0.0
+        for ang in (0.0, 35.0, -35.0):
+            r = math.radians(ang)
+            dist = LOOK_M[0]
+            while dist <= LOOK_M[1] + 1e-6:
+                a2, l2 = a + dist * math.cos(r), l + dist * math.sin(r)
+                if not (0.0 < a2 < PITCH_L and abs(l2) < HALF_W - 1.0):
+                    break
+                t_run = t_arrive + dist / CARRY_SPEED
+                if any(CHASER_REACT + math.hypot(oa - a2, ol - l2) / CHASER_SPEED <= t_run - 0.3 for oa, ol in opps):
+                    break                                 # (someone gets across him by here)
+                best = max(best, xt(a2, l2) - base)
+                dist += LOOK_M[0]
+        v += LOOK_W * best
+    return v
+
+
 def pass_odds(length, lane, t_recv, pressed):
     """How often a pass like this really reaches its man in our matches (dev/pass_odds.py fits it on the engine's own
     passes): length, how open the lane is, the receiver's time when it arrives, the passer pressed or not.  Falls back
@@ -231,7 +269,7 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
             continue
         lane, t = spot_value.lane_and_time(ma, ml, ca, cl, opps, L)
         p = _clamp(pass_odds(L, lane, t, pressed) + 0.012 * (passing - 10), 0.03, 0.97)
-        v_ok = xt(ma, ml) * (RECEIVE_VALUE[0] + (RECEIVE_VALUE[1] - RECEIVE_VALUE[0]) * _clamp((t + 0.5) / 2.5, 0.0, 1.0))
+        v_ok = space_value(ma, ml, opps, pass_time(L))
         f = 0.6 + 0.35 * _clamp((L - LONG_FAIL[0]) / (LONG_FAIL[1] - LONG_FAIL[0]), 0.0, 1.0)
         fa, fl = ca + f * (ma - ca), cl + f * (ml - cl)
         cost = PASS_COST if ma - ca < 5.0 else 0.0
@@ -245,7 +283,8 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
         if tgt is not None and plan is not None:
             pa, pl = to_frame(tid, Vector2(plan["point"]))
             p = _clamp(0.35 + 0.45 * min(plan.get("safety", 0.5), 1.0) + 0.01 * (passing - 10), 0.1, 0.9)
-            opts.append((p * xt(pa, pl) - LOSS_WEIGHT * (1 - p) * xt_them(pa, pl), "through", tgt, plan, p))
+            v_t = space_value(pa, pl, opps, pass_time(math.hypot(pa - ca, pl - cl)))
+            opts.append((p * v_t - LOSS_WEIGHT * (1 - p) * xt_them(pa, pl), "through", tgt, plan, p))
     except Exception:
         pass
 
@@ -321,7 +360,8 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
                 best = min(best, t_o - k * t_me)
             risk += CHASER_RISK * _clamp((0.3 - best) / 0.8, 0.0, 1.0)
         risk = _clamp(risk, 0.02, 0.9)
-        opts.append(((1 - risk) * xt(ta, tl) * CARRY_SLOW - LOSS_WEIGHT * risk * here_them, "carry", (ta, tl), None,
+        opts.append(((1 - risk) * space_value(ta, tl, opps, t_me) * CARRY_SLOW - LOSS_WEIGHT * risk * here_them,
+                     "carry", (ta, tl), None,
                      1 - risk))
 
     # --- take the man on -----------------------------------------------------
@@ -335,7 +375,7 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
         oa, ol = to_frame(tid, man.pos)
         if p >= TAKE_ON_MIN:
             ba, bl = oa + TAKE_ON_BEYOND, ol + (2.0 if ol < cl else -2.0)
-            gain = p * xt(ba, bl) * TAKE_ON_APPEAL * (1.0 + FLAIR_TAKE_ON * (_stat(carrier, "Flair") - 10))
+            gain = p * space_value(ba, bl, [o for o in opps if o != (oa, ol)], 1.0) * TAKE_ON_APPEAL * (1.0 + FLAIR_TAKE_ON * (_stat(carrier, "Flair") - 10))
             opts.append((gain - TAKE_ON_LOSS * (1 - p) * here_them, "take_on", man, (ba, bl), p))
 
     # --- keep it / shield it ---------------------------------------------------
@@ -345,7 +385,8 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
         lose = HOLD_LOSS_MAX * _clamp((HOLD_SAFE - near_d) / (HOLD_SAFE - 1.0), 0.0, 1.0)
         lose *= 1.25 - 0.025 * (_stat(carrier, "Strength") - 10) - 0.0125 * (_stat(carrier, "Balance") - 10)
         lose = _clamp(lose, 0.01, 0.9)
-    opts.append(((1 - lose) * here_us - LOSS_WEIGHT * lose * here_them - HOLD_COST, "hold", None, None, 1 - lose))
+    here_now = space_value(ca, cl, opps, 0.5, look=False)
+    opts.append(((1 - lose) * here_now - LOSS_WEIGHT * lose * here_them - HOLD_COST, "hold", None, None, 1 - lose))
 
     # --- get rid of it ------------------------------------------------------------
     if ca < CLEAR_FROM and near_d < CLEAR_PRESSED:
