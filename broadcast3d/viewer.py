@@ -2054,13 +2054,13 @@ def _viewer_left_foot(self, i, p, kind, t, k):
     ke = max(0, min(len(F) - 1, int(round(k - t * 30))))
     fe = F[ke]
     x, y, fx, fy = fe["p"][i][:4]
-    if kind in ("pass", "flick", "backheel"):                       # (which way the ball went, against his facing)
+    if kind in ("pass", "sidepass", "flick", "backheel"):           # (which way the ball went, against his facing)
         f3 = F[min(len(F) - 1, ke + 3)]
         dx, dy = f3["b"][0] - fe["b"][0], f3["b"][1] - fe["b"][1]
         across = fx * dy - fy * dx                                  # (engine y down: + = to his right)
         if math.hypot(dx, dy) > 0.1 and abs(_kick_angle(fx, fy, dx, dy)) > 60:
             # across his body with the inside of the other foot; a flick / back-heel with the foot on that side
-            return across > 0 if kind == "pass" else across < 0
+            return across > 0 if kind in ("pass", "sidepass") else across < 0
     px, py = to_world(x, y)
     bx, by = to_world(fe["b"][0], fe["b"][1])
     fwx, fwy = fx, -fy
@@ -2683,7 +2683,7 @@ class Events:
         self.last = None         #  Mixamo men's own moves (broadcast3d/mixamo.py); last: the event action() chose
 
     RANK = {"fouled": 8, "despair": 0, "kneeslide": 7, "throwin": 6, "punt": 5, "bowl": 5, "shot": 4, "header": 3, "tackle": 3,
-            "kick": 2, "pass": 2, "loft": 2, "flick": 2, "backheel": 2, "touch": 1, "hurt": 8, "stumble": 3,
+            "kick": 2, "pass": 2, "sidepass": 2, "loft": 2, "flick": 2, "backheel": 2, "touch": 1, "hurt": 8, "stumble": 3,
             "innocent": 5, "catch": 4, "gkthrow": 5, "splitstep": 3, "slap": 6, "applaud": 1, "contest": 3,
             "flickhead": 3, "volley": 2, "chest": 1, "thigh": 1, "stepover": 1, "spread": 4, "reachup": 4,
             "smother": 6, "finish": 4, "dink": 4}
@@ -2716,7 +2716,7 @@ class Events:
         return self.var.get(self.last) if self.last and self.last[0] == i else None
 
 
-KICKS = ("kick", "pass", "loft", "flick", "backheel")
+KICKS = ("kick", "pass", "sidepass", "loft", "flick", "backheel")
 SHOTS = ("shot", "finish", "dink")
 
 
@@ -2726,6 +2726,9 @@ def _kick_angle(fx, fy, dx, dy):
     if a < 1e-6 or b < 1e-6:
         return 0.0
     return math.degrees(math.acos(max(-1.0, min(1.0, (fx * dx + fy * dy) / (a * b)))))
+
+
+SIDEPASS_FROM = 65.0    # deg from the way he faces: played this far round (and not lifted) - a sideways pass, across him
 
 
 def _kick_kind(F, k, i, v):
@@ -2741,6 +2744,8 @@ def _kick_kind(F, k, i, v):
         return "backheel"
     if ang > 115:
         return "flick"
+    if ang > SIDEPASS_FROM and vz <= 3.0:
+        return "sidepass"                                                   # (square, across his body - 27 Nov)
     if ang > 60 or v < 13.0:
         return "pass"
     return "loft" if vz > 3.0 else "kick"
@@ -2869,7 +2874,10 @@ def find_events(F, keepers=(0, 11), ev=None, lo=0):
                            default=(99, -1))
                 if near[0] < 2.0:
                     z = F[k]["b"][2] / 10.0
-                    ev.add(near[1], k, _head_kind(F, k, near[1], ev) if z > 1.3 else "kick")
+                    v_ = sp(F[k]["b"], F[min(len(F) - 1, k + 3)]["b"]) / 3.0
+                    # (a first-time ball knocked square: the sideways pass too - 27 Nov)
+                    ev.add(near[1], k, _head_kind(F, k, near[1], ev) if z > 1.3 else
+                           "sidepass" if _kick_kind(F, k, near[1], v_) == "sidepass" else "kick")
     for k in range(max(2, lo), len(F) - 1):                                  # a dink looping over a keeper: he
         if F[k]["o"] >= 0 or "r" in F[k]:                                    #  stretches up for it
             continue

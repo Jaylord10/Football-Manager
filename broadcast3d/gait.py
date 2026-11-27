@@ -299,6 +299,30 @@ ACTIONS = {
              (0.18, {"hip_r": 80, "knee_r": 8, "ankle_r": -20, "hip_l": 4, "knee_l": 26, "turn": 16, "twist": 10,
                      "lean": -12, "chest": -4, "out_l": 55, "arm_l": 25, "elbow_l": 30, "out_r": 35}),
              (0.44, N)],
+    # (27 Nov, Jay: "an animation for a sideways pass") A pass square, across his body to his left, with the inside
+    # of the right foot: the standing foot planted beside the ball and pointed where it's going, the hips opening
+    # that way; the right leg swung out to the side (a short backswing, knee bent ~40 deg), then brought across in
+    # front of the standing leg with the foot locked - the flat inside of it facing the target - and pushed through
+    # the ball, the follow-through short and low, the body turning to face the pass; the left arm out for balance,
+    # eyes on the ball.  (The inside-of-the-foot pass: slower and shorter than the instep kick, the hip turned out
+    # and less knee swing - Levanon & Dapena 1998, Med Sci Sports Exerc 30(6); the leg swung across the body for a
+    # ball played square - Lees et al. 2010, J Sports Sci 28(8).)  To his right with the left foot: the mirror.
+    "sidepass": [(-0.28, N),
+                 (-0.16, {"hip_l": 16, "knee_l": 24, "ankle_l": 6, "hip_r": 0, "knee_r": 34, "hipout_r": 20,
+                          "toein_r": -12, "turn": -8, "twist": -5, "lean": 7, "nod": 16, "tilt": -4, "out_l": 32,
+                          "elbow_l": 30, "out_r": 24, "elbow_r": 25}),
+                 (-0.07, {"hip_l": 12, "knee_l": 32, "ankle_l": 8, "hip_r": -4, "knee_r": 48, "hipout_r": 38,
+                          "toein_r": -18, "ankle_r": 6, "turn": -10, "twist": -6, "lean": 8, "nod": 18, "tilt": -7,
+                          "out_l": 40, "elbow_l": 30, "out_r": 30, "elbow_r": 25}),
+                 (0.00, {"hip_l": 10, "knee_l": 32, "ankle_l": 8, "hip_r": 14, "knee_r": 20, "hipout_r": 2,
+                         "toein_r": -16, "ankle_r": 8, "turn": 10, "twist": 10, "lean": 8, "nod": 18, "tilt": -2,
+                         "out_l": 44, "elbow_l": 30, "out_r": 18, "arm_r": -8, "elbow_r": 25}),
+                 (0.10, {"hip_l": 8, "knee_l": 28, "ankle_l": 6, "hip_r": 24, "knee_r": 14, "hipout_r": -26,
+                         "toein_r": -14, "ankle_r": 6, "turn": 22, "twist": 18, "lean": 6, "nod": 12, "tilt": 2,
+                         "out_l": 38, "elbow_l": 30, "out_r": 14, "elbow_r": 25}),
+                 (0.22, {"hip_l": 6, "knee_l": 22, "hip_r": 16, "knee_r": 18, "hipout_r": -20, "toein_r": -10,
+                         "turn": 20, "twist": 14, "lean": 4, "nod": 6, "out_l": 26, "elbow_l": 30, "out_r": 10}),
+                 (0.40, N)],
     # The outside of the right foot: a flick out to his right (and back), the toes turned in, the leg swinging
     # across and then out.
     "flick": [(-0.22, N),
@@ -1235,7 +1259,7 @@ def _make(actor):
     for name, keys in ACTIONS.items():
         variants = [(name, keys)]
         if name in ("dive", "recover", "kick", "shot", "touch", "tackle", "punt", "cut", "brake", "slide", "shield", "fouled",
-                    "pass", "loft", "flick", "backheel", "hurt", "stumble", "volley", "thigh", "stepover", "dragback",
+                    "pass", "sidepass", "loft", "flick", "backheel", "hurt", "stumble", "volley", "thigh", "stepover", "dragback",
                     "finish", "dink"):
             variants.append((name + "_m", [(t, mirror(p) if isinstance(p, dict) else p) for t, p in keys]))
         for vn, vk in variants:
