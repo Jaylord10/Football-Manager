@@ -24,9 +24,9 @@ meant to match what's deployed on his PC.** Work happens on branches.
 ## Must-pass checks before reporting any change
 
 1. **Match engine replay is unchanged** (unless the change is meant to touch the engine):
-   `python dev/replay.py . 1 60` must end with `hash 9aa61e48cd5efc4b8e42d76b2a6ee1cb` (since 26 Nov evening: the winger goes for
-   the 1 v 1 on their back line - ai/spot_value.py WING_*; a change meant to alter play changes it - then update
-   this line).
+   `python dev/replay.py . 1 60` must end with `hash 123837bc0cfd755ca45000ef71ce947d` (since 27 Nov evening: the decision
+   scoreboard is the default; a change meant to alter play changes it - then update this line). With the old
+   checklist (`FM_DECIDE=old python dev/replay.py . 1 60`) it's `9aa61e48cd5efc4b8e42d76b2a6ee1cb`.
 2. **Every screen still draws**: `python dev/all_screens.py` (with `FM_GAME` = the game folder). The screens
    `arrange`, `bid`, `choose`, `loan` and `talks` "fail" there because they need setting up first - that's
    expected; anything else failing is a bug.
@@ -53,11 +53,12 @@ cache - keep that line.
   prompts). Ashvale, Northwick and Bramhall have them; their honours years are fixed - never change them.
 - `data/world/honours.json` - the roll of honour, built by `dev/make_roll.py` (asserts Ashvale's years).
 - `career/ui.py` - every screen (`draw_<screen>`), `career/office.py` - the office picture hub.
-- On-the-ball decisions: `ai/carrier.py` (the checklist, still the default). ON TEST (overnight 26 Nov, branch
-  `overnight/2026-11-26-scoreboard`): `ai/scoreboard.py` weighs every option on one scale (chance of scoring next,
-  from real pitch values `data/decide/xt.json` built by `dev/xt_grid.py` from StatsBomb; pass odds measured in our
-  engine `data/decide/pass_odds.json`, `dev/pass_odds.py`). Switched on with `FM_DECIDE=scoreboard`;
-  `dev/decisions.py` / `dev/decision_pic.py` show what each player was thinking.
+- On-the-ball decisions: `ai/scoreboard.py` (the default since 27 Nov) weighs every option on one scale (chance of
+  scoring next, from real pitch values `data/decide/xt.json` built by `dev/xt_grid.py` from StatsBomb; pass odds
+  measured in our engine `data/decide/pass_odds.json`, `dev/pass_odds.py`). The old checklist in `ai/carrier.py` is
+  kept as a backup: B in a match switches (remembered in `career["decide"]`), or `FM_DECIDE=old`.
+  Jay's judgements on real moments are tests: `python dev/scenarios.py . <out.json>` (data/decide/jay_moments.json -
+  all should come out his way). `dev/decisions.py` / `dev/decision_pic.py` show what each player was thinking.
 - The 3D match view: `broadcast3d/` (Panda3D). `broadcast3d/live.py` draws career matches live inside the match
   screen (a second process, picture via shared memory; `MatchEngine._start_3d` / `_draw_3d`; V switches 2D/3D,
   remembered in `career["match_view"]`). It never changes the engine's play. Check: `python broadcast3d/check.py`.

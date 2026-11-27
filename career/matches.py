@@ -198,6 +198,7 @@ def _view_env(career, home_id):
     and the home club (the light and the weather: broadcast3d/live.py weather_flags)."""
     from career import calendar as cal
     os.environ["FM_MATCH_VIEW"] = career.get("match_view", "3d")
+    os.environ["FM_DECIDE"] = career.get("decide", "scoreboard")      # (the new decisions, or "old" - B in a match)
     os.environ["FM_3D_RADAR"] = "1" if career.get("radar_3d", True) else "0"
     os.environ["FM_3D_NAMES"] = "1" if career.get("names_3d", False) else "0"
     os.environ["FM_3D_QUALITY"] = career.get("quality_3d", "auto")
@@ -241,6 +242,7 @@ def watch(career, home, away, matchday):
     engine = me.MatchEngine(career=True)
     engine.run()
     career["match_view"] = engine.view_wanted                        # (remembered for next time)
+    career["decide"] = engine.decide_wanted
     career["radar_3d"] = engine.radar3d
     career["names_3d"] = engine.names3d
     career["quality_3d"] = engine.quality3d
@@ -272,6 +274,7 @@ def watch_friendly(career, f):
     engine = me.MatchEngine(career=True)
     engine.run()
     career["match_view"] = engine.view_wanted                        # (remembered for next time)
+    career["decide"] = engine.decide_wanted
     career["radar_3d"] = engine.radar3d
     career["names_3d"] = engine.names3d
     career["quality_3d"] = engine.quality3d
@@ -306,6 +309,7 @@ def watch_playoff(career, m):
     engine = me.MatchEngine(career=True)
     engine.run()
     career["match_view"] = engine.view_wanted                        # (remembered for next time)
+    career["decide"] = engine.decide_wanted
     career["radar_3d"] = engine.radar3d
     career["names_3d"] = engine.names3d
     career["quality_3d"] = engine.quality3d
@@ -341,6 +345,7 @@ def watch_cup(career, m):
     engine = me.MatchEngine(career=True)
     engine.run()
     career["match_view"] = engine.view_wanted                        # (remembered for next time)
+    career["decide"] = engine.decide_wanted
     career["radar_3d"] = engine.radar3d
     career["names_3d"] = engine.names3d
     career["quality_3d"] = engine.quality3d

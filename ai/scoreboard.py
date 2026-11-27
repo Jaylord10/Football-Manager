@@ -31,7 +31,8 @@ The options:
 His attributes decide how WELL he judges it: Decisions (and Composure when a man's on him) set how far off his sense
 of each value is, Vision whether he even sees team-mates out of his eyeline (unless he'd scanned).
 
-Switch: FM_DECIDE=scoreboard (or ENABLED below).  The old checklist stays the default until Jay says.
+Switch: on by default (27 Nov, Jay: "deploy, but keep the old system as a backup").  FM_DECIDE=old, or B in a match
+(remembered in career["decide"]), goes back to the old checklist in ai/carrier.py.
 "What was he thinking": every decision's options and values go in LOG (FM_DECISION_LOG=1) and on the player as
 _options (dev/decisions.py prints them).
 """
@@ -45,7 +46,7 @@ from pygame.math import Vector2
 
 from config.constants import WIDTH, HEIGHT, M_TO_PX
 
-ENABLED = os.environ.get("FM_DECIDE", "") == "scoreboard"
+ENABLED = os.environ.get("FM_DECIDE", "scoreboard") != "old"   # (the match engine sets it per match - B switches)
 LOG_ON = bool(os.environ.get("FM_DECISION_LOG"))
 LOG = []
 LOG_MAX = 20000

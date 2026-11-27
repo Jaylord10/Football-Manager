@@ -169,6 +169,12 @@ class MatchEngine:
         self.live3d = None
         self.view3d = False
         self.view_wanted = os.environ.get("FM_MATCH_VIEW", "2d")   # (what you chose: kept for the next match)
+        # (27 Nov: the decision scoreboard - ai/scoreboard.py - or the old checklist as a backup; B switches, kept for
+        #  the next match like the view)
+        import ai.scoreboard as scoreboard
+        self.decide_wanted = "old" if os.environ.get("FM_DECIDE", "scoreboard") == "old" else "scoreboard"
+        scoreboard.ENABLED = self.decide_wanted == "scoreboard"
+        self.decide_note_until = 0.0
         self.radar3d = os.environ.get("FM_3D_RADAR", "1") == "1"   # (the mini pitch on the 3D picture: M)
         self.names3d = os.environ.get("FM_3D_NAMES", "0") == "1"   # (names over their heads: N)
         self.quality3d = os.environ.get("FM_3D_QUALITY", "auto")   # (3D quality: Q)
@@ -601,6 +607,12 @@ class MatchEngine:
                     else:
                         self.view3d = not self.view3d
                     self.view_wanted = "3d" if self.view3d else "2d"
+                if event.key == pygame.K_b:
+                    # the new decisions (scoreboard) <-> the old checklist
+                    import ai.scoreboard as scoreboard
+                    scoreboard.ENABLED = not scoreboard.ENABLED
+                    self.decide_wanted = "scoreboard" if scoreboard.ENABLED else "old"
+                    self.decide_note_until = time.time() + 3.0
                 if event.key == pygame.K_d:
                     # Positioning debug overlay: off -> both -> Blue -> Red
                     from rendering import debug_overlay
@@ -1368,6 +1380,15 @@ class MatchEngine:
                 self.screen, self.match_state, self.score, names, self.career, extra=self._extra_line(),
                 stats=self.stats.as_dict([round(100 * f / total) for f in self.possession_frames])
             )
+
+        if time.time() < self.decide_note_until:
+            msg = ("Decisions: NEW (the scoreboard)" if self.decide_wanted == "scoreboard"
+                   else "Decisions: OLD (the checklist)") + "  - B to switch"
+            surf = self.ui_renderer.normal_font.render(msg, True, (255, 255, 255))
+            box = pygame.Surface((surf.get_width() + 16, surf.get_height() + 10), pygame.SRCALPHA)
+            box.fill((0, 0, 0, 170))
+            box.blit(surf, (8, 5))
+            self.screen.blit(box, ((self.screen.get_width() - box.get_width()) // 2, FIELD_MARGIN + 8))
 
         if flip:
             pygame.display.flip()
