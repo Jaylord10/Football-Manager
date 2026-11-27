@@ -73,13 +73,20 @@ PRESSED_M = 3.0            # a man this close = he's passing under pressure (rea
 # LM for a switch): the real values are averages for an area - here a spot is worth more the longer he'd have there
 # before anyone can close him down, and more again if there's grass ahead to run into (one move ahead).
 SPACE_MIN = 0.5            # x a spot's value with a man on him as he gets there (marked)
+SPACE_MIN_GOAL = 0.75      # ...for a carry in their third: heading for goal matters more than space there (27 Nov,
+                           # Jay: "the carry towards goal threat needs to matter in the final third")
+NEXT_W = 0.9               # a carry also counts for the best pass he'd have from where it takes him (towards free
+                           # team-mates, then switch it - Jay), with the man who comes out to him taken off whoever
+                           # he was marking (drag the full-back across and the striker's free - Jay)
+THIRD = 110.0 / 3
 SPACE_FULL = 1.5           # s he'd have before anyone gets to him, for the full value
 LOOK_M = (5.0, 25.0)       # m: how far he could run from there before anyone can get across him (5 m steps, up to
                            # 25 m: a whole free flank)...
 LOOK_W = 0.6               # ...and the share of what it gains that counts now
 PASS_SPEED = (12.0, 0.25)  # m/s a pass travels at, on average: 12 + this x its length (a long ball is struck harder)
 CARRY_SLOW = 1.0           # x a carry's value: running with it gives the defence time to get back in shape
-TAKE_ON_LOSS = 0.75        # x what losing a take-on costs (it's often a counter-attack the other way)
+TAKE_ON_LOSS = (1.25, 0.75) # x what losing a take-on costs, outside their third / in it (27 Nov, Jay: lose it in
+                           # midfield and the team's left massively exposed - a counter with your men committed)
 CLEAR_FROM = 36.0          # m from our goal: clearing is an option nearer than this...
 CLEAR_PRESSED = 6.0        # ...with a man within this
 CLEAR_OURS = 0.25          # share of clearances we end up with
@@ -88,17 +95,19 @@ SEE_OUT_OF_CONE = (0.30, 0.035)   # chance he knows about a team-mate BEHIND him
                                   # point.  Anyone in front of him or to the side he always knows about (27 Nov, Jay:
                                   # the striker 10 m ahead was left off his list)
 BEHIND_DEG = 100.0                # a team-mate more than this far round from the way he's facing is "behind him"
-TAKE_ON_MIN = 0.45                # he only thinks about taking a man on with at least this chance of beating him
+TAKE_ON_MIN = (0.65, 0.52, 0.42)    # he only thinks about taking a man on with at least this chance of beating him -
+                                  # in our third / midfield / their third (27 Nov, Jay: outside their third only if he's
+                                  # exceptional)
                                   # (real take-ons are won 59% of the time - players don't try the hopeless ones)
 TAKE_ON_LANE = 4.0                # m either side of his way to goal: a man in here, in front, is the one in his path
 CARRY_BLOCK = (2.5, 60.0)         # a man within 2.5 m and within 60 deg of a carry's direction blocks that carry
-CROSS_IN_FRONT = 0.4              # x a cross's value when it's aimed in front of their back line, not in behind
+CROSS_IN_FRONT = 0.3              # x a cross's value when it's aimed in front of their back line, not in behind
 JUDGE_NOISE = (0.12, 0.005)       # how far off his sense of a value is (x |value|): - per Decisions point (27 Nov,
                                   # Jay: an average player picked the 2nd-best option far too often - was 0.30)
 NOISE_FLOOR = 0.003               # (values near zero still get some noise)
 PRESSED_NOISE = 0.5               # x more under pressure, less with Composure
 FLAIR_TAKE_ON = 0.03              # per Flair point above 10: how much more a take-on appeals
-CROSS_BASE = 0.16                 # crosses that find a man in OUR matches (aimed in behind: 15%; real ones 29%)
+CROSS_BASE = 0.11                 # crosses that find a man in OUR matches (aimed in behind: 15%; real ones 29%)
 CROSS_TO = (98.0, 8.0)            # a cross is met at least this far up (12 m out) and within this of the middle
 SHOT_BLOCK = 0.75                 # x per man in the way within 6 m (about a quarter of real shots are blocked)
 SHOT_ON_HIM = 0.6                 # x with a man within 1.5 m
@@ -164,19 +173,42 @@ def xg(a, l, header=False):
     return 1 / (1 + math.exp(-max(-30, min(30, z))))
 
 
+def best_pass_from(a, l, mates, opps, t_arrive):
+    """The best pass he'd have from (a, l), getting there t_arrive s from now - with the defender nearest that spot
+    taken out (he's had to come out to the man on the ball).  mates: [(a, l)]."""
+    import ai.spot_value as spot_value
+    if not opps:
+        return 0.0
+    k = min(range(len(opps)), key=lambda i: math.hypot(opps[i][0] - a, opps[i][1] - l))
+    rest = opps[:k] + opps[k + 1:]
+    best = None
+    for ma, ml in mates:
+        L = math.hypot(ma - a, ml - l)
+        if L < PASS_MIN or L > 45.0:
+            continue
+        lane, t = spot_value.lane_and_time(ma, ml, a, l, rest, L)
+        p = pass_odds(L, lane, t, False)
+        v = p * space_value(ma, ml, rest, t_arrive + pass_time(L)) \
+            - LOSS_WEIGHT * (1 - p) * xt_them(a + 0.6 * (ma - a), l + 0.6 * (ml - l))
+        if best is None or v > best:
+            best = v
+    return best or 0.0
+
+
 def pass_time(length):
     """s for a pass of this length to get there."""
     return 0.2 + length / (PASS_SPEED[0] + PASS_SPEED[1] * length)
 
 
-def space_value(a, l, opps, t_arrive=0.0, look=True):
+def space_value(a, l, opps, t_arrive=0.0, look=True, smin=None):
     """What having the ball at (a, l) is worth to us, getting there t_arrive s from now: the spot's real value (xT)
     scaled by the time he'd have there before anyone can close him down (marked: SPACE_MIN of it .. SPACE_FULL s
     free: all of it), plus - one move ahead - part of what a free run from there (LOOK_M forward or diagonal, nobody
     able to get across it) would gain."""
     base = xt(a, l)
     free = min((CHASER_REACT + math.hypot(oa - a, ol - l) / CHASER_SPEED for oa, ol in opps), default=9.0) - t_arrive
-    v = base * (SPACE_MIN + (1.0 - SPACE_MIN) * _clamp(free / SPACE_FULL, 0.0, 1.0))
+    smin = SPACE_MIN if smin is None else smin
+    v = base * (smin + (1.0 - smin) * _clamp(free / SPACE_FULL, 0.0, 1.0))
     if look:
         best = 0.0
         for ang in (0.0, 35.0, -35.0):
@@ -337,8 +369,12 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
                              chance))
 
     # --- run with it ---------------------------------------------------------
+    mates_fr = [to_frame(tid, m.pos) for m in teammates_with_gk if m is not carrier]
     dribbling = _stat(carrier, "Dribbling")
-    for ang in CARRY_ANGLES:
+    # (in their third his carries point at goal - "straight on" is at the goal, not up the touchline; Jay 27 Nov)
+    base_ang = math.degrees(math.atan2(-cl, PITCH_L - ca)) if ca >= 2 * THIRD else 0.0
+    for ang0 in CARRY_ANGLES:
+        ang = ang0 + base_ang
         r = math.radians(ang)
         ta, tl = ca + CARRY_M * math.cos(r), cl + CARRY_M * math.sin(r)
         if any(math.hypot(oa - ca, ol - cl) < CARRY_BLOCK[0]
@@ -360,7 +396,9 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
                 best = min(best, t_o - k * t_me)
             risk += CHASER_RISK * _clamp((0.3 - best) / 0.8, 0.0, 1.0)
         risk = _clamp(risk, 0.02, 0.9)
-        opts.append(((1 - risk) * space_value(ta, tl, opps, t_me) * CARRY_SLOW - LOSS_WEIGHT * risk * here_them,
+        there = space_value(ta, tl, opps, t_me, smin=SPACE_MIN_GOAL if ta >= 2 * THIRD else None)
+        there = max(there, NEXT_W * best_pass_from(ta, tl, mates_fr, opps, t_me))
+        opts.append(((1 - risk) * there * CARRY_SLOW - LOSS_WEIGHT * risk * here_them,
                      "carry", (ta, tl), None,
                      1 - risk))
 
@@ -373,10 +411,11 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
         import gameplay.duels as duels
         p = _clamp(duels.takeon_chance(carrier, man, field_opps), 0.05, 0.95)
         oa, ol = to_frame(tid, man.pos)
-        if p >= TAKE_ON_MIN:
+        zone = 0 if ca < THIRD else 1 if ca < 2 * THIRD else 2
+        if p >= TAKE_ON_MIN[zone]:
             ba, bl = oa + TAKE_ON_BEYOND, ol + (2.0 if ol < cl else -2.0)
             gain = p * space_value(ba, bl, [o for o in opps if o != (oa, ol)], 1.0) * TAKE_ON_APPEAL * (1.0 + FLAIR_TAKE_ON * (_stat(carrier, "Flair") - 10))
-            opts.append((gain - TAKE_ON_LOSS * (1 - p) * here_them, "take_on", man, (ba, bl), p))
+            opts.append((gain - TAKE_ON_LOSS[0 if zone < 2 else 1] * (1 - p) * here_them, "take_on", man, (ba, bl), p))
 
     # --- keep it / shield it ---------------------------------------------------
     if near_d >= HOLD_SAFE:
