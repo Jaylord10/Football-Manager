@@ -4943,8 +4943,12 @@
   },
   {
    "name": "moment 40: striker 20-35 m out, back to goal",
-   "jay": "the LM only with a lofted pass - otherwise ST2 or the LCM",
+   "jay": "the LM only with a lofted pass - otherwise ST2 or the LCM (27 Nov: the RM's fine too)",
    "ok": [
+    [
+     "pass",
+     "RM"
+    ],
     [
      "pass",
      "ST2"
@@ -5052,7 +5056,8 @@
      2.3
     ]
    ],
-   "nearest": 3.0
+   "nearest": 3.0,
+   "not_offered": []
   },
   {
    "name": "moment 41: left-back with time, striker on the shoulder",
