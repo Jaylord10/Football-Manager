@@ -131,6 +131,12 @@ SHOT_MIN_XG = 0.012               # not worth considering below this
 SHOT_APPEAL = (1.7, 0.95)         # x a shot's value, in the box / from outside it: real players shoot far more than
                                   # "keep it and wait for a better one" says, in the box above all (26 shots a match,
                                   # 58% from inside the box - StatsBomb, PL 2015/16)
+TAKE_ON_COVER = 20.0              # m: their men goal-side of where he'd be once past his man, within this, are cover -
+                                  # the appeal of beating a man is only full with nobody covering, gone with 2 (27 Nov,
+                                  # Jay: "the take-on shouldn't score higher, the opposition's cover is fully there")
+TOUCHLINE = (5.0, 0.2)            # a carry heading more sideways than forward, out towards the touchline, ending within 5 m
+                                  # of it: up to 20% off (the line's like an extra defender - 27 Nov, Jay: "carry forwards
+                                  # slightly rather than towards the touchline, then play it to the RM")
 TAKE_ON_APPEAL = 1.4              # x what beating him gains: real players take men on ~38 times a match
 CHASER_RISK = 0.35                # risk per opponent who can get across a carry
 PASS_COST = 0.0013                # a pass that doesn't go 5 m+ forward isn't free either: the defence gets organised
@@ -576,6 +582,8 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
         risk = _clamp(risk, 0.02, 0.9)
         there = space_value(ta, tl, opps, t_me, smin=SPACE_MIN_GOAL if ta >= 2 * THIRD else None)
         there = max(there, NEXT_W * best_pass_from(ta, tl, mates_fr, opps, t_me))
+        if abs(ang) > 45.0 and abs(tl) > abs(cl) and HALF_W - abs(tl) < TOUCHLINE[0]:
+            there *= 1.0 - TOUCHLINE[1] * (TOUCHLINE[0] - (HALF_W - abs(tl))) / TOUCHLINE[0]
         opts.append(((1 - risk) * there * CARRY_SLOW - LOSS_WEIGHT * risk * here_them,
                      "carry", (ta, tl), None,
                      1 - risk))
@@ -592,7 +600,9 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
         zone = 0 if ca < THIRD else 1 if ca < 2 * THIRD else 2
         if p >= TAKE_ON_MIN[zone]:
             ba, bl = oa + TAKE_ON_BEYOND, ol + (2.0 if ol < cl else -2.0)
-            gain = p * space_value(ba, bl, [o for o in opps if o != (oa, ol)], 1.0) * TAKE_ON_APPEAL * (1.0 + FLAIR_TAKE_ON * (_stat(carrier, "Flair") - 10))
+            cover = sum(1 for xa, xl in opps if (xa, xl) != (oa, ol) and xa > ba and math.hypot(xa - ba, xl - bl) < TAKE_ON_COVER)
+            appeal = 1.0 + (TAKE_ON_APPEAL - 1.0) * max(0.0, 1.0 - cover / 2.0)
+            gain = p * space_value(ba, bl, [o for o in opps if o != (oa, ol)], 1.0) * appeal * (1.0 + FLAIR_TAKE_ON * (_stat(carrier, "Flair") - 10))
             opts.append((gain - TAKE_ON_LOSS[0 if zone < 2 else 1] * (1 - p) * here_them, "take_on", man, (ba, bl), p))
 
     # --- keep it / shield it ---------------------------------------------------

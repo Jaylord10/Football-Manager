@@ -64,7 +64,7 @@ for m in data["moments"]:
         if kind == "carry" and how and o["at"]:
             dl, da = o["at"][1] - m["l"], o["at"][0] - m["a"]
             inside = dl * (-1 if m["l"] > 0 else 1) > 1.0
-            return {"left": dl < -1.0, "inside": inside, "forward": da > 2.0}[how]
+            return {"left": dl < -1.0, "inside": inside, "forward": da > 2.0, "upfield": da >= abs(dl) and da > 2.0}[how]
         return True
     best = d["options"][0]
     ok = any(match(best, w) for w in m["ok"])
