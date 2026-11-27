@@ -79,6 +79,10 @@ NEXT_W = 0.7               # a carry also counts for the best pass he'd have fro
                            # team-mates, then switch it - Jay), with the man who comes out to him taken off whoever
                            # he was marking (drag the full-back across and the striker's free - Jay); marked down
                            # because the defenders get back while he carries (27 Nov, Jay - was 0.9)
+PASS_BLOCK = (2.5, 0.6)    # a man within 2.5 m of him whose body (0.6 m either side) covers a pass's direction is in
+                           # the way of it - that pass is off (27 Nov, Jay: "he can't reach the RB, there's a man on that side")
+LOFTED_PASS = (0.7, 0.03, 0.5)  # a pass whose lane is shut (lane under 0.5) has to be lofted over the man: x 0.7 on its
+                                # odds, +0.03 a point of Passing (27 Nov, Jay: "only a lofted pass - otherwise ST2 / LCM")
 PRESSED_NO_BACK = 120.0    # deg: with a man on him he can't pass to anyone further round than this from the way he's
                            # facing - he'd have to turn into the man (27 Nov, Jay: "the LB shouldn't be an option")
 ACROSS_FROM = (85.0, 14.0) # a ball across the box: he's past this far up and at least this far out wide...
@@ -235,7 +239,7 @@ def _in_behind(carrier, teammates, opponents, opps, ca, cl, passing):
     last = max(oa for oa, ol in opps)                 # (their deepest outfield man - the keeper's behind him)
     for m in teammates:
         ma, ml = to_frame(carrier.team, m.pos)
-        if ma < ca + 5.0 or ma < last - 3.0 or ma > last + 1.0:      # (up on their line, ahead of the ball)
+        if ma < ca + 5.0 or ma < last - 5.0 or ma > last + 1.0:      # (up on their line, ahead of the ball)
             continue
         try:
             if tp.is_offside_now(m, carrier, opponents):
@@ -451,9 +455,17 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
             continue
         if pressed and _angle_from_facing(carrier, m) > PRESSED_NO_BACK:
             continue
+        ang_m = math.degrees(math.atan2(ml - cl, ma - ca))
+        if any(math.hypot(oa - ca, ol - cl) < PASS_BLOCK[0]
+               and abs(_angle_diff(math.degrees(math.atan2(ol - cl, oa - ca)), ang_m))
+               < math.degrees(math.atan2(PASS_BLOCK[1], max(0.3, math.hypot(oa - ca, ol - cl))))
+               for oa, ol in opps):
+            continue
         lane, t = spot_value.lane_and_time(ma, ml, ca, cl, opps, L)
         per = PASS_SKILL[0] + PASS_SKILL[1] * max(0.0, L - PASS_SKILL[2])
         p = _clamp(pass_odds(L, lane, t, pressed) + per * (passing - 10), 0.03, 0.97)
+        if lane < LOFTED_PASS[2]:
+            p = _clamp(p * (LOFTED_PASS[0] + LOFTED_PASS[1] * (passing - 10)), 0.03, 0.97)
         v_ok = space_value(ma, ml, opps, pass_time(L))
         f = 0.6 + 0.35 * _clamp((L - LONG_FAIL[0]) / (LONG_FAIL[1] - LONG_FAIL[0]), 0.0, 1.0)
         fa, fl = ca + f * (ma - ca), cl + f * (ml - cl)
