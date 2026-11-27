@@ -17,8 +17,11 @@ import core.world as world
 # pass went exactly to the receiver's feet whatever the Passing stat.
 PASS_ANGLE_BASE      = 1.0    # degrees (standard deviation) for a perfect passer...
 PASS_ANGLE_PER_POINT = 0.30   # ...plus this per Passing point below 20 (13 -> 3.1 deg)
-PASS_ANGLE_PER_M     = 0.06   # extra degrees per metre beyond 20 m (long passes)
+PASS_ANGLE_PER_M     = 0.3    # extra degrees per metre beyond 20 m (long passes), for an average (13) passer - a
+                              # great one (18) gets 58% of it, a poor one (8) 142% (27 Nov: long balls came off 76% vs 49%
+                              # real - StatsBomb PL 2015/16; was 0.06 for everyone)
 PASS_WEIGHT_SD       = 0.08   # speed error (fraction) for an average passer
+PASS_WEIGHT_PER_M    = 0.008  # extra speed error (fraction) per metre beyond 20 m (27 Nov: long balls)
 PASS_PRESSURE_RADIUS = 2.5    # m: an opponent this close puts the passer under pressure
 PASS_PRESSURE_EXTRA  = 0.8    # error multiplier added under pressure (reduced by Composure)
 PASS_MOVING_EXTRA    = 0.15   # extra error when passing at a sprint
@@ -37,6 +40,8 @@ _FRICTION_PER_SEC = 0.992 ** 60          # ≈ 0.617  (ground)
 _NEG_LOG_FRICTION = -math.log(_FRICTION_PER_SEC)   # ≈ 0.481
 
 _FRICTION_AIR     = 0.995 ** 60          # ≈ 0.741  (aerial — ball.update uses 0.995 when z > 0.1)
+LOFTED_SCALE = 0.9   # x a lofted pass's speed: it lands short and runs on to him (0.78 when a landing ball kept all
+                     # its pace - 27 Nov: the ball loses pace landing, core/game_objects.py LANDING_KEEP)
 _NEG_LOG_AIR      = -math.log(_FRICTION_AIR)       # ≈ 0.300
 
 
@@ -68,8 +73,8 @@ def _apply_pass_error(passer, pass_target, speed, dist_m, difficulty=1.0):
     error *= ka.error_mult(passer, pass_target - passer.pos)
 
     angle_sd = (PASS_ANGLE_BASE + PASS_ANGLE_PER_POINT * (20 - passing)
-                + PASS_ANGLE_PER_M * max(0.0, dist_m - 20.0)) * error * difficulty
-    weight_sd = PASS_WEIGHT_SD * (1.6 - passing / 20.0) * error * difficulty
+                + PASS_ANGLE_PER_M * (25 - passing) / 12.0 * max(0.0, dist_m - 20.0)) * error * difficulty
+    weight_sd = (PASS_WEIGHT_SD + PASS_WEIGHT_PER_M * max(0.0, dist_m - 20.0)) * (1.6 - passing / 20.0) * error * difficulty
 
     to_target = pass_target - passer.pos
     if to_target.length_squared() > 0:
@@ -143,7 +148,7 @@ def execute_pass(passer, receiver, ball, current_time, opponents=None, through_p
     # some time rolling after landing.  Scale back lofted passes further so
     # they don't fly through the target.
     if elevation > 0:
-        base_speed *= 0.78
+        base_speed *= LOFTED_SCALE
 
     final_speed = clamp(base_speed, MIN_SPEED, MAX_SPEED)
 

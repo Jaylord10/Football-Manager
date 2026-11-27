@@ -100,16 +100,18 @@ LOOK_M = (5.0, 40.0)       # m: how far he could run from there before anyone ca
                            # 25 m: a whole free flank)...
 LOOK_W = 0.6               # ...and the share of what it gains that counts now
 PASS_SPEED = (12.0, 0.25)  # m/s a pass travels at, on average: 12 + this x its length (a long ball is struck harder)
-CARRY_SLOW = 1.0           # x a carry's value: running with it gives the defence time to get back in shape
+CARRY_SLOW = 0.96          # x a carry's value: running with it gives the defence time to get back in shape (1.0 until
+                           # the 27 Nov pass-odds refit, which made passes a touch less sure - kept Jay's moments level)
 TAKE_ON_LOSS = (1.25, 0.75) # x what losing a take-on costs, outside their third / in it (27 Nov, Jay: lose it in
                            # midfield and the team's left massively exposed - a counter with your men committed)
 CLEAR_FROM = 36.0          # m from our goal: clearing is an option nearer than this...
 CLEAR_PRESSED = 6.0        # ...with a man within this
 CLEAR_OURS = 0.25          # share of clearances we end up with
 PASS_MIN, PASS_MAX = 4.0, 60.0
-PASS_SKILL = (0.012, 0.0006, 15.0)   # how much each point of Passing adds to a pass's odds: 0.012 for a short one, plus
-                                     # 0.0006 per m beyond 15 m (a 45 m diagonal: 0.03 a point) - a great passer (Van Dijk)
-                                     # hits balls an average one shouldn't try (27 Nov, Jay)
+PASS_SKILL = (0.012, 0.001, 15.0)   # how much each point of Passing adds to a pass's odds: 0.012 for a short one, plus
+                                     # 0.001 per m beyond 15 m (a 45 m diagonal: 0.042 a point) - a great passer (Van Dijk)
+                                     # hits balls an average one shouldn't try (27 Nov, Jay; 0.001 from the evening, when the
+                                     # engine's long-ball error started depending on Passing - gameplay/passing.py)
 SEE_OUT_OF_CONE = (0.30, 0.035)   # chance he knows about a team-mate BEHIND him (unless he'd scanned): + per Vision
                                   # point.  Anyone in front of him or to the side he always knows about (27 Nov, Jay:
                                   # the striker 10 m ahead was left off his list)
@@ -436,6 +438,8 @@ def pass_odds(length, lane, t_recv, pressed):
         return p * max(0.25, 1.0 + t_recv) if t_recv < 0 else p
     tc = max(-2.0, min(3.0, t_recv))
     f = [1.0, length / 10.0, (length / 10.0) ** 2, lane, tc, tc * tc, 1.0 if pressed else 0.0]
+    if len(w) > 7:
+        f.append(max(0.0, length - 25.0) / 10.0)     # (long balls: the real fall-off past 25 m - 27 Nov refit)
     z = sum(a * b for a, b in zip(w, f))
     return 1 / (1 + math.exp(-max(-30, min(30, z))))
 

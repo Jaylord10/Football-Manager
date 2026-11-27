@@ -68,6 +68,11 @@ class Ball:
             
             if self.z < 0:
                 self.z = 0
+                if self.vz < -20:
+                    # (27 Nov) landing on grass takes pace off it, not just the bounce: real turf keeps 45-80% of a
+                    # ball's speed when it lands at an angle (FIFA Quality Programme, "angle ball behaviour") - before,
+                    # a lofted ball skidded on at full speed and long balls sailed off the pitch
+                    self.vel *= LANDING_KEEP
                 if abs(self.vz) > 20: self.vz = -self.vz * BOUNCE_FACTOR
                 else: self.vz = 0
             

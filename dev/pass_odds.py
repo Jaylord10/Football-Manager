@@ -9,7 +9,7 @@ import os, sys, io, contextlib, random, json, math
 
 def feats(L, lane, t, pressed):
     t = max(-2.0, min(3.0, t))
-    return [1.0, L / 10.0, (L / 10.0) ** 2, lane, t, t * t, 1.0 if pressed else 0.0]
+    return [1.0, L / 10.0, (L / 10.0) ** 2, lane, t, t * t, 1.0 if pressed else 0.0, max(0.0, L - 25.0) / 10.0]
 
 
 def predict(w, L, lane, t, pressed):
@@ -76,14 +76,18 @@ def fit(out, files):
     R = [r for f in files for r in json.load(open(f))]
     X = [feats(r["L"], r["lane"], r["t"], r["pressed"]) for r in R]
     y = [r["ok"] for r in R]
-    w = [0.0] * len(X[0])
-    for it in range(4000):
-        g = [0.0] * len(w)
-        for xi, yi in zip(X, y):
-            p = 1 / (1 + math.exp(-max(-30, min(30, sum(a * b for a, b in zip(w, xi))))))
-            for k in range(len(w)):
-                g[k] += (p - yi) * xi[k]
-        w = [a - 0.3 * b / len(X) for a, b in zip(w, g)]
+    # (27 Nov: Newton's method - plain gradient steps hadn't settled, and over-rated long and blocked passes)
+    import numpy as np
+    Xa, ya = np.array(X), np.array(y, dtype=float)
+    wa = np.zeros(Xa.shape[1])
+    for it in range(50):
+        pa = 1 / (1 + np.exp(-np.clip(Xa @ wa, -30, 30)))
+        H = (Xa * (pa * (1 - pa))[:, None]).T @ Xa + 1e-3 * np.eye(len(wa))
+        step = np.linalg.solve(H, Xa.T @ (pa - ya) + 1e-3 * wa)
+        wa -= step
+        if np.abs(step).max() < 1e-8:
+            break
+    w = [float(v) for v in wa]
     # check by band
     print(f"{len(R)} passes, {100 * sum(y) / len(y):.1f}% reached a team-mate")
     for name, sel in (("under 15 m", lambda r: r["L"] < 15), ("15-30 m", lambda r: 15 <= r["L"] < 30),
@@ -94,7 +98,7 @@ def fit(out, files):
             real = sum(r["ok"] for r in rs) / len(rs)
             pred = sum(predict(w, r["L"], r["lane"], r["t"], r["pressed"]) for r in rs) / len(rs)
             print(f"  {name:24s} n {len(rs):4d}  really {100 * real:5.1f}%  model {100 * pred:5.1f}%")
-    json.dump({"w": w, "features": "1, L/10, (L/10)^2, lane, t, t^2, pressed (t clamped -2..3)",
+    json.dump({"w": w, "features": "1, L/10, (L/10)^2, lane, t, t^2, pressed, (L-25)+/10 (t clamped -2..3)",
                "passes": len(R), "note": "fitted on our engine's open-play passes (dev/pass_odds.py)"},
               open(out, "w"), indent=1)
 

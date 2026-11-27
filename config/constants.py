@@ -88,6 +88,7 @@ FPS = 60
 GRAVITY = 9.8 * M_TO_PX # Gravity in pixels per second squared
 AIR_RESISTANCE = 0.98   # Slow down slightly in air
 BOUNCE_FACTOR = 0.6     # How much energy is kept after a bounce
+LANDING_KEEP = 0.65     # share of its forward speed a ball keeps when it lands (FIFA turf test: 45-80%)
 
 # Goal Dimensions (3D)
 GOAL_HEIGHT = 2.44 * M_TO_PX # Standard crossbar height ~24px
