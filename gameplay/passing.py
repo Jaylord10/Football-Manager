@@ -160,7 +160,7 @@ def execute_pass(passer, receiver, ball, current_time, opponents=None, through_p
     if through_plan is not None:
         pass_target = Vector2(through_plan["point"])
         final_speed = through_plan["speed_px"]
-        elevation = 0.0
+        elevation = float(through_plan.get("elevation", 0.0))     # (a ball chipped in behind - ai/scoreboard.py)
         dist_meters = distance(passer.pos, pass_target) / M_TO_PX
         difficulty = THROUGH_ERROR_MULT
     else:

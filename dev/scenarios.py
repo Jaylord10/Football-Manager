@@ -58,7 +58,7 @@ for m in data["moments"]:
         kind, how = want
         if o["kind"] != kind:
             return False
-        if kind in ("pass",):
+        if kind in ("pass", "through") and how:
             return o["target"] == how
         if kind == "carry" and how and o["at"]:
             dl, da = o["at"][1] - m["l"], o["at"][0] - m["a"]

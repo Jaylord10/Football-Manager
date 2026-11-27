@@ -6,9 +6,11 @@ import json, sys
 from PIL import Image, ImageDraw, ImageFont
 
 S, M = 8, 20
-W, H = 110 * S + 2 * M, 70 * S + 2 * M + 46
+PANEL = 300                                       # (the list of every option, beside the pitch)
+W, H = 110 * S + 2 * M + PANEL, 70 * S + 2 * M + 46
 F = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 14)
 FS = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 12)
+FM = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf", 12)
 COL = {"pass": (120, 200, 255), "through": (120, 255, 230), "cross": (255, 170, 60), "shoot": (255, 90, 90),
        "carry": (200, 255, 120), "take_on": (255, 120, 220), "hold": (230, 230, 230), "clear": (180, 180, 180)}
 
@@ -48,10 +50,24 @@ def moment(d):
     dr.ellipse([cx - 8, cy - 8, cx + 8, cy + 8], fill=(255, 220, 40), outline=(0, 0, 0), width=2)
     rest = [o for o in d["options"] if o["at"] is None]
     extra = "   ".join(f"{o['kind']} {100 * o['value']:.2f}%" for o in rest)
-    dr.text((M, 6), f"{d['role']} on the ball, nearest man {d['nearest']} m - chose {d['chose']} {d['target']} "
+    lab = (d["label"] + " - ") if d.get("label") else ""
+    dr.text((M, 6), f"{lab}{d['role']} on the ball, nearest man {d['nearest']} m - chose {d['chose']} {d['target']} "
                     f"(worth {100 * d['value']:.2f}%)", font=F, fill=(255, 255, 255))
     dr.text((M, 26), f"attacking left to right; black arrow = which way he's facing.  {extra}", font=FS,
             fill=(210, 210, 210))
+    # every option, best first, as he weighed them
+    px, py = 110 * S + 2 * M + 6, 52
+    dr.text((px, py), "His options, best first:", font=F, fill=(255, 255, 255))
+    py += 24
+    for k, o in enumerate(sorted(d["options"], key=lambda o: -o["value"])[:16], start=1):
+        chosen = o["kind"] == d["chose"] and o["target"] == d["target"]
+        what = f"take on their {o['target']}" if o["kind"] == "take_on" else f"{o['kind']} {o['target']}"
+        col = (255, 255, 255) if chosen else COL.get(o["kind"], (200, 200, 200))
+        dr.text((px, py), f"{k:2d}. {what[:20]:20s}{100 * o['value']:6.2f}%", font=FM, fill=col)
+        dr.text((px + 222, py), f"{100 * o['p']:3.0f}% on", font=FM, fill=(150, 150, 150))
+        py += 17
+    dr.text((px, py + 6), "worth = chance we score from it", font=FS, fill=(150, 150, 150))
+    dr.text((px, py + 22), "on = chance it comes off", font=FS, fill=(150, 150, 150))
     return img
 
 
