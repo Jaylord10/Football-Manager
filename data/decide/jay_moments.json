@@ -6526,15 +6526,15 @@
   },
   {
    "name": "moment 53: right midfielder deep in his own half",
-   "jay": "the pass should be to the LCB - but he's right behind him, how can he do it?",
+   "jay": "he's heading down a dead end if he doesn't turn - turn and play it back (to the LCB)",
    "ok": [
     [
      "pass",
      "LCB"
     ],
     [
-     "carry",
-     ""
+     "pass",
+     "RCB"
     ]
    ],
    "role": "RM",

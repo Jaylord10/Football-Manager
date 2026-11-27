@@ -112,6 +112,7 @@ PASS_SKILL = (0.012, 0.0006, 15.0)   # how much each point of Passing adds to a 
 SEE_OUT_OF_CONE = (0.30, 0.035)   # chance he knows about a team-mate BEHIND him (unless he'd scanned): + per Vision
                                   # point.  Anyone in front of him or to the side he always knows about (27 Nov, Jay:
                                   # the striker 10 m ahead was left off his list)
+LOOKED_ROUND = 8.0                # m: with nobody nearer than this he's had time to look round - he knows where everyone is
 BEHIND_DEG = 100.0                # a team-mate more than this far round from the way he's facing is "behind him"
 TAKE_ON_MIN = (0.65, 0.52, 0.50)    # he only thinks about taking a man on with at least this chance of beating him -
                                   # in our third / midfield / their third (27 Nov, Jay: outside their third only if he's
@@ -141,6 +142,9 @@ TAKE_ON_COVER = 20.0              # m: their men goal-side of where he'd be once
 TOUCHLINE = (5.0, 0.2)            # a carry heading more sideways than forward, out towards the touchline, ending within 5 m
                                   # of it: up to 20% off (the line's like an extra defender - 27 Nov, Jay: "carry forwards
                                   # slightly rather than towards the touchline, then play it to the RM")
+DEAD_END = (10.0, 0.75)           # (outside their third) a carry out towards the touchline that leaves him less than 10 m he could run on from
+                                  # there before someone gets across him: x 0.75 - he's running down a dead end (27 Nov,
+                                  # Jay: "he's heading down a dead end if he doesn't turn")
 TAKE_ON_APPEAL = 1.4              # x what beating him gains: real players take men on ~38 times a match
 CHASER_RISK = 0.35                # risk per opponent who can get across a carry
 PASS_COST = 0.0013                # a pass that doesn't go 5 m+ forward isn't free either: the defence gets organised
@@ -391,6 +395,24 @@ def space_value(a, l, opps, t_arrive=0.0, look=True, smin=None, running_on=False
     return v
 
 
+def _free_run(a, l, opps, t_arrive):
+    """How far (m) he could run on from (a, l) - straight on or diagonally forward - before someone gets across him."""
+    best = 0.0
+    for ang in (0.0, 35.0, -35.0):
+        r = math.radians(ang)
+        dist = 0.0
+        while dist + LOOK_M[0] <= LOOK_M[1] + 1e-6:
+            a2, l2 = a + (dist + LOOK_M[0]) * math.cos(r), l + (dist + LOOK_M[0]) * math.sin(r)
+            if not (0.0 < a2 < PITCH_L and abs(l2) < HALF_W - 1.0):
+                break
+            t_run = t_arrive + (dist + LOOK_M[0]) / CARRY_SPEED
+            if any(CHASER_REACT + math.hypot(oa - a2, ol - l2) / CHASER_SPEED <= t_run - 0.3 for oa, ol in opps):
+                break
+            dist += LOOK_M[0]
+        best = max(best, dist)
+    return best
+
+
 def pass_odds(length, lane, t_recv, pressed):
     """How often a pass like this really reaches its man in our matches (dev/pass_odds.py fits it on the engine's own
     passes): length, how open the lane is, the receiver's time when it arrives, the passer pressed or not.  Falls back
@@ -461,7 +483,7 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
         L = math.hypot(ma - ca, ml - cl)
         if L < PASS_MIN or L > PASS_MAX:
             continue
-        if not picture and _behind(carrier, m) and random.random() > see_p:
+        if not picture and near_d < LOOKED_ROUND and _behind(carrier, m) and random.random() > see_p:
             continue
         if pressed and _angle_from_facing(carrier, m) > PRESSED_NO_BACK:
             continue
@@ -588,6 +610,8 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
         there = max(there, NEXT_W * best_pass_from(ta, tl, mates_fr, opps, t_me))
         if abs(ang) > 45.0 and abs(tl) > abs(cl) and HALF_W - abs(tl) < TOUCHLINE[0]:
             there *= 1.0 - TOUCHLINE[1] * (TOUCHLINE[0] - (HALF_W - abs(tl))) / TOUCHLINE[0]
+        if ca < 2 * THIRD and abs(ang) > 30.0 and abs(tl) > abs(cl) and _free_run(ta, tl, opps, t_me) < DEAD_END[0]:
+            there *= DEAD_END[1]
         opts.append(((1 - risk) * there * CARRY_SLOW - LOSS_WEIGHT * risk * here_them,
                      "carry", (ta, tl), None,
                      1 - risk))
