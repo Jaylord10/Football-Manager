@@ -67,6 +67,10 @@ for m in data["moments"]:
         return True
     best = d["options"][0]
     ok = any(match(best, w) for w in m["ok"])
+    banned = [o for o in d["options"] for w in m.get("not_offered", []) if match(o, w)]
+    if banned:
+        ok = False
+        print(f"     (shouldn't be on his list at all: {', '.join(o['kind'] + ' ' + o['target'] for o in banned)})")
     res.append(ok)
     print(f"\n{'OK  ' if ok else 'MISS'} {m['name']}\n     Jay: {m['jay']}\n     scoreboard: {best['kind']} {best['target']} "
           f"({100 * best['value']:.2f}%)")

@@ -75,9 +75,16 @@ PRESSED_M = 3.0            # a man this close = he's passing under pressure (rea
 SPACE_MIN = 0.4            # x a spot's value with a man on him as he gets there (marked)
 SPACE_MIN_GOAL = 0.75      # ...for a carry in their third: heading for goal matters more than space there (27 Nov,
                            # Jay: "the carry towards goal threat needs to matter in the final third")
-NEXT_W = 0.9               # a carry also counts for the best pass he'd have from where it takes him (towards free
+NEXT_W = 0.7               # a carry also counts for the best pass he'd have from where it takes him (towards free
                            # team-mates, then switch it - Jay), with the man who comes out to him taken off whoever
-                           # he was marking (drag the full-back across and the striker's free - Jay)
+                           # he was marking (drag the full-back across and the striker's free - Jay); marked down
+                           # because the defenders get back while he carries (27 Nov, Jay - was 0.9)
+PRESSED_NO_BACK = 120.0    # deg: with a man on him he can't pass to anyone further round than this from the way he's
+                           # facing - he'd have to turn into the man (27 Nov, Jay: "the LB shouldn't be an option")
+ACROSS_FROM = (85.0, 14.0) # a ball across the box: he's past this far up and at least this far out wide...
+ACROSS_TO = (85.0, 14.0)   # ...to a team-mate past this far up and within this of the middle
+ACROSS_AHEAD = (0.0, 2.0, 4.0)  # m in front of him (towards goal) it could go
+FIRST_TIME_FINISH = 0.85   # x a shot's chance when he has to hit it first time
 THIRD = 110.0 / 3
 SPACE_FULL = 1.5           # s he'd have before anyone gets to him, for the full value
 LOOK_M = (5.0, 40.0)       # m: how far he could run from there before anyone can get across him (5 m steps, up to
@@ -258,14 +265,14 @@ def _in_behind(carrier, teammates, opponents, opps, ca, cl, passing):
             for hard in BEHIND_HARD:
                 v_pass = v_sync * hard
                 if v_pass <= tp.MAX_PASS_SPEED and tp.ARRIVAL_SPEED[0] <= v_pass * k_t <= tp.ARRIVAL_SPEED[1] + 6.0:
-                    safety = _race_behind(carrier, point, v_pass, t_run, opponents, tp)
+                    safety = _race_behind(carrier, point, v_pass, t_run, opponents, tp, runner=m)
                     if safety is not None:
                         break
             if safety is None and d_m > 15.0:
                 k_air = 0.995 ** 60
                 v_air = d_m * -math.log(k_air) / (1.0 - k_air ** t_run)
                 if v_air <= 32.0:
-                    safety = _race_behind(carrier, point, v_air, t_run, opponents, tp, lofted=True)
+                    safety = _race_behind(carrier, point, v_air, t_run, opponents, tp, lofted=True, runner=m)
                     if safety is not None:
                         loft, v_pass = BEHIND_LOFT, v_air
             if safety is None:
@@ -286,7 +293,11 @@ def _in_behind(carrier, teammates, opponents, opps, ca, cl, passing):
     return out
 
 
-def _race_behind(carrier, point, v_pass, t_run, opponents, tp, lofted=False):
+BEATEN_M = 2.5             # m: a defender this close behind the runner (and on his own side of him) has been beaten
+                           # - he can't cut out a ball played in front of the runner without going through him
+
+
+def _race_behind(carrier, point, v_pass, t_run, opponents, tp, lofted=False, runner=None):
     """gameplay/through_pass.py's race (can anyone cut the pass out, or get to the spot before the runner?), with
     defenders who have to turn and chase back towards their own goal losing BEHIND_TURN."""
     from ai.team_shape import to_frame
@@ -296,14 +307,18 @@ def _race_behind(carrier, point, v_pass, t_run, opponents, tp, lofted=False):
         return None
     direction = path / path.length()
     pa, _ = to_frame(carrier.team, point)
+    ra, rl = to_frame(carrier.team, runner.pos) if runner is not None else (None, None)
     margin = 9.9
     for opp in opponents:
+        oa0, ol0 = to_frame(carrier.team, opp.pos)
+        beaten = runner is not None and opp.role != "GK" and oa0 < ra and math.hypot(oa0 - ra, ol0 - rl) < BEATEN_M
         gk = opp.role == "GK"
         reach = tp.GK_REACH if gk else tp.DEF_REACH
         spd = tp.GK_SPEED if gk else tp.DEF_SPEED
         rel = opp.pos - carrier.pos
         along = rel.dot(direction) / M_TO_PX
-        if 0.0 < along < length_m and (not lofted or along < BEHIND_LOFT_END or along > length_m - BEHIND_LOFT_END):
+        if not beaten and 0.0 < along < length_m and \
+                (not lofted or along < BEHIND_LOFT_END or along > length_m - BEHIND_LOFT_END):
             side = abs(rel.x * direction.y - rel.y * direction.x) / M_TO_PX
             t_ball = tp._ball_time_to(along, v_pass)
             if t_ball is not None:
@@ -431,6 +446,8 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
             continue
         if not picture and _behind(carrier, m) and random.random() > see_p:
             continue
+        if pressed and _angle_from_facing(carrier, m) > PRESSED_NO_BACK:
+            continue
         lane, t = spot_value.lane_and_time(ma, ml, ca, cl, opps, L)
         p = _clamp(pass_odds(L, lane, t, pressed) + 0.012 * (passing - 10), 0.03, 0.97)
         v_ok = space_value(ma, ml, opps, pass_time(L))
@@ -457,6 +474,11 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
     # --- a ball in behind for a man on their last line (27 Nov, Jay: "he MUST play it to ST1, he's through on
     #     goal" - the old through-ball plan only works for a man already running) ------------------------------
     for v, tgt, plan, p in _in_behind(carrier, teammates, opponents, opps, ca, cl, passing):
+        opts.append((v, "through", tgt, plan, p))
+
+    # --- a ball across the box, in front of the runners (27 Nov, Jay: "ST1 and ST2 are both beyond their markers - it
+    #     needs a ball just in front of them") -------------------------------------------------------------------
+    for v, tgt, plan, p in _across_box(carrier, teammates, opponents, opps, ca, cl, passing):
         opts.append((v, "through", tgt, plan, p))
 
     # --- cross ---------------------------------------------------------------
@@ -671,6 +693,65 @@ def _facing_vec(carrier):
     if f is None or f.length_squared() == 0:
         f = carrier.vel if carrier.vel.length_squared() > 0 else Vector2(1 if carrier.team == 0 else -1, 0)
     return f.normalize()
+
+
+def _angle_from_facing(carrier, mate):
+    to = mate.pos - carrier.pos
+    if to.length_squared() == 0:
+        return 0.0
+    return abs(_angle_diff(_facing_vec(carrier).angle_to(to.normalize()), 0.0))
+
+
+def _across_box(carrier, teammates, opponents, opps, ca, cl, passing):
+    """A low ball across the box from out wide, just in front of a team-mate there, for him to finish first time.
+    Races the defenders like a ball in behind (those he's already got past have to turn).  [(value, mate, plan, p)]"""
+    import gameplay.through_pass as tp
+    from ai.team_shape import to_frame, to_world
+    out = []
+    if ca < ACROSS_FROM[0] or abs(cl) < ACROSS_FROM[1]:
+        return out
+    for m in teammates:
+        ma, ml = to_frame(carrier.team, m.pos)
+        if ma < ACROSS_TO[0] or abs(ml) > ACROSS_TO[1]:
+            continue
+        best = None
+        for ahead in ACROSS_AHEAD:
+            pa, pl = min(ma + ahead, PITCH_L - 4.0), ml
+            t_top = BEHIND_TOP / BEHIND_ACCEL
+            d_acc = 0.5 * BEHIND_ACCEL * t_top * t_top
+            t_run = 0.1 + (math.sqrt(2 * ahead / BEHIND_ACCEL) if ahead <= d_acc else t_top + (ahead - d_acc) / BEHIND_TOP)
+            point = to_world(carrier.team, pa, pl)
+            d_m = (point - carrier.pos).length() / M_TO_PX
+            if d_m < 6.0:
+                continue
+            t_b = max(t_run, 0.6)
+            k_t = tp._K_GROUND ** t_b
+            v_pass = min(tp.MAX_PASS_SPEED, d_m * tp._NEG_LN_K / (1.0 - k_t))
+            loft = 0.0
+            safety = _race_behind(carrier, point, v_pass, t_b, opponents, tp, runner=m)
+            if safety is None:
+                # (a man in the way of the low ball: whip it over him - a cross into the space in front of the runner)
+                k_air = 0.995 ** 60
+                v_pass = min(32.0, d_m * -math.log(k_air) / (1.0 - k_air ** t_b))
+                safety = _race_behind(carrier, point, v_pass, t_b, opponents, tp, lofted=True, runner=m)
+                loft = 0.4
+            if safety is None:
+                continue
+            crossing = _stat(carrier, "Crossing")
+            if loft:
+                p = _clamp(0.25 + 0.3 * min(safety, 1.0) + 0.02 * (crossing - 10), 0.1, 0.75)
+                chance = 0.5 * (xg(pa, pl) + xg(pa, pl, header=True)) * FIRST_TIME_FINISH   # (volley or header)
+            else:
+                p = _clamp(0.45 + 0.3 * min(safety, 1.0) + 0.012 * (passing - 10), 0.2, 0.9)
+                chance = xg(pa, pl) * FIRST_TIME_FINISH
+            v = p * chance - LOSS_WEIGHT * (1 - p) * xt_them(pa, pl)
+            if best is None or v > best[0]:
+                plan = {"point": point, "speed_px": v_pass * M_TO_PX, "lead_time": t_run, "safety": safety,
+                        "value": v, "score": v, "runner": m, "elevation": loft}
+                best = (v, m, plan, p)
+        if best:
+            out.append(best)
+    return out
 
 
 def _behind(carrier, mate):
