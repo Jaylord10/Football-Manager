@@ -77,21 +77,30 @@ CLEAR_FROM = 36.0          # m from our goal: clearing is an option nearer than 
 CLEAR_PRESSED = 6.0        # ...with a man within this
 CLEAR_OURS = 0.25          # share of clearances we end up with
 PASS_MIN, PASS_MAX = 4.0, 60.0
-SEE_OUT_OF_CONE = (0.30, 0.035)   # chance he knows about a team-mate out of his eyeline: + per Vision point
-JUDGE_NOISE = (0.30, 0.0125)      # how far off his sense of a value is (x |value|): - per Decisions point
+SEE_OUT_OF_CONE = (0.30, 0.035)   # chance he knows about a team-mate BEHIND him (unless he'd scanned): + per Vision
+                                  # point.  Anyone in front of him or to the side he always knows about (27 Nov, Jay:
+                                  # the striker 10 m ahead was left off his list)
+BEHIND_DEG = 100.0                # a team-mate more than this far round from the way he's facing is "behind him"
+TAKE_ON_MIN = 0.45                # he only thinks about taking a man on with at least this chance of beating him
+                                  # (real take-ons are won 59% of the time - players don't try the hopeless ones)
+TAKE_ON_LANE = 4.0                # m either side of his way to goal: a man in here, in front, is the one in his path
+CARRY_BLOCK = (2.5, 60.0)         # a man within 2.5 m and within 60 deg of a carry's direction blocks that carry
+CROSS_IN_FRONT = 0.4              # x a cross's value when it's aimed in front of their back line, not in behind
+JUDGE_NOISE = (0.12, 0.005)       # how far off his sense of a value is (x |value|): - per Decisions point (27 Nov,
+                                  # Jay: an average player picked the 2nd-best option far too often - was 0.30)
 NOISE_FLOOR = 0.003               # (values near zero still get some noise)
 PRESSED_NOISE = 0.5               # x more under pressure, less with Composure
 FLAIR_TAKE_ON = 0.03              # per Flair point above 10: how much more a take-on appeals
-CROSS_BASE = 0.29                 # real crosses completed (StatsBomb)
+CROSS_BASE = 0.16                 # crosses that find a man in OUR matches (aimed in behind: 15%; real ones 29%)
 CROSS_TO = (98.0, 8.0)            # a cross is met at least this far up (12 m out) and within this of the middle
 SHOT_BLOCK = 0.75                 # x per man in the way within 6 m (about a quarter of real shots are blocked)
 SHOT_ON_HIM = 0.6                 # x with a man within 1.5 m
 SHOT_MIN_XG = 0.012               # not worth considering below this
-SHOT_APPEAL = (2.6, 0.85)         # x a shot's value, in the box / from outside it: real players shoot far more than
+SHOT_APPEAL = (1.7, 0.95)         # x a shot's value, in the box / from outside it: real players shoot far more than
                                   # "keep it and wait for a better one" says, in the box above all (26 shots a match,
                                   # 58% from inside the box - StatsBomb, PL 2015/16)
-TAKE_ON_APPEAL = 1.25             # x what beating him gains: real players take men on ~38 times a match
-CHASER_RISK = 0.25                # risk per opponent who can get across a carry
+TAKE_ON_APPEAL = 1.4              # x what beating him gains: real players take men on ~38 times a match
+CHASER_RISK = 0.35                # risk per opponent who can get across a carry
 PASS_COST = 0.0013                # a pass that doesn't go 5 m+ forward isn't free either: the defence gets organised
                                   # (tuned so moves last ~4.6 passes, as real ones do - StatsBomb)
 LOSS_WEIGHT = 0.75                # x what losing it costs: real players take more risk than a cold sum of the odds
@@ -218,10 +227,8 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
         L = math.hypot(ma - ca, ml - cl)
         if L < PASS_MIN or L > PASS_MAX:
             continue
-        if not picture:
-            seen, why = can_see_teammate(carrier, m, opponents)
-            if not seen and why in ("out_of_cone", "too_far") and random.random() > see_p:
-                continue
+        if not picture and _behind(carrier, m) and random.random() > see_p:
+            continue
         lane, t = spot_value.lane_and_time(ma, ml, ca, cl, opps, L)
         p = _clamp(pass_odds(L, lane, t, pressed) + 0.012 * (passing - 10), 0.03, 0.97)
         v_ok = xt(ma, ml) * (RECEIVE_VALUE[0] + (RECEIVE_VALUE[1] - RECEIVE_VALUE[0]) * _clamp((t + 0.5) / 2.5, 0.0, 1.0))
@@ -247,15 +254,19 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
         import ai.decisive as decisive
         tgt, sc = decisive.score_decisive_cross(carrier, teammates, opponents)
         if tgt is not None:
-            ta, tl = to_frame(tid, tgt.pos)
-            # (where it's delivered: into the box in front of him - he attacks it - not where he's standing now)
-            ta, tl = max(ta, CROSS_TO[0]), _clamp(tl, -CROSS_TO[1], CROSS_TO[1])
+            # (27 Nov, Jay: "a decent option provided it's in behind the centre-backs - to the edge of the area it's
+            #  poor": valued where gameplay/crossing.py really aims it, less when that's in front of their line)
+            import gameplay.crossing as crossing_mod
+            ta, tl = to_frame(tid, crossing_mod._aim(carrier, tgt, opponents, "cross"))
+            line = sorted((oa for oa, ol in opps), reverse=True)
+            behind = bool(line) and ta > line[0] - 1.0 or (len(line) > 1 and ta > line[1] + 1.0)
             crossing = _stat(carrier, "Crossing")
             p = _clamp(CROSS_BASE * (0.6 + 0.8 * sc / 100.0) + 0.01 * (crossing - 10), 0.05, 0.6)
             import roles.library as rl
             want = rl.instructions_for(carrier).get("crossing", "normal")
             p_v = p * (1.2 if want == "more" else 0.8 if want == "less" else 1.0)
-            opts.append((p_v * xg(ta, tl, header=True) - LOSS_WEIGHT * (1 - p) * xt_them(ta, tl), "cross", tgt, None, p))
+            v_cross = xg(ta, tl, header=True) * (1.0 if behind else CROSS_IN_FRONT)
+            opts.append((p_v * v_cross - LOSS_WEIGHT * (1 - p) * xt_them(ta, tl), "cross", tgt, (ta, tl), p))
     except Exception:
         pass
 
@@ -288,14 +299,19 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
 
     # --- run with it ---------------------------------------------------------
     dribbling = _stat(carrier, "Dribbling")
-    for ang in (CARRY_ANGLES if near_d >= CARRY_MIN_GAP else ()):
+    for ang in CARRY_ANGLES:
         r = math.radians(ang)
         ta, tl = ca + CARRY_M * math.cos(r), cl + CARRY_M * math.sin(r)
+        if any(math.hypot(oa - ca, ol - cl) < CARRY_BLOCK[0]
+               and abs(_angle_diff(math.degrees(math.atan2(ol - cl, oa - ca)), ang)) < CARRY_BLOCK[1]
+               for oa, ol in opps):
+            continue                                  # (a man right there, that way: that's a take-on, not a carry)
         if not (2.0 < ta < PITCH_L - 2.0 and abs(tl) < HALF_W - 1.5):
             continue
         t_me = CARRY_M / CARRY_SPEED
         risk = CARRY_LOST * (1.3 - 0.03 * (dribbling - 10))
-        risk += CARRY_CLOSE[1] * _clamp((CARRY_CLOSE[0] - near_d) / (CARRY_CLOSE[0] - CARRY_MIN_GAP), 0.0, 1.0)
+        risk += CARRY_CLOSE[1] * _clamp((CARRY_CLOSE[0] - near_d) / (CARRY_CLOSE[0] - CARRY_MIN_GAP), 0.0, 1.0) \
+            * _closing_share(ca, cl, ang, opps, near_d)
         for oa, ol in opps:
             # can he get to the line of my run before I'm past him?
             best = 99.0
@@ -309,15 +325,18 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
                      1 - risk))
 
     # --- take the man on -----------------------------------------------------
-    if near_o is not None and near_d < TAKE_ON_RANGE:
-        rel = near_o.pos - carrier.pos
-        if rel.dot(goal_dir) > 0:                        # he's in front of me
-            import gameplay.duels as duels
-            p = _clamp(duels.takeon_chance(carrier, near_o, field_opps), 0.05, 0.95)
-            oa, ol = to_frame(tid, near_o.pos)
+    # (27 Nov, Jay: "dribble at the last defender" - the man IN HIS PATH, not just whoever's nearest)
+    in_path = [(math.hypot(oa - ca, ol - cl), o) for o, (oa, ol) in zip(opp_list, opps)
+               if 0.0 < oa - ca and abs(ol - cl) < TAKE_ON_LANE and math.hypot(oa - ca, ol - cl) < TAKE_ON_RANGE + 2.0]
+    if in_path:
+        d_path, man = min(in_path, key=lambda x: x[0])
+        import gameplay.duels as duels
+        p = _clamp(duels.takeon_chance(carrier, man, field_opps), 0.05, 0.95)
+        oa, ol = to_frame(tid, man.pos)
+        if p >= TAKE_ON_MIN:
             ba, bl = oa + TAKE_ON_BEYOND, ol + (2.0 if ol < cl else -2.0)
             gain = p * xt(ba, bl) * TAKE_ON_APPEAL * (1.0 + FLAIR_TAKE_ON * (_stat(carrier, "Flair") - 10))
-            opts.append((gain - TAKE_ON_LOSS * (1 - p) * here_them, "take_on", near_o, (ba, bl), p))
+            opts.append((gain - TAKE_ON_LOSS * (1 - p) * here_them, "take_on", man, (ba, bl), p))
 
     # --- keep it / shield it ---------------------------------------------------
     if near_d >= HOLD_SAFE:
@@ -358,6 +377,7 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
     if LOG_ON:
         mates_at = [[round(x, 1) for x in to_frame(tid, m.pos)] + [m.role] for m in teammates_with_gk]
         LOG.append({"mates": mates_at, "opps": [[round(a, 1), round(l, 1)] for a, l in opps],
+                    "facing": _facing_deg(carrier),
                     "t": round(now, 2), "team": tid, "player": getattr(carrier, "name", "?"),
                     "role": carrier.role, "a": round(ca, 1), "l": round(cl, 1), "nearest": round(near_d, 1),
                     "chose": kind, "target": _name(tgt), "value": round(v, 4),
@@ -408,6 +428,45 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
             mechanics.execute_dribble(carrier, target, ball, now, speed_mult=0.4)
         carrier.last_decision_time = now
     return tid
+
+
+def _angle_diff(a, b):
+    return (a - b + 180.0) % 360.0 - 180.0
+
+
+def _closing_share(ca, cl, ang, opps, near_d):
+    """How much the nearest man is in the way of a carry this way (1: straight ahead of it .. 0: behind it)."""
+    best = None
+    for oa, ol in opps:
+        d = math.hypot(oa - ca, ol - cl)
+        if best is None or d < best[0]:
+            best = (d, math.degrees(math.atan2(ol - cl, oa - ca)))
+    if best is None:
+        return 0.0
+    return _clamp(1.0 - abs(_angle_diff(best[1], ang)) / 150.0, 0.2, 1.0)
+
+
+def _facing_vec(carrier):
+    f = getattr(carrier, "facing", None)
+    if f is None or f.length_squared() == 0:
+        f = carrier.vel if carrier.vel.length_squared() > 0 else Vector2(1 if carrier.team == 0 else -1, 0)
+    return f.normalize()
+
+
+def _behind(carrier, mate):
+    """Is this team-mate behind him (more than BEHIND_DEG round from the way he's facing)?"""
+    to = mate.pos - carrier.pos
+    if to.length_squared() == 0:
+        return False
+    return abs(_angle_diff(_facing_vec(carrier).angle_to(to.normalize()), 0.0)) > BEHIND_DEG
+
+
+def _facing_deg(carrier):
+    """Which way he faces in his team's frame (deg: 0 = towards their goal, + = towards his right)."""
+    f = _facing_vec(carrier)
+    if carrier.team == 1:
+        f = -f
+    return round(math.degrees(math.atan2(f.y, f.x)), 0)
 
 
 def _where(tid, tgt, extra):

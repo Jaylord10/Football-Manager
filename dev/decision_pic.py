@@ -35,15 +35,23 @@ def moment(d):
         x, y = P(*o["at"])
         dr.line([cx, cy, x, y], fill=(255, 255, 255) if chosen else COL.get(o["kind"], (200, 200, 200)),
                 width=4 if chosen else 2)
-        dr.text((x + 4, y + 4), f"{o['kind']} {100 * o['value']:.1f}%", font=FS,
+        what = f"take on their {o['target']}" if o["kind"] == "take_on" else o["kind"]
+        dr.text((x + 4, y + 4), f"{what} {100 * o['value']:.2f}%", font=FS,
                 fill=(255, 255, 255) if chosen else COL.get(o["kind"], (200, 200, 200)))
         shown += 1
+    if d.get("facing") is not None:                   # which way he's facing: a short black arrow
+        import math
+        r = math.radians(d["facing"])
+        fx, fy = P(d["a"] + 5 * math.cos(r), d["l"] + 5 * math.sin(r))
+        dr.line([cx, cy, fx, fy], fill=(0, 0, 0), width=5)
+        dr.ellipse([fx - 4, fy - 4, fx + 4, fy + 4], fill=(0, 0, 0))
     dr.ellipse([cx - 8, cy - 8, cx + 8, cy + 8], fill=(255, 220, 40), outline=(0, 0, 0), width=2)
     rest = [o for o in d["options"] if o["at"] is None]
-    extra = "   ".join(f"{o['kind']} {100 * o['value']:.1f}%" for o in rest)
+    extra = "   ".join(f"{o['kind']} {100 * o['value']:.2f}%" for o in rest)
     dr.text((M, 6), f"{d['role']} on the ball, nearest man {d['nearest']} m - chose {d['chose']} {d['target']} "
-                    f"(worth {100 * d['value']:.1f}%)", font=F, fill=(255, 255, 255))
-    dr.text((M, 26), f"attacking left to right.  {extra}", font=FS, fill=(210, 210, 210))
+                    f"(worth {100 * d['value']:.2f}%)", font=F, fill=(255, 255, 255))
+    dr.text((M, 26), f"attacking left to right; black arrow = which way he's facing.  {extra}", font=FS,
+            fill=(210, 210, 210))
     return img
 
 
