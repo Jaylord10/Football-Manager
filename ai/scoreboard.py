@@ -101,6 +101,8 @@ TAKE_ON_MIN = (0.65, 0.52, 0.42)    # he only thinks about taking a man on with 
                                   # (real take-ons are won 59% of the time - players don't try the hopeless ones)
 TAKE_ON_LANE = 4.0                # m either side of his way to goal: a man in here, in front, is the one in his path
 CARRY_BLOCK = (2.5, 60.0)         # a man within 2.5 m and within 60 deg of a carry's direction blocks that carry
+PURSUER = (3.0, 0.35)             # a man within 3 m of him (even behind - trying to tackle him, 27 Nov, Jay): up to
+                                  # this much more risk on any carry
 CROSS_IN_FRONT = 0.3              # x a cross's value when it's aimed in front of their back line, not in behind
 JUDGE_NOISE = (0.12, 0.005)       # how far off his sense of a value is (x |value|): - per Decisions point (27 Nov,
                                   # Jay: an average player picked the 2nd-best option far too often - was 0.30)
@@ -195,12 +197,19 @@ def best_pass_from(a, l, mates, opps, t_arrive):
     return best or 0.0
 
 
-BEHIND_AHEAD = (6.0, 10.0, 14.0, 18.0, 24.0)   # m in front of him the ball could go
+BEHIND_AHEAD = (6.0, 10.0, 14.0, 18.0, 24.0)   # m in front of him the ball could go...
+BEHIND_SIDE = (0.0, -3.0, 3.0)                 # ...and m either side (to go round the man he's just beaten)
+BEHIND_HARD = (1.0, 1.2)                       # x the speed that arrives with him: hit hard, it gets past men
+                                               # sooner and he runs onto it (27 Nov, Jay: "on the floor but hit hard")
 BEHIND_REACT = 0.0         # s: a striker on the shoulder times his run - he goes as the ball's struck
 BEHIND_ACCEL = 6.0         # m/s^2 from a standing start (a sprinter's first steps)...
 BEHIND_TOP = 8.0           # ...up to this
+HOPEFUL = 0.4              # a ball with less chance than this of coming off is a "hopeful" one: real players
+                           # mostly don't play them however good the end of it looks - x (p / HOPEFUL)^2 on what it
+                           # gains (27 Nov, Jay: over the top only if he's an exceptional passer)
 BEHIND_LOFT = 0.5          # elevation of a ball chipped over the top (when along the ground it'd be cut out)
 BEHIND_LOFT_END = 6.0      # m: a chipped ball can only be reached in its first and last few metres
+BEHIND_MAX = 45.0          # m: no ball in behind longer than this (a 70 m diagonal isn't a through ball)
 BEHIND_TURN = 0.5          # s a defender loses turning to chase a ball played in behind him (he's been facing the
                            # ball) - the striker on his shoulder's head start
 
@@ -226,10 +235,10 @@ def _in_behind(carrier, teammates, opponents, opps, ca, cl, passing):
         gx, gl = PITCH_L - ma, -ml
         g = math.hypot(gx, gl) or 1.0
         best = None
-        for ahead in BEHIND_AHEAD:
+        for ahead, side in [(x, y) for x in BEHIND_AHEAD for y in BEHIND_SIDE]:
             # towards goal, a little straighter than the line to the near post
             pa = ma + ahead * (0.5 * gx / g + 0.5)
-            pl = ml + ahead * (0.5 * gl / g)
+            pl = ml + ahead * (0.5 * gl / g) + side
             if pa > PITCH_L - 6.0 or abs(pl) > HALF_W - 2.0:
                 continue
             # his run from a standing start: when does he get there?
@@ -239,15 +248,19 @@ def _in_behind(carrier, teammates, opponents, opps, ca, cl, passing):
                                     else t_top + (ahead - d_acc) / BEHIND_TOP)
             point = to_world(carrier.team, pa, pl)
             d_m = (point - carrier.pos).length() / M_TO_PX
-            if d_m < tp.MIN_PASS_DIST:
+            if d_m < tp.MIN_PASS_DIST or d_m > BEHIND_MAX:
                 continue
             # along the ground if it gets through, otherwise chipped over the top
             loft = 0.0
             k_t = tp._K_GROUND ** t_run
-            v_pass = d_m * tp._NEG_LN_K / (1.0 - k_t)
+            v_sync = d_m * tp._NEG_LN_K / (1.0 - k_t)
             safety = None
-            if v_pass <= tp.MAX_PASS_SPEED and tp.ARRIVAL_SPEED[0] <= v_pass * k_t <= tp.ARRIVAL_SPEED[1] + 4.0:
-                safety = _race_behind(carrier, point, v_pass, t_run, opponents, tp)
+            for hard in BEHIND_HARD:
+                v_pass = v_sync * hard
+                if v_pass <= tp.MAX_PASS_SPEED and tp.ARRIVAL_SPEED[0] <= v_pass * k_t <= tp.ARRIVAL_SPEED[1] + 6.0:
+                    safety = _race_behind(carrier, point, v_pass, t_run, opponents, tp)
+                    if safety is not None:
+                        break
             if safety is None and d_m > 15.0:
                 k_air = 0.995 ** 60
                 v_air = d_m * -math.log(k_air) / (1.0 - k_air ** t_run)
@@ -257,8 +270,13 @@ def _in_behind(carrier, teammates, opponents, opps, ca, cl, passing):
                         loft, v_pass = BEHIND_LOFT, v_air
             if safety is None:
                 continue
-            p = _clamp((0.4 if not loft else 0.3) + 0.3 * min(safety, 1.0) + 0.012 * (passing - 10), 0.2, 0.85)
-            v = p * space_value(pa, pl, opps, t_run, running_on=True) - LOSS_WEIGHT * (1 - p) * xt_them(pa, pl)
+            # (a chip over three men needs a real passer - Jay; along the floor less so)
+            skill = 0.012 if not loft else 0.04
+            p = _clamp((0.4 if not loft else 0.2) + 0.3 * min(safety, 1.0) + skill * (passing - 10), 0.1, 0.85)
+            gain = p * space_value(pa, pl, opps, t_run, running_on=True)
+            if p < HOPEFUL:
+                gain *= (p / HOPEFUL) ** 2
+            v = gain - LOSS_WEIGHT * (1 - p) * xt_them(pa, pl)
             if best is None or v > best[0]:
                 plan = {"point": point, "speed_px": v_pass * M_TO_PX, "lead_time": t_run, "safety": safety,
                         "value": v, "score": v, "runner": m, "elevation": loft}
@@ -419,6 +437,8 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
         f = 0.6 + 0.35 * _clamp((L - LONG_FAIL[0]) / (LONG_FAIL[1] - LONG_FAIL[0]), 0.0, 1.0)
         fa, fl = ca + f * (ma - ca), cl + f * (ml - cl)
         cost = PASS_COST if ma - ca < 5.0 else 0.0
+        if p < HOPEFUL:
+            v_ok *= (p / HOPEFUL) ** 2
         opts.append((p * v_ok - LOSS_WEIGHT * (1 - p) * xt_them(fa, fl) - cost, "pass", m, None, p))
 
     # --- through ball into space ---------------------------------------------
@@ -504,6 +524,7 @@ def decide(carrier, teammates, teammates_with_gk, opponents, field_opps, ball, n
             continue
         t_me = CARRY_M / CARRY_SPEED
         risk = CARRY_LOST * (1.3 - 0.03 * (dribbling - 10))
+        risk += PURSUER[1] * _clamp((PURSUER[0] - near_d) / PURSUER[0], 0.0, 1.0) * (1.2 - 0.02 * (dribbling - 10))
         risk += CARRY_CLOSE[1] * _clamp((CARRY_CLOSE[0] - near_d) / (CARRY_CLOSE[0] - CARRY_MIN_GAP), 0.0, 1.0) \
             * _closing_share(ca, cl, ang, opps, near_d)
         for oa, ol in opps:

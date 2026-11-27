@@ -1028,7 +1028,7 @@
   },
   {
    "name": "moment 9: LCB being pressed",
-   "jay": "he MUST play the ball to ST1 - he's through on goal",
+   "jay": "ST1 along the floor, hit hard - or over the top to ST2 if he's an exceptional passer (over the heads of ~3 men)",
    "ok": [
     [
      "through",
@@ -1037,6 +1037,10 @@
     [
      "pass",
      "ST1"
+    ],
+    [
+     "through",
+     "ST2"
     ]
    ],
    "role": "LCB",
@@ -1245,7 +1249,7 @@
   },
   {
    "name": "moment 11: RM, counter-attack",
-   "jay": "a through ball to ST2, he's in behind",
+   "jay": "a through ball to ST2 - he's got past his defender, and the RM has a man behind him trying to tackle him",
    "ok": [
     [
      "through",
@@ -1793,8 +1797,12 @@
   },
   {
    "name": "moment 16: in our own box",
-   "jay": "the pass to the LM should be more valuable - he's in decent space",
+   "jay": "carrying is still okay - he can pass once he's progressed and drawn the opponent (or the pass to the LM)",
    "ok": [
+    [
+     "carry",
+     ""
+    ],
     [
      "pass",
      "LM"
