@@ -17,11 +17,11 @@ import core.world as world
 # pass went exactly to the receiver's feet whatever the Passing stat.
 PASS_ANGLE_BASE      = 1.0    # degrees (standard deviation) for a perfect passer...
 PASS_ANGLE_PER_POINT = 0.30   # ...plus this per Passing point below 20 (13 -> 3.1 deg)
-PASS_ANGLE_PER_M     = 0.3    # extra degrees per metre beyond 20 m (long passes), for an average (13) passer - a
+PASS_ANGLE_PER_M     = 0.2    # extra degrees per metre beyond 20 m (long passes), for an average (13) passer - a
                               # great one (18) gets 58% of it, a poor one (8) 142% (27 Nov: long balls came off 76% vs 49%
                               # real - StatsBomb PL 2015/16; was 0.06 for everyone)
 PASS_WEIGHT_SD       = 0.08   # speed error (fraction) for an average passer
-PASS_WEIGHT_PER_M    = 0.008  # extra speed error (fraction) per metre beyond 20 m (27 Nov: long balls)
+PASS_WEIGHT_PER_M    = 0.004  # extra speed error (fraction) per metre beyond 20 m (27 Nov: long balls)
 PASS_PRESSURE_RADIUS = 2.5    # m: an opponent this close puts the passer under pressure
 PASS_PRESSURE_EXTRA  = 0.8    # error multiplier added under pressure (reduced by Composure)
 PASS_MOVING_EXTRA    = 0.15   # extra error when passing at a sprint

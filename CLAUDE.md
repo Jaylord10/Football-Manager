@@ -24,9 +24,9 @@ meant to match what's deployed on his PC.** Work happens on branches.
 ## Must-pass checks before reporting any change
 
 1. **Match engine replay is unchanged** (unless the change is meant to touch the engine):
-   `python dev/replay.py . 1 60` must end with `hash 123837bc0cfd755ca45000ef71ce947d` (since 27 Nov evening: the decision
-   scoreboard is the default; a change meant to alter play changes it - then update this line). With the old
-   checklist (`FM_DECIDE=old python dev/replay.py . 1 60`) it's `9aa61e48cd5efc4b8e42d76b2a6ee1cb`.
+   `python dev/replay.py . 1 60` must end with `hash 03a1640d68f2da3a163306669ce76555` (since 27 Nov night: the ball loses
+   pace landing, long-pass error by Passing; a change meant to alter play changes it - then update this line). With
+   the old checklist (`FM_DECIDE=old python dev/replay.py . 1 60`) it's `d930ed0413dea7eb205212f6f9953e7b`.
 2. **Every screen still draws**: `python dev/all_screens.py` (with `FM_GAME` = the game folder). The screens
    `arrange`, `bid`, `choose`, `loan` and `talks` "fail" there because they need setting up first - that's
    expected; anything else failing is a bug.
