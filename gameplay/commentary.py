@@ -130,12 +130,18 @@ class Commentary:
             short = _short(nm)
             self.clubs[t] = ("club_" + slug(short), short)
 
-    def _name(self, p):
+    def _name(self, p, excited=False):
+        """His name, as said in the build-up - or excited (a goal, a shot from close in): "DAWSON!"."""
         if p not in self.names and getattr(p, "name", None):        # (on from the bench)
             team = [q for q in self.names if getattr(q, "team", None) == p.team] + [p]
             self.names.update(name_parts(team))
         n = self.names.get(p)
-        return [("comm", n[0], n[1])] if n else []
+        if not n:
+            return []
+        if excited:                                                 # (name_x -> namex_x, fname_x -> fnamex_x)
+            pre, rest = n[0].split("_", 1)
+            return [("comm", pre + "x_" + rest, n[1].upper() + "!")]
+        return [("comm", n[0], n[1])]
 
     def _line(self, moment):
         m = self.bank.get(moment)
@@ -218,7 +224,10 @@ class Commentary:
 
         # Who's got it: names in the build-up, a tackle
         o = b.owner
-        if o is not None and o is not self._owner and not b.is_dead:
+        if o is not None and o is not self._owner and not b.is_dead and o.role == "GK" and lc and \
+                e.time_elapsed - lc.get("time", -99) < 2.5 and lc.get("team") != o.team:
+            self._say(e, PRI["cross"], self._line("claim"))          # (the keeper comes and takes the cross)
+        elif o is not None and o is not self._owner and not b.is_dead:
             prev = self._owner
             if prev is not None and prev.team != o.team and o.role != "GK" and \
                     (o.pos - prev.pos).length() < 2.5 * M_TO_PX and self.rng.random() < 0.5:
@@ -321,7 +330,7 @@ class Commentary:
         pen = self._shot is not None and self._shot.get("type") == "penalty"
         parts = self._line("goal")
         if scorer is not None:
-            parts += self._name(scorer) + self._line("goal_scorer")
+            parts += self._name(scorer, excited=True) + self._line("goal_scorer")
         if e.match_minute() <= 5 and sum(e.score) == 1 and e.match_state == "first_half":
             parts += self._line("early_goal")
         self._say(e, PRI["goal"], parts)
@@ -343,7 +352,7 @@ class Commentary:
         moment = "header_shot" if si.get("type") == "header" else "shot_far" if d > FAR_M else "shot"
         parts = self._line(moment)
         if self.rng.random() < 0.6:
-            parts = self._name(sh) + parts
+            parts = self._name(sh, excited=d < 18.0) + parts
         self._say(e, PRI["shot"], parts)
 
     def _shot_outcome(self, e):

@@ -15,7 +15,8 @@ What gets made (data/commentary/audio/<voice>/<id>.mp3):
     for every club in the English game (from your career save, saves/career.json; or the starting world)
   - the club names ("Northwick") and the scorelines ("two-one", "one-all") up to 7 goals
 A line whose text you've changed is made again; anything already made isn't paid for twice.
-The model: eleven_flash_v2_5 (fast and the cheapest per character) - change "model" in data/commentary/voices.json.
+The model: eleven_multilingual_v2 (the most natural; 1 credit a character) - or eleven_flash_v2_5 (half the price):
+"model" in data/commentary/voices.json.  Names are made twice: calm ("Dawson.") and excited ("DAWSON!").
 """
 import csv
 import hashlib
@@ -35,9 +36,11 @@ VOICES = os.path.join(W, "data", "commentary", "voices.json")
 AUDIO = os.path.join(W, "data", "commentary", "audio")
 INDEX = os.path.join(AUDIO, "made.json")              # clip -> the text it was made from (to spot changes)
 API = "https://api.elevenlabs.io/v1"
-DEFAULTS = {"model": "eleven_flash_v2_5", "comm": "", "co": "",
+DEFAULTS = {"model": "eleven_multilingual_v2", "comm": "", "co": "",
             # (the commentator a bit livelier - less stable, more style; the co-commentator calmer)
             "settings": {"comm": {"stability": 0.35, "similarity_boost": 0.8, "style": 0.35, "use_speaker_boost": True},
+                         "comm_excited": {"stability": 0.25, "similarity_boost": 0.8, "style": 0.7,
+                                          "use_speaker_boost": True},
                          "co": {"stability": 0.55, "similarity_boost": 0.8, "style": 0.15, "use_speaker_boost": True}}}
 
 
@@ -133,7 +136,9 @@ def wanted():
             for cid, text in (("name_" + slug(s), s), ("fname_" + slug(n), n) if sur[s] > 1 else (None, None)):
                 if cid and cid not in seen:
                     seen.add(cid)
-                    names.append(("comm", cid, text + "."))
+                    names.append(("comm", cid, text + "."))                     # (calm: the build-up)
+                    pre, rest = cid.split("_", 1)
+                    names.append(("comm", pre + "x_" + rest, text.upper() + "!"))  # (excited: a goal, a shot)
     out += names
     for a in range(8):
         for b in range(a + 1):
@@ -174,7 +179,7 @@ def main():
         t = todo()
         chars = sum(len(x[2]) for x in t)
         print(f"To make: {len(t)} clips, {chars:,} characters "
-              f"({sum(1 for x in t if x[1].startswith(('name_', 'fname_')))} names)")
+              f"({sum(1 for x in t if x[1].startswith(('name_', 'fname_', 'namex_', 'fnamex_')))} names)")
         try:
             sub = call("/user/subscription")
             left = sub.get("character_limit", 0) - sub.get("character_count", 0)
@@ -191,8 +196,9 @@ def main():
         n = int(sys.argv[2]) if len(sys.argv) > 2 else len(t)
         m = made()
         for i, (v, c, text) in enumerate(t[:n]):
+            sets = cfg["settings"]["comm_excited" if c.startswith(("namex_", "fnamex_")) else v]
             audio = call(f"/text-to-speech/{cfg[v]}?output_format=mp3_44100_128",
-                         {"text": text, "model_id": cfg["model"], "voice_settings": cfg["settings"][v]}, raw=True)
+                         {"text": text, "model_id": cfg["model"], "voice_settings": sets}, raw=True)
             os.makedirs(os.path.join(AUDIO, v), exist_ok=True)
             open(os.path.join(AUDIO, v, c + ".mp3"), "wb").write(audio)
             m[f"{v}/{c}"] = text

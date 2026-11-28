@@ -1,5 +1,5 @@
 {
- "note": "The commentary's phrase bank (27-28 Nov, Jay: an ElevenLabs commentary). comm = the commentator, co = the co-commentator. dev/make_commentary.py turns each line into data/commentary/audio/<voice>/<id>.mp3, plus every player's name, the club names and the scorelines. Change a line's text and its file is made again.",
+ "note": "The commentary's phrase bank (27-28 Nov, Jay: an ElevenLabs commentary). comm = the commentator, co = the co-commentator. dev/make_commentary.py turns each line into data/commentary/audio/<voice>/<id>.mp3, plus every player's name, the club names and the scorelines. Change a line's text and its file is made again. (28 Nov: twice the lines for the big moments; names said twice - calm for the build-up, excited for goals.)",
  "moments": {
   "kickoff_match": {
    "voice": "comm",
@@ -184,6 +184,22 @@
     {
      "id": "shot_6",
      "text": "Takes aim..."
+    },
+    {
+     "id": "shot_7",
+     "text": "Here's the shot!"
+    },
+    {
+     "id": "shot_8",
+     "text": "Goes for goal!"
+    },
+    {
+     "id": "shot_9",
+     "text": "Hits it!"
+    },
+    {
+     "id": "shot_10",
+     "text": "Pulls the trigger!"
     }
    ]
   },
@@ -201,6 +217,14 @@
     {
      "id": "shot_far_3",
      "text": "Speculative effort..."
+    },
+    {
+     "id": "shot_far_4",
+     "text": "Have a go from there!"
+    },
+    {
+     "id": "shot_far_5",
+     "text": "Long range effort!"
     }
    ]
   },
@@ -218,6 +242,14 @@
     {
      "id": "header_shot_3",
      "text": "Up he goes!"
+    },
+    {
+     "id": "header_shot_4",
+     "text": "Rises highest!"
+    },
+    {
+     "id": "header_shot_5",
+     "text": "A header!"
     }
    ]
   },
@@ -243,6 +275,18 @@
     {
      "id": "wide_5",
      "text": "Past the post."
+    },
+    {
+     "id": "wide_6",
+     "text": "Sliced wide."
+    },
+    {
+     "id": "wide_7",
+     "text": "Didn't trouble the keeper."
+    },
+    {
+     "id": "wide_8",
+     "text": "Well wide."
     }
    ]
   },
@@ -264,6 +308,14 @@
     {
      "id": "over_4",
      "text": "Into the stands."
+    },
+    {
+     "id": "over_5",
+     "text": "Sails over."
+    },
+    {
+     "id": "over_6",
+     "text": "Too high."
     }
    ]
   },
@@ -285,6 +337,18 @@
     {
      "id": "close_4",
      "text": "That was nearly it!"
+    },
+    {
+     "id": "close_5",
+     "text": "Agonisingly wide!"
+    },
+    {
+     "id": "close_6",
+     "text": "Whistles past the post!"
+    },
+    {
+     "id": "close_7",
+     "text": "Oh, he's nearly done it!"
     }
    ]
   },
@@ -302,6 +366,14 @@
     {
      "id": "blocked_3",
      "text": "Straight into the defender."
+    },
+    {
+     "id": "blocked_4",
+     "text": "Great block!"
+    },
+    {
+     "id": "blocked_5",
+     "text": "Thrown bodies in the way!"
     }
    ]
   },
@@ -327,6 +399,18 @@
     {
      "id": "save_5",
      "text": "Comfortable for the keeper."
+    },
+    {
+     "id": "save_6",
+     "text": "Straight at the keeper."
+    },
+    {
+     "id": "save_7",
+     "text": "Gathered up."
+    },
+    {
+     "id": "save_8",
+     "text": "The keeper's equal to it."
     }
    ]
   },
@@ -348,6 +432,22 @@
     {
      "id": "big_save_4",
      "text": "How has he kept that out?!"
+    },
+    {
+     "id": "big_save_5",
+     "text": "Oh, what a stop!"
+    },
+    {
+     "id": "big_save_6",
+     "text": "Incredible save!"
+    },
+    {
+     "id": "big_save_7",
+     "text": "He's tipped it away!"
+    },
+    {
+     "id": "big_save_8",
+     "text": "Denied by the keeper!"
     }
    ]
   },
@@ -373,6 +473,26 @@
     {
      "id": "goal_5",
      "text": "And it's a goal!"
+    },
+    {
+     "id": "goal_6",
+     "text": "GOAL! What a moment!"
+    },
+    {
+     "id": "goal_7",
+     "text": "IN! It's in!"
+    },
+    {
+     "id": "goal_8",
+     "text": "He's done it!"
+    },
+    {
+     "id": "goal_9",
+     "text": "There it is! It's a goal!"
+    },
+    {
+     "id": "goal_10",
+     "text": "Into the net!"
     }
    ]
   },
@@ -394,6 +514,22 @@
     {
      "id": "goal_scorer_4",
      "text": "makes no mistake!"
+    },
+    {
+     "id": "goal_scorer_5",
+     "text": "finds the corner!"
+    },
+    {
+     "id": "goal_scorer_6",
+     "text": "slots it home!"
+    },
+    {
+     "id": "goal_scorer_7",
+     "text": "fires it in!"
+    },
+    {
+     "id": "goal_scorer_8",
+     "text": "buries it!"
     }
    ]
   },
@@ -488,6 +624,14 @@
     {
      "id": "corner_in_3",
      "text": "Delivered into the box..."
+    },
+    {
+     "id": "corner_in_4",
+     "text": "Here's the delivery..."
+    },
+    {
+     "id": "corner_in_5",
+     "text": "Curled in..."
     }
    ]
   },
@@ -509,6 +653,18 @@
     {
      "id": "cross_4",
      "text": "Ball in..."
+    },
+    {
+     "id": "cross_5",
+     "text": "Looking for a head..."
+    },
+    {
+     "id": "cross_6",
+     "text": "Clipped into the area..."
+    },
+    {
+     "id": "cross_7",
+     "text": "Delivers it..."
     }
    ]
   },
@@ -526,6 +682,14 @@
     {
      "id": "through_3",
      "text": "In behind!"
+    },
+    {
+     "id": "through_4",
+     "text": "What a pass!"
+    },
+    {
+     "id": "through_5",
+     "text": "Splits the defence!"
     }
    ]
   },
@@ -564,6 +728,18 @@
     {
      "id": "tackle_4",
      "text": "Well won."
+    },
+    {
+     "id": "tackle_5",
+     "text": "Strong challenge."
+    },
+    {
+     "id": "tackle_6",
+     "text": "Takes it off his toes."
+    },
+    {
+     "id": "tackle_7",
+     "text": "Superb tackle!"
     }
    ]
   },
@@ -585,6 +761,18 @@
     {
      "id": "foul_4",
      "text": "Brought down."
+    },
+    {
+     "id": "foul_5",
+     "text": "Late challenge."
+    },
+    {
+     "id": "foul_6",
+     "text": "Clipped him there."
+    },
+    {
+     "id": "foul_7",
+     "text": "The whistle goes."
     }
    ]
   },
@@ -764,6 +952,30 @@
     {
      "id": "co_goal_8",
      "text": "Composed. Picked his spot and put it there."
+    },
+    {
+     "id": "co_goal_9",
+     "text": "Oh, I love that. Calm, cool, and in the back of the net."
+    },
+    {
+     "id": "co_goal_10",
+     "text": "The build-up was brilliant, and he's finished it off in style."
+    },
+    {
+     "id": "co_goal_11",
+     "text": "Nobody picked him up! You can't give a player like that time in the box."
+    },
+    {
+     "id": "co_goal_12",
+     "text": "That's what he's there for. A proper striker's finish."
+    },
+    {
+     "id": "co_goal_13",
+     "text": "What a time to score. That'll give them a real lift."
+    },
+    {
+     "id": "co_goal_14",
+     "text": "Fantastic. Just look at the technique on that."
     }
    ]
   },
@@ -798,6 +1010,22 @@
     {
      "id": "co_save_4",
      "text": "That was heading in. Superb reactions."
+    },
+    {
+     "id": "co_save_5",
+     "text": "Brilliant from the keeper. That's a match-winning save, that."
+    },
+    {
+     "id": "co_save_6",
+     "text": "He's made himself big, and it's paid off."
+    },
+    {
+     "id": "co_save_7",
+     "text": "Great hands. I thought that was in."
+    },
+    {
+     "id": "co_save_8",
+     "text": "You won't see many better saves than that."
     }
    ]
   },
@@ -819,6 +1047,22 @@
     {
      "id": "co_miss_4",
      "text": "Just snatched at it a bit."
+    },
+    {
+     "id": "co_miss_5",
+     "text": "Oh, he'll be having nightmares about that one."
+    },
+    {
+     "id": "co_miss_6",
+     "text": "Should've been a goal, that."
+    },
+    {
+     "id": "co_miss_7",
+     "text": "Big chance gone. They might regret that."
+    },
+    {
+     "id": "co_miss_8",
+     "text": "Just needed to keep his head over the ball."
     }
    ]
   },
@@ -845,6 +1089,14 @@
     {
      "id": "co_ht_lead_2",
      "text": "A deserved lead, I think. The others need a response after the break."
+    },
+    {
+     "id": "co_ht_lead_3",
+     "text": "They've been the better side, no doubt about it."
+    },
+    {
+     "id": "co_ht_lead_4",
+     "text": "One goal in it. Still all to play for."
     }
    ]
   },
@@ -858,6 +1110,14 @@
     {
      "id": "co_ht_level_2",
      "text": "Cagey stuff. Plenty to play for in the second half."
+    },
+    {
+     "id": "co_ht_level_3",
+     "text": "Both keepers have barely been tested."
+    },
+    {
+     "id": "co_ht_level_4",
+     "text": "I'd like to see a bit more risk-taking after the break."
     }
    ]
   },
@@ -871,6 +1131,14 @@
     {
      "id": "co_ft_win_2",
      "text": "Deserved, I think. They took their chances."
+    },
+    {
+     "id": "co_ft_win_3",
+     "text": "Big three points, that. Really big."
+    },
+    {
+     "id": "co_ft_win_4",
+     "text": "They've worked hard for that, every one of them."
     }
    ]
   },
@@ -884,6 +1152,31 @@
     {
      "id": "co_ft_draw_2",
      "text": "Neither side will be too unhappy with a point."
+    },
+    {
+     "id": "co_ft_draw_3",
+     "text": "Honestly, I think both sides will take that."
+    },
+    {
+     "id": "co_ft_draw_4",
+     "text": "A draw's probably fair on what we've seen."
+    }
+   ]
+  },
+  "claim": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "claim_1",
+     "text": "Claimed by the keeper."
+    },
+    {
+     "id": "claim_2",
+     "text": "The keeper comes and takes it."
+    },
+    {
+     "id": "claim_3",
+     "text": "Safe hands."
     }
    ]
   }
