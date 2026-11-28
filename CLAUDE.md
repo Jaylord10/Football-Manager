@@ -59,6 +59,11 @@ cache - keep that line.
   kept as a backup: B in a match switches (remembered in `career["decide"]`), or `FM_DECIDE=old`.
   Jay's judgements on real moments are tests: `python dev/scenarios.py . <out.json>` (data/decide/jay_moments.json -
   all should come out his way). `dev/decisions.py` / `dev/decision_pic.py` show what each player was thinking.
+- Commentary (28 Nov): `gameplay/commentary.py` watches the match (never changes it - its own random numbers) and
+  plays a phrase bank (`data/commentary/lines.json`, commentator "comm" + co-commentator "co") plus players' names,
+  club names and scorelines; K in a match switches it (remembered in `career["commentary"]`).  The sound files are
+  made on Jay's PC with his ElevenLabs key: `dev/make_commentary.py` (voices / use / plan / make / test).
+  `dev/commentary_transcript.py` writes what would be said in a match, to read before making any sound.
 - The 3D match view: `broadcast3d/` (Panda3D). `broadcast3d/live.py` draws career matches live inside the match
   screen (a second process, picture via shared memory; `MatchEngine._start_3d` / `_draw_3d`; V switches 2D/3D,
   remembered in `career["match_view"]`). It never changes the engine's play. Check: `python broadcast3d/check.py`.
@@ -67,4 +72,4 @@ cache - keep that line.
 
 ## Not in this repository
 
-Jay's saves, the `_backup_*` folders, the full NewGAN pack, `faces/photos`, and his picture work folders.
+Jay's saves, the `_backup_*` folders, his ElevenLabs key and the commentary sound files, the full NewGAN pack, `faces/photos`, and his picture work folders.

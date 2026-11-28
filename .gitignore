@@ -28,3 +28,8 @@ broadcast3d/tex/crowd_*_up.png
 broadcast3d/tex/glow.png
 broadcast3d/install_3d.log
 broadcast3d/install_3d.running
+
+# The commentary: your ElevenLabs key, and the sound files made from it (dev/make_commentary.py)
+elevenlabs_key.txt
+data/commentary/audio/
+commentary_test_*.mp3

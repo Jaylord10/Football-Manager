@@ -1,0 +1,891 @@
+{
+ "note": "The commentary's phrase bank (27-28 Nov, Jay: an ElevenLabs commentary). comm = the commentator, co = the co-commentator. dev/make_commentary.py turns each line into data/commentary/audio/<voice>/<id>.mp3, plus every player's name, the club names and the scorelines. Change a line's text and its file is made again.",
+ "moments": {
+  "kickoff_match": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "kickoff_match_1",
+     "text": "And we're under way!"
+    },
+    {
+     "id": "kickoff_match_2",
+     "text": "Off we go!"
+    },
+    {
+     "id": "kickoff_match_3",
+     "text": "The referee blows, and we're up and running."
+    },
+    {
+     "id": "kickoff_match_4",
+     "text": "Here we go, then!"
+    }
+   ]
+  },
+  "kickoff_second": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "kickoff_second_1",
+     "text": "We're back under way for the second half."
+    },
+    {
+     "id": "kickoff_second_2",
+     "text": "The second half is up and running."
+    },
+    {
+     "id": "kickoff_second_3",
+     "text": "Off we go again."
+    }
+   ]
+  },
+  "kickoff_restart": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "kickoff_restart_1",
+     "text": "And we restart."
+    },
+    {
+     "id": "kickoff_restart_2",
+     "text": "Back under way."
+    },
+    {
+     "id": "kickoff_restart_3",
+     "text": "Play gets going again."
+    }
+   ]
+  },
+  "half_time": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "half_time_1",
+     "text": "And that's the half-time whistle."
+    },
+    {
+     "id": "half_time_2",
+     "text": "The referee brings the first half to a close."
+    },
+    {
+     "id": "half_time_3",
+     "text": "Half-time."
+    }
+   ]
+  },
+  "full_time": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "full_time_1",
+     "text": "And there's the final whistle!"
+    },
+    {
+     "id": "full_time_2",
+     "text": "That's it, it's all over!"
+    },
+    {
+     "id": "full_time_3",
+     "text": "The referee calls time on this one."
+    }
+   ]
+  },
+  "ht_lead": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "ht_lead_1",
+     "text": "have the lead at the break,"
+    },
+    {
+     "id": "ht_lead_2",
+     "text": "go in front at half-time,"
+    },
+    {
+     "id": "ht_lead_3",
+     "text": "lead at the interval,"
+    }
+   ]
+  },
+  "ht_level": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "ht_level_1",
+     "text": "All square at the break."
+    },
+    {
+     "id": "ht_level_2",
+     "text": "Level at half-time."
+    },
+    {
+     "id": "ht_level_3",
+     "text": "Nothing to separate them at the interval."
+    }
+   ]
+  },
+  "ft_win": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "ft_win_1",
+     "text": "take the points,"
+    },
+    {
+     "id": "ft_win_2",
+     "text": "win it,"
+    },
+    {
+     "id": "ft_win_3",
+     "text": "get the win,"
+    }
+   ]
+  },
+  "ft_draw": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "ft_draw_1",
+     "text": "Honours even."
+    },
+    {
+     "id": "ft_draw_2",
+     "text": "It finishes all square."
+    },
+    {
+     "id": "ft_draw_3",
+     "text": "A point apiece."
+    }
+   ]
+  },
+  "shot": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "shot_1",
+     "text": "Shoots!"
+    },
+    {
+     "id": "shot_2",
+     "text": "Has a go!"
+    },
+    {
+     "id": "shot_3",
+     "text": "Lets fly!"
+    },
+    {
+     "id": "shot_4",
+     "text": "Strikes it!"
+    },
+    {
+     "id": "shot_5",
+     "text": "Tries his luck!"
+    },
+    {
+     "id": "shot_6",
+     "text": "Takes aim..."
+    }
+   ]
+  },
+  "shot_far": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "shot_far_1",
+     "text": "From distance!"
+    },
+    {
+     "id": "shot_far_2",
+     "text": "Tries his luck from range!"
+    },
+    {
+     "id": "shot_far_3",
+     "text": "Speculative effort..."
+    }
+   ]
+  },
+  "header_shot": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "header_shot_1",
+     "text": "Gets his head to it!"
+    },
+    {
+     "id": "header_shot_2",
+     "text": "Heads it at goal!"
+    },
+    {
+     "id": "header_shot_3",
+     "text": "Up he goes!"
+    }
+   ]
+  },
+  "wide": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "wide_1",
+     "text": "Wide."
+    },
+    {
+     "id": "wide_2",
+     "text": "Wide of the post."
+    },
+    {
+     "id": "wide_3",
+     "text": "Drags it wide."
+    },
+    {
+     "id": "wide_4",
+     "text": "Off target."
+    },
+    {
+     "id": "wide_5",
+     "text": "Past the post."
+    }
+   ]
+  },
+  "over": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "over_1",
+     "text": "Over the bar!"
+    },
+    {
+     "id": "over_2",
+     "text": "Blazes it over."
+    },
+    {
+     "id": "over_3",
+     "text": "That's gone high."
+    },
+    {
+     "id": "over_4",
+     "text": "Into the stands."
+    }
+   ]
+  },
+  "close": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "close_1",
+     "text": "Oh, so close!"
+    },
+    {
+     "id": "close_2",
+     "text": "Inches wide!"
+    },
+    {
+     "id": "close_3",
+     "text": "Just past the post!"
+    },
+    {
+     "id": "close_4",
+     "text": "That was nearly it!"
+    }
+   ]
+  },
+  "blocked": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "blocked_1",
+     "text": "Blocked!"
+    },
+    {
+     "id": "blocked_2",
+     "text": "Charged down!"
+    },
+    {
+     "id": "blocked_3",
+     "text": "Straight into the defender."
+    }
+   ]
+  },
+  "save": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "save_1",
+     "text": "Saved!"
+    },
+    {
+     "id": "save_2",
+     "text": "Good save."
+    },
+    {
+     "id": "save_3",
+     "text": "The keeper gets down well."
+    },
+    {
+     "id": "save_4",
+     "text": "Held by the keeper."
+    },
+    {
+     "id": "save_5",
+     "text": "Comfortable for the keeper."
+    }
+   ]
+  },
+  "big_save": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "big_save_1",
+     "text": "What a save!"
+    },
+    {
+     "id": "big_save_2",
+     "text": "Brilliant stop!"
+    },
+    {
+     "id": "big_save_3",
+     "text": "Fantastic save!"
+    },
+    {
+     "id": "big_save_4",
+     "text": "How has he kept that out?!"
+    }
+   ]
+  },
+  "goal": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "goal_1",
+     "text": "GOAL!"
+    },
+    {
+     "id": "goal_2",
+     "text": "It's in!"
+    },
+    {
+     "id": "goal_3",
+     "text": "Back of the net!"
+    },
+    {
+     "id": "goal_4",
+     "text": "He scores!"
+    },
+    {
+     "id": "goal_5",
+     "text": "And it's a goal!"
+    }
+   ]
+  },
+  "goal_scorer": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "goal_scorer_1",
+     "text": "with the finish!"
+    },
+    {
+     "id": "goal_scorer_2",
+     "text": "puts it away!"
+    },
+    {
+     "id": "goal_scorer_3",
+     "text": "has scored!"
+    },
+    {
+     "id": "goal_scorer_4",
+     "text": "makes no mistake!"
+    }
+   ]
+  },
+  "own_goal": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "own_goal_1",
+     "text": "Oh, it's an own goal!"
+    },
+    {
+     "id": "own_goal_2",
+     "text": "Into his own net!"
+    },
+    {
+     "id": "own_goal_3",
+     "text": "Oh no - an own goal!"
+    }
+   ]
+  },
+  "penalty": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "penalty_1",
+     "text": "Penalty!"
+    },
+    {
+     "id": "penalty_2",
+     "text": "The referee points to the spot!"
+    },
+    {
+     "id": "penalty_3",
+     "text": "It's a penalty!"
+    }
+   ]
+  },
+  "pen_saved": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "pen_saved_1",
+     "text": "Saved! The penalty is saved!"
+    },
+    {
+     "id": "pen_saved_2",
+     "text": "The keeper's kept it out!"
+    }
+   ]
+  },
+  "pen_missed": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "pen_missed_1",
+     "text": "He's missed it!"
+    },
+    {
+     "id": "pen_missed_2",
+     "text": "Off target from the spot!"
+    }
+   ]
+  },
+  "corner": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "corner_1",
+     "text": "Corner kick."
+    },
+    {
+     "id": "corner_2",
+     "text": "That'll be a corner."
+    },
+    {
+     "id": "corner_3",
+     "text": "They'll have a corner."
+    }
+   ]
+  },
+  "corner_in": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "corner_in_1",
+     "text": "Swung in..."
+    },
+    {
+     "id": "corner_in_2",
+     "text": "In comes the corner..."
+    },
+    {
+     "id": "corner_in_3",
+     "text": "Delivered into the box..."
+    }
+   ]
+  },
+  "cross": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "cross_1",
+     "text": "Crosses..."
+    },
+    {
+     "id": "cross_2",
+     "text": "Into the box..."
+    },
+    {
+     "id": "cross_3",
+     "text": "Whips it in..."
+    },
+    {
+     "id": "cross_4",
+     "text": "Ball in..."
+    }
+   ]
+  },
+  "through": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "through_1",
+     "text": "Played through!"
+    },
+    {
+     "id": "through_2",
+     "text": "Slides it through!"
+    },
+    {
+     "id": "through_3",
+     "text": "In behind!"
+    }
+   ]
+  },
+  "counter": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "counter_1",
+     "text": "They break!"
+    },
+    {
+     "id": "counter_2",
+     "text": "On the counter!"
+    },
+    {
+     "id": "counter_3",
+     "text": "Here they come!"
+    }
+   ]
+  },
+  "tackle": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "tackle_1",
+     "text": "Good tackle."
+    },
+    {
+     "id": "tackle_2",
+     "text": "Wins it back."
+    },
+    {
+     "id": "tackle_3",
+     "text": "Nicked away."
+    },
+    {
+     "id": "tackle_4",
+     "text": "Well won."
+    }
+   ]
+  },
+  "foul": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "foul_1",
+     "text": "Free kick."
+    },
+    {
+     "id": "foul_2",
+     "text": "That's a foul."
+    },
+    {
+     "id": "foul_3",
+     "text": "The referee blows for a foul."
+    },
+    {
+     "id": "foul_4",
+     "text": "Brought down."
+    }
+   ]
+  },
+  "fk_danger": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "fk_danger_1",
+     "text": "Free kick in a dangerous position."
+    },
+    {
+     "id": "fk_danger_2",
+     "text": "This is in shooting range."
+    }
+   ]
+  },
+  "yellow": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "yellow_1",
+     "text": "Into the book he goes."
+    },
+    {
+     "id": "yellow_2",
+     "text": "Yellow card."
+    },
+    {
+     "id": "yellow_3",
+     "text": "He's been booked."
+    }
+   ]
+  },
+  "red": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "red_1",
+     "text": "He's off! Red card!"
+    },
+    {
+     "id": "red_2",
+     "text": "Sent off!"
+    },
+    {
+     "id": "red_3",
+     "text": "That's a red card!"
+    }
+   ]
+  },
+  "second_yellow": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "second_yellow_1",
+     "text": "Second yellow - he's off!"
+    },
+    {
+     "id": "second_yellow_2",
+     "text": "That's his second booking - he's gone!"
+    }
+   ]
+  },
+  "offside": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "offside_1",
+     "text": "Flag's up, offside."
+    },
+    {
+     "id": "offside_2",
+     "text": "Offside."
+    },
+    {
+     "id": "offside_3",
+     "text": "He's strayed offside."
+    }
+   ]
+  },
+  "goal_kick": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "goal_kick_1",
+     "text": "Goal kick."
+    },
+    {
+     "id": "goal_kick_2",
+     "text": "It'll be a goal kick."
+    }
+   ]
+  },
+  "sub": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "sub_1",
+     "text": "A change for"
+    },
+    {
+     "id": "sub_2",
+     "text": "A substitution for"
+    }
+   ]
+  },
+  "late": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "late_1",
+     "text": "Into the last ten minutes."
+    },
+    {
+     "id": "late_2",
+     "text": "Ten minutes to go."
+    }
+   ]
+  },
+  "stoppage": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "stoppage_1",
+     "text": "We're into stoppage time."
+    },
+    {
+     "id": "stoppage_2",
+     "text": "Into added time."
+    }
+   ]
+  },
+  "early_goal": {
+   "voice": "comm",
+   "lines": [
+    {
+     "id": "early_goal_1",
+     "text": "What a start!"
+    },
+    {
+     "id": "early_goal_2",
+     "text": "An early goal!"
+    }
+   ]
+  },
+  "co_goal": {
+   "voice": "co",
+   "lines": [
+    {
+     "id": "co_goal_1",
+     "text": "Brilliant finish. He's given the keeper no chance there."
+    },
+    {
+     "id": "co_goal_2",
+     "text": "That's clinical. You just can't defend that."
+    },
+    {
+     "id": "co_goal_3",
+     "text": "Great movement in the box, and he's tucked it away."
+    },
+    {
+     "id": "co_goal_4",
+     "text": "Look at the space he had! The defenders have to do better there."
+    },
+    {
+     "id": "co_goal_5",
+     "text": "That's a big goal, that. It changes the whole game."
+    },
+    {
+     "id": "co_goal_6",
+     "text": "Lovely ball in, and the finish matches it."
+    },
+    {
+     "id": "co_goal_7",
+     "text": "He's been threatening that all game, and now he's got his reward."
+    },
+    {
+     "id": "co_goal_8",
+     "text": "Composed. Picked his spot and put it there."
+    }
+   ]
+  },
+  "co_own_goal": {
+   "voice": "co",
+   "lines": [
+    {
+     "id": "co_own_goal_1",
+     "text": "Oh, that's cruel. Nothing he could do about that."
+    },
+    {
+     "id": "co_own_goal_2",
+     "text": "Unlucky. It just came off him and in."
+    }
+   ]
+  },
+  "co_save": {
+   "voice": "co",
+   "lines": [
+    {
+     "id": "co_save_1",
+     "text": "Top save, that. Great positioning."
+    },
+    {
+     "id": "co_save_2",
+     "text": "The keeper's been excellent there."
+    },
+    {
+     "id": "co_save_3",
+     "text": "Strong hands. He's read it all the way."
+    },
+    {
+     "id": "co_save_4",
+     "text": "That was heading in. Superb reactions."
+    }
+   ]
+  },
+  "co_miss": {
+   "voice": "co",
+   "lines": [
+    {
+     "id": "co_miss_1",
+     "text": "He has to hit the target there."
+    },
+    {
+     "id": "co_miss_2",
+     "text": "He'll be disappointed with that one."
+    },
+    {
+     "id": "co_miss_3",
+     "text": "Good chance, that. He should be doing better."
+    },
+    {
+     "id": "co_miss_4",
+     "text": "Just snatched at it a bit."
+    }
+   ]
+  },
+  "co_red": {
+   "voice": "co",
+   "lines": [
+    {
+     "id": "co_red_1",
+     "text": "That's a big moment. They'll have to dig in now."
+    },
+    {
+     "id": "co_red_2",
+     "text": "He's let his team down there, I'm afraid."
+    }
+   ]
+  },
+  "co_ht_lead": {
+   "voice": "co",
+   "lines": [
+    {
+     "id": "co_ht_lead_1",
+     "text": "They'll be pleased with that half. Good shape, and they've taken their chance."
+    },
+    {
+     "id": "co_ht_lead_2",
+     "text": "A deserved lead, I think. The others need a response after the break."
+    }
+   ]
+  },
+  "co_ht_level": {
+   "voice": "co",
+   "lines": [
+    {
+     "id": "co_ht_level_1",
+     "text": "Tight half. Not much between the two sides."
+    },
+    {
+     "id": "co_ht_level_2",
+     "text": "Cagey stuff. Plenty to play for in the second half."
+    }
+   ]
+  },
+  "co_ft_win": {
+   "voice": "co",
+   "lines": [
+    {
+     "id": "co_ft_win_1",
+     "text": "A good afternoon's work. They'll enjoy that one."
+    },
+    {
+     "id": "co_ft_win_2",
+     "text": "Deserved, I think. They took their chances."
+    }
+   ]
+  },
+  "co_ft_draw": {
+   "voice": "co",
+   "lines": [
+    {
+     "id": "co_ft_draw_1",
+     "text": "Probably a fair result, all things considered."
+    },
+    {
+     "id": "co_ft_draw_2",
+     "text": "Neither side will be too unhappy with a point."
+    }
+   ]
+  }
+ }
+}

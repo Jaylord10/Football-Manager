@@ -175,6 +175,20 @@ class MatchEngine:
         self.decide_wanted = "old" if os.environ.get("FM_DECIDE", "scoreboard") == "old" else "scoreboard"
         scoreboard.ENABLED = self.decide_wanted == "scoreboard"
         self.decide_note_until = 0.0
+        # (28 Nov) The commentary (gameplay/commentary.py): career matches, once its sound files have been made
+        # (dev/make_commentary.py); K turns it on / off, kept for the next match like the view
+        self.commentary = None
+        self.commentary_wanted = os.environ.get("FM_COMMENTARY", "1") == "1"
+        self.commentary_note_until = 0.0
+        if career:
+            try:
+                import gameplay.commentary as commentary
+                if commentary.have_audio():
+                    self.commentary = commentary.Commentary(self)
+                    self.commentary.on = self.commentary_wanted
+            except Exception as ex:
+                print("[commentary] off:", ex)
+                self.commentary = None
         self.radar3d = os.environ.get("FM_3D_RADAR", "1") == "1"   # (the mini pitch on the 3D picture: M)
         self.names3d = os.environ.get("FM_3D_NAMES", "0") == "1"   # (names over their heads: N)
         self.quality3d = os.environ.get("FM_3D_QUALITY", "auto")   # (3D quality: Q)
@@ -478,6 +492,8 @@ class MatchEngine:
             # teleport players/ball through each other.
             delta_time = min(self.clock.tick(FPS) / 1000.0, 0.05)
             self._handle_events()
+            if self.commentary is not None:
+                self.commentary.tick(self)
             if self.subs.ask is not None and self.sub_panel is None:
                 # One of your players is injured: stop and let you choose his replacement
                 from rendering.sub_panel import SubPanel
@@ -540,6 +556,8 @@ class MatchEngine:
         game_clock.set_time(self.time_elapsed)
         self._update_game(delta_time)
         self.stats.update(self, delta_time)
+        if self.commentary is not None:              # (it only watches: the match is the same with it on or off)
+            self.commentary.update(self, delta_time)
 
     def _handle_events(self):
         for event in pygame.event.get():
@@ -607,6 +625,10 @@ class MatchEngine:
                     else:
                         self.view3d = not self.view3d
                     self.view_wanted = "3d" if self.view3d else "2d"
+                if event.key == pygame.K_k and self.commentary is not None:
+                    # the commentary on / off
+                    self.commentary_wanted = self.commentary.toggle()
+                    self.commentary_note_until = time.time() + 3.0
                 if event.key == pygame.K_b:
                     # the new decisions (scoreboard) <-> the old checklist
                     import ai.scoreboard as scoreboard
@@ -1384,6 +1406,13 @@ class MatchEngine:
                 stats=self.stats.as_dict([round(100 * f / total) for f in self.possession_frames])
             )
 
+        if time.time() < self.commentary_note_until:
+            msg = ("Commentary: ON" if self.commentary_wanted else "Commentary: OFF") + "  - K to switch"
+            surf = self.ui_renderer.normal_font.render(msg, True, (255, 255, 255))
+            box = pygame.Surface((surf.get_width() + 16, surf.get_height() + 10), pygame.SRCALPHA)
+            box.fill((0, 0, 0, 170))
+            box.blit(surf, (8, 5))
+            self.screen.blit(box, ((self.screen.get_width() - box.get_width()) // 2, FIELD_MARGIN + 44))
         if time.time() < self.decide_note_until:
             msg = ("Decisions: NEW (the scoreboard)" if self.decide_wanted == "scoreboard"
                    else "Decisions: OLD (the checklist)") + "  - B to switch"
